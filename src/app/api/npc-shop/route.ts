@@ -1,0 +1,31 @@
+import { NextResponse } from "next/server";
+
+const { NXOPEN_API_URL } = process.env;
+
+export async function GET(request: Request) {
+    const { searchParams } = new URL(request.url);
+    const npcName = searchParams.get("npc_name");
+    const serverName = searchParams.get("server_name");
+    const channel = searchParams.get("channel");
+
+    // 실제 API 호출 (예시)
+    const response = await fetch(
+        `${NXOPEN_API_URL}/mabinogi/v1/npcshop/list?npc_name=${npcName}&server_name=${serverName}&channel=${parseInt(channel || "1")}`,
+        {
+            headers: {
+                "Content-Type": "application/json",
+                "x-nxopen-api-key": process.env.NXOPEN_API_KEY || "",
+            },
+        }
+    );
+
+    if (!response.ok) {
+        return NextResponse.json(
+            { error: "Failed to fetch data" },
+            { status: 500 }
+        );
+    }
+
+    const data = await response.json();
+    return NextResponse.json(data);
+}

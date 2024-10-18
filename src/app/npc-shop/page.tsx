@@ -7,52 +7,11 @@ function NPCShop() {
     const [npcName, setNpcName] = useState("");
     const [serverName, setServerName] = useState("");
     const [channel, setChannel] = useState("");
-    const [shopData, setShopData] = useState(null);
+    const [shopData, setShopData] = useState<any>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [toastMessage, setToastMessage] = useState("");
 
-    // 더미 데이터를 사용할 예정입니다.
-    const dummyData = {
-        shop_tab_count: 1,
-        shop: [
-            {
-                tab_name: "일반 상품",
-                item: [
-                    {
-                        item_display_name: "아이템1",
-                        item_option: [],
-                        price: [
-                            {
-                                price_type: "골드",
-                                price_value: 1000,
-                            },
-                        ],
-                        limit_type: "없음",
-                        limit_value: 0,
-                        image_url: "https://via.placeholder.com/50",
-                    },
-                    {
-                        item_display_name: "아이템2",
-                        item_option: [],
-                        price: [
-                            {
-                                price_type: "골드",
-                                price_value: 2000,
-                            },
-                        ],
-                        limit_type: "없음",
-                        limit_value: 0,
-                        image_url: "https://via.placeholder.com/50",
-                    },
-                ],
-            },
-        ],
-        date_inquire: "2024-09-01T00:00:000Z",
-        date_shop_next_update: "2024-09-01T00:36:000Z",
-    };
-
-    // 입력 필드가 비어 있는지 확인하고, 비어 있으면 토스트 메시지를 보여주는 함수
     const checkAndFetchShopData = async () => {
         if (!npcName || !serverName || !channel || isNaN(Number(channel))) {
             setToastMessage("모든 필드를 채워주세요");
@@ -68,11 +27,30 @@ function NPCShop() {
         setToastMessage("");
         setError("");
 
-        // API 요청 대신 더미 데이터 사용
-        setTimeout(() => {
-            setShopData(dummyData);
+        try {
+            console.log("npc_name", npcName);
+            console.log("server_name", serverName);
+            console.log("channel", channel);
+            const response = await fetch(
+                `http://localhost:3000/api/npc-shop?npc_name=${npcName}&server_name=${serverName}&channel=${channel}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("데이터를 가져오는 데 실패했습니다.");
+            }
+
+            const data = await response.json();
+            setShopData(data);
+        } catch (error: any) {
+            setError(error.message);
+        } finally {
             setLoading(false);
-        }, 1000); // 로딩 시간 시뮬레이션
+        }
     };
 
     // Toast가 일정 시간 후 자동으로 사라지도록 설정
@@ -112,6 +90,22 @@ function NPCShop() {
                         <option value="상인 라누">상인 라누</option>
                         <option value="상인 피루">상인 피루</option>
                         <option value="모락">모락</option>
+                        <option value="상인 아루">상인 아루</option>
+                        <option value="리나">리나</option>
+                        <option value="상인 누누">상인 누누</option>
+                        <option value="상인 메루">상인 메루</option>
+                        <option value="켄">켄</option>
+                        <option value="귀넥">귀넥</option>
+                        <option value="얼리">얼리</option>
+                        <option value="데위">데위</option>
+                        <option value="테일로">테일로</option>
+                        <option value="상인 세누">상인 세누</option>
+                        <option value="상인 베루">상인 베루</option>
+                        <option value="상인 에루">상인 에루</option>
+                        <option value="상인 네루">상인 네루</option>
+                        <option value="카디">카디</option>
+                        <option value="인장 상인">인장 상인</option>
+                        <option value="피오나트">피오나트</option>
                     </select>
                 </div>
 

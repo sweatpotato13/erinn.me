@@ -2,54 +2,46 @@
 
 import { useState } from "react";
 
-const messagesData = [
-    {
-        character_name: "캐릭터 A",
-        message: "안녕하세요! 이곳은 에린허브입니다.",
-        date_send: "2024-09-01T08:28:35Z",
-    },
-    {
-        character_name: "캐릭터 B",
-        message: "새로운 소식이 있습니다!",
-        date_send: "2024-09-02T10:15:00Z",
-    },
-    {
-        character_name: "캐릭터 C",
-        message: "오늘도 즐거운 하루 되세요!",
-        date_send: "2024-09-03T12:30:45Z",
-    },
-    {
-        character_name: "캐릭터 C",
-        message: "오늘도 즐거운 하루 되세요!",
-        date_send: "2024-09-03T12:30:45Z",
-    },
-    {
-        character_name: "캐릭터 C",
-        message: "오늘도 즐거운 하루 되세요!",
-        date_send: "2024-09-03T12:30:45Z",
-    },
-    {
-        character_name: "캐릭터 C",
-        message: "오늘도 즐거운 하루 되세요!",
-        date_send: "2024-09-03T12:30:45Z",
-    },
-    {
-        character_name: "캐릭터 C",
-        message: "오늘도 즐거운 하루 되세요!",
-        date_send: "2024-09-03T12:30:45Z",
-    },
-];
-
 const servers = ["류트", "울프", "하프", "만돌린"];
 
 export default function HornPage() {
     const [selectedServer, setSelectedServer] = useState(servers[0]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [messagesData, setMessagesData] = useState<any>([]);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    // 필터링된 메시지
-    const filteredMessages = messagesData.filter(message =>
-        message.message.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const fetchMessages = async () => {
+        setLoading(true);
+        setError("");
+
+        try {
+            const response = await fetch(
+                `/api/horn?server_name=${selectedServer}`,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("메시지를 가져오는 데 실패했습니다.");
+            }
+
+            const data = await response.json();
+            setMessagesData(data.horn_bugle_world_history); // API 응답 데이터를 상태에 저장
+        } catch (error: any) {
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // 메시지를 검색하는 핸들러
+    const handleSearch = () => {
+        fetchMessages(); // 검색 버튼 클릭 시 메시지 fetch
+    };
 
     return (
         <div className="flex flex-col items-center justify-start h-[70vh] p-6">
@@ -84,9 +76,18 @@ export default function HornPage() {
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
-                        <button className="btn btn-outline ml-2">검색</button>
+                        <button
+                            className="btn btn-outline ml-2"
+                            onClick={handleSearch}
+                        >
+                            검색
+                        </button>
                     </div>
                 </div>
+
+                {/* 에러 메시지 */}
+                {error && <p className="text-red-500">{error}</p>}
+
                 <div className="overflow-auto max-h-[400px]">
                     <table className="table w-full">
                         <thead>
@@ -97,19 +98,35 @@ export default function HornPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredMessages.map((message, index) => (
-                                <tr key={index}>
-                                    <td className="p-2">
-                                        {message.character_name}
-                                    </td>
-                                    <td className="p-2">{message.message}</td>
-                                    <td className="p-2">
-                                        {new Date(
-                                            message.date_send
-                                        ).toLocaleString()}
+                            {loading ? ( // 로딩 중일 때
+                                <tr>
+                                    <td colSpan={3} className="text-center">
+                                        로딩 중...
                                     </td>
                                 </tr>
-                            ))}
+                            ) : messagesData.length > 0 ? (
+                                messagesData.map((message: any, index: any) => (
+                                    <tr key={index}>
+                                        <td className="p-2">
+                                            {message.character_name}
+                                        </td>
+                                        <td className="p-2">
+                                            {message.message}
+                                        </td>
+                                        <td className="p-2">
+                                            {new Date(
+                                                message.date_send
+                                            ).toLocaleString()}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={3} className="text-center">
+                                        메시지가 없습니다.
+                                    </td>
+                                </tr>
+                            )}
                         </tbody>
                     </table>
                 </div>
