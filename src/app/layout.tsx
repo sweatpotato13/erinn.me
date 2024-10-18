@@ -9,7 +9,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
+        <html data-theme="light" lang="en">
             <body className="pt-16 font-custom">
                 <Topbar />
                 <main className="min-h-screen">{children}</main>
