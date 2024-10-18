@@ -1,0 +1,33 @@
+# test
+__tests__
+__snapshots__
+
+# env
+.env*
+!.env.dev
+!.env.prod
+!.env.staging
+
+# git
+.gitignore
+.github
+.git
+
+# docker
+scripts
+docker
+
+# yarn
+/.yarn/*
+!/.yarn/plugins
+!/.yarn/releases
+/.pnp.*
+
+# next
+.next
+out
+
+# etc
+.husky
+.vscode
+analyze
