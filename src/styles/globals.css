@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@font-face {
+    font-family: 'MabinogiClassic';
+    src: url('/fonts/mabinogi-classic.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+  }
+  
+  html {
+    font-family: 'MabinogiClassic', sans-serif;
+  }

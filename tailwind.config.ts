@@ -9,7 +9,17 @@ module.exports = {
         "./src/**/*.{js,ts,jsx,tsx,mdx}",
     ],
     theme: {
-        extend: {},
+        extend: {
+            fontFamily: {
+                custom: ['MabinogiClassic', 'sans-serif'],
+            },
+        },
     },
     plugins: [require("daisyui")],
+    daisyui: {
+        themes: [
+            "light",
+            "dark"
+        ],
+    },
 };
