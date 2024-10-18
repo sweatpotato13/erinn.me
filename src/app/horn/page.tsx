@@ -105,21 +105,25 @@ export default function HornPage() {
                                     </td>
                                 </tr>
                             ) : messagesData.length > 0 ? (
-                                messagesData.map((message: any, index: any) => (
-                                    <tr key={index}>
-                                        <td className="p-2">
-                                            {message.character_name}
-                                        </td>
-                                        <td className="p-2">
-                                            {message.message}
-                                        </td>
-                                        <td className="p-2">
-                                            {new Date(
-                                                message.date_send
-                                            ).toLocaleString()}
-                                        </td>
-                                    </tr>
-                                ))
+                                messagesData
+                                    .filter((message: any) =>
+                                        message.message.includes(searchTerm)
+                                    )
+                                    .map((message: any, index: any) => (
+                                        <tr key={index}>
+                                            <td className="p-2">
+                                                {message.character_name}
+                                            </td>
+                                            <td className="p-2">
+                                                {message.message}
+                                            </td>
+                                            <td className="p-2">
+                                                {new Date(
+                                                    message.date_send
+                                                ).toLocaleString()}
+                                            </td>
+                                        </tr>
+                                    ))
                             ) : (
                                 <tr>
                                     <td colSpan={3} className="text-center">
