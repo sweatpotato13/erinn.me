@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const { NXOPEN_API_URL } = process.env;
+const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 
 export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
         {
             headers: {
                 "Content-Type": "application/json",
-                "x-nxopen-api-key": process.env.NXOPEN_API_KEY || "",
+                "x-nxopen-api-key": NXOPEN_API_KEY || "",
             },
         }
     );
