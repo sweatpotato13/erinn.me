@@ -1,14 +1,21 @@
 import { NextResponse } from "next/server";
 
-const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
+const { BASE_URL, NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 
 export async function GET(request: Request) {
+    const allowedDomain = BASE_URL || "http://localhost:3000";
+
+    const referer = request.headers.get("referer");
+
+    if (!referer || !referer.startsWith(allowedDomain)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const npcName = searchParams.get("npc_name");
     const serverName = searchParams.get("server_name");
     const channel = searchParams.get("channel");
 
-    // 실제 API 호출 (예시)
     const response = await fetch(
         `${NXOPEN_API_URL}/mabinogi/v1/npcshop/list?npc_name=${npcName}&server_name=${serverName}&channel=${parseInt(channel || "1")}`,
         {

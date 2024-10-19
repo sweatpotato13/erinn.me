@@ -17,11 +17,10 @@ export default function AuctionPage() {
     const [popupItemOptions, setPopupItemOptions] = useState<any>(null);
     const [isPopupVisible, setIsPopupVisible] = useState(false);
 
-    // API 호출 함수
     const fetchItems = async () => {
         try {
             setFilteredItems([]);
-            setCurrentPage(1); // 페이지를 초기화합니다.
+            setCurrentPage(1);
 
             let url = "/api/auction?";
             if (selectedCategory !== categories[0]) {
