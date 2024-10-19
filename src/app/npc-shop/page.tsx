@@ -50,13 +50,12 @@ function NPCShop() {
         }
     };
 
-    // Toast가 일정 시간 후 자동으로 사라지도록 설정
     useEffect(() => {
         if (toastMessage) {
             const timer = setTimeout(() => {
                 setToastMessage("");
-            }, 3000); // 3초 후에 토스트 사라짐
-            return () => clearTimeout(timer); // 컴포넌트가 언마운트되면 타이머 해제
+            }, 3000);
+            return () => clearTimeout(timer);
         }
     }, [toastMessage]);
 
@@ -64,7 +63,6 @@ function NPCShop() {
         <div className="container mx-auto p-4">
             <h1 className="text-2xl mb-4">NPC 상점 조회</h1>
 
-            {/* 입력 폼 */}
             <div className="mb-8 flex flex-wrap gap-4">
                 <div className="flex-1 mb-4 min-w-[250px]">
                     <label
@@ -156,7 +154,6 @@ function NPCShop() {
                 </div>
             </div>
 
-            {/* 토스트 메시지 */}
             {toastMessage && (
                 <div className="toast">
                     <div className="alert alert-error">
@@ -167,7 +164,6 @@ function NPCShop() {
 
             {error && <p className="text-red-500">{error}</p>}
 
-            {/* 조회 결과 */}
             {shopData && (
                 <div className="mt-8">
                     <h2 className="text-xl mb-4">상점 정보</h2>

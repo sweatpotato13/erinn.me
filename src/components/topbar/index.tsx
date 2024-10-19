@@ -26,7 +26,6 @@ function Topbar() {
                     onClick={toggleMenu}
                 >
                     {isMenuOpen ? (
-                        // X 아이콘
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"

@@ -30,7 +30,7 @@ export default function HornPage() {
             }
 
             const data = await response.json();
-            setMessagesData(data.horn_bugle_world_history); // API 응답 데이터를 상태에 저장
+            setMessagesData(data.horn_bugle_world_history);
         } catch (error: any) {
             setError(error.message);
         } finally {
@@ -38,9 +38,8 @@ export default function HornPage() {
         }
     };
 
-    // 메시지를 검색하는 핸들러
     const handleSearch = () => {
-        fetchMessages(); // 검색 버튼 클릭 시 메시지 fetch
+        fetchMessages();
     };
 
     return (
@@ -85,7 +84,6 @@ export default function HornPage() {
                     </div>
                 </div>
 
-                {/* 에러 메시지 */}
                 {error && <p className="text-red-500">{error}</p>}
 
                 <div className="overflow-auto max-h-[400px]">
@@ -98,7 +96,7 @@ export default function HornPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {loading ? ( // 로딩 중일 때
+                            {loading ? (
                                 <tr>
                                     <td colSpan={3} className="text-center">
                                         로딩 중...

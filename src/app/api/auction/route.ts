@@ -1,8 +1,16 @@
 import { NextResponse } from "next/server";
 
-const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
+const { BASE_URL, NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 
 export async function GET(request: Request) {
+    const allowedDomain = BASE_URL || "http://localhost:3000";
+
+    const referer = request.headers.get("referer");
+
+    if (!referer || !referer.startsWith(allowedDomain)) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const auctionItemCategory = searchParams.get("auction_item_category");
     const itemName = searchParams.get("item_name");
