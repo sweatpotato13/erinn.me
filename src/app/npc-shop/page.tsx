@@ -176,28 +176,31 @@ function NPCShop() {
                                     {tab.tab_name}
                                 </h3>
                                 <ul className="space-y-2">
-                                    {tab.item.map((item: any, idx: number) => (
-                                        <li
-                                            key={idx}
-                                            className="border p-2 rounded-lg"
-                                        >
-                                            <p>
-                                                아이템: {item.item_display_name}
-                                            </p>
-                                            <p>
-                                                가격:{" "}
-                                                {item.price.map(
-                                                    (price: any) =>
-                                                        `${price.price_value} (${price.price_type})`
-                                                )}
-                                            </p>
-                                            <img
-                                                src={item.image_url}
-                                                alt={item.item_display_name}
-                                                className="w-16 h-16 mt-2"
-                                            />
-                                        </li>
-                                    ))}
+                                    {tab.item.map(
+                                        (item: any, index: number) => (
+                                            <li
+                                                key={index}
+                                                className="border p-2 rounded-lg"
+                                            >
+                                                <p>
+                                                    아이템:{" "}
+                                                    {item.item_display_name}
+                                                </p>
+                                                <p>
+                                                    가격:{" "}
+                                                    {item.price.map(
+                                                        (price: any) =>
+                                                            `${price.price_value} (${price.price_type})`
+                                                    )}
+                                                </p>
+                                                <img
+                                                    src={item.image_url}
+                                                    alt={item.item_display_name}
+                                                    className="w-16 h-16 mt-2"
+                                                />
+                                            </li>
+                                        )
+                                    )}
                                 </ul>
                             </div>
                         ))
