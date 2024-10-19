@@ -35,6 +35,10 @@ export default function AuctionPage() {
             }
             const data = await response.json();
 
+            data.auction_item.sort(
+                (a: any, b: any) =>
+                    a.auction_price_per_unit - b.auction_price_per_unit
+            );
             setFilteredItems(data.auction_item);
             setErrorMessage(null);
         } catch (error) {
@@ -116,18 +120,13 @@ export default function AuctionPage() {
                         </thead>
                         <tbody>
                             {filteredItems
-                                .sort(
-                                    (a: any, b: any) =>
-                                        a.auction_price_per_unit -
-                                        b.auction_price_per_unit
-                                )
                                 .slice(
                                     (currentPage - 1) * itemsPerPage,
                                     currentPage * itemsPerPage
                                 )
-                                .map((item: any) => (
+                                .map((item: any, index: number) => (
                                     <tr
-                                        key={item.item_name}
+                                        key={`${item.item_display_name}-${index}`}
                                         onClick={() => handleItemClick(item)}
                                         className="cursor-pointer"
                                     >
@@ -187,14 +186,18 @@ export default function AuctionPage() {
                             <div className="mt-2">
                                 {popupItemOptions &&
                                 popupItemOptions.length > 0 ? (
-                                    popupItemOptions.map((option: any) => (
-                                        <div key={option.option_type}>
-                                            <strong>
-                                                {option.option_type}:{" "}
-                                            </strong>
-                                            {option.option_value}
-                                        </div>
-                                    ))
+                                    popupItemOptions.map(
+                                        (option: any, index: number) => (
+                                            <div
+                                                key={`${option.option_type}-${index}`}
+                                            >
+                                                <strong>
+                                                    {option.option_type}:{" "}
+                                                </strong>
+                                                {option.option_value}
+                                            </div>
+                                        )
+                                    )
                                 ) : (
                                     <div>옵션이 없습니다.</div>
                                 )}
