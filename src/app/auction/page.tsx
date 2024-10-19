@@ -59,40 +59,48 @@ export default function AuctionPage() {
                 {errorMessage && (
                     <div className="alert alert-error mb-4">{errorMessage}</div>
                 )}
-                <div className="flex justify-between mb-4">
-                    <div className="flex space-x-2">
+                <div className="flex flex-col md:flex-row md:justify-between mb-4">
+                    <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full">
                         <input
-                            className="input input-bordered w-64"
+                            className="input input-bordered w-full"
                             placeholder="아이템명"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
                         <button
-                            className="btn btn-outline"
+                            className="btn btn-outline w-full md:w-auto"
                             onClick={fetchItems}
                         >
                             검색
                         </button>
-                        <div className="dropdown">
-                            <div tabIndex={0} role="button" className="btn m-1">
-                                {selectedCategory}
+                        <div className="mt-2 md:mt-0">
+                            <div className="dropdown">
+                                <div
+                                    tabIndex={0}
+                                    role="button"
+                                    className="btn w-full md:w-auto"
+                                >
+                                    {selectedCategory}
+                                </div>
+                                <ul
+                                    tabIndex={0}
+                                    className="max-h-80 overflow-y-auto dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+                                >
+                                    {categories.map(category => (
+                                        <li key={category}>
+                                            <a
+                                                onClick={() =>
+                                                    setSelectedCategory(
+                                                        category
+                                                    )
+                                                }
+                                            >
+                                                {category}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
                             </div>
-                            <ul
-                                tabIndex={0}
-                                className="max-h-80 overflow-y-auto dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
-                            >
-                                {categories.map(category => (
-                                    <li key={category}>
-                                        <a
-                                            onClick={() =>
-                                                setSelectedCategory(category)
-                                            }
-                                        >
-                                            {category}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
                         </div>
                     </div>
                 </div>
