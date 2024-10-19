@@ -28,11 +28,8 @@ function NPCShop() {
         setError("");
 
         try {
-            console.log("npc_name", npcName);
-            console.log("server_name", serverName);
-            console.log("channel", channel);
             const response = await fetch(
-                `http://localhost:3000/api/npc-shop?npc_name=${npcName}&server_name=${serverName}&channel=${channel}`,
+                `/api/npc-shop?npc_name=${npcName}&server_name=${serverName}&channel=${channel}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
