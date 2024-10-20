@@ -29,6 +29,7 @@ export default function ContactPage() {
     });
     const [toastMessage, setToastMessage] = useState("");
     const [toastType, setToastType] = useState<"success" | "error">("success");
+    const [loading, setLoading] = useState(false);
 
     function handleChange(
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -46,6 +47,8 @@ export default function ContactPage() {
             return;
         }
 
+        setLoading(true);
+
         try {
             const res = await fetch("/api/contact", {
                 method: "POST",
@@ -62,6 +65,8 @@ export default function ContactPage() {
                 "문의 전송 중 오류가 발생했습니다: " + error.message
             );
             setToastType("error");
+        } finally {
+            setLoading(false);
         }
     }
 
@@ -133,13 +138,17 @@ export default function ContactPage() {
                     />
                 </div>
 
-                <div className="form-control">
-                    <button
-                        className="btn bg-base-90  w-full"
-                        onClick={handleSubmit}
-                    >
-                        전송
-                    </button>
+                <div className="form-control flex items-center justify-center">
+                    {loading ? (
+                        <span className="loading loading-spinner loading-md"></span>
+                    ) : (
+                        <button
+                            className="btn bg-base-90 w-full"
+                            onClick={handleSubmit}
+                        >
+                            전송
+                        </button>
+                    )}
                 </div>
 
                 {toastMessage && (
