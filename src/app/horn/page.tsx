@@ -70,7 +70,7 @@ export default function HornPage() {
                     </div>
                     <div className="ml-auto flex items-center">
                         <input
-                            className="input input-bordered w-64"
+                            className="input input-bordered w-full sm:w-64"
                             placeholder="검색 키워드"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
