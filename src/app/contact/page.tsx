@@ -20,7 +20,7 @@ const bodySchema = object({
         .required("메시지를 입력해주세요."),
 });
 
-export default function Page() {
+export default function ContactPage() {
     const [formData, setFormData] = useState<EmailData>({
         name: "",
         from: "",

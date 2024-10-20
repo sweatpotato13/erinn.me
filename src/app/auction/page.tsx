@@ -5,7 +5,7 @@ import { useState } from "react";
 
 import { categories } from "@/constant/categories";
 
-export default function Page() {
+export default function AuctionPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
     const [selectedCategory, setSelectedCategory] = useState<

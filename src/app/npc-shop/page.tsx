@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 
-export function Page() {
+export default function NPCShopPage() {
     const [npcName, setNpcName] = useState("");
     const [serverName, setServerName] = useState("");
     const [channel, setChannel] = useState("");
