@@ -4,7 +4,7 @@ import { useState } from "react";
 
 const servers = ["류트", "울프", "하프", "만돌린"];
 
-export default function HornPage() {
+export default function Page() {
     const [selectedServer, setSelectedServer] = useState(servers[0]);
     const [searchTerm, setSearchTerm] = useState("");
     const [messagesData, setMessagesData] = useState<any>([]);

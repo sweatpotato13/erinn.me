@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from "react";
 
-function NPCShop() {
+export function Page() {
     const [npcName, setNpcName] = useState("");
     const [serverName, setServerName] = useState("");
     const [channel, setChannel] = useState("");
@@ -210,5 +210,3 @@ function NPCShop() {
         </div>
     );
 }
-
-export default NPCShop;
