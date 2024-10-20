@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { object, string } from "yup";
 
 import { EmailData } from "@/services/mail.service";
@@ -28,7 +28,7 @@ export default function ContactPage() {
         message: "",
     });
     const [toastMessage, setToastMessage] = useState("");
-    const [toastType, setToastType] = useState<"info" | "error">("info");
+    const [toastType, setToastType] = useState<"success" | "error">("success");
 
     function handleChange(
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -53,14 +53,10 @@ export default function ContactPage() {
                 body: JSON.stringify(formData),
             });
 
-            const data = await res.json();
-            if (data.success) {
-                setToastMessage("문의가 성공적으로 전송되었습니다.");
-                setToastType("info");
-                setFormData({ name: "", from: "", subject: "", message: "" });
-            } else {
-                throw new Error(data.error);
-            }
+            await res.json();
+            setToastMessage("문의가 성공적으로 전송되었습니다.");
+            setToastType("success");
+            setFormData({ name: "", from: "", subject: "", message: "" });
         } catch (error: any) {
             setToastMessage(
                 "문의 전송 중 오류가 발생했습니다: " + error.message
@@ -68,6 +64,15 @@ export default function ContactPage() {
             setToastType("error");
         }
     }
+
+    useEffect(() => {
+        if (toastMessage) {
+            const timer = setTimeout(() => {
+                setToastMessage("");
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [toastMessage]);
 
     return (
         <div className="flex flex-col items-center justify-center min-h-screen p-6 bg-gray-50">
@@ -139,7 +144,13 @@ export default function ContactPage() {
 
                 {toastMessage && (
                     <div className={`toast toast-end`}>
-                        <div className={`alert alert-${toastType}`}>
+                        <div
+                            className={
+                                toastType === "error"
+                                    ? `alert alert-error`
+                                    : `alert alert-success`
+                            }
+                        >
                             <p>{toastMessage}</p>
                         </div>
                     </div>
