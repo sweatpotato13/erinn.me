@@ -8,7 +8,7 @@ function Footer() {
                 <p className="text-sm">문의하기</p>
             </Link>
             <div>
-                <p>Copyright © 2024 ErinnHub. All rights reserved.</p>
+                <p>Copyright © 2024 Erinn.me. All rights reserved.</p>
             </div>
         </footer>
     );
