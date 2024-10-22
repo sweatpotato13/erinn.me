@@ -60,7 +60,7 @@ export default function NPCShopPage() {
     }, [toastMessage]);
 
     return (
-        <div className="container mx-auto p-4">
+        <div className="container mx-auto p-7">
             <h1 className="text-2xl mb-4">NPC 상점 조회</h1>
 
             <div className="mb-8 flex flex-wrap gap-4">
