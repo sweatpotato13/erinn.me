@@ -1,5 +1,7 @@
 import "@/styles/globals.css";
 
+import { Analytics } from "@vercel/analytics/react";
+
 import Footer from "@/components/footer";
 import Topbar from "@/components/topbar";
 
@@ -14,6 +16,7 @@ export default function RootLayout({
                 <Topbar />
                 <main className="min-h-screen">{children}</main>
                 <Footer />
+                <Analytics />
             </body>
         </html>
     );
