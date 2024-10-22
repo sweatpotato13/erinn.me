@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 
 import AuctionIcon from "../icons/auction-icon";
+import DocumentIcon from "../icons/document-icon";
 import HornIcon from "../icons/horn-icon";
 import ShopIcon from "../icons/shop-icon";
 
@@ -83,6 +84,14 @@ function Topbar() {
                                 <HornIcon className="h-5 w-5" />
                                 <a href="/horn" className="ml-2">
                                     뿔피리
+                                </a>
+                            </div>
+                        </li>
+                        <li className="flex space-x-2">
+                            <div className="flex items-center">
+                                <DocumentIcon className="h-5 w-5" />
+                                <a href="/changelog" className="ml-2">
+                                    업데이트 내역
                                 </a>
                             </div>
                         </li>

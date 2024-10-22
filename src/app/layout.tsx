@@ -1,5 +1,8 @@
 import "@/styles/globals.css";
 
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+
 import Footer from "@/components/footer";
 import Topbar from "@/components/topbar";
 
@@ -14,6 +17,8 @@ export default function RootLayout({
                 <Topbar />
                 <main className="min-h-screen">{children}</main>
                 <Footer />
+                <Analytics />
+                <SpeedInsights />
             </body>
         </html>
     );
