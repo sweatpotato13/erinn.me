@@ -43,7 +43,9 @@ export default function AuctionPage() {
             setErrorMessage(null);
         } catch (error) {
             console.error("API 호출 중 오류가 발생했습니다:", error);
-            setErrorMessage("아이템을 불러오는 중 오류가 발생했습니다.");
+            setErrorMessage(
+                "아이템을 불러오는 중 오류가 발생했습니다. 아이템명 입력 시 아이템의 이름을 정확히 입력해주세요."
+            );
         }
     };
 
