@@ -3,6 +3,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 
+import OptionRenderer from "@/components/option-renderer";
 import { categories } from "@/constant/categories";
 
 export default function AuctionPage() {
@@ -190,13 +191,8 @@ export default function AuctionPage() {
                                 popupItemOptions.length > 0 ? (
                                     popupItemOptions.map(
                                         (option: any, index: number) => (
-                                            <div
-                                                key={`${option.option_type}-${index}`}
-                                            >
-                                                <strong>
-                                                    {option.option_type}:{" "}
-                                                </strong>
-                                                {option.option_value}
+                                            <div key={`${index}`}>
+                                                <OptionRenderer {...option} />
                                             </div>
                                         )
                                     )
