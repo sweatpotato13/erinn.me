@@ -1,9 +1,10 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
+import { useEffect, useState } from "react";
 
 import OptionRenderer from "@/components/option-renderer";
+import { AllItemsName } from "@/constant/all-items-name";
 import { categories } from "@/constant/categories";
 
 export default function AuctionPage() {
@@ -17,9 +18,27 @@ export default function AuctionPage() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [popupItemOptions, setPopupItemOptions] = useState<any>(null);
     const [isPopupVisible, setIsPopupVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [suggestions, setSuggestions] = useState<string[]>([]);
+    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+
+    useEffect(() => {
+        if (searchTerm) {
+            const filteredSuggestions = AllItemsName.filter(item =>
+                item.toLowerCase().startsWith(searchTerm.toLowerCase())
+            );
+            setSuggestions(filteredSuggestions);
+            setActiveSuggestionIndex(0);
+            setShowSuggestions(true);
+        } else {
+            setShowSuggestions(false);
+        }
+    }, [searchTerm]);
 
     const fetchItems = async () => {
         try {
+            setLoading(true);
             setFilteredItems([]);
             setCurrentPage(1);
 
@@ -47,6 +66,8 @@ export default function AuctionPage() {
             setErrorMessage(
                 "아이템을 불러오는 중 오류가 발생했습니다. 아이템명 입력 시 아이템의 이름을 정확히 입력해주세요."
             );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -60,6 +81,40 @@ export default function AuctionPage() {
         setPopupItemOptions(null);
     }
 
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+        if (showSuggestions) {
+            if (e.key === "ArrowDown") {
+                setActiveSuggestionIndex(prevIndex =>
+                    Math.min(prevIndex + 1, suggestions.length - 1)
+                );
+            } else if (e.key === "ArrowUp") {
+                setActiveSuggestionIndex(prevIndex =>
+                    Math.max(prevIndex - 1, 0)
+                );
+            } else if (e.key === "Enter") {
+                setSearchTerm(suggestions[`${activeSuggestionIndex}`]);
+                setShowSuggestions(false);
+            }
+        }
+    };
+
+    const handleSuggestionClick = (suggestion: string) => {
+        setSearchTerm(suggestion);
+        setShowSuggestions(false);
+    };
+
+    useEffect(() => {
+        const activeSuggestionElement = document.getElementById(
+            `suggestion-${activeSuggestionIndex}`
+        );
+        if (activeSuggestionElement) {
+            activeSuggestionElement.scrollIntoView({
+                block: "nearest",
+                behavior: "smooth",
+            });
+        }
+    }, [activeSuggestionIndex]);
+
     return (
         <div className="flex flex-col items-center justify-start min-h-screen p-6">
             <div className="w-full max-w-4xl p-6 backdrop-blur-sm rounded-lg flex-grow">
@@ -68,17 +123,46 @@ export default function AuctionPage() {
                 )}
                 <div className="flex flex-col md:flex-row md:justify-between mb-4">
                     <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full">
-                        <input
-                            className="input input-bordered w-full"
-                            placeholder="아이템명"
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                        />
+                        <div className="relative w-full">
+                            <input
+                                className="input input-bordered w-full"
+                                placeholder="아이템명"
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+                            {showSuggestions && suggestions.length > 0 && (
+                                <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                                    {suggestions.map((suggestion, index) => (
+                                        <li
+                                            key={suggestion}
+                                            id={`suggestion-${index}`} // 각 항목에 ID 추가
+                                            className={`p-2 cursor-pointer ${
+                                                index === activeSuggestionIndex
+                                                    ? "bg-gray-200"
+                                                    : ""
+                                            }`}
+                                            onClick={() =>
+                                                handleSuggestionClick(
+                                                    suggestion
+                                                )
+                                            }
+                                        >
+                                            {suggestion}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
                         <button
                             className="btn btn-outline w-full md:w-auto"
                             onClick={fetchItems}
                         >
-                            검색
+                            {loading ? (
+                                <Loader className="animate-spin" />
+                            ) : (
+                                "검색"
+                            )}
                         </button>
                         <div className="mt-2 md:mt-0">
                             <div className="dropdown">
@@ -122,28 +206,40 @@ export default function AuctionPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredItems
-                                .slice(
-                                    (currentPage - 1) * itemsPerPage,
-                                    currentPage * itemsPerPage
-                                )
-                                .map((item: any, index: number) => (
-                                    <tr
-                                        key={`${item.item_display_name}-${index}`}
-                                        onClick={() => handleItemClick(item)}
-                                        className="cursor-pointer"
-                                    >
-                                        <td className="font-medium">
-                                            {item.item_display_name}
-                                        </td>
-                                        <td>
-                                            {item.auction_price_per_unit.toLocaleString()}{" "}
-                                            Gold
-                                        </td>
-                                        <td>{item.item_count}</td>
-                                        <td>{item.date_auction_expire}</td>
-                                    </tr>
-                                ))}
+                            {filteredItems.length === 0 &&
+                            errorMessage === null &&
+                            loading === false ? (
+                                <tr>
+                                    <td colSpan={4} className="text-center">
+                                        결과가 없습니다.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredItems
+                                    .slice(
+                                        (currentPage - 1) * itemsPerPage,
+                                        currentPage * itemsPerPage
+                                    )
+                                    .map((item: any, index: number) => (
+                                        <tr
+                                            key={`${item.item_display_name}-${index}`}
+                                            onClick={() =>
+                                                handleItemClick(item)
+                                            }
+                                            className="cursor-pointer"
+                                        >
+                                            <td className="font-medium">
+                                                {item.item_display_name}
+                                            </td>
+                                            <td>
+                                                {item.auction_price_per_unit.toLocaleString()}{" "}
+                                                Gold
+                                            </td>
+                                            <td>{item.item_count}</td>
+                                            <td>{item.date_auction_expire}</td>
+                                        </tr>
+                                    ))
+                            )}{" "}
                         </tbody>
                     </table>
                 </div>
