@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { useState } from "react";
 
 import OptionRenderer from "@/components/option-renderer";
@@ -17,9 +17,11 @@ export default function AuctionPage() {
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [popupItemOptions, setPopupItemOptions] = useState<any>(null);
     const [isPopupVisible, setIsPopupVisible] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const fetchItems = async () => {
         try {
+            setLoading(true);
             setFilteredItems([]);
             setCurrentPage(1);
 
@@ -47,6 +49,8 @@ export default function AuctionPage() {
             setErrorMessage(
                 "아이템을 불러오는 중 오류가 발생했습니다. 아이템명 입력 시 아이템의 이름을 정확히 입력해주세요."
             );
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -78,7 +82,11 @@ export default function AuctionPage() {
                             className="btn btn-outline w-full md:w-auto"
                             onClick={fetchItems}
                         >
-                            검색
+                            {loading ? (
+                                <Loader className="animate-spin" />
+                            ) : (
+                                "검색"
+                            )}
                         </button>
                         <div className="mt-2 md:mt-0">
                             <div className="dropdown">
@@ -122,28 +130,39 @@ export default function AuctionPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {filteredItems
-                                .slice(
-                                    (currentPage - 1) * itemsPerPage,
-                                    currentPage * itemsPerPage
-                                )
-                                .map((item: any, index: number) => (
-                                    <tr
-                                        key={`${item.item_display_name}-${index}`}
-                                        onClick={() => handleItemClick(item)}
-                                        className="cursor-pointer"
-                                    >
-                                        <td className="font-medium">
-                                            {item.item_display_name}
-                                        </td>
-                                        <td>
-                                            {item.auction_price_per_unit.toLocaleString()}{" "}
-                                            Gold
-                                        </td>
-                                        <td>{item.item_count}</td>
-                                        <td>{item.date_auction_expire}</td>
-                                    </tr>
-                                ))}
+                            {filteredItems.length === 0 &&
+                            errorMessage === null ? (
+                                <tr>
+                                    <td colSpan={4} className="text-center">
+                                        결과가 없습니다.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredItems
+                                    .slice(
+                                        (currentPage - 1) * itemsPerPage,
+                                        currentPage * itemsPerPage
+                                    )
+                                    .map((item: any, index: number) => (
+                                        <tr
+                                            key={`${item.item_display_name}-${index}`}
+                                            onClick={() =>
+                                                handleItemClick(item)
+                                            }
+                                            className="cursor-pointer"
+                                        >
+                                            <td className="font-medium">
+                                                {item.item_display_name}
+                                            </td>
+                                            <td>
+                                                {item.auction_price_per_unit.toLocaleString()}{" "}
+                                                Gold
+                                            </td>
+                                            <td>{item.item_count}</td>
+                                            <td>{item.date_auction_expire}</td>
+                                        </tr>
+                                    ))
+                            )}{" "}
                         </tbody>
                     </table>
                 </div>
