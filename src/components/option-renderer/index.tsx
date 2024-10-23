@@ -42,6 +42,7 @@ function OptionRenderer(option: OptionProps) {
                             width: "20px",
                             height: "20px",
                             backgroundColor: rgbValue,
+                            border: "1px solid black",
                             marginLeft: "10px",
                             verticalAlign: "middle",
                         }}
