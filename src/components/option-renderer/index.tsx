@@ -82,7 +82,7 @@ function OptionRenderer(option: OptionProps) {
             return (
                 <div>
                     <strong>{option.option_type} : </strong>
-                    {option.option_value} {option.option_sub_type}
+                    {option.option_value} {option.option_value2}
                 </div>
             );
         case "피어싱 레벨":
