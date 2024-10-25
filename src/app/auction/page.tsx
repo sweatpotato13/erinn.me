@@ -47,7 +47,7 @@ export default function AuctionPage() {
                 url += `auction_item_category=${selectedCategory}`;
             }
             if (searchTerm !== "") {
-                url += `&item_name=${searchTerm}`;
+                url += `&item_name=${encodeURIComponent(searchTerm).replace(/\+/g, "%2B")}`;
             }
             const response = await fetch(url);
             if (!response.ok) {

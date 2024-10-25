@@ -20,7 +20,7 @@ export async function GET(request: Request) {
         url += `auction_item_category=${auctionItemCategory}&`;
     }
     if (itemName) {
-        url += `item_name=${itemName}`;
+        url += `item_name=${encodeURIComponent(itemName)}`;
     }
 
     const response = await fetch(url, {
