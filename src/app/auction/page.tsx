@@ -22,6 +22,12 @@ export default function AuctionPage() {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [favorites, setFavorites] = useState<
+        { itemName: string; category: string }[]
+    >([]);
+    const [isFavoritesPopupVisible, setIsFavoritesPopupVisible] =
+        useState(false);
+    const [addFavoriteText, setAddFavoriteText] = useState("즐겨찾기 등록");
 
     useEffect(() => {
         if (searchTerm) {
@@ -115,13 +121,80 @@ export default function AuctionPage() {
         }
     }, [activeSuggestionIndex]);
 
+    useEffect(() => {
+        const storedFavorites = localStorage.getItem("favorites");
+        if (storedFavorites) {
+            setFavorites(JSON.parse(storedFavorites));
+        }
+    }, []);
+
+    const saveFavorites = (
+        newFavorites: { itemName: string; category: string }[]
+    ) => {
+        setFavorites(newFavorites);
+        localStorage.setItem("favorites", JSON.stringify(newFavorites));
+    };
+
+    const addFavorite = () => {
+        if (favorites.length >= 20) {
+            alert("즐겨찾기는 최대 20개까지 저장할 수 있습니다.");
+            return;
+        }
+
+        const newFavorite = {
+            itemName: searchTerm,
+            category: selectedCategory || categories[0],
+        };
+        const newFavorites = [...favorites, newFavorite];
+        saveFavorites(newFavorites);
+        setAddFavoriteText("✔");
+    };
+
+    const removeFavorite = (index: number) => {
+        const newFavorites = favorites.filter((_, i) => i !== index);
+        saveFavorites(newFavorites);
+    };
+
+    const handleFavoriteClick = (favorite: {
+        itemName: string;
+        category: string;
+    }) => {
+        setSearchTerm(favorite.itemName);
+        setSelectedCategory(favorite.category);
+        fetchItems();
+        setIsFavoritesPopupVisible(false);
+    };
+
+    useEffect(() => {
+        if (addFavoriteText === "✔") {
+            const timer = setTimeout(() => {
+                setAddFavoriteText("즐겨찾기 등록");
+            }, 3000);
+            return () => clearTimeout(timer);
+        }
+    }, [addFavoriteText]);
+
     return (
         <div className="flex flex-col items-center justify-start min-h-screen p-6">
             <div className="w-full max-w-4xl p-6 backdrop-blur-sm rounded-lg flex-grow">
                 {errorMessage && (
                     <div className="alert alert-error mb-4">{errorMessage}</div>
                 )}
-                <div className="flex flex-col md:flex-row md:justify-between mb-4">
+                <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full mb-2">
+                    <button
+                        className="btn btn-outline w-auto min-w-[50px]"
+                        onClick={addFavorite}
+                    >
+                        {addFavoriteText}
+                    </button>
+                    <button
+                        className="btn btn-outline w-auto  min-w-[50px]"
+                        onClick={() => setIsFavoritesPopupVisible(true)}
+                    >
+                        즐겨찾기 보기
+                    </button>
+                </div>
+                <div className="flex flex-col md:flex-row md:justify-between mb-2">
                     <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full">
                         <div className="relative w-full">
                             <input
@@ -165,7 +238,7 @@ export default function AuctionPage() {
                             )}
                         </button>
                         <div className="mt-2 md:mt-0">
-                            <div className="dropdown">
+                            <div className="dropdown dropdown-end">
                                 <div
                                     tabIndex={0}
                                     role="button"
@@ -195,6 +268,55 @@ export default function AuctionPage() {
                         </div>
                     </div>
                 </div>
+                {isFavoritesPopupVisible && (
+                    <div className="fixed inset-0 flex items-center justify-center z-50">
+                        <div className="bg-white border p-4 rounded-lg shadow-lg w-80">
+                            <h2 className="text-lg font-bold mb-2">
+                                즐겨찾기 목록
+                            </h2>
+                            {favorites.length === 0 ? (
+                                <div>저장된 즐겨찾기가 없습니다.</div>
+                            ) : (
+                                <ul className="list-disc ml-4">
+                                    {favorites.map((favorite, index) => (
+                                        <li
+                                            key={index}
+                                            className="flex justify-between items-center"
+                                        >
+                                            <button
+                                                className="underline"
+                                                onClick={() =>
+                                                    handleFavoriteClick(
+                                                        favorite
+                                                    )
+                                                }
+                                            >
+                                                {favorite.itemName} (
+                                                {favorite.category})
+                                            </button>
+                                            <button
+                                                className="text-red-500 ml-4"
+                                                onClick={() =>
+                                                    removeFavorite(index)
+                                                }
+                                            >
+                                                삭제
+                                            </button>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                            <button
+                                className="btn btn-outline mt-4 w-full"
+                                onClick={() =>
+                                    setIsFavoritesPopupVisible(false)
+                                }
+                            >
+                                닫기
+                            </button>
+                        </div>
+                    </div>
+                )}
                 <div className="overflow-auto h-[50%] rounded-md border">
                     <table className="table w-full">
                         <thead>

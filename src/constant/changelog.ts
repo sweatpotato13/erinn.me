@@ -19,4 +19,11 @@ export const changelogData = [
         date: "2024-10-24",
         changes: [{ description: "경매장 아이템 검색 자동완성 추가" }],
     },
+    {
+        date: "2024-10-25",
+        changes: [
+            { description: "경매장 아이템 검색 자동완성 누락 아이템 추가" },
+            { description: "경매장 즐겨찾기 기능 추가" },
+        ],
+    },
 ];
