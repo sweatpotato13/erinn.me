@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useSound from "use-sound";
 
 const servers = ["류트", "울프", "하프", "만돌린"];
@@ -23,6 +23,14 @@ export default function HornPage() {
     const [lastAlertTime, setLastAlertTime] = useState(
         new Date().toISOString()
     );
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchMessages();
+        }, 60000); // 1분마다 실행
+
+        return () => clearInterval(interval);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     async function fetchMessages() {
         setLoading(true);
@@ -68,10 +76,11 @@ export default function HornPage() {
 
         for (const message of messages) {
             for (const keyword of alertKeywords) {
-                if (
-                    message.message.includes(keyword.keyword) &&
-                    new Date(message.date_send) > new Date(lastAlertTime)
-                ) {
+                if (new Date(message.date_send) < new Date(lastAlertTime)) {
+                    // Skip if the message is older than the last alert time
+                    continue;
+                }
+                if (message.message.includes(keyword.keyword)) {
                     play();
                     setLastAlertTime(now);
                     return;
