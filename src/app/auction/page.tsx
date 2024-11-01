@@ -32,7 +32,7 @@ export default function AuctionPage() {
     useEffect(() => {
         if (searchTerm) {
             const filteredSuggestions = AllItemsName.filter(item =>
-                item.toLowerCase().startsWith(searchTerm.toLowerCase())
+                item.toLowerCase().includes(searchTerm.toLowerCase())
             );
             setSuggestions(filteredSuggestions);
             setActiveSuggestionIndex(0);
