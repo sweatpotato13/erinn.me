@@ -26,7 +26,7 @@ function OptionRenderer(option: OptionProps) {
                     {option.option_value} / {option.option_value2}
                 </div>
             );
-        case "아이템 색상":
+        case "아이템 색상": {
             const rgbValue = `rgb(${option.option_value})`;
 
             return (
@@ -49,6 +49,7 @@ function OptionRenderer(option: OptionProps) {
                     />
                 </div>
             );
+        }
         case "인챈트":
             return (
                 <div>

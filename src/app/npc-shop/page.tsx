@@ -145,7 +145,11 @@ export default function NPCShopPage() {
 
                 <div className="flex-none">
                     <button
-                        onClick={checkAndFetchShopData}
+                        onClick={() => {
+                            checkAndFetchShopData().catch(error => {
+                                console.error(error);
+                            });
+                        }}
                         className={`btn bg-base-90 mt-6 ${loading ? "loading" : ""}`}
                         disabled={loading}
                     >

@@ -144,7 +144,11 @@ export default function ContactPage() {
                     ) : (
                         <button
                             className="btn bg-base-90 w-full"
-                            onClick={handleSubmit}
+                            onClick={() => {
+                                handleSubmit().catch(error => {
+                                    console.error(error);
+                                });
+                            }}
                         >
                             전송
                         </button>
