@@ -161,7 +161,9 @@ export default function AuctionPage() {
     }) => {
         setSearchTerm(favorite.itemName);
         setSelectedCategory(favorite.category);
-        fetchItems();
+        fetchItems().catch(error => {
+            console.error(error);
+        });
         setIsFavoritesPopupVisible(false);
     };
 
@@ -229,7 +231,11 @@ export default function AuctionPage() {
                         </div>
                         <button
                             className="btn btn-outline w-full md:w-auto"
-                            onClick={fetchItems}
+                            onClick={() => {
+                                fetchItems().catch(error => {
+                                    console.error(error);
+                                });
+                            }}
                         >
                             {loading ? (
                                 <Loader className="animate-spin" />
@@ -361,7 +367,7 @@ export default function AuctionPage() {
                                             <td>{item.date_auction_expire}</td>
                                         </tr>
                                     ))
-                            )}{" "}
+                            )}
                         </tbody>
                     </table>
                 </div>

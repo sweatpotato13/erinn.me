@@ -25,8 +25,10 @@ export default function HornPage() {
     );
     useEffect(() => {
         const interval = setInterval(() => {
-            fetchMessages();
-        }, 60000); // 1분마다 실행
+            fetchMessages().catch(error => {
+                console.error(error);
+            });
+        }, 60000);
 
         return () => clearInterval(interval);
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -90,7 +92,9 @@ export default function HornPage() {
     }
 
     function handleSearch() {
-        fetchMessages();
+        fetchMessages().catch(error => {
+            console.error(error);
+        });
     }
 
     function removeKeyword(index: number) {
