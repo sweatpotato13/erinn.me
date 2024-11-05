@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import React, { useState } from "react";
 
 import AuctionIcon from "../icons/auction-icon";
@@ -17,9 +18,9 @@ function Topbar() {
     return (
         <header className="navbar bg-base-100 fixed top-0 left-0 w-full shadow-lg z-50">
             <div className="flex-1">
-                <a href="/" className="btn btn-ghost normal-case text-xl">
+                <Link href="/" className="btn btn-ghost normal-case text-xl">
                     Erinn.me
-                </a>
+                </Link>
             </div>
             <div className="flex-none flex items-center space-x-2">
                 <button

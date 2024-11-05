@@ -16,11 +16,11 @@
     "axios": "^1.7.2",
     "dotenv": "^16.4.5",
     "lucide-react": "^0.453.0",
-    "next": "^14.2.5",
+    "next": "^15.0.2",
     "nodemailer": "^6.9.15",
     "postcss": "^8.4.40",
-    "react": "^18",
-    "react-dom": "^18",
+    "react": "19.0.0-rc-7c8e5e7a-20241101",
+    "react-dom": "19.0.0-rc-7c8e5e7a-20241101",
     "use-sound": "^4.0.3",
     "yup": "^1.4.0"
   },
@@ -28,16 +28,12 @@
     "@types/eslint-plugin-security": "^3",
     "@types/node": "^22",
     "@types/nodemailer": "^6.4.16",
-    "@types/prettier": "^2",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@typescript-eslint/eslint-plugin": "^7.14.1",
-    "@typescript-eslint/parser": "^7.14.1",
-    "@typescript-eslint/utils": "^7.14.1",
     "autoprefixer": "^10",
     "daisyui": "^4.12.10",
-    "eslint": "8.56.0",
-    "eslint-config-next": "^14.2.5",
+    "eslint": "^9.14.0",
+    "eslint-config-next": "^15.0.2",
     "eslint-config-prettier": "9.1.0",
     "eslint-plugin-prettier": "5.2.1",
     "eslint-plugin-security": "^3.0.1",
@@ -47,6 +43,8 @@
     "prettier": "3.3.3",
     "tailwindcss": "^3",
     "ts-jest": "29.2.3",
-    "typescript": "5.5.4"
+    "typescript": "5.4.5",
+    "globals": "^15.11.0",
+    "typescript-eslint": "8.6.0"
   }
 }
