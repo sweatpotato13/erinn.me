@@ -11,6 +11,7 @@ export default function HornPage() {
 
     const [selectedServer, setSelectedServer] = useState(servers[0]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [searchNickname, setSearchNickname] = useState("");
     const [messagesData, setMessagesData] = useState<any>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
@@ -115,43 +116,51 @@ export default function HornPage() {
         <div className="flex flex-col items-center justify-start h-[70vh] p-6">
             <div className="w-full max-w-4xl p-6 shadow-lg rounded-lg">
                 <h2 className="text-xl font-bold mb-4">메시지 목록</h2>
-                <div className="flex mb-4 items-center">
-                    <div className="dropdown mr-2">
-                        <div tabIndex={0} role="button" className="btn m-1">
-                            {selectedServer}
+                <div className="flex mb-4 flex-col sm:flex-row gap-2 sm:gap-0">
+                    <div className="flex items-center gap-2">
+                        <div className="dropdown">
+                            <div tabIndex={0} role="button" className="btn m-1">
+                                {selectedServer}
+                            </div>
+                            <ul
+                                tabIndex={0}
+                                className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
+                            >
+                                {servers.map(server => (
+                                    <li key={server}>
+                                        <a
+                                            onClick={() =>
+                                                setSelectedServer(server)
+                                            }
+                                        >
+                                            {server}
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
-                        <ul
-                            tabIndex={0}
-                            className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
-                        >
-                            {servers.map(server => (
-                                <li key={server}>
-                                    <a
-                                        onClick={() =>
-                                            setSelectedServer(server)
-                                        }
-                                    >
-                                        {server}
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                    <div className="ml-auto flex items-center">
                         <input
-                            className="input input-bordered w-full sm:w-64"
-                            placeholder="검색 키워드"
+                            className="input input-bordered w-full sm:w-48"
+                            placeholder="닉네임"
+                            value={searchNickname}
+                            onChange={e => setSearchNickname(e.target.value)}
+                        />
+                        <input
+                            className="input input-bordered w-full sm:w-48"
+                            placeholder="키워드"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
                         />
+                    </div>
+                    <div className="flex items-center justify-end sm:ml-auto gap-2">
                         <button
-                            className="btn btn-outline ml-2"
+                            className="btn btn-outline"
                             onClick={handleSearch}
                         >
                             검색
                         </button>
                         <div
-                            className="tooltip tooltip-left ml-2"
+                            className="tooltip tooltip-left"
                             data-tip="1분마다 알림 키워드가 포함된 뿔피리 메시지가 있다면 소리로 알립니다."
                         >
                             <button
@@ -243,6 +252,11 @@ export default function HornPage() {
                                 messagesData
                                     .filter((message: any) =>
                                         message.message.includes(searchTerm)
+                                    )
+                                    .filter((message: any) =>
+                                        message.character_name.includes(
+                                            searchNickname
+                                        )
                                     )
                                     .map((message: any, index: any) => (
                                         <tr key={index}>

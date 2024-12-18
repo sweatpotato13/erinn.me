@@ -54,7 +54,7 @@ export const changelogData = [
             {
                 description:
                     "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
-            }
+            },
         ],
     },
     {
@@ -63,7 +63,7 @@ export const changelogData = [
             {
                 description:
                     "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
-            }
+            },
         ],
     },
     {
@@ -72,7 +72,7 @@ export const changelogData = [
             {
                 description:
                     "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
-            }
+            },
         ],
     },
     {
@@ -81,7 +81,7 @@ export const changelogData = [
             {
                 description:
                     "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
-            }
+            },
         ],
     },
     {
@@ -90,7 +90,15 @@ export const changelogData = [
             {
                 description:
                     "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
-            }
+            },
+        ],
+    },
+    {
+        date: "2024-12-18",
+        changes: [
+            {
+                description: "뿔피리 페이지 닉네임 검색 추가",
+            },
         ],
     },
 ];
