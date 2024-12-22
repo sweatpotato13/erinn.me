@@ -210,8 +210,8 @@ export default function AuctionPage() {
                                 <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                                     {suggestions.map((suggestion, index) => (
                                         <li
-                                            key={suggestion}
-                                            id={`suggestion-${index}`} // 각 항목에 ID 추가
+                                            key={`suggestion-${suggestion}-${index}`}
+                                            id={`suggestion-${index}`}
                                             className={`p-2 cursor-pointer ${
                                                 index === activeSuggestionIndex
                                                     ? "bg-gray-200"
@@ -257,7 +257,7 @@ export default function AuctionPage() {
                                     className="max-h-80 overflow-y-auto dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
                                 >
                                     {categories.map(category => (
-                                        <li key={category}>
+                                        <li key={`category-${category}`}>
                                             <a
                                                 onClick={() =>
                                                     setSelectedCategory(
@@ -286,7 +286,7 @@ export default function AuctionPage() {
                                 <ul className="list-disc ml-4">
                                     {favorites.map((favorite, index) => (
                                         <li
-                                            key={index}
+                                            key={`favorite-${favorite.itemName}-${favorite.category}-${index}`}
                                             className="flex justify-between items-center"
                                         >
                                             <button
@@ -350,7 +350,7 @@ export default function AuctionPage() {
                                     )
                                     .map((item: any, index: number) => (
                                         <tr
-                                            key={`${item.item_display_name}-${index}`}
+                                            key={`item-${item.item_display_name}-${item.auction_price_per_unit}-${item.date_auction_expire}-${index}`}
                                             onClick={() =>
                                                 handleItemClick(item)
                                             }
@@ -413,13 +413,9 @@ export default function AuctionPage() {
                             <div className="mt-2">
                                 {popupItemOptions &&
                                 popupItemOptions.length > 0 ? (
-                                    popupItemOptions.map(
-                                        (option: any, index: number) => (
-                                            <div key={`${index}`}>
-                                                <OptionRenderer {...option} />
-                                            </div>
-                                        )
-                                    )
+                                    <OptionRenderer
+                                        options={popupItemOptions}
+                                    />
                                 ) : (
                                     <div>옵션이 없습니다.</div>
                                 )}
