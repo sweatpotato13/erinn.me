@@ -101,4 +101,12 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2024-12-23",
+        changes: [
+            {
+                description: "인챈트 유동 옵션 수치 비교 기능 추가",
+            },
+        ],
+    },
 ];
