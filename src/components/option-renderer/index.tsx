@@ -1,5 +1,7 @@
 import React from "react";
 
+import { ENCHANT_OPTIONS } from "../../constant/enchants";
+
 interface OptionProps {
     option_type: string;
     option_sub_type?: string | null;
@@ -50,19 +52,70 @@ function OptionRenderer(option: OptionProps) {
                 </div>
             );
         }
-        case "인챈트":
+        case "인챈트": {
+            const enchantName = option.option_value?.split("(")[0].trim() || "";
+            const enchantInfo = enchantName
+                ? ENCHANT_OPTIONS[enchantName]
+                : undefined;
+
+            console.log("enchantName:", enchantName);
+            console.log("enchantInfo:", enchantInfo);
+
             return (
                 <div>
                     <strong>
-                        {option.option_type} {"("} {option.option_sub_type}{" "}
-                        {")"} :{" "}
+                        {option.option_type} ({option.option_sub_type}) :{" "}
                     </strong>
                     {option.option_value}
                     <br />
-                    {"("} {option.option_desc}
+                    {"("}
+                    {option.option_desc
+                        ?.split(",")
+                        .map((stat, index, array) => {
+                            const matches = stat.match(
+                                /(.+?) (\d+%?|[\d.]+) (증가|감소)/
+                            );
+                            if (matches) {
+                                const [, statType, valueStr, changeType] =
+                                    matches;
+                                const value = valueStr.includes("%")
+                                    ? valueStr
+                                    : parseInt(valueStr);
+
+                                const enchantStat = enchantInfo?.stats.find(
+                                    s => s.type === statType.trim()
+                                );
+                                const difference =
+                                    enchantStat?.min && enchantStat?.max
+                                        ? parseInt(valueStr) - enchantStat.max
+                                        : null;
+
+                                return (
+                                    <span key={index}>
+                                        {statType} {value} {changeType}
+                                        {difference !== null && (
+                                            <span
+                                                className={`ml-1 ${
+                                                    difference === 0
+                                                        ? "text-blue-500"
+                                                        : difference < 0
+                                                          ? "text-red-500"
+                                                          : ""
+                                                }`}
+                                            >
+                                                ({difference})
+                                            </span>
+                                        )}
+                                        {index < array.length - 1 ? "," : ""}
+                                    </span>
+                                );
+                            }
+                            return stat;
+                        })}
                     {")"}
                 </div>
             );
+        }
         case "특별 개조":
             return (
                 <div>
