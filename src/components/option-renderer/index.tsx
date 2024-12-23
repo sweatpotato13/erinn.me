@@ -162,14 +162,19 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                                                 className={`ml-1 ${
                                                                     difference ===
                                                                     0
-                                                                        ? "text-blue-400"
+                                                                        ? "text-black"
                                                                         : difference <
                                                                             0
                                                                           ? "text-red-400"
                                                                           : ""
                                                                 }`}
                                                             >
-                                                                ({difference})
+                                                                (최대치
+                                                                {difference ===
+                                                                0
+                                                                    ? ""
+                                                                    : ` ${difference}`}
+                                                                )
                                                             </span>
                                                         )}
                                                     </div>
@@ -315,7 +320,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
                 </OptionSection>
             )}
 
-            {/* 세트 효과 섹션 */}
+            {/* 세트 효과 ���션 */}
             {sets.length > 0 && (
                 <OptionSection title="세트 효과">
                     {sets.map((set, index) => (
