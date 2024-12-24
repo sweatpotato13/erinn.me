@@ -40,6 +40,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
             "내구력",
             "아이템 보호",
             "남은 전용 해제 가능 횟수",
+            "피어싱 레벨",
         ].includes(opt.option_type)
     );
     const enchants = options.filter(opt => opt.option_type === "인챈트");
@@ -75,9 +76,14 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                 `내구력 ${stat.option_value}/${stat.option_value2}`}
                             {stat.option_type === "아이템 보호" && (
                                 <div className="text-blue-400">
-                                    {stat.option_value}
+                                    {stat.option_value} 보호
                                 </div>
                             )}
+                            {stat.option_type === "피어싱 레벨" &&
+                                stat.option_value &&
+                                (stat.option_value2
+                                    ? `피어싱 레벨 ${stat.option_value}${stat.option_value2}`
+                                    : `피어싱 레벨 ${stat.option_value}`)}
                             {stat.option_type ===
                                 "남은 전용 해제 가능 횟수" && (
                                 <div className="text-[#FFD700]">
@@ -220,7 +226,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
                         </div>
                     )}
                     {/* 보석 개조 */}
-                    {upgrades.find(u => u.option_type === "보석 개조") && (
+                    {upgrades.find(u => u.option_type === "보석 개��") && (
                         <div className="text-white">
                             보석 개조
                             <div className="pl-4">
@@ -267,7 +273,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                     magics.find(
                                         m => m.option_type === "세공 랭크"
                                     )?.option_value === "1"
-                                        ? "text-rose-400"
+                                        ? "text-[#A13568]"
                                         : magics.find(
                                                 m =>
                                                     m.option_type ===
@@ -295,14 +301,42 @@ function OptionRenderer({ options }: OptionRendererProps) {
                     {/* 세공 옵션들 */}
                     {magics
                         .filter(m => m.option_type === "세공 옵션")
-                        .map((option, index) => (
-                            <div
-                                key={`magic-${option.option_sub_type}-${index}`}
-                                className="text-blue-400"
-                            >
-                                • {option.option_value}
-                            </div>
-                        ))}
+                        .sort(
+                            (a, b) =>
+                                Number(a.option_sub_type) -
+                                Number(b.option_sub_type)
+                        )
+                        .map((option, index) => {
+                            // 레벨 정보 분리를 위한 새로운 정규식
+                            const levelMatch = option.option_value.match(
+                                /(.+?)\((\d+)레벨:(.+)\)/
+                            );
+
+                            if (levelMatch) {
+                                const [, statName, level, effect] = levelMatch;
+                                return (
+                                    <div
+                                        key={`magic-${option.option_sub_type}-${index}`}
+                                    >
+                                        <div className="text-blue-400">
+                                            • {statName}({level}레벨)
+                                        </div>
+                                        <div className="pl-6 text-white">
+                                            ㄴ {effect.trim()}
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            return (
+                                <div
+                                    key={`magic-${option.option_sub_type}-${index}`}
+                                    className="text-blue-400"
+                                >
+                                    • {option.option_value}
+                                </div>
+                            );
+                        })}
                 </OptionSection>
             )}
 
@@ -320,7 +354,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
                 </OptionSection>
             )}
 
-            {/* 세트 효과 ���션 */}
+            {/* 세트 효과 섹션 */}
             {sets.length > 0 && (
                 <OptionSection title="세트 효과">
                     {sets.map((set, index) => (

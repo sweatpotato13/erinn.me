@@ -111,7 +111,8 @@ export const changelogData = [
                 description: "경매장 아이템 옵션 UI 변경",
             },
             {
-                description: "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
+                description:
+                    "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
             },
         ],
     },
