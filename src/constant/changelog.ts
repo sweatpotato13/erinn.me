@@ -133,7 +133,7 @@ export const changelogData = [
                     "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
             },
         ],
-    },   
+    },
     {
         date: "2025-01-10",
         changes: [
