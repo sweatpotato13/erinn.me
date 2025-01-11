@@ -143,4 +143,12 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-01-11",
+        changes: [
+            {
+                description: "경매장 아이템 이미지 추가",
+            },
+        ],
+    },
 ];
