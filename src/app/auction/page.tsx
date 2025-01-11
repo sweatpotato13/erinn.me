@@ -1,10 +1,11 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import OptionRenderer from "@/components/option-renderer";
-import { AllItemsName } from "@/constant/all-items-name";
+import { AllItemList } from "@/constant/all-item-list";
 import { categories } from "@/constant/categories";
 
 export default function AuctionPage() {
@@ -30,15 +31,16 @@ export default function AuctionPage() {
     const [addFavoriteText, setAddFavoriteText] = useState("즐겨찾기 등록");
 
     useEffect(() => {
-        if (searchTerm) {
-            const filteredSuggestions = AllItemsName.filter(item =>
-                item.toLowerCase().includes(searchTerm.toLowerCase())
+        if (searchTerm.length >= 2) {
+            const filteredSuggestions = AllItemList.filter(item =>
+                item.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
-            setSuggestions(filteredSuggestions);
+            setSuggestions(filteredSuggestions.map(item => item.name));
             setActiveSuggestionIndex(0);
             setShowSuggestions(true);
         } else {
             setShowSuggestions(false);
+            setSuggestions([]);
         }
     }, [searchTerm]);
 
@@ -145,6 +147,13 @@ export default function AuctionPage() {
             itemName: searchTerm,
             category: selectedCategory || categories[0],
         };
+
+        const itemExists = AllItemList.some(item => item.name === searchTerm);
+        if (!itemExists) {
+            alert("존재하지 않는 아이템입니다.");
+            return;
+        }
+
         const newFavorites = [...favorites, newFavorite];
         saveFavorites(newFavorites);
         setAddFavoriteText("✔");
@@ -327,7 +336,8 @@ export default function AuctionPage() {
                     <table className="table w-full">
                         <thead>
                             <tr>
-                                <th className="w-[50%]">아이템명</th>
+                                <th className="w-[50px] hidden md:table-cell"></th>
+                                <th className="w-[45%]">아이템명</th>
                                 <th>가격</th>
                                 <th>갯수</th>
                                 <th>만료 시간</th>
@@ -338,7 +348,7 @@ export default function AuctionPage() {
                             errorMessage === null &&
                             loading === false ? (
                                 <tr>
-                                    <td colSpan={4} className="text-center">
+                                    <td colSpan={5} className="text-center">
                                         결과가 없습니다.
                                     </td>
                                 </tr>
@@ -348,25 +358,54 @@ export default function AuctionPage() {
                                         (currentPage - 1) * itemsPerPage,
                                         currentPage * itemsPerPage
                                     )
-                                    .map((item: any, index: number) => (
-                                        <tr
-                                            key={`item-${item.item_display_name}-${item.auction_price_per_unit}-${item.date_auction_expire}-${index}`}
-                                            onClick={() =>
-                                                handleItemClick(item)
-                                            }
-                                            className="cursor-pointer"
-                                        >
-                                            <td className="font-medium">
-                                                {item.item_display_name}
-                                            </td>
-                                            <td>
-                                                {item.auction_price_per_unit.toLocaleString()}{" "}
-                                                Gold
-                                            </td>
-                                            <td>{item.item_count}</td>
-                                            <td>{item.date_auction_expire}</td>
-                                        </tr>
-                                    ))
+                                    .map((item: any, index: number) => {
+                                        const itemInfo = AllItemList.find(
+                                            listItem =>
+                                                listItem.name === item.item_name
+                                        );
+
+                                        return (
+                                            <tr
+                                                key={`item-${item.item_display_name}-${item.auction_price_per_unit}-${item.date_auction_expire}-${index}`}
+                                                onClick={() =>
+                                                    handleItemClick(item)
+                                                }
+                                                className="cursor-pointer hover:bg-gray-100"
+                                            >
+                                                <td className="w-[50px] hidden md:table-cell">
+                                                    {itemInfo && (
+                                                        <>
+                                                            <Image
+                                                                src={`/api/item-image?id=${itemInfo.id}`}
+                                                                alt={
+                                                                    item.item_name
+                                                                }
+                                                                width={40}
+                                                                height={40}
+                                                                sizes="40px"
+                                                                className="object-contain cursor-pointer"
+                                                                priority={false}
+                                                                unoptimized={
+                                                                    true
+                                                                }
+                                                            />
+                                                        </>
+                                                    )}
+                                                </td>
+                                                <td className="font-medium">
+                                                    {item.item_display_name}
+                                                </td>
+                                                <td>
+                                                    {item.auction_price_per_unit.toLocaleString()}{" "}
+                                                    Gold
+                                                </td>
+                                                <td>{item.item_count}</td>
+                                                <td>
+                                                    {item.date_auction_expire}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })
                             )}
                         </tbody>
                     </table>
