@@ -4,7 +4,7 @@ import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import OptionRenderer from "@/components/option-renderer";
-import { AllItemsName } from "@/constant/all-items-name";
+import { AllItemList } from "@/constant/all-item-list";
 import { categories } from "@/constant/categories";
 
 export default function AuctionPage() {
@@ -30,15 +30,16 @@ export default function AuctionPage() {
     const [addFavoriteText, setAddFavoriteText] = useState("즐겨찾기 등록");
 
     useEffect(() => {
-        if (searchTerm) {
-            const filteredSuggestions = AllItemsName.filter(item =>
-                item.toLowerCase().includes(searchTerm.toLowerCase())
+        if (searchTerm.length >= 2) {
+            const filteredSuggestions = AllItemList.filter(item =>
+                item.name.toLowerCase().includes(searchTerm.toLowerCase())
             );
-            setSuggestions(filteredSuggestions);
+            setSuggestions(filteredSuggestions.map(item => item.name));
             setActiveSuggestionIndex(0);
             setShowSuggestions(true);
         } else {
             setShowSuggestions(false);
+            setSuggestions([]);
         }
     }, [searchTerm]);
 
@@ -145,6 +146,13 @@ export default function AuctionPage() {
             itemName: searchTerm,
             category: selectedCategory || categories[0],
         };
+
+        const itemExists = AllItemList.some(item => item.name === searchTerm);
+        if (!itemExists) {
+            alert("존재하지 않는 아이템입니다.");
+            return;
+        }
+
         const newFavorites = [...favorites, newFavorite];
         saveFavorites(newFavorites);
         setAddFavoriteText("✔");
