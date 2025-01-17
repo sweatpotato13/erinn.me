@@ -11,6 +11,31 @@ export interface EnchantInfo {
 }
 
 export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
+    안락의: {
+        name: "안락의",
+        stats: [
+            {
+                type: "최대대미지",
+                value: 22,
+            },
+            {
+                type: "마법 공격력",
+                value: 6,
+            },
+            {
+                type: "4대 속성 연금술 대미지",
+                value: 5,
+            },
+            {
+                type: "음악버프 스킬 효과",
+                value: 4,
+            },
+            {
+                type: "음악버프 스킬 지속시간",
+                value: 8,
+            },
+        ],
+    },
     공허한: {
         name: "공허한",
         stats: [

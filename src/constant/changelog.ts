@@ -160,4 +160,12 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-01-17",
+        changes: [
+            {
+                description: "인챈트 데이터 업데이트일 기준 모든 아이템 반영",
+            },
+        ],
+    },
 ];
