@@ -195,6 +195,9 @@ export const changelogData = [
             {
                 description: "esc로 경매장 아이템 팝업 닫기 기능 추가",
             },
+            {
+                description: "경매장 가격 정렬 기능 추가",
+            },
         ],
     },
 ];
