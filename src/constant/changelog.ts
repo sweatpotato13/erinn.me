@@ -192,6 +192,9 @@ export const changelogData = [
             {
                 description: "수리비 증가 효과 빨간색으로 표시",
             },
+            {
+                description: "esc로 경매장 아이템 팝업 닫기 기능 추가",
+            },
         ],
     },
 ];

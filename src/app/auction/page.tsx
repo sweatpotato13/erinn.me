@@ -185,6 +185,24 @@ export default function AuctionPage() {
         }
     }, [addFavoriteText]);
 
+    // ESC 키 이벤트 리스너 추가
+    useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                handleClosePopup();
+            }
+        };
+
+        if (isPopupVisible) {
+            window.addEventListener("keydown", handleEsc);
+        }
+
+        // 컴포넌트가 언마운트되거나 isPopupVisible이 false가 될 때 이벤트 리스너 제거
+        return () => {
+            window.removeEventListener("keydown", handleEsc);
+        };
+    }, [isPopupVisible]); // isPopupVisible이 변경될 때마다 실행
+
     return (
         <div className="flex flex-col items-center justify-start min-h-screen p-6">
             <div className="w-full max-w-4xl p-6 backdrop-blur-sm rounded-lg flex-grow">
