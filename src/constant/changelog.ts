@@ -186,4 +186,12 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-02-12",
+        changes: [
+            {
+                description: "수리비 증가 효과 빨간색으로 표시",
+            },
+        ],
+    },
 ];

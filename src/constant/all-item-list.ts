@@ -1,4 +1,4 @@
-// Update: 2025-01-31
+// Update: 2025-02-12
 export const AllItemList = [
     {
         name: "여행자 가이드",
