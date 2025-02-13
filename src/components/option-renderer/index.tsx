@@ -137,6 +137,13 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                                     ? valueStr
                                                     : parseInt(valueStr);
 
+                                                // 수리비 증가는 부정적인 효과이므로 빨간색으로 표시
+                                                const isNegativeEffect =
+                                                    (changeType === "증가" &&
+                                                        statType.trim() ===
+                                                            "수리비") ||
+                                                    changeType === "감소";
+
                                                 const enchantStat =
                                                     enchantInfo?.stats.find(
                                                         s =>
@@ -154,10 +161,9 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                                     <div
                                                         key={`enchant-stat-${statIndex}`}
                                                         className={
-                                                            changeType ===
-                                                            "증가"
-                                                                ? "text-blue-400"
-                                                                : "text-red-400"
+                                                            isNegativeEffect
+                                                                ? "text-red-400"
+                                                                : "text-blue-400"
                                                         }
                                                     >
                                                         • {statType} {value}{" "}
@@ -226,7 +232,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
                         </div>
                     )}
                     {/* 보석 개조 */}
-                    {upgrades.find(u => u.option_type === "보석 개��") && (
+                    {upgrades.find(u => u.option_type === "보석 개조") && (
                         <div className="text-white">
                             보석 개조
                             <div className="pl-4">

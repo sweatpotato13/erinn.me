@@ -29,6 +29,9 @@ export default function AuctionPage() {
     const [isFavoritesPopupVisible, setIsFavoritesPopupVisible] =
         useState(false);
     const [addFavoriteText, setAddFavoriteText] = useState("즐겨찾기 등록");
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
+        null
+    );
 
     useEffect(() => {
         if (searchTerm.length >= 2) {
@@ -49,6 +52,7 @@ export default function AuctionPage() {
             setLoading(true);
             setFilteredItems([]);
             setCurrentPage(1);
+            setSortDirection(null);
 
             let url = "/api/auction?";
             if (selectedCategory !== categories[0]) {
@@ -184,6 +188,40 @@ export default function AuctionPage() {
             return () => clearTimeout(timer);
         }
     }, [addFavoriteText]);
+
+    // ESC 키 이벤트 리스너 추가
+    useEffect(() => {
+        const handleEsc = (event: KeyboardEvent) => {
+            if (event.key === "Escape") {
+                handleClosePopup();
+            }
+        };
+
+        if (isPopupVisible) {
+            window.addEventListener("keydown", handleEsc);
+        }
+
+        // 컴포넌트가 언마운트되거나 isPopupVisible이 false가 될 때 이벤트 리스너 제거
+        return () => {
+            window.removeEventListener("keydown", handleEsc);
+        };
+    }, [isPopupVisible]); // isPopupVisible이 변경될 때마다 실행
+
+    // 정렬 처리 함수
+    const handleSortByPrice = () => {
+        const newDirection = sortDirection === "asc" ? "desc" : "asc";
+        setSortDirection(newDirection);
+
+        const sortedItems = [...filteredItems].sort((a, b) => {
+            if (newDirection === "asc") {
+                return a.auction_price_per_unit - b.auction_price_per_unit;
+            } else {
+                return b.auction_price_per_unit - a.auction_price_per_unit;
+            }
+        });
+
+        setFilteredItems(sortedItems);
+    };
 
     return (
         <div className="flex flex-col items-center justify-start min-h-screen p-6">
@@ -338,7 +376,17 @@ export default function AuctionPage() {
                             <tr>
                                 <th className="w-[50px] hidden md:table-cell"></th>
                                 <th className="w-[45%]">아이템명</th>
-                                <th>가격</th>
+                                <th
+                                    className="cursor-pointer hover:bg-base-200"
+                                    onClick={handleSortByPrice}
+                                >
+                                    가격{" "}
+                                    {sortDirection === "asc"
+                                        ? "↑"
+                                        : sortDirection === "desc"
+                                          ? "↓"
+                                          : ""}
+                                </th>
                                 <th>갯수</th>
                                 <th>만료 시간</th>
                             </tr>

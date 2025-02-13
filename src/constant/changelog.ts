@@ -186,4 +186,27 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-02-12",
+        changes: [
+            {
+                description: "수리비 증가 효과 빨간색으로 표시",
+            },
+            {
+                description: "esc로 경매장 아이템 팝업 닫기 기능 추가",
+            },
+            {
+                description: "경매장 가격 정렬 기능 추가",
+            },
+        ],
+    },
+    {
+        date: "2025-02-13",
+        changes: [
+            {
+                description:
+                    "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
+            },
+        ],
+    },
 ];
