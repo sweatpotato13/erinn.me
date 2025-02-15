@@ -11,6 +11,8 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.66.0",
+    "@tanstack/react-query-devtools": "^5.66.0",
     "@vercel/analytics": "^1.4.1",
     "@vercel/speed-insights": "^1.1.0",
     "axios": "^1.7.9",
