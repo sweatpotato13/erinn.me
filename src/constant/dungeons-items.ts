@@ -876,6 +876,10 @@ export const DUNGEON_ITEMS: DungeonItem[] = [
                     "되살아난 허상 - 어려움",
                 ],
             },
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
         ],
     },
     {
@@ -2231,6 +2235,150 @@ export const DUNGEON_ITEMS: DungeonItem[] = [
             {
                 dungeon: "마그 멜 미션",
                 difficulties: ["사계의숲 - 쉬움"],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("불길한 운명의 파편", "몽환의 라비 던전", []),
+        name: "불길한 운명의 파편",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "불길한 운명의 파편")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("황혼의 검", "몽환의 라비 던전", []),
+        name: "황혼의 검",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "황혼의 검")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("태양석", "몽환의 라비 던전", []),
+        name: "태양석",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "태양석")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("만월석", "몽환의 라비 던전", []),
+        name: "만월석",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "만월석")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("냉혹함의 징표", "몽환의 라비 던전", []),
+        name: "냉혹함의 징표",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "냉혹함의 징표")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("단호한 칼날의 파편", "몽환의 라비 던전", []),
+        name: "단호한 칼날의 파편",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "단호한 칼날의 파편")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("마력의 황금 실", "몽환의 라비 던전", []),
+        name: "마력의 황금 실",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "마력의 황금 실")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("변형된 고리형 구조체", "몽환의 라비 던전", []),
+        name: "변형된 고리형 구조체",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "변형된 고리형 구조체")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("악몽 파수꾼의 유물", "몽환의 라비 던전", []),
+        name: "악몽 파수꾼의 유물",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "악몽 파수꾼의 유물")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("증폭된 연금술 결정", "몽환의 라비 던전", []),
+        name: "증폭된 연금술 결정",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "증폭된 연금술 결정")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("혼돈의 룬", "몽환의 라비 던전", []),
+        name: "혼돈의 룬",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "혼돈의 룬")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
+            },
+        ],
+    },
+    {
+        id: createUniqueId("마력의 정수", "몽환의 라비 던전", []),
+        name: "마력의 정수",
+        imageUrl: `/api/item-image?id=${AllItemList.find(item => item.name === "마력의 정수")?.id}`,
+        price: 0,
+        drops: [
+            {
+                dungeon: "몽환의 라비 던전",
+                difficulties: [],
             },
         ],
     },

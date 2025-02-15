@@ -4,11 +4,7 @@ export type DungeonType =
     | "크롬 바스"
     | "테흐 두인 미션"
     | "마그 멜 미션"
-    | "몽환의 라비 던전"
-    | "울라 하드 모드 던전"
-    | "베테랑 던전"
-    | "심연의 페카 상급"
-    | "심연의 코일 상급";
+    | "몽환의 라비 던전";
 
 export const DUNGEON_LIST: DungeonType[] = [
     "브리 레흐",
@@ -17,10 +13,6 @@ export const DUNGEON_LIST: DungeonType[] = [
     "테흐 두인 미션",
     "마그 멜 미션",
     "몽환의 라비 던전",
-    "울라 하드 모드 던전",
-    "베테랑 던전",
-    "심연의 페카 상급",
-    "심연의 코일 상급",
 ];
 
 export type SubDifficulty = {
@@ -85,26 +77,6 @@ export const DUNGEON_INFO: Record<DungeonType, DungeonInfo> = {
     "몽환의 라비 던전": {
         name: "몽환의 라비 던전",
         description: "몽환의 라비 던전입니다.",
-        subDifficulties: [],
-    },
-    "울라 하드 모드 던전": {
-        name: "울라 하드 모드 던전",
-        description: "울라 하드 모드 던전입니다.",
-        subDifficulties: [],
-    },
-    "베테랑 던전": {
-        name: "베테랑 던전",
-        description: "베테랑 던전입니다.",
-        subDifficulties: [],
-    },
-    "심연의 페카 상급": {
-        name: "심연의 페카 상급",
-        description: "심연의 페카 상급 던전입니다.",
-        subDifficulties: [],
-    },
-    "심연의 코일 상급": {
-        name: "심연의 코일 상급",
-        description: "심연의 코일 상급 던전입니다.",
         subDifficulties: [],
     },
 };

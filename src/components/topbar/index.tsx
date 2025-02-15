@@ -1,5 +1,6 @@
 "use client";
 
+import { Swords } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 
@@ -64,7 +65,7 @@ function Topbar() {
             {isMenuOpen && (
                 <div className="absolute top-16 right-0 mt-2 w-48 rounded-lg shadow-lg bg-base-200 z-50">
                     <ul className="menu p-2">
-                        <li className="flex items-center space-x-2">
+                        <li className="flex space-x-2">
                             <div className="flex">
                                 <ShopIcon className="h-5 w-5" />
                                 <a href="/npc-shop" className="ml-2">
@@ -85,6 +86,14 @@ function Topbar() {
                                 <HornIcon className="h-5 w-5" />
                                 <a href="/horn" className="ml-2">
                                     뿔피리
+                                </a>
+                            </div>
+                        </li>
+                        <li className="flex space-x-2">
+                            <div className="flex items-center">
+                                <Swords className="h-5 w-5" />
+                                <a href="/dungeon" className="ml-2">
+                                    던전 드랍 아이템
                                 </a>
                             </div>
                         </li>

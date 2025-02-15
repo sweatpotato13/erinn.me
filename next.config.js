@@ -2,24 +2,17 @@
 
 const nextConfig = {
     async rewrites() {
-        return [
-        ];
+        return [];
     },
     async redirects() {
-        return [
-            {
-                source: "/",
-                destination: "/auction",
-                permanent: true,
-            },
-        ];
+        return [];
     },
     images: {
         domains: ["mabires2.pril.cc"],
         remotePatterns: [
             {
-                protocol: 'https',
-                hostname: 'mabires2.pril.cc',
+                protocol: "https",
+                hostname: "mabires2.pril.cc",
             },
         ],
         deviceSizes: [40, 120, 200],

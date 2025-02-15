@@ -25,6 +25,9 @@ export interface AuctionResponse {
     next_cursor: string;
 }
 
+// API 호출 간 딜레이를 위한 sleep 함수
+const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 async function fetchAllAuctionPages(params: {
     item_name?: string;
     auction_item_category?: string;
@@ -38,6 +41,9 @@ async function fetchAllAuctionPages(params: {
     try {
         do {
             try {
+                // API 호출 간 1초 딜레이 추가
+                await sleep(1000);
+
                 const queryParams = new URLSearchParams();
                 if (params.item_name) {
                     queryParams.append("item_name", params.item_name);
