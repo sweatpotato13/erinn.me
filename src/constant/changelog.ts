@@ -209,4 +209,11 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-02-15",
+        changes: [
+            { description: "던전 드랍 아이템 추가" },
+            { description: "메인 페이지 추가" },
+        ],
+    },
 ];
