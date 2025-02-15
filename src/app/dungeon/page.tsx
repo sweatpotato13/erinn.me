@@ -1,63 +1,75 @@
 "use client";
 
-import Image from "next/image";
+import { useQueries } from "@tanstack/react-query";
 import React from "react";
 
+import { ItemCard } from "@/components/dungeon/item-card";
+import { DUNGEON_INFO, DUNGEON_LIST, DungeonType } from "@/constant/dungeons";
 import {
-    DUNGEON_INFO,
-    DUNGEON_LIST,
-    DungeonType,
-    SubDifficulty,
-} from "@/constant/dungeons";
-import { getItemsByDungeon } from "@/constant/dungeons-items";
+    getItemsByDungeon,
+    getItemsByDungeonDifficulty,
+} from "@/constant/dungeons-items";
+import { getItemPrice } from "@/lib/api/auction";
 
 type SortType = "name-asc" | "name-desc" | "price-asc" | "price-desc";
-
-type SortOption = {
-    type: SortType;
-    label: string;
-    icon: string;
-};
-
-const SORT_OPTIONS: SortOption[] = [
-    { type: "name-asc", label: "이름 오름차순", icon: "↑" },
-    { type: "name-desc", label: "이름 내림차순", icon: "↓" },
-    { type: "price-asc", label: "가격 낮은순", icon: "↑" },
-    { type: "price-desc", label: "가격 높은순", icon: "↓" },
-];
 
 export default function DungeonPage() {
     const [selectedDungeon, setSelectedDungeon] = React.useState<DungeonType>(
         DUNGEON_LIST[0]
     );
-    const [selectedSubDifficulty, setSelectedSubDifficulty] =
-        React.useState<SubDifficulty | null>(
-            DUNGEON_INFO[DUNGEON_LIST[0]].subDifficulties[0] || null
-        );
-    const items = getItemsByDungeon(selectedDungeon);
+    const [selectedDifficulty, setSelectedDifficulty] = React.useState<
+        string | null
+    >(null);
     const [sortType, setSortType] = React.useState<SortType>("name-asc");
 
-    // 던전이 변경될 때 세부 난이도도 함께 변경
-    React.useEffect(() => {
-        setSelectedSubDifficulty(
-            DUNGEON_INFO[selectedDungeon].subDifficulties[0] || null
+    // 선택된 던전과 난이도에 따라 아이템 목록 가져오기
+    const items = React.useMemo(() => {
+        if (selectedDifficulty) {
+            return getItemsByDungeonDifficulty(
+                selectedDungeon,
+                selectedDifficulty
+            );
+        }
+        return getItemsByDungeon(selectedDungeon);
+    }, [selectedDungeon, selectedDifficulty]);
+
+    // 모든 아이템의 가격 정보를 병렬로 가져오기
+    const itemPriceQueries = useQueries({
+        queries: items.map(item => ({
+            queryKey: ["itemPrice", item.name],
+            queryFn: () => getItemPrice(item.name),
+        })),
+    });
+
+    // 아이템 정렬
+    const sortedItems = React.useMemo(() => {
+        const itemsWithPrice = items.map((item, index) => ({
+            ...item,
+            currentPrice: itemPriceQueries[index]?.data?.unitPrice || 0,
+        }));
+
+        return [...itemsWithPrice].sort((a, b) => {
+            switch (sortType) {
+                case "name-asc":
+                    return a.name.localeCompare(b.name);
+                case "name-desc":
+                    return b.name.localeCompare(a.name);
+                case "price-asc":
+                    return a.currentPrice - b.currentPrice;
+                case "price-desc":
+                    return b.currentPrice - a.currentPrice;
+                default:
+                    return 0;
+            }
+        });
+    }, [items, itemPriceQueries, sortType]);
+
+    // 현재 선택된 던전의 난이도 목록
+    const difficulties = React.useMemo(() => {
+        return DUNGEON_INFO[selectedDungeon].subDifficulties.map(
+            diff => diff.name
         );
     }, [selectedDungeon]);
-
-    const sortedItems = React.useMemo(() => {
-        return [...items].sort((a, b) => {
-            if (sortType === "name-asc") {
-                return a.name.localeCompare(b.name);
-            } else if (sortType === "name-desc") {
-                return b.name.localeCompare(a.name);
-            } else if (sortType === "price-asc") {
-                return a.price - b.price;
-            } else if (sortType === "price-desc") {
-                return b.price - a.price;
-            }
-            return 0;
-        });
-    }, [items, sortType]);
 
     return (
         <div className="container mx-auto px-4 py-6 lg:p-7">
@@ -70,9 +82,10 @@ export default function DungeonPage() {
                 <select
                     className="select select-bordered w-full"
                     value={selectedDungeon}
-                    onChange={e =>
-                        setSelectedDungeon(e.target.value as DungeonType)
-                    }
+                    onChange={e => {
+                        setSelectedDungeon(e.target.value as DungeonType);
+                        setSelectedDifficulty(null);
+                    }}
                 >
                     {DUNGEON_LIST.map(dungeon => (
                         <option key={dungeon} value={dungeon}>
@@ -92,55 +105,59 @@ export default function DungeonPage() {
                                 ? "btn-primary"
                                 : "btn-ghost"
                         }`}
-                        onClick={() => setSelectedDungeon(dungeon)}
+                        onClick={() => {
+                            setSelectedDungeon(dungeon);
+                            setSelectedDifficulty(null);
+                        }}
                     >
                         <span className="truncate">{dungeon}</span>
                     </button>
                 ))}
             </div>
 
-            {/* 선택된 던전 정보와 세부 난이도 */}
+            {/* 던전 정보와 난이도 선택 */}
             <div className="card bg-base-200 mb-6 lg:mb-8">
                 <div className="card-body p-4 lg:p-8">
-                    <h2 className="card-title text-lg lg:text-xl flex flex-wrap gap-2">
+                    <h2 className="card-title text-lg lg:text-xl">
                         {DUNGEON_INFO[selectedDungeon].name}
                     </h2>
                     <p className="text-sm lg:text-base mb-4">
                         {DUNGEON_INFO[selectedDungeon].description}
                     </p>
 
-                    {/* 세부 난이도 선택 */}
-                    {DUNGEON_INFO[selectedDungeon].subDifficulties.length >
-                        0 && (
+                    {/* 난이도 선택 */}
+                    {difficulties.length > 0 && (
                         <div className="space-y-3 lg:space-y-4">
                             <h3 className="font-semibold text-sm lg:text-base">
                                 난이도 선택
                             </h3>
                             <div className="flex flex-wrap gap-2">
-                                {DUNGEON_INFO[
-                                    selectedDungeon
-                                ].subDifficulties.map(subDiff => (
+                                <button
+                                    className={`btn btn-sm lg:btn-md ${
+                                        selectedDifficulty === null
+                                            ? "btn-primary"
+                                            : "btn-ghost"
+                                    }`}
+                                    onClick={() => setSelectedDifficulty(null)}
+                                >
+                                    전체
+                                </button>
+                                {difficulties.map(difficulty => (
                                     <button
-                                        key={subDiff.name}
+                                        key={difficulty}
                                         className={`btn btn-sm lg:btn-md ${
-                                            selectedSubDifficulty?.name ===
-                                            subDiff.name
+                                            selectedDifficulty === difficulty
                                                 ? "btn-primary"
                                                 : "btn-ghost"
                                         }`}
                                         onClick={() =>
-                                            setSelectedSubDifficulty(subDiff)
+                                            setSelectedDifficulty(difficulty)
                                         }
                                     >
-                                        {subDiff.name}
+                                        {difficulty}
                                     </button>
                                 ))}
                             </div>
-                            {selectedSubDifficulty?.description && (
-                                <div className="text-sm lg:text-base mt-2 text-base-content/80">
-                                    {selectedSubDifficulty.description}
-                                </div>
-                            )}
                         </div>
                     )}
                 </div>
@@ -200,54 +217,23 @@ export default function DungeonPage() {
                             </span>
                         </button>
                     </div>
-                    {/* 모바일용 드롭다운 */}
-                    <select
-                        className="select select-bordered select-sm lg:hidden"
-                        value={sortType}
-                        onChange={e => setSortType(e.target.value as SortType)}
-                    >
-                        {SORT_OPTIONS.map(option => (
-                            <option key={option.type} value={option.type}>
-                                {option.label}
-                            </option>
-                        ))}
-                    </select>
                 </div>
             </div>
 
             {/* 아이템 목록 */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
                 {sortedItems.map(item => (
-                    <div
+                    <ItemCard
                         key={item.id}
-                        className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow"
-                    >
-                        <figure className="px-6 pt-6 lg:px-10 lg:pt-10">
-                            <div className="relative w-24 h-24 lg:w-32 lg:h-32">
-                                <Image
-                                    src={item.imageUrl}
-                                    alt={item.name}
-                                    fill
-                                    className="object-contain"
-                                />
-                            </div>
-                        </figure>
-                        <div className="card-body p-4 lg:p-6">
-                            <h2 className="card-title text-base lg:text-lg">
-                                {item.name}
-                            </h2>
-                            <div className="flex justify-between items-center mt-2 lg:mt-4">
-                                <span className="text-primary font-semibold text-sm lg:text-base">
-                                    {item.price.toLocaleString()}골드
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                        item={item}
+                        selectedDungeon={selectedDungeon}
+                        selectedDifficulty={selectedDifficulty}
+                    />
                 ))}
             </div>
 
             {/* 아이템이 없을 경우 */}
-            {items.length === 0 && (
+            {sortedItems.length === 0 && (
                 <div className="alert alert-info text-sm lg:text-base">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
