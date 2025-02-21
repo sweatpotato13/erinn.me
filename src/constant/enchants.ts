@@ -36,6 +36,582 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
         ],
     },
+    어스름한: {
+        name: "어스름한",
+        stats: [
+            {
+                type: "아이스볼트 랭크 3단 이상일 때 마법 공격력",
+                min: 10,
+                max: 25,
+            },
+            {
+                type: "메테오 스트라이크 랭크 1 이상일 때 최대대미지",
+                min: 20,
+                max: 25,
+            },
+            {
+                type: "최대마나",
+                value: 100,
+            },
+            {
+                type: "마나 소비 감소",
+                value: 5,
+            },
+        ],
+    },
+    무궁한: {
+        name: "무궁한",
+        stats: [
+            {
+                type: "아이스 스피어 랭크 3단 이상일 때 마법 공격력",
+                min: 30,
+                max: 45,
+            },
+            {
+                type: "썬더 랭크 3단 이상일 때 마나 소비 감소",
+                min: 2,
+                max: 6,
+            },
+            {
+                type: "최대마나",
+                value: 50,
+            },
+            {
+                type: "지력",
+                value: 20,
+            },
+        ],
+    },
+    끝없는: {
+        name: "끝없는",
+        stats: [
+            {
+                type: "스타 데토네이션 랭크 3단 이상일 때 마법 공격력",
+                min: 25,
+                max: 40,
+            },
+            {
+                type: "최대마나",
+                min: 100,
+                max: 200,
+            },
+        ],
+    },
+    굳센: {
+        name: "굳센",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                value: 3,
+            },
+            {
+                type: "랜스 차지 랭크 3단 이상일 때 최대대미지",
+                min: 50,
+                max: 70,
+            },
+            {
+                type: "최소대미지",
+                min: 20,
+                max: 40,
+            },
+        ],
+    },
+    거침없는: {
+        name: "거침없는",
+        stats: [
+            {
+                type: "윈드밀 랭크 3단 이상일 때 최대대미지",
+                min: 50,
+                max: 60,
+            },
+            {
+                type: "최대생명력",
+                value: 100,
+            },
+        ],
+    },
+    파괴적인: {
+        name: "파괴적인",
+        stats: [
+            {
+                type: "배쉬 랭크 1 이상일 때 최대대미지",
+                min: 45,
+                max: 60,
+            },
+            {
+                type: "최소대미지",
+                min: 30,
+                max: 40,
+            },
+            {
+                type: "체력",
+                value: 10,
+            },
+        ],
+    },
+    해방된: {
+        name: "해방된",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 2,
+                max: 3,
+            },
+            {
+                type: "매그넘 샷 랭크 3단 이상일 때 최대대미지",
+                min: 70,
+                max: 85,
+            },
+            {
+                type: "솜씨",
+                value: 50,
+            },
+        ],
+    },
+    은은한: {
+        name: "은은한",
+        stats: [
+            {
+                type: "라이프 드레인 랭크 1 이상일 때 모든 속성 연금술 대미지",
+                min: 100,
+                max: 110,
+            },
+            {
+                type: "최대생명력",
+                value: 100,
+            },
+        ],
+    },
+    깨어난: {
+        name: "깨어난",
+        stats: [
+            {
+                type: "4막: 질투의 화신 랭크 3단 이상일 때 마리오네트 최대대미지",
+                min: 30,
+                max: 50,
+            },
+            {
+                type: "마리오네트 생명력",
+                value: 200,
+            },
+            {
+                type: "마리오네트 방어",
+                value: 3,
+            },
+            {
+                type: "마리오네트 보호",
+                value: 3,
+            },
+        ],
+    },
+    위협적인: {
+        name: "위협적인",
+        stats: [
+            {
+                type: "연속기 : 대쉬 펀치 랭크 3단 이상일 때 최대대미지",
+                min: 50,
+                max: 60,
+            },
+            {
+                type: "최소대미지",
+                value: 20,
+            },
+            {
+                type: "의지",
+                min: 10,
+                max: 20,
+            },
+        ],
+    },
+    결정적인: {
+        name: "결정적인",
+        stats: [
+            {
+                type: "슈팅 러쉬 랭크 3단 이상일 때 최대대미지",
+                min: 50,
+                max: 60,
+            },
+            {
+                type: "최소대미지",
+                value: 25,
+            },
+            {
+                type: "공격 속도",
+                min: 4,
+                max: 6,
+            },
+        ],
+    },
+    속박된: {
+        name: "속박된",
+        stats: [
+            {
+                type: "수리검 돌진 랭크 3단 이상일 때 최대대미지",
+                min: 50,
+                max: 60,
+            },
+            {
+                type: "최대생명력",
+                value: 100,
+            },
+        ],
+    },
+    어두운: {
+        name: "어두운",
+        stats: [
+            {
+                type: "데스 마커 랭크 3단 이상일 때 최대대미지",
+                min: 50,
+                max: 60,
+            },
+            {
+                type: "최소대미지",
+                value: 30,
+            },
+            {
+                type: "행운",
+                min: 10,
+                max: 30,
+            },
+        ],
+    },
+    전설의: {
+        name: "전설의",
+        stats: [
+            {
+                type: "실드 마스터리 랭크 1 이상일 때 방어",
+                min: 30,
+                max: 70,
+            },
+            {
+                type: "최대생명력",
+                value: 100,
+            },
+            {
+                type: "최대대미지",
+                value: 100,
+            },
+        ],
+    },
+    잊혀진: {
+        name: "잊혀진",
+        stats: [
+            {
+                type: "마나 리커버리 랭크 1 이상일 때 마법 공격력",
+                min: 10,
+                max: 20,
+            },
+        ],
+    },
+    폴리포니: {
+        name: "폴리포니",
+        stats: [
+            {
+                type: "앵콜 랭크 1 이상일 때 음악버프 스킬 효과",
+                min: 4,
+                max: 7,
+            },
+            {
+                type: "지력",
+                value: 30,
+            },
+            {
+                type: "행운",
+                value: 30,
+            },
+        ],
+    },
+    결실: {
+        name: "결실",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                value: 1,
+            },
+            {
+                type: "파이어볼 랭크 3단 이상일 때 마법 공격력",
+                min: 50,
+                max: 60,
+            },
+            {
+                type: "마나 소비 감소",
+                min: 4,
+                max: 8,
+            },
+            {
+                type: "최대생명력",
+                value: 100,
+            },
+        ],
+    },
+    굴레: {
+        name: "굴레",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 2,
+                max: 3,
+            },
+            {
+                type: "스핀 스퍼트 랭크 3단 이상일 때 마법 공격력",
+                min: 40,
+                max: 55,
+            },
+            {
+                type: "지력",
+                value: 30,
+            },
+        ],
+    },
+    투사: {
+        name: "투사",
+        stats: [
+            {
+                type: "랜스 카운터 랭크 1 이상일 때 최대대미지",
+                min: 100,
+                max: 110,
+            },
+            {
+                type: "최소대미지",
+                min: 50,
+                max: 70,
+            },
+            {
+                type: "최대스태미나",
+                value: 100,
+            },
+        ],
+    },
+    폭주: {
+        name: "폭주",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 2,
+                max: 3,
+            },
+            {
+                type: "다운 어택 랭크 3단 이상일 때 최대대미지",
+                min: 60,
+                max: 80,
+            },
+        ],
+    },
+    투지: {
+        name: "투지",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 1,
+                max: 2,
+            },
+            {
+                type: "컴뱃 마스터리 랭크 3단 이상일 때 최대대미지",
+                min: 60,
+                max: 70,
+            },
+            {
+                type: "최대생명력",
+                value: 100,
+            },
+            {
+                type: "체력",
+                value: 22,
+            },
+        ],
+    },
+    영혼: {
+        name: "영혼",
+        stats: [
+            {
+                type: "크래시샷 랭크 3단 이상일 때 최대대미지",
+                min: 30,
+                max: 50,
+            },
+            {
+                type: "크리티컬",
+                value: 15,
+            },
+            {
+                type: "솜씨",
+                min: 20,
+                max: 40,
+            },
+        ],
+    },
+    유산: {
+        name: "유산",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 1,
+                max: 2,
+            },
+            {
+                type: "샌드 버스트 랭크 3단 이상일 때 모든 속성 연금술 대미지",
+                min: 100,
+                max: 110,
+            },
+        ],
+    },
+    동상: {
+        name: "동상",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 1,
+                max: 2,
+            },
+            {
+                type: "6막: 유혹의 올가미 랭크 3단 이상일 때 마리오네트 최대대미지",
+                min: 55,
+                max: 65,
+            },
+            {
+                type: "마리오네트 최소대미지",
+                value: 80,
+            },
+        ],
+    },
+    재현: {
+        name: "재현",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 2,
+                max: 3,
+            },
+            {
+                type: "연속기 : 파운딩 랭크 3단 이상일 때 최대대미지",
+                min: 60,
+                max: 80,
+            },
+            {
+                type: "체력",
+                value: 50,
+            },
+            {
+                type: "의지",
+                value: 50,
+            },
+        ],
+    },
+    강타: {
+        name: "강타",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 2,
+                max: 3,
+            },
+            {
+                type: "크로스 버스터 랭크 3단 이상일 때 최대대미지",
+                min: 60,
+                max: 80,
+            },
+            {
+                type: "체력",
+                value: 50,
+            },
+            {
+                type: "지력",
+                value: 50,
+            },
+        ],
+    },
+    잔재: {
+        name: "잔재",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 2,
+                max: 3,
+            },
+            {
+                type: "수리검 폭풍 랭크 3단 이상일 때 최대대미지",
+                min: 60,
+                max: 80,
+            },
+            {
+                type: "체력",
+                value: 50,
+            },
+            {
+                type: "의지",
+                value: 50,
+            },
+        ],
+    },
+    잔상: {
+        name: "잔상",
+        stats: [
+            {
+                type: "피어싱 레벨이 있을 때 피어싱 레벨",
+                min: 2,
+                max: 3,
+            },
+            {
+                type: "스피닝 슬래시 랭크 3단 이상일 때 최대대미지",
+                min: 60,
+                max: 80,
+            },
+            {
+                type: "솜씨",
+                value: 50,
+            },
+            {
+                type: "행운",
+                value: 50,
+            },
+        ],
+    },
+    디펜더: {
+        name: "디펜더",
+        stats: [
+            {
+                type: "디펜스 랭크 1 이상일 때 보호",
+                min: 3,
+                max: 5,
+            },
+            {
+                type: "마법 보호",
+                min: 1,
+                max: 2,
+            },
+            {
+                type: "최대생명력",
+                value: 150,
+            },
+        ],
+    },
+    공간: {
+        name: "공간",
+        stats: [
+            {
+                type: "그라비테이셔널 풀 랭크 1 이상일 때 마법 공격력",
+                min: 10,
+                max: 15,
+            },
+        ],
+    },
+    템포: {
+        name: "템포",
+        stats: [
+            {
+                type: "자장가 랭크 1 이상일 때 음악버프 스킬 효과",
+                min: 2,
+                max: 3,
+            },
+            {
+                type: "최대생명력",
+                value: 100,
+            },
+            {
+                type: "최대마나",
+                value: 100,
+            },
+        ],
+    },
     공허한: {
         name: "공허한",
         stats: [
@@ -864,7 +1440,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "활발한",
         stats: [
             {
-                type: "현혹의 연주 랭크 1 이상일 때 음악버프 효과",
+                type: "현혹의 연주 랭크 1 이상일 때 음악버프 스킬 효과",
                 min: 1,
                 max: 2,
             },
@@ -883,7 +1459,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "다이나믹",
         stats: [
             {
-                type: "현혹의 연주 랭크 1 이상일 때 음악버프 효과",
+                type: "현혹의 연주 랭크 1 이상일 때 음악버프 스킬 효과",
                 min: 1,
                 max: 2,
             },
@@ -2217,7 +2793,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 max: 18,
             },
             {
-                type: "작곡 랭크 1 이상일 때 음악버프 효과",
+                type: "작곡 랭크 1 이상일 때 음악버프 스킬 효과",
                 min: 4,
                 max: 6,
             },
@@ -3039,7 +3615,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "카덴차",
         stats: [
             {
-                type: "죽음의 무도 랭크 9 이상일 때 음악버프 효과",
+                type: "죽음의 무도 랭크 9 이상일 때 음악버프 스킬 효과",
                 value: 1,
             },
             {
@@ -4634,7 +5210,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 value: 3,
             },
             {
-                type: "음악버프 효과",
+                type: "음악버프 스킬 효과",
                 value: 3,
             },
             {
@@ -5134,7 +5710,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "조화",
         stats: [
             {
-                type: "비바체 랭크 1 이상일 때 음악버프 효과",
+                type: "비바체 랭크 1 이상일 때 음악버프 스킬 효과",
                 value: 5,
             },
             {
@@ -5161,7 +5737,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "앙상블",
         stats: [
             {
-                type: "비바체 랭크 1 이상일 때 음악버프 효과",
+                type: "비바체 랭크 1 이상일 때 음악버프 스킬 효과",
                 value: 5,
             },
             {
@@ -5487,7 +6063,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 value: 25,
             },
             {
-                type: "전장의 서곡 랭크 1 이상일 때 음악버프 효과",
+                type: "전장의 서곡 랭크 1 이상일 때 음악버프 스킬 효과",
                 value: 2,
             },
             {
@@ -5570,7 +6146,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 max: 10,
             },
             {
-                type: "악기 연주 랭크 1 이상일 때 음악버프 효과",
+                type: "악기 연주 랭크 1 이상일 때 음악버프 스킬 효과",
                 min: 2,
                 max: 3,
             },
@@ -5593,7 +6169,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 max: 10,
             },
             {
-                type: "악기 연주 랭크 1 이상일 때 음악버프 효과",
+                type: "악기 연주 랭크 1 이상일 때 음악버프 스킬 효과",
                 min: 2,
                 max: 3,
             },
@@ -5938,7 +6514,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 max: 15,
             },
             {
-                type: "작곡 랭크 1 이상일 때 음악버프 효과",
+                type: "작곡 랭크 1 이상일 때 음악버프 스킬 효과",
                 value: 3,
             },
             {
@@ -6910,7 +7486,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "코드",
         stats: [
             {
-                type: "악기 연주 랭크 7 이상일 때 음악버프 효과",
+                type: "악기 연주 랭크 7 이상일 때 음악버프 스킬 효과",
                 value: 1,
             },
             {
@@ -6948,7 +7524,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "알레그로",
         stats: [
             {
-                type: "악기 연주 랭크 3 이상일 때 음악버프 효과",
+                type: "악기 연주 랭크 3 이상일 때 음악버프 스킬 효과",
                 value: 3,
             },
             {
@@ -6969,7 +7545,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "모데라토",
         stats: [
             {
-                type: "악기 연주 랭크 8 이상일 때 음악버프 효과",
+                type: "악기 연주 랭크 8 이상일 때 음악버프 스킬 효과",
                 value: 2,
             },
             {
@@ -6990,7 +7566,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "안단테",
         stats: [
             {
-                type: "악기 연주 랭크 B 이상일 때 음악버프 효과",
+                type: "악기 연주 랭크 B 이상일 때 음악버프 스킬 효과",
                 value: 1,
             },
             {
