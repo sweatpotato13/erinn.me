@@ -216,4 +216,12 @@ export const changelogData = [
             { description: "메인 페이지 추가" },
         ],
     },
+    {
+        date: "2025-02-21",
+        changes: [
+            {
+                description: "인챈트 데이터 최신화",
+            },
+        ],
+    },
 ];
