@@ -67,11 +67,11 @@ export default function AuctionPage() {
             }
             const data = await response.json();
 
-            data.auction_item.sort(
+            data.items.sort(
                 (a: any, b: any) =>
                     a.auction_price_per_unit - b.auction_price_per_unit
             );
-            setFilteredItems(data.auction_item);
+            setFilteredItems(data.items);
             setErrorMessage(null);
         } catch (error) {
             console.error("API 호출 중 오류가 발생했습니다:", error);

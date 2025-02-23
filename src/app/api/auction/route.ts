@@ -15,29 +15,57 @@ export async function GET(request: Request) {
     const auctionItemCategory = searchParams.get("auction_item_category");
     const itemName = searchParams.get("item_name");
 
-    let url = `${NXOPEN_API_URL}/mabinogi/v1/auction/list?`;
-    if (auctionItemCategory) {
-        url += `auction_item_category=${auctionItemCategory}&`;
-    }
-    if (itemName) {
-        url += `item_name=${encodeURIComponent(itemName)}`;
-    }
+    let allItems: any[] = [];
+    let nextCursor: string | null = "";
 
-    const response = await fetch(url, {
-        headers: {
-            "Content-Type": "application/json",
-            "x-nxopen-api-key": NXOPEN_API_KEY || "",
-        },
-    });
+    try {
+        do {
+            let url = `${NXOPEN_API_URL}/mabinogi/v1/auction/list?`;
+            if (auctionItemCategory) {
+                url += `auction_item_category=${auctionItemCategory}&`;
+            }
+            if (itemName) {
+                url += `item_name=${encodeURIComponent(itemName)}&`;
+            }
+            if (nextCursor) {
+                url += `cursor=${nextCursor}`;
+            }
 
-    if (!response.ok) {
-        console.error(await response.json());
+            const response = await fetch(url, {
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-nxopen-api-key": NXOPEN_API_KEY || "",
+                },
+            });
+
+            if (!response.ok) {
+                console.error(await response.json());
+                return NextResponse.json(
+                    { error: "Failed to fetch data" },
+                    { status: 500 }
+                );
+            }
+
+            const data = await response.json();
+
+            // 결과 데이터 누적
+            if (data.auction_item.length > 0) {
+                allItems = [...allItems, ...data.auction_item];
+            }
+
+            // 다음 페이지를 위한 cursor 업데이트
+            nextCursor = data.next_cursor;
+        } while (nextCursor !== null);
+
+        // 전체 데이터 반환
+        return NextResponse.json({
+            items: allItems,
+        });
+    } catch (error) {
+        console.error("Error fetching auction data:", error);
         return NextResponse.json(
             { error: "Failed to fetch data" },
             { status: 500 }
         );
     }
-
-    const data = await response.json();
-    return NextResponse.json(data);
 }
