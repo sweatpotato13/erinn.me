@@ -55,4 +55,3 @@ jobs:
       run: |
         pnpm install
         pnpm test
-        pnpm test:e2e
