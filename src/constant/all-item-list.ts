@@ -1,4 +1,4 @@
-// Update: 2025-03-20
+// Update: 2025-03-27
 export const AllItemList = [
     {
         name: "여행자 가이드",
@@ -5707,6 +5707,10 @@ export const AllItemList = [
     {
         name: "드래드락_턱수염",
         id: "8017",
+    },
+    {
+        name: "드래드락_수염",
+        id: "8018",
     },
     {
         name: "드래드락_작은턱수염",
@@ -13697,6 +13701,10 @@ export const AllItemList = [
         id: "15790",
     },
     {
+        name: "나비 드레스",
+        id: "15791",
+    },
+    {
         name: "사무라이 의상(남성용)",
         id: "15792",
     },
@@ -14087,6 +14095,10 @@ export const AllItemList = [
     {
         name: "바사니오 의상",
         id: "15890",
+    },
+    {
+        name: "포셔 의상",
+        id: "15891",
     },
     {
         name: "안토니오 의상",
@@ -28809,6 +28821,10 @@ export const AllItemList = [
         id: "28550",
     },
     {
+        name: "너구리 닌자 안즈 가발",
+        id: "28551",
+    },
+    {
         name: "여우 귀 가발",
         id: "28552",
     },
@@ -34275,6 +34291,10 @@ export const AllItemList = [
     {
         name: "슬레이트 (배포 금지)",
         id: "40419",
+    },
+    {
+        name: "왼손 퍼프 (배포 금지)",
+        id: "40420",
     },
     {
         name: "왼손 바늘꽂이 (배포 금지)",
@@ -51913,6 +51933,10 @@ export const AllItemList = [
         id: "54642",
     },
     {
+        name: "낭만 농장 웨딩 주례용 단상",
+        id: "54643",
+    },
+    {
         name: "낭만 농장 웨딩 의자",
         id: "54644",
     },
@@ -54069,6 +54093,10 @@ export const AllItemList = [
         id: "60164",
     },
     {
+        name: "나무판(이벤트)",
+        id: "60165",
+    },
+    {
         name: "매듭끈(아르바이트용)",
         id: "60404",
     },
@@ -55215,6 +55243,10 @@ export const AllItemList = [
     {
         name: "Z의 메달",
         id: "63018",
+    },
+    {
+        name: "알비 배틀 아레나 코인",
+        id: "63019",
     },
     {
         name: "빈 병",
@@ -59713,6 +59745,10 @@ export const AllItemList = [
         id: "64701",
     },
     {
+        name: "망가진 날",
+        id: "64702",
+    },
+    {
         name: "수리된 자루",
         id: "64703",
     },
@@ -63705,6 +63741,10 @@ export const AllItemList = [
         id: "72105",
     },
     {
+        name: "키워드",
+        id: "72106",
+    },
+    {
         name: "탐험 경험치",
         id: "72107",
     },
@@ -65537,6 +65577,10 @@ export const AllItemList = [
         id: "73235",
     },
     {
+        name: "무기 파편 조각",
+        id: "73236",
+    },
+    {
         name: "빨간 양털",
         id: "73237",
     },
@@ -65747,6 +65791,10 @@ export const AllItemList = [
     {
         name: "텅 빈 초록빛 프리즘",
         id: "73304",
+    },
+    {
+        name: "붉은빛 프리즘 박스",
+        id: "73305",
     },
     {
         name: "텅 빈 붉은빛 프리즘",
@@ -67111,6 +67159,10 @@ export const AllItemList = [
     {
         name: "[n] 쿠폰",
         id: "75162",
+    },
+    {
+        name: "[o] 쿠폰",
+        id: "75163",
     },
     {
         name: "[g] 쿠폰",
@@ -71679,6 +71731,10 @@ export const AllItemList = [
     {
         name: "스타일리쉬 해결사 헤어 뷰티 쿠폰(여성용)",
         id: "76510",
+    },
+    {
+        name: "투혼의 해결사 헤어 뷰티 쿠폰(여성용)",
+        id: "76511",
     },
     {
         name: "사이드 브레이드 헤어 뷰티 쿠폰(여성용)",
@@ -103789,11 +103845,11 @@ export const AllItemList = [
         id: "1220025",
     },
     {
-        name: "not found key, itemdb_weapon.1943",
+        name: "화려한 전장의 청룡 언월도 양손 도끼",
         id: "1220026",
     },
     {
-        name: "not found key, itemdb_weapon.1944",
+        name: "화려한 청룡 언월도 양손 도끼",
         id: "1220027",
     },
     {
@@ -103805,11 +103861,11 @@ export const AllItemList = [
         id: "1220029",
     },
     {
-        name: "not found key, itemdb_weapon.2019",
+        name: "전장의 청룡 언월도 양손 도끼",
         id: "1220030",
     },
     {
-        name: "not found key, itemdb_weapon.2020",
+        name: "청룡 언월도 양손 도끼",
         id: "1220031",
     },
     {
@@ -104733,7 +104789,7 @@ export const AllItemList = [
         id: "1390070",
     },
     {
-        name: "not found key, itemdb_weapon.2027",
+        name: "디지털 캠코더",
         id: "1390071",
     },
     {
@@ -106435,6 +106491,14 @@ export const AllItemList = [
     {
         name: "캠퍼스 신학기 새내기 가발(여성용)",
         id: "2110218",
+    },
+    {
+        name: "UFO 모자",
+        id: "2110221",
+    },
+    {
+        name: "파반느 햇",
+        id: "2110222",
     },
     {
         name: "전장의 군인 숏 헤어 가발(남성용)",
@@ -112561,6 +112625,14 @@ export const AllItemList = [
         id: "2201258",
     },
     {
+        name: "파반느 코트(남성용)",
+        id: "2201265",
+    },
+    {
+        name: "파반느 코트(여성용)",
+        id: "2201266",
+    },
+    {
         name: "스페셜 데일리 스트리트 웨어(남성용)(거래불가)",
         id: "2201269",
     },
@@ -114383,6 +114455,10 @@ export const AllItemList = [
     {
         name: "로얄 소사이어티 글러브(여성용)",
         id: "2300491",
+    },
+    {
+        name: "파반느 손목 밴드",
+        id: "2300498",
     },
     {
         name: "데일리 스트리트 리스트 밴드(남성용)(거래불가)",
@@ -116227,6 +116303,10 @@ export const AllItemList = [
     {
         name: "로얄 소사이어티 슈즈(여성용)",
         id: "2400515",
+    },
+    {
+        name: "파반느 슈즈",
+        id: "2400522",
     },
     {
         name: "데일리 스트리트 슈즈(남성용)(거래불가)",
@@ -122777,6 +122857,10 @@ export const AllItemList = [
         id: "4001167",
     },
     {
+        name: "웰컴 펫 선물 상자",
+        id: "4001186",
+    },
+    {
         name: "어서와 5월에 이런 연휴는 처음이지 온타임 이벤트 상자",
         id: "4050001",
     },
@@ -124429,6 +124513,10 @@ export const AllItemList = [
         id: "4100443",
     },
     {
+        name: "어느 별에서 보내온 선물 상자",
+        id: "4100448",
+    },
+    {
         name: "첫 번째 포인트 선물 상자",
         id: "4100449",
     },
@@ -124831,6 +124919,10 @@ export const AllItemList = [
     {
         name: "엘리제 메이드 루센트 홀스 꼬리(1년) 쿠폰",
         id: "4110146",
+    },
+    {
+        name: "파반느 의상 쇼핑백",
+        id: "4110149",
     },
     {
         name: "레트로 월드에서 온 친구들 2차 타이틀 획득 쿠폰",
@@ -126125,7 +126217,11 @@ export const AllItemList = [
         id: "4130487",
     },
     {
-        name: "not found key, itemdb_script.9342",
+        name: "흰사슴 이야기 2차 타이틀 획득 쿠폰",
+        id: "4130492",
+    },
+    {
+        name: "작은 파티의 흔적 2차 타이틀 획득 쿠폰",
         id: "4130493",
     },
     {
@@ -131005,15 +131101,19 @@ export const AllItemList = [
         id: "4301027",
     },
     {
-        name: "not found key, itemdb_script.9192",
+        name: "[우리들의 작은 파티] 명단",
         id: "4301028",
     },
     {
-        name: "not found key, itemdb_script.9272",
+        name: "무지개빛 영양제",
+        id: "4301045",
+    },
+    {
+        name: "반가운 소식을 담은 편지",
         id: "4301046",
     },
     {
-        name: "not found key, itemdb_script.9326",
+        name: "다시 만난 에린 이벤트 이벤트 알림이",
         id: "4301047",
     },
     {
@@ -132143,6 +132243,10 @@ export const AllItemList = [
     {
         name: "헤어 지정 염색 앰플 선택 상자",
         id: "4400389",
+    },
+    {
+        name: "아르카나 6종 불꽃 매듭 선택 상자",
+        id: "4400392",
     },
     {
         name: "새내기 밀레시안을 위한 의상 선택 상자",
@@ -138559,6 +138663,10 @@ export const AllItemList = [
     {
         name: "로얄 소사이어티 대낫 양손 도끼 외형 주문서",
         id: "5040686",
+    },
+    {
+        name: "경험치 상승의 무지개 열매(200레벨)",
+        id: "5040699",
     },
     {
         name: "희망의 정수",
@@ -145645,11 +145753,11 @@ export const AllItemList = [
         id: "5310091",
     },
     {
-        name: "not found key, itemdb_etc.13094",
+        name: "다시 만난 에린 이벤트 이벤트 알림이",
         id: "5310092",
     },
     {
-        name: "not found key, itemdb_etc.13200",
+        name: "2025 다시 만난 에린 이벤트 히든 코인",
         id: "5310093",
     },
     {
@@ -150459,6 +150567,10 @@ export const AllItemList = [
     {
         name: "신디 시티 스쿨 박스",
         id: "5700108",
+    },
+    {
+        name: "낙화의 검객 상자",
+        id: "5700109",
     },
     {
         name: "알리반 조의 보물 상자(의류)",
