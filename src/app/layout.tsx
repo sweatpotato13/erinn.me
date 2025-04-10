@@ -2,11 +2,15 @@ import "@/styles/globals.css";
 
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
-import { Metadata } from "next";
+import type { Metadata, Viewport } from "next/types";
 
 import Footer from "@/components/footer";
 import { Providers } from "@/components/providers";
 import Topbar from "@/components/topbar";
+
+export const viewport: Viewport = {
+    themeColor: "#000000",
+};
 
 export const metadata: Metadata = {
     title: "마비노기 경매장 - 실시간 아이템 시세 검색 | Erinn.me",
@@ -29,6 +33,22 @@ export const metadata: Metadata = {
     alternates: {
         canonical: "https://erinn.me",
     },
+    manifest: "/manifest.json",
+    icons: [
+        {
+            rel: "apple-touch-icon",
+            sizes: "192x192",
+            url: "/icons/icon-192x192.png",
+        },
+        { rel: "icon", sizes: "192x192", url: "/icons/icon-192x192.png" },
+        { rel: "icon", sizes: "384x384", url: "/icons/icon-384x384.png" },
+        { rel: "icon", sizes: "512x512", url: "/icons/icon-512x512.png" },
+    ],
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "black-translucent",
+        title: "Erinn.me",
+    },
 };
 
 export default function RootLayout({
@@ -38,6 +58,20 @@ export default function RootLayout({
 }) {
     return (
         <html data-theme="light" lang="ko">
+            <head>
+                <meta name="application-name" content="Erinn.me" />
+                <meta name="apple-mobile-web-app-capable" content="yes" />
+                <meta
+                    name="apple-mobile-web-app-status-bar-style"
+                    content="black-translucent"
+                />
+                <meta name="apple-mobile-web-app-title" content="Erinn.me" />
+                <meta name="format-detection" content="telephone=no" />
+                <meta name="mobile-web-app-capable" content="yes" />
+                <meta name="msapplication-TileColor" content="#000000" />
+                <meta name="msapplication-tap-highlight" content="no" />
+                <meta name="theme-color" content="#000000" />
+            </head>
             <body className="pt-16 font-custom">
                 <Topbar />
                 <main className="min-h-screen">

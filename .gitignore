@@ -42,3 +42,13 @@ __snapshots__
 # idea
 .idea
 node_modules
+
+# PWA
+sw.*
+workbox-*
+swe-worker-*
+**/public/workbox-*.js
+**/public/sw.js
+**/public/sw.js.map
+**/public/worker-*.js
+**/public/fallback-*.js
