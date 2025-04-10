@@ -1,4 +1,4 @@
-// Update: 2025-04-03
+// Update: 2025-04-10
 export const AllItemList = [
     {
         name: "여행자 가이드",
@@ -13735,6 +13735,10 @@ export const AllItemList = [
     {
         name: "밤의 마법사 로브",
         id: "15799",
+    },
+    {
+        name: "clanraccoon banya wear",
+        id: "15800",
     },
     {
         name: "너구리 일족 기본 의복",
@@ -53801,6 +53805,10 @@ export const AllItemList = [
         id: "60054",
     },
     {
+        name: "고급 실크방직 장갑",
+        id: "60055",
+    },
+    {
         name: "최고급 옷감방직 장갑",
         id: "60056",
     },
@@ -57649,6 +57657,10 @@ export const AllItemList = [
         id: "63634",
     },
     {
+        name: "테흐 두인 미션 통행증 - 깨어난 심해의 군주 (매우 어려움)",
+        id: "63635",
+    },
+    {
         name: "지휘관의 문장",
         id: "63636",
     },
@@ -59083,6 +59095,10 @@ export const AllItemList = [
     {
         name: "풀 스윙의 책 9페이지",
         id: "64539",
+    },
+    {
+        name: "풀 스윙의 책 10페이지",
+        id: "64540",
     },
     {
         name: "파이널 스매시의 책 1페이지",
