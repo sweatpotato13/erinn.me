@@ -10,6 +10,10 @@ import Topbar from "@/components/topbar";
 
 export const viewport: Viewport = {
     themeColor: "#000000",
+    viewportFit: "cover",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
 };
 
 export const metadata: Metadata = {
@@ -71,8 +75,12 @@ export default function RootLayout({
                 <meta name="msapplication-TileColor" content="#000000" />
                 <meta name="msapplication-tap-highlight" content="no" />
                 <meta name="theme-color" content="#000000" />
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1, viewport-fit=cover"
+                />
             </head>
-            <body className="pt-16 font-custom">
+            <body className="pt-[calc(4rem+env(safe-area-inset-top))] font-custom">
                 <Topbar />
                 <main className="min-h-screen">
                     <Providers>{children}</Providers>

@@ -17,7 +17,7 @@ function Topbar() {
     }
 
     return (
-        <header className="navbar bg-base-100 fixed top-0 left-0 w-full shadow-lg z-50">
+        <header className="navbar bg-base-100 fixed top-0 left-0 w-full shadow-lg z-50 pt-[env(safe-area-inset-top)] h-[calc(4rem+env(safe-area-inset-top))]">
             <div className="flex-1">
                 <Link href="/" className="btn btn-ghost normal-case text-xl">
                     Erinn.me
@@ -63,7 +63,7 @@ function Topbar() {
             </div>
 
             {isMenuOpen && (
-                <div className="absolute top-16 right-0 mt-2 w-48 rounded-lg shadow-lg bg-base-200 z-50">
+                <div className="absolute top-[calc(4rem+env(safe-area-inset-top))] right-0 mt-2 w-48 rounded-lg shadow-lg bg-base-200 z-50">
                     <ul className="menu p-2">
                         <li className="flex space-x-2">
                             <div className="flex">
