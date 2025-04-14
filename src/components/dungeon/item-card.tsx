@@ -33,6 +33,7 @@ export function ItemCard({
                         alt={item.name}
                         fill
                         className="object-contain"
+                        unoptimized={true}
                     />
                 </div>
             </figure>
