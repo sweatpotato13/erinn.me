@@ -13,6 +13,11 @@ import { getItemPrice, ItemPriceResponse } from "@/lib/api/auction";
 
 type SortType = "name-asc" | "name-desc" | "price-asc" | "price-desc";
 
+/**
+ * Renders the dungeon page interface to display items, manage dungeon and difficulty selections, and handle item price loading and refreshing.
+ *
+ * This component manages state for the selected dungeon, difficulty level, item sorting order, and asynchronous price fetching. It sequentially loads item prices with a delay to maintain UI responsiveness and provides functionality to refresh individual item prices. The component displays a sorted list of items with their current prices, along with a loading progress indicator.
+ */
 export default function DungeonPage() {
     const [selectedDungeon, setSelectedDungeon] = React.useState<DungeonType>(
         DUNGEON_LIST[0]

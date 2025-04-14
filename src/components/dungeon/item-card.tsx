@@ -14,6 +14,21 @@ interface ItemCardProps {
     onRefresh?: (itemName: string) => void;
 }
 
+/**
+ * Renders a card displaying a dungeon item's details including its image, drop difficulties, and price information.
+ *
+ * This component displays the item's name, image, and drop information filtered by the selected dungeon. It shows price data
+ * that is either provided via the priceInfo prop or fetched internally, and uses an animated effect to highlight price updates.
+ * The refresh button triggers either the provided onRefresh callback or an internal refetch to update the price.
+ *
+ * @param item - The dungeon item's details, including its name, image URL, and drop information.
+ * @param selectedDungeon - The dungeon used to filter and display the relevant drop details.
+ * @param selectedDifficulty - The difficulty level to highlight among the item's drops.
+ * @param priceInfo - Optional pre-fetched price data; if provided, it disables the internal price query.
+ * @param onRefresh - Optional callback invoked with the item's name to trigger a price refresh; if absent, the component refetches the price.
+ *
+ * @returns A JSX element representing the rendered item card.
+ */
 export function ItemCard({
     item,
     selectedDungeon,
