@@ -291,4 +291,10 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-04-14",
+        changes: [
+            { description: "던전 아이템 목록 페이지 가격 새로고침 기능 추가" },
+        ],
+    },
 ];
