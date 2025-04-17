@@ -1,6 +1,6 @@
 "use client";
 
-import { Swords } from "lucide-react";
+import { Hammer, Swords } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 
@@ -94,6 +94,14 @@ function Topbar() {
                                 <Swords className="h-5 w-5" />
                                 <a href="/dungeon" className="ml-2">
                                     던전 드랍 아이템
+                                </a>
+                            </div>
+                        </li>
+                        <li className="flex space-x-2">
+                            <div className="flex items-center">
+                                <Hammer className="h-5 w-5" />
+                                <a href="/crafting" className="ml-2">
+                                    제작 아이템
                                 </a>
                             </div>
                         </li>
