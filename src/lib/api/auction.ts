@@ -3,6 +3,13 @@ export interface ItemPriceResponse {
     averagePrice: number;
 }
 
+export interface ItemPriceWithQuantityResponse {
+    totalPrice: number;
+    unitPrice: number;
+    averagePrice: number;
+    availableQuantity: number;
+}
+
 export interface AuctionItemOption {
     option_type: string;
     option_sub_type: string;
@@ -59,6 +66,71 @@ export async function getItemPrice(
         return {
             unitPrice: 0,
             averagePrice: 0,
+        };
+    }
+}
+
+export async function getItemPriceWithQuantity(
+    itemName: string,
+    desiredQuantity: number
+): Promise<ItemPriceWithQuantityResponse> {
+    try {
+        let url = "/api/auction?";
+        if (itemName !== "") {
+            url += `&item_name=${encodeURIComponent(itemName).replace(/\+/g, "%2B")}`;
+        }
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.items === undefined || data.items.length === 0) {
+            return {
+                totalPrice: 0,
+                unitPrice: 0,
+                averagePrice: 0,
+                availableQuantity: 0,
+            };
+        }
+
+        // 가격순으로 정렬
+        const sortedItems = data.items.sort(
+            (a: any, b: any) =>
+                a.auction_price_per_unit - b.auction_price_per_unit
+        );
+
+        let remainingQuantity = desiredQuantity;
+        let totalPrice = 0;
+        let availableQuantity = 0;
+
+        // 가장 저렴한 것부터 구매
+        for (const item of sortedItems) {
+            const quantityToBuy = Math.min(remainingQuantity, item.item_count);
+            totalPrice += quantityToBuy * item.auction_price_per_unit;
+            availableQuantity += quantityToBuy;
+            remainingQuantity -= quantityToBuy;
+
+            if (remainingQuantity <= 0) break;
+        }
+
+        const unitPrice = sortedItems[0].auction_price_per_unit;
+        const averagePrice =
+            sortedItems.reduce(
+                (sum: number, item: any) => sum + item.auction_price_per_unit,
+                0
+            ) / sortedItems.length;
+
+        return {
+            totalPrice,
+            unitPrice,
+            averagePrice,
+            availableQuantity,
+        };
+    } catch (error) {
+        console.error("아이템 가격 조회 중 오류:", error);
+        return {
+            totalPrice: 0,
+            unitPrice: 0,
+            averagePrice: 0,
+            availableQuantity: 0,
         };
     }
 }
