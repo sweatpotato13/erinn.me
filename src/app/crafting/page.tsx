@@ -58,7 +58,10 @@ function ItemCard({ item }: { item: CraftingItem }) {
                         );
                         return {
                             ...material,
-                            price: priceInfo.totalPrice / material.quantity,
+                            price:
+                                priceInfo.totalPrice / material.quantity > 0
+                                    ? priceInfo.totalPrice / material.quantity
+                                    : 0,
                         };
                     }
                     return material;
@@ -114,6 +117,7 @@ function ItemCard({ item }: { item: CraftingItem }) {
                     onClick={() => void handleRefresh()}
                     disabled={isRefreshing}
                     className="btn btn-ghost btn-sm"
+                    aria-label="재료 가격 갱신"
                 >
                     {isRefreshing ? (
                         <div className="loading loading-spinner loading-xs"></div>
@@ -196,33 +200,42 @@ export default function CraftingPage() {
     const { data: priceData, isLoading } = useQuery({
         queryKey: ["craftingPrices"],
         queryFn: async () => {
-            const itemsWithPrices = await Promise.all(
-                craftingItems.map(async item => {
-                    const materialsWithPrices = await Promise.all(
-                        item.materials.map(async material => {
-                            if (material.price === 0) {
-                                const priceInfo =
-                                    await getItemPriceWithQuantity(
-                                        material.name,
-                                        material.quantity
-                                    );
-                                return {
-                                    ...material,
-                                    price:
-                                        priceInfo.totalPrice /
-                                        material.quantity,
-                                };
-                            }
-                            return material;
-                        })
-                    );
-                    return {
-                        ...item,
-                        materials: materialsWithPrices,
-                    };
-                })
-            );
-            return itemsWithPrices;
+            try {
+                const itemsWithPrices = await Promise.all(
+                    craftingItems.map(async item => {
+                        const materialsWithPrices = await Promise.all(
+                            item.materials.map(async material => {
+                                if (material.price === 0) {
+                                    const priceInfo =
+                                        await getItemPriceWithQuantity(
+                                            material.name,
+                                            material.quantity
+                                        );
+                                    return {
+                                        ...material,
+                                        price:
+                                            priceInfo.totalPrice /
+                                                material.quantity >
+                                            0
+                                                ? priceInfo.totalPrice /
+                                                  material.quantity
+                                                : 0,
+                                    };
+                                }
+                                return material;
+                            })
+                        );
+                        return {
+                            ...item,
+                            materials: materialsWithPrices,
+                        };
+                    })
+                );
+                return itemsWithPrices;
+            } catch (error: any) {
+                console.error("Failed to fetch crafting prices:", error);
+                return craftingItems; // Return initial data as fallback
+            }
         },
     });
 
