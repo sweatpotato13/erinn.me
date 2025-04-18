@@ -9,4 +9,5 @@ export interface CraftingItem {
     name: string;
     imageUrl: string;
     materials: Material[];
+    craftingCount?: number;
 }

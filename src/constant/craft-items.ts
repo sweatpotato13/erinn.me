@@ -41,6 +41,7 @@ export const craftingItems: CraftingItem[] = [
     {
         name: "공허의 로브(남성용)",
         imageUrl: getItemImageUrl("공허의 로브(남성용)"),
+        craftingCount: 10,
         materials: [
             {
                 name: "최고급 실크",
@@ -95,6 +96,7 @@ export const craftingItems: CraftingItem[] = [
     {
         name: "공허의 로브(여성용)",
         imageUrl: getItemImageUrl("공허의 로브(여성용)"),
+        craftingCount: 10,
         materials: [
             {
                 name: "최고급 실크",
