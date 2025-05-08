@@ -1,4 +1,4 @@
-// Update: 2025-04-29
+// Update: 2025-05-08
 export const AllItemList = [
     {
         name: "여행자 가이드",
@@ -146767,6 +146767,10 @@ export const AllItemList = [
     {
         name: "2025 다시 만난 에린 이벤트 히든 코인",
         id: "5310093",
+    },
+    {
+        name: "두근두근 DIY 고급 염색틀 조각",
+        id: "5350028",
     },
     {
         name: "까마귀 둥지 의자",
