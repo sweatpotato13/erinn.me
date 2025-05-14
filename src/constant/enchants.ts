@@ -11,6 +11,119 @@ export interface EnchantInfo {
 }
 
 export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
+    파동: {
+        name: "파동",
+        stats: [
+            {
+                type: "내츄럴 매직 실드 랭크 3 이상일 때 마법 공격력",
+                min: 8,
+                max: 15,
+            },
+            {
+                type: "마나 소비 감소",
+                value: 4,
+            },
+            {
+                type: "지력",
+                value: 20,
+            },
+        ],
+    },
+    공명: {
+        name: "공명",
+        stats: [
+            {
+                type: "파이어볼 랭크 1 이상일 때 마법 공격력",
+                min: 15,
+                max: 20,
+            },
+            {
+                type: "지력",
+                value: 50,
+            },
+        ],
+    },
+    침식: {
+        name: "침식",
+        stats: [
+            {
+                type: "볼트 마법 조합 랭크 2 이상일 때 마법 공격력",
+                value: 18,
+            },
+            {
+                type: "최대마나",
+                value: 50,
+            },
+        ],
+    },
+    붕괴의: {
+        name: "붕괴의",
+        stats: [
+            {
+                type: "라이트닝로드 랭크 2 이상일 때 마법 공격력",
+                min: 8,
+                max: 17,
+            },
+            {
+                type: "아이스 스피어 랭크 2 이상일 때 마나 소비 감소",
+                value: 4,
+            },
+        ],
+    },
+    의식의: {
+        name: "의식의",
+        stats: [
+            {
+                type: "헤일스톰 랭크 1 이상일 때 마법 공격력",
+                min: 18,
+                max: 25,
+            },
+            {
+                type: "최대마나",
+                value: 50,
+            },
+            {
+                type: "보호",
+                value: 1,
+            },
+            {
+                type: "마법 보호",
+                value: 1,
+            },
+        ],
+    },
+    사념의: {
+        name: "사념의",
+        stats: [
+            {
+                type: "썬더 랭크 2 이상일 때 마법 공격력",
+                min: 14,
+                max: 17,
+            },
+            {
+                type: "마나 소비 감소",
+                value: 4,
+            },
+        ],
+    },
+    아련한: {
+        name: "아련한",
+        stats: [
+            {
+                type: "메테오 스트라이크 랭크 1 이상일 때 마법 공격력",
+                min: 25,
+                max: 30,
+            },
+            {
+                type: "최대마나",
+                value: 100,
+            },
+            {
+                type: "지력",
+                value: 10,
+            },
+        ],
+    },
     안락의: {
         name: "안락의",
         stats: [
@@ -41,13 +154,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "아이스볼트 랭크 3단 이상일 때 마법 공격력",
-                min: 10,
-                max: 25,
-            },
-            {
-                type: "메테오 스트라이크 랭크 1 이상일 때 최대대미지",
-                min: 20,
-                max: 25,
+                min: 50,
+                max: 65,
             },
             {
                 type: "최대마나",
@@ -64,8 +172,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "아이스 스피어 랭크 3단 이상일 때 마법 공격력",
-                min: 30,
-                max: 45,
+                min: 50,
+                max: 65,
             },
             {
                 type: "썬더 랭크 3단 이상일 때 마나 소비 감소",
@@ -87,8 +195,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "스타 데토네이션 랭크 3단 이상일 때 마법 공격력",
-                min: 25,
-                max: 40,
+                min: 45,
+                max: 65,
             },
             {
                 type: "최대마나",
@@ -288,7 +396,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 value: 100,
             },
             {
-                type: "최대대미지",
+                type: "최대마나",
                 value: 100,
             },
         ],
@@ -857,8 +965,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "마법 공격력",
-                min: 10,
-                max: 13,
+                min: 22,
+                max: 25,
             },
             {
                 type: "최대마나",
@@ -950,8 +1058,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
             {
                 type: "마법 공격력",
-                min: 15,
-                max: 20,
+                min: 50,
+                max: 55,
             },
             {
                 type: "4대 속성 연금술 대미지",
@@ -992,8 +1100,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "마법 공격력",
-                min: 10,
-                max: 13,
+                min: 23,
+                max: 26,
             },
         ],
     },
@@ -1080,8 +1188,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "마법 공격력",
-                min: 12,
-                max: 15,
+                min: 25,
+                max: 28,
             },
             {
                 type: "지력",
@@ -1169,8 +1277,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "마법 공격력",
-                min: 15,
-                max: 20,
+                min: 50,
+                max: 55,
             },
             {
                 type: "4대 속성 연금술 대미지",
@@ -1219,8 +1327,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "마법 공격력",
-                min: 8,
-                max: 10,
+                min: 22,
+                max: 24,
             },
             {
                 type: "크리티컬",
@@ -3312,8 +3420,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
         ],
     },
-    살림하는: {
-        name: "살림하는",
+    살림꾼의: {
+        name: "살림꾼의",
         stats: [
             {
                 type: "상점 판매가",
@@ -3321,8 +3429,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
         ],
     },
-    살림꾼의: {
-        name: "살림꾼의",
+    살림하는: {
+        name: "살림하는",
         stats: [
             {
                 type: "상점 판매가",
@@ -13003,7 +13111,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 value: 2,
             },
             {
-                type: "매직 마스터리 랭크 C 이상일 때 마나소비",
+                type: "매직 마스터리 랭크 C 이상일 때 마나 소비 감소",
                 value: 1,
             },
         ],
@@ -13055,7 +13163,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 value: 3,
             },
             {
-                type: "아이스 스피어 랭크 A 이상일 때 마나소비",
+                type: "아이스 스피어 랭크 A 이상일 때 마나 소비 감소",
                 min: 1,
                 max: 3,
             },
@@ -13556,7 +13664,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 value: 5,
             },
             {
-                type: "파이어볼 랭크 8 이상일 때 마나소비",
+                type: "파이어볼 랭크 8 이상일 때 마나 소비 감소",
                 min: 1,
                 max: 3,
             },
@@ -13887,12 +13995,12 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
                 value: 10,
             },
             {
-                type: "라이트닝볼트 랭크 3 이상일 때 마나소비",
+                type: "라이트닝볼트 랭크 3 이상일 때 마나 소비 감소",
                 min: 1,
                 max: 2,
             },
             {
-                type: "라이트닝볼트 랭크 7 이상일 때 마나소비",
+                type: "라이트닝볼트 랭크 7 이상일 때 마나 소비 감소",
                 min: 1,
                 max: 2,
             },
