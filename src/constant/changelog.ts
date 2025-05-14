@@ -333,4 +333,12 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-05-14",
+        changes: [
+            {
+                description: "인챈트 정보 최신화",
+            },
+        ],
+    },
 ];
