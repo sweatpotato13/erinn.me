@@ -341,4 +341,13 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-05-15",
+        changes: [
+            {
+                description:
+                    "경매장 아이템 검색 자동완성 업데이트일 기준 모든 아이템 반영",
+            },
+        ],
+    },
 ];
