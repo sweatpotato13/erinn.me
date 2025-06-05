@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import OptionRenderer from "@/components/option-renderer";
 import { AllItemList } from "@/constant/all-item-list";
 import { categories } from "@/constant/categories";
+import { hasExcludedKeyword } from "@/constant/excluded-keywords";
 
 export default function AuctionPage() {
     const [currentPage, setCurrentPage] = useState(1);
@@ -35,9 +36,18 @@ export default function AuctionPage() {
 
     useEffect(() => {
         if (searchTerm.length >= 2) {
-            const filteredSuggestions = AllItemList.filter(item =>
-                item.name.toLowerCase().includes(searchTerm.toLowerCase())
-            );
+            const filteredSuggestions = AllItemList.filter(item => {
+                const itemName = item.name.toLowerCase();
+                const searchTermLower = searchTerm.toLowerCase();
+
+                // 검색어 포함 확인
+                const includesSearchTerm = itemName.includes(searchTermLower);
+
+                // 제외 키워드 확인
+                const hasExcludedKeywords = hasExcludedKeyword(item.name);
+
+                return includesSearchTerm && !hasExcludedKeywords;
+            });
             setSuggestions(filteredSuggestions.map(item => item.name));
             setActiveSuggestionIndex(0);
             setShowSuggestions(true);
