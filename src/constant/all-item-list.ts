@@ -1,4 +1,4 @@
-// Update: 2025-05-29
+// Update: 2025-06-05
 export const AllItemList = [
     {
         name: "여행자 가이드",
@@ -125393,7 +125393,7 @@ export const AllItemList = [
         id: "4100462",
     },
     {
-        name: "굳은 의지의 상자",
+        name: "not found key, itemdb_script.9755",
         id: "4100465",
     },
     {
