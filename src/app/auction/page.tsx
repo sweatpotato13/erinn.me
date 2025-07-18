@@ -12,9 +12,9 @@ import { hasExcludedKeyword } from "@/constant/excluded-keywords";
 export default function AuctionPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-    const [selectedCategory, setSelectedCategory] = useState<
-        string | undefined
-    >(categories[0]);
+    const [selectedCategory, setSelectedCategory] = useState<string>(
+        categories[0]
+    );
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredItems, setFilteredItems] = useState<any>([]);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -48,9 +48,13 @@ export default function AuctionPage() {
 
                 return includesSearchTerm && !hasExcludedKeywords;
             });
-            setSuggestions(filteredSuggestions.map(item => item.name));
+
+            const suggestionNames = filteredSuggestions.map(item => item.name);
+            setSuggestions(suggestionNames);
             setActiveSuggestionIndex(0);
-            setShowSuggestions(true);
+
+            // 자동완성 표시 조건: 매칭되는 항목이 있거나 검색어가 짧을 때만 표시
+            setShowSuggestions(suggestionNames.length > 0);
         } else {
             setShowSuggestions(false);
             setSuggestions([]);
@@ -64,14 +68,28 @@ export default function AuctionPage() {
             setCurrentPage(1);
             setSortDirection(null);
 
-            let url = "/api/auction?";
+            let url: string;
+            let response: Response;
+
+            // 검색 조건에 따른 API 선택
             if (selectedCategory !== categories[0]) {
+                // 카테고리가 기본값이 아닌 경우 기존 API 사용
+                url = "/api/auction?";
                 url += `auction_item_category=${selectedCategory}`;
+                if (searchTerm !== "") {
+                    url += `&item_name=${encodeURIComponent(searchTerm).replace(/\+/g, "%2B")}`;
+                }
+                response = await fetch(url);
+            } else if (searchTerm !== "") {
+                // 카테고리가 기본값이고 검색어만 있는 경우 키워드 검색 API 사용
+                const keywordSearchUrl = `/api/auction/keyword-search?keyword=${encodeURIComponent(searchTerm)}`;
+                response = await fetch(keywordSearchUrl);
+            } else {
+                // 카테고리가 기본값이고 검색어가 없는 경우 기존 API 사용
+                url = "/api/auction?";
+                response = await fetch(url);
             }
-            if (searchTerm !== "") {
-                url += `&item_name=${encodeURIComponent(searchTerm).replace(/\+/g, "%2B")}`;
-            }
-            const response = await fetch(url);
+
             if (!response.ok) {
                 throw new Error("네트워크 오류가 발생했습니다.");
             }
@@ -116,7 +134,12 @@ export default function AuctionPage() {
             } else if (e.key === "Enter") {
                 setSearchTerm(suggestions[`${activeSuggestionIndex}`]);
                 setShowSuggestions(false);
+            } else if (e.key === "Escape") {
+                setShowSuggestions(false);
             }
+        } else if (e.key === "Escape") {
+            // 키워드 검색 모드에서도 ESC로 입력 필드 클리어 가능
+            setSearchTerm("");
         }
     };
 
@@ -159,7 +182,7 @@ export default function AuctionPage() {
 
         const newFavorite = {
             itemName: searchTerm,
-            category: selectedCategory || categories[0],
+            category: selectedCategory,
         };
 
         const itemExists = AllItemList.some(item => item.name === searchTerm);
@@ -259,10 +282,26 @@ export default function AuctionPage() {
                             <input
                                 className="input input-bordered w-full"
                                 placeholder="아이템명"
-                                value={searchTerm}
+                                value={searchTerm || ""}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 onKeyDown={handleKeyDown}
+                                onBlur={() => {
+                                    // 약간의 지연을 두어 클릭 이벤트가 먼저 처리되도록 함
+                                    setTimeout(() => {
+                                        setShowSuggestions(false);
+                                    }, 150);
+                                }}
+                                onFocus={() => {
+                                    // 포커스시 자동완성 다시 표시 (조건에 맞는 경우)
+                                    if (
+                                        searchTerm.length >= 2 &&
+                                        suggestions.length > 0
+                                    ) {
+                                        setShowSuggestions(true);
+                                    }
+                                }}
                             />
+                            {/* 자동완성 리스트 */}
                             {showSuggestions && suggestions.length > 0 && (
                                 <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                                     {suggestions.map((suggestion, index) => (

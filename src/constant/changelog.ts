@@ -395,4 +395,18 @@ export const changelogData = [
             },
         ],
     },
+    {
+        date: "2025-07-18",
+        changes: [
+            {
+                description: "경매장 키워드 검색 추가",
+            },
+            {
+                description: "경매장 펫 메달 정보 및 인챈트 데이터 추가",
+            },
+            {
+                description: "경매장 자동완성 개선",
+            },
+        ],
+    },
 ];

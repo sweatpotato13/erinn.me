@@ -53,6 +53,10 @@ function OptionRenderer({ options }: OptionRendererProps) {
     const ergs = options.filter(opt => opt.option_type === "에르그");
     const sets = options.filter(opt => opt.option_type === "세트 효과");
     const colors = options.filter(opt => opt.option_type === "아이템 색상");
+    const petInfo = options.filter(opt => opt.option_type === "펫 정보");
+    const enchantScrollInfo = options.filter(opt =>
+        ["내구도", "인챈트 종류", "남은 거래 횟수"].includes(opt.option_type)
+    );
 
     return (
         <div className="text-sm">
@@ -366,6 +370,89 @@ function OptionRenderer({ options }: OptionRendererProps) {
                     {sets.map((set, index) => (
                         <div key={`set-${index}`} className="text-blue-400">
                             • {set.option_value} {set.option_value2}
+                        </div>
+                    ))}
+                </OptionSection>
+            )}
+
+            {/* 인챈트 스크롤 정보 섹션 */}
+            {enchantScrollInfo.length > 0 && (
+                <OptionSection title="인챈트 스크롤 정보">
+                    {enchantScrollInfo.map((scrollInfo, index) => {
+                        // 인챈트 종류에서 이름 추출 및 매칭
+                        let enchantInfo = null;
+                        let enchantName = "";
+
+                        if (scrollInfo.option_type === "인챈트 종류") {
+                            enchantName =
+                                scrollInfo.option_value?.split("(")[0].trim() ||
+                                "";
+                            enchantInfo = enchantName
+                                ? ENCHANT_OPTIONS[enchantName]
+                                : undefined;
+                        }
+
+                        return (
+                            <div
+                                key={`scroll-${scrollInfo.option_type}-${index}`}
+                                className="text-white"
+                            >
+                                {scrollInfo.option_type === "내구도" && (
+                                    <div>
+                                        • 내구도: {scrollInfo.option_value}
+                                    </div>
+                                )}
+                                {scrollInfo.option_type === "인챈트 종류" && (
+                                    <div>
+                                        <div className="text-blue-400">
+                                            • 인챈트: {scrollInfo.option_value}{" "}
+                                            ({scrollInfo.option_sub_type})
+                                        </div>
+                                        {/* 인챈트 상세 옵션 정보 */}
+                                        {enchantInfo && (
+                                            <div className="pl-6 mt-1">
+                                                <div className="text-gray-300 text-xs mb-1">
+                                                    ▼ 인챈트 효과
+                                                </div>
+                                                {enchantInfo.stats.map(
+                                                    (stat, statIndex) => (
+                                                        <div
+                                                            key={`enchant-detail-${statIndex}`}
+                                                            className="text-blue-300 text-xs"
+                                                        >
+                                                            • {stat.type}:{" "}
+                                                            {stat.value
+                                                                ? stat.value
+                                                                : `${stat.min}~${stat.max}`}
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                                {scrollInfo.option_type ===
+                                    "남은 거래 횟수" && (
+                                    <div className="text-yellow-400">
+                                        • 남은 거래 횟수:{" "}
+                                        {scrollInfo.option_value}회
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </OptionSection>
+            )}
+
+            {/* 펫 정보 섹션 */}
+            {petInfo.length > 0 && (
+                <OptionSection title="펫 정보">
+                    {petInfo.map((pet, index) => (
+                        <div
+                            key={`pet-${pet.option_sub_type}-${index}`}
+                            className="text-white"
+                        >
+                            • {pet.option_sub_type}: {pet.option_value}
                         </div>
                     ))}
                 </OptionSection>
