@@ -48,9 +48,13 @@ export default function AuctionPage() {
 
                 return includesSearchTerm && !hasExcludedKeywords;
             });
-            setSuggestions(filteredSuggestions.map(item => item.name));
+
+            const suggestionNames = filteredSuggestions.map(item => item.name);
+            setSuggestions(suggestionNames);
             setActiveSuggestionIndex(0);
-            setShowSuggestions(true);
+
+            // 자동완성 표시 조건: 매칭되는 항목이 있거나 검색어가 짧을 때만 표시
+            setShowSuggestions(suggestionNames.length > 0);
         } else {
             setShowSuggestions(false);
             setSuggestions([]);
@@ -130,7 +134,12 @@ export default function AuctionPage() {
             } else if (e.key === "Enter") {
                 setSearchTerm(suggestions[`${activeSuggestionIndex}`]);
                 setShowSuggestions(false);
+            } else if (e.key === "Escape") {
+                setShowSuggestions(false);
             }
+        } else if (e.key === "Escape") {
+            // 키워드 검색 모드에서도 ESC로 입력 필드 클리어 가능
+            setSearchTerm("");
         }
     };
 
@@ -276,7 +285,23 @@ export default function AuctionPage() {
                                 value={searchTerm || ""}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 onKeyDown={handleKeyDown}
+                                onBlur={() => {
+                                    // 약간의 지연을 두어 클릭 이벤트가 먼저 처리되도록 함
+                                    setTimeout(() => {
+                                        setShowSuggestions(false);
+                                    }, 150);
+                                }}
+                                onFocus={() => {
+                                    // 포커스시 자동완성 다시 표시 (조건에 맞는 경우)
+                                    if (
+                                        searchTerm.length >= 2 &&
+                                        suggestions.length > 0
+                                    ) {
+                                        setShowSuggestions(true);
+                                    }
+                                }}
                             />
+                            {/* 자동완성 리스트 */}
                             {showSuggestions && suggestions.length > 0 && (
                                 <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
                                     {suggestions.map((suggestion, index) => (
