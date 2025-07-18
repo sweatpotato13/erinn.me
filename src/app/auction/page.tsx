@@ -12,9 +12,9 @@ import { hasExcludedKeyword } from "@/constant/excluded-keywords";
 export default function AuctionPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
-    const [selectedCategory, setSelectedCategory] = useState<
-        string | undefined
-    >(categories[0]);
+    const [selectedCategory, setSelectedCategory] = useState<string>(
+        categories[0]
+    );
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredItems, setFilteredItems] = useState<any>([]);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -64,14 +64,28 @@ export default function AuctionPage() {
             setCurrentPage(1);
             setSortDirection(null);
 
-            let url = "/api/auction?";
+            let url: string;
+            let response: Response;
+
+            // 검색 조건에 따른 API 선택
             if (selectedCategory !== categories[0]) {
+                // 카테고리가 기본값이 아닌 경우 기존 API 사용
+                url = "/api/auction?";
                 url += `auction_item_category=${selectedCategory}`;
+                if (searchTerm !== "") {
+                    url += `&item_name=${encodeURIComponent(searchTerm).replace(/\+/g, "%2B")}`;
+                }
+                response = await fetch(url);
+            } else if (searchTerm !== "") {
+                // 카테고리가 기본값이고 검색어만 있는 경우 키워드 검색 API 사용
+                const keywordSearchUrl = `/api/auction/keyword-search?keyword=${encodeURIComponent(searchTerm)}`;
+                response = await fetch(keywordSearchUrl);
+            } else {
+                // 카테고리가 기본값이고 검색어가 없는 경우 기존 API 사용
+                url = "/api/auction?";
+                response = await fetch(url);
             }
-            if (searchTerm !== "") {
-                url += `&item_name=${encodeURIComponent(searchTerm).replace(/\+/g, "%2B")}`;
-            }
-            const response = await fetch(url);
+
             if (!response.ok) {
                 throw new Error("네트워크 오류가 발생했습니다.");
             }
@@ -159,7 +173,7 @@ export default function AuctionPage() {
 
         const newFavorite = {
             itemName: searchTerm,
-            category: selectedCategory || categories[0],
+            category: selectedCategory,
         };
 
         const itemExists = AllItemList.some(item => item.name === searchTerm);
@@ -259,7 +273,7 @@ export default function AuctionPage() {
                             <input
                                 className="input input-bordered w-full"
                                 placeholder="아이템명"
-                                value={searchTerm}
+                                value={searchTerm || ""}
                                 onChange={e => setSearchTerm(e.target.value)}
                                 onKeyDown={handleKeyDown}
                             />
