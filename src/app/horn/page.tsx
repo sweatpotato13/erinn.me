@@ -21,9 +21,12 @@ export default function HornPage() {
     );
     const [isAlertKeyaordPopupVisible, setIsAlertKeyaordPopupVisible] =
         useState(false);
-    const [lastAlertTime, setLastAlertTime] = useState(
-        new Date().toISOString()
-    );
+    const [lastAlertTime, setLastAlertTime] = useState("");
+
+    useEffect(() => {
+        setLastAlertTime(new Date().toISOString());
+    }, []);
+
     useEffect(() => {
         const interval = setInterval(() => {
             fetchMessages().catch(error => {
@@ -32,7 +35,6 @@ export default function HornPage() {
         }, 60000);
 
         return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     async function fetchMessages() {
