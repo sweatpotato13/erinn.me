@@ -6,6 +6,7 @@ import type { Metadata, Viewport } from "next/types";
 
 import Footer from "@/components/footer";
 import { Providers } from "@/components/providers";
+import PWARegistration from "@/components/pwa-registration";
 import Topbar from "@/components/topbar";
 
 export const viewport: Viewport = {
@@ -37,7 +38,6 @@ export const metadata: Metadata = {
     alternates: {
         canonical: "https://erinn.me",
     },
-    manifest: "/manifest.json",
     icons: [
         {
             rel: "apple-touch-icon",
@@ -86,6 +86,7 @@ export default function RootLayout({
                     <Providers>{children}</Providers>
                 </main>
                 <Footer />
+                <PWARegistration />
                 <Analytics />
                 <SpeedInsights />
             </body>
