@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function NPCShopPage() {
@@ -196,7 +197,7 @@ export default function NPCShopPage() {
                                                             `${price.price_value} (${price.price_type})`
                                                     )}
                                                 </p>
-                                                <img
+                                                <Image
                                                     src={item.image_url}
                                                     alt={item.item_display_name}
                                                     className="w-16 h-16 mt-2"

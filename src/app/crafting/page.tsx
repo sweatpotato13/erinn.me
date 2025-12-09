@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import React, { useState } from "react";
+import Image from "next/image";
+import { useState } from "react";
 
 import { craftingItems } from "@/constant/craft-items";
 import { getItemPriceWithQuantity } from "@/lib/api/auction";
@@ -144,7 +145,7 @@ function ItemCard({ item }: { item: CraftingItem }) {
             <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                        <img
+                        <Image
                             src={item.imageUrl}
                             alt={item.name}
                             className="w-10 h-10 object-contain"
@@ -226,7 +227,7 @@ function ItemCard({ item }: { item: CraftingItem }) {
                 {item.materials.map(mat => (
                     <li key={mat.name} className="flex items-center gap-2 py-1">
                         <div className="w-8 h-8 bg-gray-100 rounded flex items-center justify-center">
-                            <img
+                            <Image
                                 src={mat.imageUrl}
                                 alt={mat.name}
                                 className="w-6 h-6 object-contain"
