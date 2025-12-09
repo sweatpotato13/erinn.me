@@ -16,7 +16,6 @@ const compat = new FlatCompat({
 });
 
 export default eslintTs.config(
-    ...compat.extends("next/core-web-vitals"),
     eslintJs.configs.recommended,
     ...eslintTs.configs.recommendedTypeChecked,
     ...compat.extends(

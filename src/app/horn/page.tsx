@@ -32,7 +32,6 @@ export default function HornPage() {
         }, 60000);
 
         return () => clearInterval(interval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     async function fetchMessages() {
