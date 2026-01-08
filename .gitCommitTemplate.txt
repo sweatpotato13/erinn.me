@@ -1,0 +1,31 @@
+# git config --global commit.template ./.gitCommitTemplate.txt
+# <Type>: <Subject> (MUST)
+
+##### Subject must be no longer than 50 characters (Subject.size() <= 50) #### -> |
+# ex) feat: Implement signup API
+
+# Body (OPTIONAL)
+######## Each line of the body must be no longer than 72 characters ######## -> |
+# ex)
+# - first line ABCDE
+# - second line FGHIJ
+
+# Footer (RECOMMENDED) ex) #Issue Number
+
+# --- COMMIT END ---
+# <Type> list
+#   feat    : Feature (new feature)
+#   fix     : Bug fix
+#   refactor: Refactoring
+#   style   : Style changes (code formatting, adding semicolons; no business logic changes)
+#   docs    : Documentation (add, update, delete documentation)
+#   test    : Tests (add, update, delete test code; no business logic changes)
+#   chore   : Chores (other changes such as build script updates)
+# ------------------
+#     Capitalize the first letter of the subject
+#     Write the subject in the imperative mood
+#     Do not end the subject with a period (.)
+#     Separate the subject and body with a blank line
+#     The body should explain "what" and "why", not "how"
+#     When writing multiple lines in the body, prefix each line with "-"
+# ------------------

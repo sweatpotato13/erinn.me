@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+
+# No Automatic Markdown Summaries
+
+NEVER create markdown summary/documentation files (like *_FIX.md, *_SUMMARY.md, *_ANALYSIS.md and so on) unless explicitly requested.
+
+## What to Do
+- Provide summaries directly in chat responses
+- Only create markdown files when user explicitly asks: "create documentation" or "document this in a file"
