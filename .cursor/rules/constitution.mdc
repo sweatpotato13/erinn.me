@@ -1,0 +1,144 @@
+---
+alwaysApply: true
+---
+
+# Constitution
+
+## Core Principles
+
+### I. Code Quality Standards
+
+All code MUST adhere to strict quality standards to maintain long-term maintainability and team productivity.
+
+**Non-Negotiable Rules:**
+- Functions MUST NOT exceed 50 lines; refactor if longer
+- Maximum 3 levels of nesting; flatten with early returns
+- Early returns MUST be preferred over deep if/else chains
+- All code and comments MUST be written in English
+- ESLint and Prettier MUST pass with zero errors before commit
+- TypeScript strict mode MUST be enabled; `any` type is prohibited except with documented justification
+- Feature-Sliced Design (FSD) architecture MUST be followed:
+  - Lower layers MUST NOT depend on upper layers
+  - Each slice MUST expose only public APIs via `index.ts`
+
+**Rationale:** Consistent, readable code reduces onboarding time and bug density. FSD ensures predictable dependency flow.
+
+### II. Testing Standards
+
+Every feature MUST be adequately tested to ensure reliability and prevent regressions.
+
+**Non-Negotiable Rules:**
+- Every new function MUST have at least one test
+- Tests MUST cover edge cases, not just happy paths
+- External dependencies MUST be mocked in unit tests
+- Integration tests MUST be written for:
+  - New API endpoints or route handlers
+  - Cross-feature interactions
+  - Authentication/authorization flows
+- Test files MUST be colocated with source files or in a parallel `__tests__` directory
+- All tests MUST pass before merging to main branch
+
+**Rationale:** Tests are the safety net for refactoring and the documentation of expected behavior.
+
+### III. User Experience Consistency
+
+User interfaces MUST provide a consistent, accessible, and delightful experience across all features.
+
+**Non-Negotiable Rules:**
+- All UI components MUST use Tailwind CSS + DaisyUI design system
+- Custom components MUST be placed in `src/shared/ui/` and exported via index
+- Interactive elements MUST have proper focus states and keyboard navigation
+- Loading states MUST be shown for all async operations
+- Error states MUST be user-friendly with actionable guidance
+- Responsive design MUST be implemented (mobile-first approach)
+- WCAG 2.1 Level AA accessibility MUST be maintained for all public-facing features
+
+**Rationale:** Consistent UX builds user trust and reduces cognitive load. Accessibility is both ethical and legally required in many jurisdictions.
+
+### IV. Performance Requirements
+
+Applications MUST meet defined performance thresholds to ensure excellent user experience.
+
+**Non-Negotiable Rules:**
+- Largest Contentful Paint (LCP) MUST be under 2.5 seconds
+- First Input Delay (FID) MUST be under 100 milliseconds
+- Cumulative Layout Shift (CLS) MUST be under 0.1
+- Bundle size for initial page load MUST NOT exceed 200KB (gzipped)
+- Images MUST use Next.js Image component with proper sizing and lazy loading
+- API responses MUST complete within 500ms for 95th percentile
+- No memory leaks in client-side components (verify with React DevTools)
+
+**Rationale:** Performance directly impacts user retention, SEO rankings, and business metrics.
+
+## Technology Standards
+
+This section defines the approved technology stack and constraints.
+
+**Core Stack:**
+- **Framework**: Next.js 16+ with App Router
+- **Language**: TypeScript 5.x (strict mode)
+- **Styling**: Tailwind CSS 4.x + DaisyUI 5.x
+- **State Management**: React built-in hooks (useState, useReducer, useContext)
+- **Testing**: Jest + React Testing Library
+- **Linting**: ESLint 9.x + Prettier
+- **Git Hooks**: Husky for pre-commit validation
+
+**Dependency Rules:**
+- New dependencies MUST be justified in PR description
+- Dependencies with security vulnerabilities MUST be updated or removed within 7 days
+- Bundle size impact MUST be evaluated for any new client-side dependency
+- Prefer well-maintained packages with >1000 weekly downloads
+
+**Prohibited Patterns:**
+- `any` type without documented exception
+- Direct DOM manipulation (use React refs)
+- CSS-in-JS libraries (use Tailwind only)
+- Class components (use functional components only)
+
+## Development Workflow
+
+This section defines the required development process and quality gates.
+
+**Code Review Requirements:**
+- All changes MUST go through pull request review
+- CodeRabbit MUST be run before finalizing (max 2 runs per feature)
+- Critical and security findings MUST be addressed immediately
+- At least one approval required for merge
+
+**Pre-Commit Validation:**
+- ESLint MUST pass
+- Prettier formatting MUST be applied
+- TypeScript compilation MUST succeed
+- All tests MUST pass
+
+**Branch Strategy:**
+- `main`: Production-ready code only
+- `feature/*`: New features in development
+- `fix/*`: Bug fixes
+- `refactor/*`: Code improvements without behavior changes
+
+**Commit Message Format:**
+- Use conventional commits: `type(scope): description`
+- Types: `feat`, `fix`, `refactor`, `test`, `docs`, `chore`
+
+## Governance
+
+This constitution supersedes all conflicting practices and guidelines.
+
+**Amendment Process:**
+1. Propose changes via pull request to this file
+2. Changes MUST include rationale and impact analysis
+3. Breaking changes require team discussion and majority approval
+4. All amendments MUST include migration guidance if applicable
+
+**Compliance:**
+- All PRs MUST verify compliance with these principles
+- Complexity beyond these standards MUST be justified with documented rationale
+- Violations discovered post-merge MUST be addressed in the next sprint
+
+**Versioning Policy:**
+- MAJOR: Backward incompatible principle changes or removals
+- MINOR: New principles added or significant guidance expansion
+- PATCH: Clarifications, wording improvements, non-semantic changes
+
+**Version**: 1.0.0 | **Ratified**: 2026-01-04 | **Last Amended**: 2026-01-04
