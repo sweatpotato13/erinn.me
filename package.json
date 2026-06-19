@@ -24,7 +24,7 @@
     "dotenv": "^17.4.2",
     "lucide-react": "^0.562.0",
     "next": "^16.2.9",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^9.0.1",
     "postcss": "^8.5.15",
     "react": "19.2.3",
     "react-dom": "19.2.3",
