@@ -1,57 +1,45 @@
-# .github/workflows/nodejs.yml
 name: Node CI
 
-on: [push, pull_request] # Run on Push and Pull Requests
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
+  ci:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [20.x, 22.x]
+        node-version: [22.x, 24.x, 26.x]
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm install -g pnpm
-    - name: pnpm build
-      working-directory: .
-      run: |
-        pnpm install
-        pnpm build
-  lint:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm install -g pnpm
-    - name: pnpm lint
-      working-directory: .
-      run: |
-        pnpm install
-        pnpm lint
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        node-version: [20.x, 22.x]
-    steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm install -g pnpm
-    - name: pnpm test
-      working-directory: .
-      run: |
-        pnpm install
-        pnpm test
+      - uses: actions/checkout@v7
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 10
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test
+        run: pnpm test
