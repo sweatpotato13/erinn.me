@@ -23,7 +23,10 @@ describe("Footer Component", () => {
         expect(changelogLink).toBeInTheDocument();
 
         // Check if copyright text exists
-        const copyrightText = screen.getByText(/Copyright © 2024 Erinn.me/);
+        const currentYear = new Date().getFullYear();
+        const copyrightText = screen.getByText(
+            `Copyright © ${currentYear} Erinn.me. All rights reserved.`
+        );
         expect(copyrightText).toBeInTheDocument();
     });
 
