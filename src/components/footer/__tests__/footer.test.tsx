@@ -1,15 +1,22 @@
 import "@testing-library/jest-dom";
 
 import { render, screen } from "@testing-library/react";
-import React from "react";
 
 import Footer from "..";
 
+const FIXED_DATE = new Date("2026-01-01T00:00:00.000Z");
+const EXPECTED_YEAR = FIXED_DATE.getFullYear();
+
 // Test suite for Footer component
 describe("Footer Component", () => {
-    // Render Footer component before each test
     beforeEach(() => {
+        jest.useFakeTimers();
+        jest.setSystemTime(FIXED_DATE);
         render(<Footer />);
+    });
+
+    afterEach(() => {
+        jest.useRealTimers();
     });
 
     // Test if Footer component renders correctly
@@ -22,10 +29,9 @@ describe("Footer Component", () => {
         const changelogLink = screen.getByText("업데이트 내역");
         expect(changelogLink).toBeInTheDocument();
 
-        // Check if copyright text exists
-        const currentYear = new Date().getFullYear();
+        // Check if copyright text matches the fixed system date
         const copyrightText = screen.getByText(
-            `Copyright © ${currentYear} Erinn.me. All rights reserved.`
+            `Copyright © ${EXPECTED_YEAR} Erinn.me. All rights reserved.`
         );
         expect(copyrightText).toBeInTheDocument();
     });
