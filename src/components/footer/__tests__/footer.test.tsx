@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 
 import Footer from "..";
 
-const FIXED_DATE = new Date("2026-01-01T00:00:00.000Z");
+const FIXED_DATE = new Date("2026-01-01T12:00:00.000Z");
 const EXPECTED_YEAR = FIXED_DATE.getFullYear();
 
 // Test suite for Footer component
