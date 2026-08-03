@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 
-const { BASE_URL, NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
+import { AuctionListResponseSchema } from "@/lib/schemas/nexon";
+import { checkOrigin } from "@/lib/utils/check-origin";
+
+const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 
 export async function GET(request: Request) {
-    const allowedDomain = BASE_URL || "http://localhost:3000";
-
-    const referer = request.headers.get("referer");
-
-    if (!referer || !referer.startsWith(allowedDomain)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const forbidden = checkOrigin(request);
+    if (forbidden) return forbidden;
 
     const { searchParams } = new URL(request.url);
     const keyword = searchParams.get("keyword");
@@ -21,15 +19,19 @@ export async function GET(request: Request) {
         );
     }
 
-    let allItems: any[] = [];
-    let nextCursor: string | null = "";
+    const MAX_PAGES = 5;
+    const cursor = searchParams.get("cursor");
+
+    let allItems: Record<string, unknown>[] = [];
+    let nextCursor: string | null = cursor || "";
+    let pageCount = 0;
 
     try {
         do {
             let url = `${NXOPEN_API_URL}/mabinogi/v1/auction/keyword-search?`;
             url += `keyword=${encodeURIComponent(keyword)}&`;
             if (nextCursor) {
-                url += `cursor=${nextCursor}`;
+                url += `cursor=${encodeURIComponent(nextCursor)}`;
             }
 
             const response = await fetch(url, {
@@ -47,20 +49,33 @@ export async function GET(request: Request) {
                 );
             }
 
-            const data = await response.json();
+            const raw = await response.json();
+            const parsed = AuctionListResponseSchema.safeParse(raw);
 
-            // 결과 데이터 누적
+            if (!parsed.success) {
+                console.error(
+                    "NEXON response validation failed:",
+                    parsed.error
+                );
+                return NextResponse.json(
+                    { error: "Upstream data format error" },
+                    { status: 502 }
+                );
+            }
+
+            const data = parsed.data;
             if (data.auction_item.length > 0) {
                 allItems = [...allItems, ...data.auction_item];
             }
 
-            // 다음 페이지를 위한 cursor 업데이트
-            nextCursor = data.next_cursor;
-        } while (nextCursor !== null);
+            nextCursor = data.next_cursor ?? null;
+            pageCount++;
+        } while (nextCursor && pageCount < MAX_PAGES);
 
-        // 전체 데이터 반환
         return NextResponse.json({
             items: allItems,
+            hasMore: !!nextCursor,
+            nextCursor: nextCursor,
         });
     } catch (error) {
         console.error("Error fetching keyword search data:", error);

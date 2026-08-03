@@ -1,20 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const { BASE_URL } = process.env;
+import { checkOrigin } from "@/lib/utils/check-origin";
 
 export async function GET(request: NextRequest) {
+    const forbidden = checkOrigin(request);
+    if (forbidden) return forbidden;
+
     const searchParams = request.nextUrl.searchParams;
     const itemId = searchParams.get("id");
-    const allowedDomain = BASE_URL || "http://localhost:3000";
-
-    const referer = request.headers.get("referer");
-
-    if (!referer || !referer.startsWith(allowedDomain)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
 
     if (!itemId) {
         return new NextResponse("Missing item ID", { status: 400 });
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(itemId)) {
+        return new NextResponse("Invalid item ID", { status: 400 });
     }
 
     try {

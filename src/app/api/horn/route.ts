@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
 
-const { BASE_URL, NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
+import { HornResponseSchema } from "@/lib/schemas/nexon";
+import { checkOrigin } from "@/lib/utils/check-origin";
+
+const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 
 export async function GET(request: Request) {
-    const allowedDomain = BASE_URL || "http://localhost:3000";
-
-    const referer = request.headers.get("referer");
-
-    if (!referer || !referer.startsWith(allowedDomain)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const forbidden = checkOrigin(request);
+    if (forbidden) return forbidden;
 
     const { searchParams } = new URL(request.url);
     const serverName = searchParams.get("server_name");
@@ -31,6 +29,16 @@ export async function GET(request: Request) {
         );
     }
 
-    const data = await response.json();
-    return NextResponse.json(data);
+    const raw = await response.json();
+    const parsed = HornResponseSchema.safeParse(raw);
+
+    if (!parsed.success) {
+        console.error("NEXON horn response validation failed:", parsed.error);
+        return NextResponse.json(
+            { error: "Upstream data format error" },
+            { status: 502 }
+        );
+    }
+
+    return NextResponse.json(parsed.data);
 }
