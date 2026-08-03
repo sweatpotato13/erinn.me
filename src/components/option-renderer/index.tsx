@@ -41,7 +41,11 @@ function OptionRenderer({ options }: OptionRendererProps) {
             "아이템 보호",
             "남은 전용 해제 가능 횟수",
             "피어싱 레벨",
+            "전용 해제 거래 보증서 사용 불가",
         ].includes(opt.option_type)
+    );
+    const relicOptions = options.filter(opt =>
+        ["무리아스 유물"].includes(opt.option_type)
     );
     const enchants = options.filter(opt => opt.option_type === "인챈트");
     const upgrades = options.filter(opt =>
@@ -56,6 +60,35 @@ function OptionRenderer({ options }: OptionRendererProps) {
     const petInfo = options.filter(opt => opt.option_type === "펫 정보");
     const enchantScrollInfo = options.filter(opt =>
         ["내구도", "인챈트 종류", "남은 거래 횟수"].includes(opt.option_type)
+    );
+
+    const knownTypes = new Set([
+        "공격",
+        "부상률",
+        "크리티컬",
+        "밸런스",
+        "내구력",
+        "아이템 보호",
+        "남은 전용 해제 가능 횟수",
+        "피어싱 레벨",
+        "전용 해제 거래 보증서 사용 불가",
+        "무리아스 유물",
+        "인챈트",
+        "일반 개조",
+        "보석 개조",
+        "특별 개조",
+        "세공 랭크",
+        "세공 옵션",
+        "에르그",
+        "세트 효과",
+        "아이템 색상",
+        "펫 정보",
+        "내구도",
+        "인챈트 종류",
+        "남은 거래 횟수",
+    ]);
+    const otherOptions = options.filter(
+        opt => !knownTypes.has(opt.option_type)
     );
 
     return (
@@ -95,6 +128,23 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                     {stat.option_value}
                                 </div>
                             )}
+                            {stat.option_type ===
+                                "전용 해제 거래 보증서 사용 불가" && (
+                                <div className="text-red-400">
+                                    전용 해제 거래 보증서 사용 불가
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </OptionSection>
+            )}
+
+            {/* 유물 옵션 섹션 */}
+            {relicOptions.length > 0 && (
+                <OptionSection title="유물 효과">
+                    {relicOptions.map((opt, index) => (
+                        <div key={`relic-${index}`} className="text-purple-300">
+                            • {opt.option_value}
                         </div>
                     ))}
                 </OptionSection>
@@ -476,6 +526,28 @@ function OptionRenderer({ options }: OptionRendererProps) {
                             </div>
                         );
                     })}
+                </OptionSection>
+            )}
+
+            {/* 기타 옵션 섹션 */}
+            {otherOptions.length > 0 && (
+                <OptionSection title="기타 정보">
+                    {otherOptions.map((opt, index) => (
+                        <div
+                            key={`other-${opt.option_type}-${index}`}
+                            className="text-white"
+                        >
+                            <span className="text-gray-300">
+                                {opt.option_type}
+                            </span>
+                            {opt.option_value &&
+                                opt.option_value !== "true" && (
+                                    <div className="pl-4 text-blue-300">
+                                        • {opt.option_value}
+                                    </div>
+                                )}
+                        </div>
+                    ))}
                 </OptionSection>
             )}
         </div>
