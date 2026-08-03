@@ -1,6 +1,7 @@
 export interface ItemPriceResponse {
     unitPrice: number;
     averagePrice: number;
+    isComplete: boolean;
 }
 
 export interface ItemPriceWithQuantityResponse {
@@ -8,6 +9,7 @@ export interface ItemPriceWithQuantityResponse {
     unitPrice: number;
     averagePrice: number;
     availableQuantity: number;
+    isComplete: boolean;
 }
 
 export interface AuctionItemOption {
@@ -28,45 +30,43 @@ export interface AuctionItem {
 }
 
 export interface AuctionResponse {
-    auction_item: AuctionItem[];
-    next_cursor: string;
+    items: AuctionItem[];
+    hasMore: boolean;
+    nextCursor: string | null;
+}
+
+interface PriceSummaryResponse {
+    minPrice: number;
+    averagePrice: number;
+    availableQuantity: number;
+    isComplete: boolean;
 }
 
 export async function getItemPrice(
     itemName: string
 ): Promise<ItemPriceResponse> {
     try {
-        let url = "/api/auction?";
-        if (itemName !== "") {
-            url += `&item_name=${encodeURIComponent(itemName).replace(/\+/g, "%2B")}`;
+        if (!itemName) {
+            return { unitPrice: 0, averagePrice: 0, isComplete: true };
         }
+
+        const url = `/api/auction/price-summary?item_name=${encodeURIComponent(itemName).replace(/\+/g, "%2B")}`;
         const response = await fetch(url);
-        const data = await response.json();
 
-        if (data.items === undefined) {
-            return {
-                unitPrice: 0,
-                averagePrice: 0,
-            };
+        if (!response.ok) {
+            return { unitPrice: 0, averagePrice: 0, isComplete: true };
         }
 
-        const prices = data.items.map(
-            (item: any) => item.auction_price_per_unit
-        );
-        const unitPrice = Math.min(...prices);
-        const averagePrice =
-            prices.reduce((a: any, b: any) => a + b, 0) / prices.length;
+        const data: PriceSummaryResponse = await response.json();
 
         return {
-            unitPrice: unitPrice || 0,
-            averagePrice: averagePrice || 0,
+            unitPrice: data.minPrice || 0,
+            averagePrice: data.averagePrice || 0,
+            isComplete: data.isComplete ?? true,
         };
     } catch (error) {
-        console.error("아이템 가격 조회 중 오류:", error);
-        return {
-            unitPrice: 0,
-            averagePrice: 0,
-        };
+        console.error("Error fetching item price:", error);
+        return { unitPrice: 0, averagePrice: 0, isComplete: true };
     }
 }
 
@@ -75,62 +75,49 @@ export async function getItemPriceWithQuantity(
     desiredQuantity: number
 ): Promise<ItemPriceWithQuantityResponse> {
     try {
-        let url = "/api/auction?";
-        if (itemName !== "") {
-            url += `&item_name=${encodeURIComponent(itemName).replace(/\+/g, "%2B")}`;
-        }
-        const response = await fetch(url);
-        const data = await response.json();
-
-        if (data.items === undefined || data.items.length === 0) {
+        if (!itemName) {
             return {
                 totalPrice: 0,
                 unitPrice: 0,
                 averagePrice: 0,
                 availableQuantity: 0,
+                isComplete: true,
             };
         }
 
-        // 가격순으로 정렬
-        const sortedItems = data.items.sort(
-            (a: any, b: any) =>
-                a.auction_price_per_unit - b.auction_price_per_unit
-        );
+        const url = `/api/auction/price-summary?item_name=${encodeURIComponent(itemName).replace(/\+/g, "%2B")}`;
+        const response = await fetch(url);
 
-        let remainingQuantity = desiredQuantity;
-        let totalPrice = 0;
-        let availableQuantity = 0;
-
-        // 가장 저렴한 것부터 구매
-        for (const item of sortedItems) {
-            const quantityToBuy = Math.min(remainingQuantity, item.item_count);
-            totalPrice += quantityToBuy * item.auction_price_per_unit;
-            availableQuantity += quantityToBuy;
-            remainingQuantity -= quantityToBuy;
-
-            if (remainingQuantity <= 0) break;
+        if (!response.ok) {
+            return {
+                totalPrice: 0,
+                unitPrice: 0,
+                averagePrice: 0,
+                availableQuantity: 0,
+                isComplete: true,
+            };
         }
 
-        const unitPrice = sortedItems[0].auction_price_per_unit;
-        const averagePrice =
-            sortedItems.reduce(
-                (sum: number, item: any) => sum + item.auction_price_per_unit,
-                0
-            ) / sortedItems.length;
+        const data: PriceSummaryResponse = await response.json();
+
+        const totalPrice =
+            Math.min(desiredQuantity, data.availableQuantity) * data.minPrice;
 
         return {
             totalPrice,
-            unitPrice,
-            averagePrice,
-            availableQuantity,
+            unitPrice: data.minPrice || 0,
+            averagePrice: data.averagePrice || 0,
+            availableQuantity: data.availableQuantity,
+            isComplete: data.isComplete ?? true,
         };
     } catch (error) {
-        console.error("아이템 가격 조회 중 오류:", error);
+        console.error("Error fetching item price:", error);
         return {
             totalPrice: 0,
             unitPrice: 0,
             averagePrice: 0,
             availableQuantity: 0,
+            isComplete: true,
         };
     }
 }
