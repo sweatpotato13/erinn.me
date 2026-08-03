@@ -17,7 +17,7 @@ const AuctionItemSchema = z
         item_count: z.number(),
         auction_price_per_unit: z.number(),
         date_auction_expire: z.string(),
-        item_option: z.array(AuctionItemOptionSchema).optional(),
+        item_option: z.array(AuctionItemOptionSchema).nullish(),
     })
     .passthrough();
 
