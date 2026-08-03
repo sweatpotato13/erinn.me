@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
 
-const { BASE_URL, NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
+import { checkOrigin } from "@/lib/utils/check-origin";
+
+const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 
 export async function GET(request: Request) {
-    const allowedDomain = BASE_URL || "http://localhost:3000";
-
-    const referer = request.headers.get("referer");
-
-    if (!referer || !referer.startsWith(allowedDomain)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const forbidden = checkOrigin(request);
+    if (forbidden) return forbidden;
 
     const { searchParams } = new URL(request.url);
     const npcName = searchParams.get("npc_name");

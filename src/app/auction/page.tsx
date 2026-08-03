@@ -1,13 +1,16 @@
 "use client";
 
 import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
+import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
-import OptionRenderer from "@/components/option-renderer";
-import { AllItemList } from "@/constant/all-item-list";
 import { categories } from "@/constant/categories";
-import { hasExcludedKeyword } from "@/constant/excluded-keywords";
+import { getItemImageUrl } from "@/lib/utils";
+
+const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
+    ssr: false,
+});
 
 export default function AuctionPage() {
     const [currentPage, setCurrentPage] = useState(1);
@@ -35,30 +38,28 @@ export default function AuctionPage() {
     );
 
     useEffect(() => {
-        if (searchTerm.length >= 2) {
-            const filteredSuggestions = AllItemList.filter(item => {
-                const itemName = item.name.toLowerCase();
-                const searchTermLower = searchTerm.toLowerCase();
-
-                // 검색어 포함 확인
-                const includesSearchTerm = itemName.includes(searchTermLower);
-
-                // 제외 키워드 확인
-                const hasExcludedKeywords = hasExcludedKeyword(item.name);
-
-                return includesSearchTerm && !hasExcludedKeywords;
-            });
-
-            const suggestionNames = filteredSuggestions.map(item => item.name);
-            setSuggestions(suggestionNames);
-            setActiveSuggestionIndex(0);
-
-            // 자동완성 표시 조건: 매칭되는 항목이 있거나 검색어가 짧을 때만 표시
-            setShowSuggestions(suggestionNames.length > 0);
-        } else {
+        if (searchTerm.length < 2) {
             setShowSuggestions(false);
             setSuggestions([]);
+            return;
         }
+
+        const timer = setTimeout(() => {
+            fetch(`/api/suggest?q=${encodeURIComponent(searchTerm)}`)
+                .then(res => res.json())
+                .then(data => {
+                    const names: string[] = data.suggestions ?? [];
+                    setSuggestions(names);
+                    setActiveSuggestionIndex(0);
+                    setShowSuggestions(names.length > 0);
+                })
+                .catch(() => {
+                    setSuggestions([]);
+                    setShowSuggestions(false);
+                });
+        }, 300);
+
+        return () => clearTimeout(timer);
     }, [searchTerm]);
 
     const fetchItems = async () => {
@@ -185,9 +186,8 @@ export default function AuctionPage() {
             category: selectedCategory,
         };
 
-        const itemExists = AllItemList.some(item => item.name === searchTerm);
-        if (!itemExists) {
-            alert("존재하지 않는 아이템입니다.");
+        if (!searchTerm.trim()) {
+            alert("아이템 이름을 입력해주세요.");
             return;
         }
 
@@ -456,11 +456,6 @@ export default function AuctionPage() {
                                         currentPage * itemsPerPage
                                     )
                                     .map((item: any, index: number) => {
-                                        const itemInfo = AllItemList.find(
-                                            listItem =>
-                                                listItem.name === item.item_name
-                                        );
-
                                         return (
                                             <tr
                                                 key={`item-${item.item_display_name}-${item.auction_price_per_unit}-${item.date_auction_expire}-${index}`}
@@ -470,24 +465,18 @@ export default function AuctionPage() {
                                                 className="cursor-pointer hover:bg-gray-100"
                                             >
                                                 <td className="w-[50px] hidden md:table-cell">
-                                                    {itemInfo && (
-                                                        <>
-                                                            <Image
-                                                                src={`/api/item-image?id=${itemInfo.id}`}
-                                                                alt={
-                                                                    item.item_name
-                                                                }
-                                                                width={40}
-                                                                height={40}
-                                                                sizes="40px"
-                                                                className="object-contain cursor-pointer"
-                                                                priority={false}
-                                                                unoptimized={
-                                                                    true
-                                                                }
-                                                            />
-                                                        </>
-                                                    )}
+                                                    <Image
+                                                        src={getItemImageUrl(
+                                                            item.item_name
+                                                        )}
+                                                        alt={item.item_name}
+                                                        width={40}
+                                                        height={40}
+                                                        sizes="40px"
+                                                        className="object-contain cursor-pointer"
+                                                        priority={false}
+                                                        unoptimized={true}
+                                                    />
                                                 </td>
                                                 <td className="font-medium">
                                                     {item.item_display_name}

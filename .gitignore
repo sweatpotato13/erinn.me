@@ -53,3 +53,7 @@ swe-worker-*
 **/public/sw.js.map
 **/public/worker-*.js
 **/public/fallback-*.js
+
+# oh-my-x
+.omx/
+.omc/

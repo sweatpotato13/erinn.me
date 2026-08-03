@@ -1,18 +1,12 @@
 import { NextResponse } from "next/server";
-import { object, string } from "yup";
+import { object, string, ValidationError } from "yup";
 
+import { checkOrigin } from "@/lib/utils/check-origin";
 import { sendEmail } from "@/services/mail.service";
 
-const { BASE_URL } = process.env;
-
 export async function POST(request: Request) {
-    const allowedDomain = BASE_URL || "http://localhost:3000";
-
-    const referer = request.headers.get("referer");
-
-    if (!referer || !referer.startsWith(allowedDomain)) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const forbidden = checkOrigin(request);
+    if (forbidden) return forbidden;
 
     const body = await request.json();
 
@@ -23,30 +17,38 @@ export async function POST(request: Request) {
         message: string().min(10).required(),
     });
 
+    let validatedBody: {
+        name: string;
+        from: string;
+        subject: string;
+        message: string;
+    };
     try {
-        await bodySchema.validate(body);
-    } catch (error: any) {
+        validatedBody = await bodySchema.validate(body);
+    } catch (error: unknown) {
+        const validationError = error as ValidationError;
         return NextResponse.json(
             {
                 error: "Failed to send mail: Invalid data",
-                details: error.errors,
+                details: validationError.errors,
             },
             { status: 400 }
         );
     }
 
-    return sendEmail(body)
-        .then(() =>
-            NextResponse.json(
-                { error: "Success to send mail" },
-                { status: 200 }
-            )
-        )
-        .catch((error: any) => {
-            console.error(error);
-            NextResponse.json(
-                { error: "Failed to send mail" },
-                { status: 500 }
-            );
-        });
+    try {
+        await sendEmail(validatedBody);
+        return NextResponse.json(
+            { message: "Success to send mail" },
+            { status: 200 }
+        );
+    } catch (error: unknown) {
+        const message =
+            error instanceof Error ? error.message : "Unknown error";
+        console.error("Send email failed:", message);
+        return NextResponse.json(
+            { error: "Failed to send mail" },
+            { status: 500 }
+        );
+    }
 }
