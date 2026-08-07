@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 
 import { AuctionControls } from "@/app/auction/auction-controls";
 import {
@@ -38,24 +38,8 @@ type AuctionViewProps = {
     onSelectFavorite: (favorite: Favorite) => void;
     onShowFavorites: (show: boolean) => void;
     onShowOptions: (options: ItemOption[] | null) => void;
+    favoritesTriggerRef: React.RefObject<HTMLButtonElement | null>;
 };
-
-/**
- * Closes an open dialog when the user presses the Escape key.
- *
- * @param isOpen - Whether the dialog is currently open
- * @param close - Callback invoked when Escape is pressed
- */
-function useCloseOnEscape(isOpen: boolean, close: () => void) {
-    useEffect(() => {
-        if (!isOpen) return;
-        const handleEscape = (event: KeyboardEvent) => {
-            if (event.key === "Escape") close();
-        };
-        window.addEventListener("keydown", handleEscape);
-        return () => window.removeEventListener("keydown", handleEscape);
-    }, [isOpen, close]);
-}
 
 /**
  * Renders the auction page view, including controls, favorites, results, and dialogs.
@@ -81,6 +65,7 @@ function AuctionPageView(props: AuctionViewProps) {
                         )
                     }
                     onShow={() => props.onShowFavorites(true)}
+                    showButtonRef={props.favoritesTriggerRef}
                 />
                 <AuctionControls {...props} loading={props.auction.loading} />
                 {props.showFavorites && (
@@ -89,6 +74,7 @@ function AuctionPageView(props: AuctionViewProps) {
                         onSelect={props.onSelectFavorite}
                         onRemove={props.favorites.remove}
                         onClose={() => props.onShowFavorites(false)}
+                        triggerRef={props.favoritesTriggerRef}
                     />
                 )}
                 <AuctionResults
@@ -120,11 +106,10 @@ export default function AuctionPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showFavorites, setShowFavorites] = useState(false);
     const [options, setOptions] = useState<ItemOption[] | null>(null);
+    const favoritesTriggerRef = useRef<HTMLButtonElement>(null);
     const suggestions = useAuctionSuggestions(searchTerm);
     const favorites = useFavorites();
     const auction = useAuctionSearch();
-    const closeOptions = () => setOptions(null);
-    useCloseOnEscape(options !== null, closeOptions);
 
     const search = (itemName = searchTerm, category = selectedCategory) => {
         setCurrentPage(1);
@@ -141,6 +126,7 @@ export default function AuctionPage() {
         <AuctionPageView
             {...{ searchTerm, selectedCategory, showFavorites, options }}
             {...{ currentPage, suggestions, favorites, auction }}
+            favoritesTriggerRef={favoritesTriggerRef}
             {...{ setSearchTerm, setSelectedCategory, setCurrentPage }}
             onSearch={() => void search()}
             onSelectFavorite={selectFavorite}

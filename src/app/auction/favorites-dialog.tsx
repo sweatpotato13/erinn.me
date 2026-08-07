@@ -1,10 +1,14 @@
+import type { RefObject } from "react";
+
 import type { Favorite } from "@/app/auction/types";
+import { useDialogFocus } from "@/app/auction/use-dialog-focus";
 
 type FavoritesDialogProps = {
     favorites: Favorite[];
     onSelect: (favorite: Favorite) => void;
     onRemove: (index: number) => void;
     onClose: () => void;
+    triggerRef?: RefObject<HTMLElement | null>;
 };
 
 /**
@@ -18,10 +22,12 @@ export function FavoriteToolbar({
     addButtonText,
     onAdd,
     onShow,
+    showButtonRef,
 }: {
     addButtonText: string;
     onAdd: () => void;
     onShow: () => void;
+    showButtonRef?: RefObject<HTMLButtonElement | null>;
 }) {
     return (
         <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full mb-2">
@@ -32,6 +38,7 @@ export function FavoriteToolbar({
                 {addButtonText}
             </button>
             <button
+                ref={showButtonRef}
                 className="btn btn-outline w-auto  min-w-[50px]"
                 onClick={onShow}
             >
@@ -81,10 +88,23 @@ function FavoriteList({ favorites, onSelect, onRemove }: FavoritesDialogProps) {
  * @param props - Favorite data and callbacks for selecting, removing, and closing the dialog
  */
 export function FavoritesDialog(props: FavoritesDialogProps) {
+    const dialogRef = useDialogFocus(props.onClose, props.triggerRef);
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50">
-            <div className="bg-white border p-4 rounded-lg shadow-lg w-80">
-                <h2 className="text-lg font-bold mb-2">즐겨찾기 목록</h2>
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="favorites-dialog-title"
+                tabIndex={-1}
+                className="bg-white border p-4 rounded-lg shadow-lg w-80 outline-none"
+            >
+                <h2
+                    id="favorites-dialog-title"
+                    className="text-lg font-bold mb-2"
+                >
+                    즐겨찾기 목록
+                </h2>
                 <FavoriteList {...props} />
                 <button
                     className="btn btn-outline mt-4 w-full"

@@ -7,6 +7,7 @@ import type {
     ItemOption,
     SortDirection,
 } from "@/app/auction/types";
+import { useDialogFocus } from "@/app/auction/use-dialog-focus";
 import { getItemImageUrl } from "@/lib/utils";
 
 const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
@@ -28,7 +29,7 @@ function AuctionRow({
     onClick: () => void;
 }) {
     return (
-        <tr onClick={onClick} className="cursor-pointer hover:bg-gray-100">
+        <tr className="hover:bg-gray-100">
             <td className="w-[50px] hidden md:table-cell">
                 <Image
                     src={getItemImageUrl(item.item_name)}
@@ -41,7 +42,15 @@ function AuctionRow({
                     unoptimized={true}
                 />
             </td>
-            <td className="font-medium">{item.item_display_name}</td>
+            <td className="font-medium">
+                <button
+                    type="button"
+                    className="underline text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                    onClick={onClick}
+                >
+                    {item.item_display_name}
+                </button>
+            </td>
             <td>{item.auction_price_per_unit.toLocaleString()} Gold</td>
             <td>{item.item_count}</td>
             <td>{item.date_auction_expire}</td>
@@ -58,6 +67,33 @@ type TableProps = {
     onItemClick: (item: AuctionItem) => void;
 };
 
+function ResultsHeader({
+    sortDirection,
+    onSort,
+}: Pick<TableProps, "sortDirection" | "onSort">) {
+    const indicator =
+        sortDirection === "asc" ? "↑" : sortDirection === "desc" ? "↓" : "";
+    return (
+        <thead>
+            <tr>
+                <th className="w-[50px] hidden md:table-cell"></th>
+                <th className="w-[45%]">아이템명</th>
+                <th>
+                    <button
+                        type="button"
+                        className="w-full text-left p-2 hover:bg-base-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                        onClick={onSort}
+                    >
+                        가격 {indicator}
+                    </button>
+                </th>
+                <th>갯수</th>
+                <th>만료 시간</th>
+            </tr>
+        </thead>
+    );
+}
+
 /**
  * Displays a paginated auction results table with sortable prices and selectable items.
  *
@@ -72,25 +108,7 @@ function ResultsTable(props: TableProps) {
     return (
         <div className="overflow-auto h-[50%] rounded-md border">
             <table className="table w-full">
-                <thead>
-                    <tr>
-                        <th className="w-[50px] hidden md:table-cell"></th>
-                        <th className="w-[45%]">아이템명</th>
-                        <th
-                            className="cursor-pointer hover:bg-base-200"
-                            onClick={props.onSort}
-                        >
-                            가격{" "}
-                            {props.sortDirection === "asc"
-                                ? "↑"
-                                : props.sortDirection === "desc"
-                                  ? "↓"
-                                  : ""}
-                        </th>
-                        <th>갯수</th>
-                        <th>만료 시간</th>
-                    </tr>
-                </thead>
+                <ResultsHeader {...props} />
                 <tbody>
                     {props.isEmpty ? (
                         <tr>
@@ -131,9 +149,12 @@ function Pagination({
     setCurrentPage: (update: (page: number) => number) => void;
 }) {
     const totalPages = Math.ceil(itemCount / ITEMS_PER_PAGE);
+    if (totalPages === 0) return null;
     return (
         <div className="flex items-center justify-between mt-4">
             <button
+                type="button"
+                aria-label="이전 페이지"
                 className="btn btn-outline btn-sm"
                 onClick={() => setCurrentPage(page => Math.max(page - 1, 1))}
                 disabled={currentPage === 1}
@@ -144,11 +165,13 @@ function Pagination({
                 {currentPage} / {totalPages}
             </span>
             <button
+                type="button"
+                aria-label="다음 페이지"
                 className="btn btn-outline btn-sm"
                 onClick={() =>
                     setCurrentPage(page => Math.min(page + 1, totalPages))
                 }
-                disabled={currentPage === totalPages}
+                disabled={currentPage >= totalPages}
             >
                 <ChevronRight className="h-4 w-4" />
             </button>
@@ -169,10 +192,23 @@ export function ItemOptionsDialog({
     options: ItemOption[];
     onClose: () => void;
 }) {
+    const dialogRef = useDialogFocus(onClose);
     return (
         <div className="fixed inset-0 flex items-start justify-center z-50">
-            <div className="bg-white border p-4 rounded-lg shadow-lg">
-                <h2 className="text-lg font-bold">아이템 옵션</h2>
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="item-options-dialog-title"
+                tabIndex={-1}
+                className="bg-white border p-4 rounded-lg shadow-lg outline-none"
+            >
+                <h2
+                    id="item-options-dialog-title"
+                    className="text-lg font-bold"
+                >
+                    아이템 옵션
+                </h2>
                 <div className="mt-2">
                     {options.length > 0 ? (
                         <OptionRenderer options={options} />
