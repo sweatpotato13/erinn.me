@@ -6,6 +6,9 @@ import useSound from "use-sound";
 const servers = ["류트", "울프", "하프", "만돌린"];
 const SOUND_PATH = "/sounds/money-drop.mp3";
 
+/**
+ * Displays and searches horn messages for the selected server, with configurable keyword alerts.
+ */
 export default function HornPage() {
     const [play] = useSound(SOUND_PATH);
 

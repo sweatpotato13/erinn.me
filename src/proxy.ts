@@ -24,6 +24,12 @@ const upstreamRoutes = new Set([
     "/api/npc-shop",
 ]);
 
+/**
+ * Determines the rate-limit bucket for an API route.
+ *
+ * @param pathname - The request path to classify
+ * @returns The matching rate-limit bucket, or `null` when the path has no configured bucket
+ */
 export function resolveBucket(pathname: string): Bucket | null {
     if (pathname === "/api/contact") return "contact";
     if (pathname === "/api/item-image") return "image";
@@ -32,6 +38,12 @@ export function resolveBucket(pathname: string): Bucket | null {
     return null;
 }
 
+/**
+ * Identifies the client using the final non-empty value in the trusted forwarding header.
+ *
+ * @param headers - Request headers containing the trusted client forwarding value
+ * @returns The client key, or `127.0.0.1` when no forwarded client value is available
+ */
 export function resolveClientKey(headers: Headers): string {
     const trustedForwarded = headers.get("x-vercel-forwarded-for");
     return (
@@ -43,6 +55,11 @@ export function resolveClientKey(headers: Headers): string {
     );
 }
 
+/**
+ * Creates a response indicating that the rate-limit service is temporarily unavailable.
+ *
+ * @returns An HTTP 503 response with a one-second retry interval.
+ */
 function unavailableResponse() {
     return NextResponse.json(
         { error: "Rate limit service unavailable" },
@@ -50,6 +67,12 @@ function unavailableResponse() {
     );
 }
 
+/**
+ * Creates a response indicating that the request exceeded its rate limit.
+ *
+ * @param bucket - The rate-limit bucket that determines the request limit header.
+ * @returns A 429 response with retry guidance and the configured bucket limit.
+ */
 function limitedResponse(bucket: Bucket) {
     return NextResponse.json(
         { error: "Too many requests" },
@@ -63,6 +86,13 @@ function limitedResponse(bucket: Bucket) {
     );
 }
 
+/**
+ * Applies rate limiting to recognized API routes and forwards allowed requests.
+ *
+ * @param request - The incoming request to evaluate.
+ * @param check - The rate-limit service used to evaluate the request.
+ * @returns A response that forwards the request, indicates rate limiting, or reports service unavailability.
+ */
 export async function applyRateLimit(
     request: NextRequest,
     check: RateLimitCheck = checkRateLimit
@@ -89,6 +119,11 @@ export async function applyRateLimit(
     }
 }
 
+/**
+ * Applies API rate limiting in production and forwards requests unchanged in other environments.
+ *
+ * @returns The response produced by rate-limit processing or request forwarding.
+ */
 export async function proxy(request: NextRequest) {
     if (process.env.NODE_ENV !== "production") return NextResponse.next();
     return applyRateLimit(request);

@@ -13,6 +13,9 @@ import { fetchItemPriceSummary, ItemPriceResponse } from "@/lib/api/auction";
 
 type SortType = "name-asc" | "name-desc" | "price-asc" | "price-desc";
 
+/**
+ * Displays dungeon items with difficulty filtering, auction price information, sorting, and refresh controls.
+ */
 export default function DungeonPage() {
     const [selectedDungeon, setSelectedDungeon] = React.useState<DungeonType>(
         DUNGEON_LIST[0]

@@ -11,6 +11,12 @@ type InputProps = {
     suggestions: Suggestions;
 };
 
+/**
+ * Handles keyboard navigation and selection for the suggestion list.
+ *
+ * @param event - The keyboard event to process
+ * @param props - The input state and handlers used to update the search and suggestions
+ */
 function handleSuggestionKey(event: KeyboardEvent, props: InputProps) {
     const { suggestions: model, setSearchTerm } = props;
     if (!model.isVisible && event.key === "Escape") setSearchTerm("");
@@ -29,6 +35,12 @@ function handleSuggestionKey(event: KeyboardEvent, props: InputProps) {
     }
 }
 
+/**
+ * Renders the visible autocomplete suggestions and handles suggestion selection.
+ *
+ * @param props - Search state and handlers used to display and select suggestions.
+ * @returns The suggestion list, or `null` when no suggestions are available or visible.
+ */
 function SuggestionList({ props }: { props: InputProps }) {
     const { suggestions: model, setSearchTerm } = props;
     if (!model.isVisible || model.suggestions.length === 0) return null;
@@ -51,6 +63,11 @@ function SuggestionList({ props }: { props: InputProps }) {
     );
 }
 
+/**
+ * Renders an item-name search input with autocomplete suggestions.
+ *
+ * @param props - Search state, suggestion data, and handlers used by the input
+ */
 function SuggestionInput(props: InputProps) {
     const { searchTerm, setSearchTerm, suggestions: model } = props;
     return (
@@ -76,6 +93,12 @@ function SuggestionInput(props: InputProps) {
     );
 }
 
+/**
+ * Renders a dropdown for viewing and selecting an auction category.
+ *
+ * @param selectedCategory - The category currently displayed as selected
+ * @param setSelectedCategory - Updates the selected category
+ */
 function CategoryDropdown({
     selectedCategory,
     setSelectedCategory,
@@ -117,6 +140,11 @@ type AuctionControlsProps = InputProps & {
     onSearch: () => void;
 };
 
+/**
+ * Renders auction search controls with autocomplete, search submission, category selection, and loading feedback.
+ *
+ * @param props - The search, category, loading, and suggestion state used by the controls
+ */
 export function AuctionControls(props: AuctionControlsProps) {
     return (
         <div className="flex flex-col md:flex-row md:justify-between mb-2">

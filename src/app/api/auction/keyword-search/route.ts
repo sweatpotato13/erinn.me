@@ -20,6 +20,11 @@ const querySchema = z.object({
     cursor: z.string().max(2048).optional(),
 });
 
+/**
+ * Searches auction items by keyword and returns aggregated paginated results.
+ *
+ * @returns A JSON response containing the matching items, whether more results are available, and the next pagination cursor.
+ */
 export async function GET(request: Request) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;

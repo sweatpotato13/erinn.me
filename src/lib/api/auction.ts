@@ -42,10 +42,22 @@ export interface PriceSummaryResponse {
     isComplete: boolean;
 }
 
+/**
+ * Determines whether a value is a finite number greater than or equal to zero.
+ *
+ * @returns `true` if the value is a finite number greater than or equal to zero, `false` otherwise.
+ */
 function isFiniteNonNegative(value: unknown): value is number {
     return typeof value === "number" && Number.isFinite(value) && value >= 0;
 }
 
+/**
+ * Validates and converts an unknown value into a price summary.
+ *
+ * @param value - The value to validate.
+ * @returns The validated price summary.
+ * @throws Error if the value does not contain valid price, quantity, and completion data.
+ */
 function parsePriceSummary(value: unknown): PriceSummaryResponse {
     if (!value || typeof value !== "object") {
         throw new Error("Malformed price summary response");
@@ -69,6 +81,13 @@ function parsePriceSummary(value: unknown): PriceSummaryResponse {
     };
 }
 
+/**
+ * Fetches and validates the price summary for an item.
+ *
+ * @param itemName - The item name to query; it must contain non-whitespace characters.
+ * @returns The validated price summary.
+ * @throws Error if the item name is blank, the request fails, or the response is malformed.
+ */
 export async function fetchItemPriceSummary(
     itemName: string,
     signal?: AbortSignal
@@ -89,6 +108,12 @@ export async function fetchItemPriceSummary(
     return parsePriceSummary(await response.json());
 }
 
+/**
+ * Retrieves pricing and completion information for an item.
+ *
+ * @param itemName - The name of the item to price
+ * @returns The item's minimum unit price, average price, and completion status; zero-valued pricing with completion marked true when the item name is missing or the request fails
+ */
 export async function getItemPrice(
     itemName: string
 ): Promise<ItemPriceResponse> {
@@ -110,6 +135,13 @@ export async function getItemPrice(
     }
 }
 
+/**
+ * Retrieves item pricing and calculates the total cost for the desired quantity.
+ *
+ * @param itemName - The item name to price
+ * @param desiredQuantity - The quantity to price
+ * @returns Pricing, available quantity, and completion status; zero-valued pricing when the item name is blank or the request fails
+ */
 export async function getItemPriceWithQuantity(
     itemName: string,
     desiredQuantity: number

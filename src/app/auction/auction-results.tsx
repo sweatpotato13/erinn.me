@@ -14,6 +14,12 @@ const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
 });
 const ITEMS_PER_PAGE = 10;
 
+/**
+ * Renders a clickable auction item row with its image, name, price, quantity, and expiration time.
+ *
+ * @param item - The auction item to display
+ * @param onClick - The callback invoked when the row is clicked
+ */
 function AuctionRow({
     item,
     onClick,
@@ -52,6 +58,12 @@ type TableProps = {
     onItemClick: (item: AuctionItem) => void;
 };
 
+/**
+ * Displays a paginated auction results table with sortable prices and selectable items.
+ *
+ * @param props - Table data, pagination state, sorting state, and interaction handlers.
+ * @returns The rendered auction results table.
+ */
 function ResultsTable(props: TableProps) {
     const pageItems = props.items.slice(
         (props.currentPage - 1) * ITEMS_PER_PAGE,
@@ -101,6 +113,14 @@ function ResultsTable(props: TableProps) {
     );
 }
 
+/**
+ * Provides controls for navigating through paginated results.
+ *
+ * @param currentPage - The currently selected page
+ * @param itemCount - The total number of items across all pages
+ * @param setCurrentPage - Updates the selected page
+ * @returns Pagination controls with previous and next buttons
+ */
 function Pagination({
     currentPage,
     itemCount,
@@ -136,6 +156,12 @@ function Pagination({
     );
 }
 
+/**
+ * Displays an item's options in a dialog with a control to close it.
+ *
+ * @param options - The options to display.
+ * @param onClose - Invoked when the dialog is closed.
+ */
 export function ItemOptionsDialog({
     options,
     onClose,
@@ -168,6 +194,11 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     setCurrentPage: (update: (page: number) => number) => void;
 };
 
+/**
+ * Renders auction results with sortable table content and pagination controls.
+ *
+ * @param props - Auction data, loading and error state, and pagination controls.
+ */
 export function AuctionResults(props: AuctionResultsProps) {
     return (
         <>

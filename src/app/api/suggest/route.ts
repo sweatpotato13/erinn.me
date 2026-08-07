@@ -17,6 +17,11 @@ try {
 
 const querySchema = z.object({ q: z.string().max(100).optional() });
 
+/**
+ * Provides name suggestions matching the query string.
+ *
+ * @returns A JSON response containing up to 20 matching suggestions, or a validation error response for invalid query parameters.
+ */
 export function GET(request: NextRequest) {
     const query = parseQuery(request, querySchema);
     if (!query.success) return query.response;

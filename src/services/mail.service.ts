@@ -21,6 +21,16 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+/**
+ * Sends a contact message to the configured mail account.
+ *
+ * @param name - The sender's name
+ * @param from - The sender's email address used for replies
+ * @param subject - The message subject
+ * @param message - The message content
+ * @returns The result of sending the email
+ * @throws Error if the sender address or subject contains invalid mail header content
+ */
 export async function sendEmail({ name, from, subject, message }: EmailData) {
     if (
         containsHeaderInjection(from) ||

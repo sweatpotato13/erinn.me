@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+/**
+ * Displays NPC shop information for a selected NPC, server, and channel.
+ */
 export default function NPCShopPage() {
     const [npcName, setNpcName] = useState("");
     const [serverName, setServerName] = useState("");

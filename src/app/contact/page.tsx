@@ -24,6 +24,9 @@ const bodySchema = object({
         .required("메시지를 입력해주세요."),
 });
 
+/**
+ * Renders a contact form for submitting user inquiries.
+ */
 export default function ContactPage() {
     const [formData, setFormData] = useState<EmailData>({
         name: "",

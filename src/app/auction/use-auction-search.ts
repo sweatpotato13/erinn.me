@@ -3,6 +3,13 @@ import { useState } from "react";
 import type { AuctionItem, SortDirection } from "@/app/auction/types";
 import { categories } from "@/constant/categories";
 
+/**
+ * Requests auction items filtered by category and, when provided, item name.
+ *
+ * @param itemName - The item name or keyword used to filter results.
+ * @param category - The auction category used to select the search endpoint.
+ * @returns The response from the auction API.
+ */
 async function requestItems(itemName: string, category: string) {
     if (category !== categories[0]) {
         const params = new URLSearchParams({ auction_item_category: category });
@@ -16,6 +23,11 @@ async function requestItems(itemName: string, category: string) {
     return fetch("/api/auction?");
 }
 
+/**
+ * Manages auction item searches, loading and error state, and unit-price sorting.
+ *
+ * @returns The current auction items, error message, loading state, sort direction, and operations for searching and sorting items.
+ */
 export function useAuctionSearch() {
     const [items, setItems] = useState<AuctionItem[]>([]);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
