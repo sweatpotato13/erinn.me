@@ -27,10 +27,12 @@ export default function HornPage() {
     const lastAlertTimeRef = useRef(lastAlertTime);
     const playRef = useRef(play);
 
-    selectedServerRef.current = selectedServer;
-    alertKeywordsRef.current = alertKeywords;
-    lastAlertTimeRef.current = lastAlertTime;
-    playRef.current = play;
+    useEffect(() => {
+        selectedServerRef.current = selectedServer;
+        alertKeywordsRef.current = alertKeywords;
+        lastAlertTimeRef.current = lastAlertTime;
+        playRef.current = play;
+    }, [selectedServer, alertKeywords, lastAlertTime, play]);
 
     useEffect(() => {
         const now = new Date().toISOString();

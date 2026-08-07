@@ -313,7 +313,12 @@ export default function CraftingPage() {
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
     // 모든 재료의 가격 정보를 가져오는 쿼리
-    const { data: priceData, isLoading } = useQuery({
+    const {
+        data: priceData,
+        isLoading,
+        isError,
+        refetch,
+    } = useQuery({
         queryKey: ["craftingPrices"],
         queryFn: () => loadCraftingPrices(craftingItems),
     });
@@ -352,6 +357,23 @@ export default function CraftingPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
                 <div className="loading loading-spinner loading-lg"></div>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-6">
+                <div role="alert" className="alert alert-error max-w-xl">
+                    <span>제작 가격 정보를 불러오지 못했습니다.</span>
+                    <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => void refetch()}
+                    >
+                        다시 시도
+                    </button>
+                </div>
             </div>
         );
     }

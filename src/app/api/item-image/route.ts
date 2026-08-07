@@ -31,7 +31,11 @@ export async function GET(request: NextRequest) {
 
     const query = parseQuery(request, querySchema);
     if (!query.success) return query.response;
-    const itemId = query.data.id ?? idMap[query.data.name ?? ""] ?? "1000";
+    const itemName = query.data.name ?? "";
+    const mappedId = Object.hasOwn(idMap, itemName)
+        ? idMap[itemName]
+        : undefined;
+    const itemId = query.data.id ?? mappedId ?? "1000";
     const deadline = createRequestDeadline(request.signal);
 
     try {

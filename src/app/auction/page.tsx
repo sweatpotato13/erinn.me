@@ -20,13 +20,18 @@ export function parseStoredFavorites(value: string | null): Favorite[] {
     try {
         const parsed: unknown = JSON.parse(value);
         if (!Array.isArray(parsed)) return [];
-        return parsed.filter(
-            (item): item is Favorite =>
-                !!item &&
-                typeof item === "object" &&
-                typeof (item as Favorite).itemName === "string" &&
-                typeof (item as Favorite).category === "string"
-        );
+        if (
+            !parsed.every(
+                (item): item is Favorite =>
+                    !!item &&
+                    typeof item === "object" &&
+                    typeof (item as Favorite).itemName === "string" &&
+                    typeof (item as Favorite).category === "string"
+            )
+        ) {
+            return [];
+        }
+        return parsed;
     } catch {
         return [];
     }
