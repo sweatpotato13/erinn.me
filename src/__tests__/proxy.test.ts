@@ -2,7 +2,12 @@
 
 import { NextRequest } from "next/server";
 
-import { consumeRateLimit, proxy, resolveBucket } from "@/proxy";
+import {
+    consumeRateLimit,
+    proxy,
+    resolveBucket,
+    resolveClientKey,
+} from "@/proxy";
 
 describe("rate limiter", () => {
     it("resolves only the four exact route buckets", () => {
@@ -40,7 +45,7 @@ describe("rate limiter", () => {
 
         const allowed = proxy(
             new NextRequest("http://localhost/api/contact", {
-                headers: { "x-forwarded-for": " 203.0.113.8, 10.0.0.1" },
+                headers: { "x-vercel-forwarded-for": "203.0.113.8" },
             })
         );
         expect(allowed.headers.get("X-RateLimit-Limit")).toBe("3");
@@ -51,11 +56,26 @@ describe("rate limiter", () => {
         expect(bypass.headers.get("X-RateLimit-Limit")).toBeNull();
     });
 
+    it("uses the trusted edge identity and ignores client forwarding headers", () => {
+        expect(
+            resolveClientKey(
+                new Headers({ "x-forwarded-for": "198.51.100.20" })
+            )
+        ).toBe("127.0.0.1");
+        expect(
+            resolveClientKey(
+                new Headers({
+                    "x-vercel-forwarded-for": "198.51.100.20, 203.0.113.10",
+                })
+            )
+        ).toBe("203.0.113.10");
+    });
+
     it("returns 429 with retry-after after the last allowed request", () => {
         const ip = `198.51.100.${Math.floor(Math.random() * 100)}`;
         const request = () =>
             new NextRequest("http://localhost/api/contact", {
-                headers: { "x-forwarded-for": ip },
+                headers: { "x-vercel-forwarded-for": ip },
             });
         proxy(request());
         proxy(request());
@@ -72,7 +92,7 @@ describe("rate limiter", () => {
         const clock = jest.spyOn(Date, "now").mockReturnValue(now + 180_000);
         const response = proxy(
             new NextRequest("http://localhost/api/suggest", {
-                headers: { "x-forwarded-for": "192.0.2.10" },
+                headers: { "x-vercel-forwarded-for": "192.0.2.10" },
             })
         );
         expect(response.status).toBe(200);

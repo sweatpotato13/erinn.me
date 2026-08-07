@@ -35,6 +35,17 @@ export function resolveBucket(pathname: string): Bucket | null {
     return null;
 }
 
+export function resolveClientKey(headers: Headers): string {
+    const trustedForwarded = headers.get("x-vercel-forwarded-for");
+    return (
+        trustedForwarded
+            ?.split(",")
+            .map(value => value.trim())
+            .filter(Boolean)
+            .at(-1) ?? "127.0.0.1"
+    );
+}
+
 export function consumeRateLimit(
     store: Map<string, RateLimitEntry>,
     bucket: Bucket,
@@ -96,8 +107,7 @@ export function proxy(request: NextRequest) {
 
     const now = Date.now();
     maybeSweep(now);
-    const forwarded = request.headers.get("x-forwarded-for");
-    const clientKey = forwarded?.split(",")[0]?.trim() || "127.0.0.1";
+    const clientKey = resolveClientKey(request.headers);
     const result = consumeRateLimit(requests, bucket, clientKey, now);
     const headers = rateLimitHeaders(result);
 
