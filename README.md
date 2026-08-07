@@ -69,4 +69,24 @@ To get a local copy up and running follow these simple example steps.
     pnpm start
     ```
 
+### Rate-limit deployment
+
+The API proxy trusts only Vercel's `x-vercel-forwarded-for` header for client
+identity and ignores `x-forwarded-for`. Any reverse proxy placed in front of
+Vercel must strip client-supplied `x-vercel-forwarded-for` values before
+forwarding requests.
+
+Configure these programmatic rate-limit IDs in the Vercel Firewall dashboard:
+
+| ID | Limit | Window |
+| --- | ---: | ---: |
+| `erinn-contact` | 3 | 60 seconds |
+| `erinn-upstream` | 60 | 60 seconds |
+| `erinn-image` | 120 | 60 seconds |
+| `erinn-suggest` | 120 | 60 seconds |
+
+Each rule must use the `@vercel/firewall` condition with its matching ID. A
+missing rule or WAF check failure returns HTTP 503 instead of bypassing the
+quota. Local development bypasses WAF checks.
+
 <p align="right">(<a href="#top">back to top</a>)</p>

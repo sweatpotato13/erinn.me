@@ -21,9 +21,23 @@ const transporter = nodemailer.createTransport({
     },
 });
 
+/**
+ * Sends a contact message to the configured mail account.
+ *
+ * @param name - The sender's name
+ * @param from - The sender's email address used for replies
+ * @param subject - The message subject
+ * @param message - The message content
+ * @returns The result of sending the email
+ * @throws Error if the sender address or subject contains invalid mail header content
+ */
 export async function sendEmail({ name, from, subject, message }: EmailData) {
-    if (containsHeaderInjection(from)) {
-        throw new Error("Invalid sender address: potential header injection");
+    if (
+        containsHeaderInjection(from) ||
+        /[\r\n]/.test(subject) ||
+        subject.length > 120
+    ) {
+        throw new Error("Invalid mail header");
     }
 
     const safeName = escapeHtml(name);
@@ -33,7 +47,8 @@ export async function sendEmail({ name, from, subject, message }: EmailData) {
     const mailData = {
         to: MAILER_AUTH_USER,
         subject: `[erinn.me] ${subject}`,
-        from: from,
+        from: MAILER_AUTH_USER,
+        replyTo: from,
         html: `
     <h1>${safeName}님의 문의</h1>
     <h1>${safeSubject}</h1>

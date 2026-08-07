@@ -31,4 +31,4 @@ class MockIntersectionObserver {
   }
 }
 
-global.IntersectionObserver = MockIntersectionObserver; 
+global.IntersectionObserver = MockIntersectionObserver;

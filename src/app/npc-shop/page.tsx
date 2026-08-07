@@ -3,6 +3,9 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
+/**
+ * Displays NPC shop information for a selected NPC, server, and channel.
+ */
 export default function NPCShopPage() {
     const [npcName, setNpcName] = useState("");
     const [serverName, setServerName] = useState("");
@@ -200,6 +203,8 @@ export default function NPCShopPage() {
                                                 <Image
                                                     src={item.image_url}
                                                     alt={item.item_display_name}
+                                                    width={64}
+                                                    height={64}
                                                     className="w-16 h-16 mt-2"
                                                 />
                                             </li>

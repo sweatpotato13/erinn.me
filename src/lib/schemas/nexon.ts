@@ -14,8 +14,8 @@ const AuctionItemSchema = z
     .object({
         item_name: z.string(),
         item_display_name: z.string(),
-        item_count: z.number(),
-        auction_price_per_unit: z.number(),
+        item_count: z.number().nonnegative(),
+        auction_price_per_unit: z.number().nonnegative(),
         date_auction_expire: z.string(),
         item_option: z.array(AuctionItemOptionSchema).nullish(),
     })
@@ -45,3 +45,31 @@ export const HornResponseSchema = z
     .passthrough();
 
 export type HornResponse = z.infer<typeof HornResponseSchema>;
+
+const NpcShopPriceSchema = z
+    .object({
+        price_type: z.string(),
+        price_value: z.union([z.string(), z.number()]),
+    })
+    .passthrough();
+
+const NpcShopItemSchema = z
+    .object({
+        item_display_name: z.string(),
+        image_url: z.string(),
+        price: z.array(NpcShopPriceSchema),
+    })
+    .passthrough();
+
+const NpcShopTabSchema = z
+    .object({
+        tab_name: z.string(),
+        item: z.array(NpcShopItemSchema),
+    })
+    .passthrough();
+
+export const NpcShopResponseSchema = z
+    .object({
+        shop: z.array(NpcShopTabSchema),
+    })
+    .passthrough();
