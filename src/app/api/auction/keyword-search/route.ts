@@ -4,6 +4,7 @@ import * as z from "zod";
 import { parseQuery } from "@/lib/api/request";
 import {
     createRequestDeadline,
+    createUpstreamUrl,
     fetchUpstream,
     parseUpstreamJson,
     throwIfDeadlineExpired,
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
     try {
         do {
             throwIfDeadlineExpired(deadline);
-            const url = new URL(
+            const url = createUpstreamUrl(
                 "/mabinogi/v1/auction/keyword-search",
                 NXOPEN_API_URL
             );

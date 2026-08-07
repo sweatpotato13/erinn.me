@@ -4,6 +4,7 @@ import * as z from "zod";
 import { parseQuery } from "@/lib/api/request";
 import {
     createRequestDeadline,
+    createUpstreamUrl,
     fetchUpstream,
     parseUpstreamJson,
     throwIfDeadlineExpired,
@@ -34,7 +35,7 @@ export async function GET(request: Request) {
     const query = parseQuery(request, querySchema);
     if (!query.success) return query.response;
 
-    const deadline = createRequestDeadline(request.signal);
+    const deadline = createRequestDeadline(request.signal, 15_000);
     const allItems: Record<string, unknown>[] = [];
     let nextCursor: string | null = query.data.cursor ?? "";
     let pageCount = 0;
@@ -42,7 +43,10 @@ export async function GET(request: Request) {
     try {
         do {
             throwIfDeadlineExpired(deadline);
-            const url = new URL("/mabinogi/v1/auction/list", NXOPEN_API_URL);
+            const url = createUpstreamUrl(
+                "/mabinogi/v1/auction/list",
+                NXOPEN_API_URL
+            );
             if (query.data.auction_item_category) {
                 url.searchParams.set(
                     "auction_item_category",

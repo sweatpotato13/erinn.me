@@ -4,6 +4,7 @@ import * as z from "zod";
 import { parseQuery, serverNameSchema } from "@/lib/api/request";
 import {
     createRequestDeadline,
+    createUpstreamUrl,
     fetchUpstream,
     parseUpstreamJson,
     upstreamErrorResponse,
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
     const deadline = createRequestDeadline(request.signal);
 
     try {
-        const url = new URL(
+        const url = createUpstreamUrl(
             "/mabinogi/v1/horn-bugle-world/history",
             NXOPEN_API_URL
         );

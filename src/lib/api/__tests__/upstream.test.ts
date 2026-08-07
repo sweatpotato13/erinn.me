@@ -4,6 +4,7 @@ import * as z from "zod";
 
 import {
     createRequestDeadline,
+    createUpstreamUrl,
     fetchUpstream,
     parseUpstreamJson,
     readUpstreamArrayBuffer,
@@ -14,6 +15,18 @@ import {
 
 describe("upstream boundary", () => {
     afterEach(() => jest.restoreAllMocks());
+
+    it("validates upstream configuration before constructing URLs", () => {
+        expect(createUpstreamUrl("/v1", "https://example.com").href).toBe(
+            "https://example.com/v1"
+        );
+        expect(() => createUpstreamUrl("/v1")).toThrow(
+            expect.objectContaining({ failureClass: "upstream_config" })
+        );
+        expect(() => createUpstreamUrl("/v1", "not-a-url")).toThrow(
+            expect.objectContaining({ failureClass: "upstream_config" })
+        );
+    });
 
     it("fetches and validates JSON within one deadline", async () => {
         jest.spyOn(global, "fetch").mockResolvedValue(
@@ -120,5 +133,11 @@ describe("upstream boundary", () => {
         expect(upstreamErrorResponse("/api/test", new Error("x")).status).toBe(
             502
         );
+        expect(
+            upstreamErrorResponse(
+                "/api/test",
+                new UpstreamFailure("upstream_config", "secret")
+            ).status
+        ).toBe(500);
     });
 });

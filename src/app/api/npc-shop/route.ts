@@ -4,6 +4,7 @@ import * as z from "zod";
 import { parseQuery, serverNameSchema } from "@/lib/api/request";
 import {
     createRequestDeadline,
+    createUpstreamUrl,
     fetchUpstream,
     parseUpstreamJson,
     upstreamErrorResponse,
@@ -27,7 +28,10 @@ export async function GET(request: Request) {
     const deadline = createRequestDeadline(request.signal);
 
     try {
-        const url = new URL("/mabinogi/v1/npcshop/list", NXOPEN_API_URL);
+        const url = createUpstreamUrl(
+            "/mabinogi/v1/npcshop/list",
+            NXOPEN_API_URL
+        );
         url.searchParams.set("npc_name", query.data.npc_name);
         url.searchParams.set("server_name", query.data.server_name);
         url.searchParams.set("channel", query.data.channel.toString());

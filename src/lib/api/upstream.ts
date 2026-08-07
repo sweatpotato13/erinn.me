@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import type * as z from "zod";
 
 export type UpstreamFailureClass =
+    | "upstream_config"
     | "timeout"
     | "upstream_http"
     | "upstream_schema";
@@ -21,6 +22,22 @@ export type RequestDeadline = {
     expiresAt: number;
     requestSignal?: AbortSignal;
 };
+
+export function createUpstreamUrl(path: string, baseUrl?: string): URL {
+    try {
+        if (!baseUrl) throw new TypeError("Missing upstream URL");
+        const url = new URL(path, baseUrl);
+        if (url.protocol !== "http:" && url.protocol !== "https:") {
+            throw new TypeError("Unsupported upstream URL protocol");
+        }
+        return url;
+    } catch {
+        throw new UpstreamFailure(
+            "upstream_config",
+            "Invalid upstream configuration"
+        );
+    }
+}
 
 export function createRequestDeadline(
     requestSignal?: AbortSignal,
@@ -147,10 +164,19 @@ export function upstreamErrorResponse(route: string, error: unknown) {
     return NextResponse.json(
         {
             error:
-                failure.failureClass === "timeout"
-                    ? "Upstream request timed out"
-                    : "Failed to fetch upstream data",
+                failure.failureClass === "upstream_config"
+                    ? "Upstream service is not configured"
+                    : failure.failureClass === "timeout"
+                      ? "Upstream request timed out"
+                      : "Failed to fetch upstream data",
         },
-        { status: failure.failureClass === "timeout" ? 504 : 502 }
+        {
+            status:
+                failure.failureClass === "upstream_config"
+                    ? 500
+                    : failure.failureClass === "timeout"
+                      ? 504
+                      : 502,
+        }
     );
 }
