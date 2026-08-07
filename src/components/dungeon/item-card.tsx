@@ -1,17 +1,18 @@
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
 import type { DungeonType } from "@/constant/dungeons";
 import type { DungeonItem } from "@/constant/dungeons-items";
-import { getItemPrice, ItemPriceResponse } from "@/lib/api/auction";
+import { ItemPriceResponse } from "@/lib/api/auction";
 
 interface ItemCardProps {
     item: DungeonItem;
     selectedDungeon: DungeonType;
     selectedDifficulty: string | null;
     priceInfo?: ItemPriceResponse;
-    onRefresh?: (itemName: string) => void;
+    isRefreshing: boolean;
+    error?: string;
+    onRefresh: (itemName: string) => void;
 }
 
 export function ItemCard({
@@ -19,32 +20,15 @@ export function ItemCard({
     selectedDungeon,
     selectedDifficulty,
     priceInfo,
+    isRefreshing,
+    error,
     onRefresh,
 }: ItemCardProps) {
     // 애니메이션 효과를 위한 상태
     const [isRefreshed, setIsRefreshed] = useState(false);
     const [prevPrice, setPrevPrice] = useState<number | null>(null);
 
-    // 부모 컴포넌트에서 priceInfo를 제공하지 않는 경우에만 useQuery 사용
-    const {
-        data: queriedPriceData,
-        isError,
-        refetch,
-        isRefetching,
-    } = useQuery({
-        queryKey: ["itemPrice", item.name],
-        queryFn: () => getItemPrice(item.name),
-        retry: 3, // 500 에러 같은 네트워크 오류 시 3번 재시도
-        retryDelay: 1000,
-        staleTime: 5 * 60 * 1000,
-        gcTime: 10 * 60 * 1000,
-        refetchOnWindowFocus: false,
-        // priceInfo가 제공되는 경우 쿼리를 비활성화
-        enabled: !priceInfo,
-    });
-
-    // priceInfo prop이 있으면 그것을 사용하고, 없으면 쿼리 결과 사용
-    const priceData = priceInfo || queriedPriceData;
+    const priceData = priceInfo;
 
     // 가격이 변경되었을 때 갱신 효과 적용
     useEffect(() => {
@@ -64,10 +48,10 @@ export function ItemCard({
         }
 
         // 현재 가격 저장
-        if (priceData && !isRefetching) {
+        if (priceData && !isRefreshing) {
             setPrevPrice(priceData.unitPrice);
         }
-    }, [priceData, prevPrice, isRefetching]);
+    }, [priceData, prevPrice, isRefreshing]);
 
     // 새로고침 처리 함수
     const handleRefresh = () => {
@@ -76,13 +60,7 @@ export function ItemCard({
             setPrevPrice(priceData.unitPrice);
         }
 
-        if (onRefresh) {
-            // 부모 컴포넌트의 새로고침 함수 호출
-            onRefresh(item.name);
-        } else {
-            // 자체 refetch 실행
-            void refetch();
-        }
+        onRefresh(item.name);
     };
 
     // 가격 정보가 비어있는지 확인 (API에서 200을 반환했지만 내용이 비어있는 경우)
@@ -92,8 +70,8 @@ export function ItemCard({
     // 현재 선택된 던전에서의 드랍 정보
     const dropInfo = item.drops.find(drop => drop.dungeon === selectedDungeon);
 
-    // 새로고침 중인지 확인 (useQuery의 isRefetching 또는 부모로부터 전달된 상태)
-    const isRefreshingPrice = isRefetching || (onRefresh && !priceData);
+    const isInitialLoading = !priceData && !error;
+    const isRefreshingPrice = isRefreshing || isInitialLoading;
 
     return (
         <div className="card bg-base-100 shadow-xl hover:shadow-2xl transition-shadow">
@@ -140,8 +118,8 @@ export function ItemCard({
                     >
                         {isRefreshingPrice
                             ? "가격 새로고침 중..."
-                            : isError && !priceInfo
-                              ? "가격 정보 없음"
+                            : error && !priceInfo
+                              ? "가격 조회 실패"
                               : isPriceEmpty
                                 ? "가격 정보 없음"
                                 : priceData
@@ -177,6 +155,11 @@ export function ItemCard({
                 {isRefreshed && (
                     <div className="mt-1 text-xs text-success animate-fadeIn">
                         가격 정보가 갱신되었습니다!
+                    </div>
+                )}
+                {error && (
+                    <div className="mt-1 text-xs text-error" role="alert">
+                        {error}
                     </div>
                 )}
             </div>
