@@ -69,4 +69,11 @@ To get a local copy up and running follow these simple example steps.
     pnpm start
     ```
 
+### Rate-limit deployment
+
+The API proxy trusts only Vercel's `x-vercel-forwarded-for` header for client
+identity and ignores `x-forwarded-for`. Any reverse proxy placed in front of
+Vercel must strip client-supplied `x-vercel-forwarded-for` values before
+forwarding requests.
+
 <p align="right">(<a href="#top">back to top</a>)</p>

@@ -106,7 +106,7 @@ test("superseded suggestions cannot overwrite the latest results", async ({
         await route.fulfill({ json: { suggestions: ["최신 결과"] } });
     });
 
-    await page.goto("/auction");
+    await page.goto("/auction", { waitUntil: "networkidle" });
     const input = page.getByPlaceholder("아이템명");
     const oldRequest = page.waitForRequest(request => {
         const url = new URL(request.url());
@@ -166,7 +166,7 @@ test("contact failure preserves the form and shows an error", async ({
     await page.route("**/api/contact", route =>
         route.fulfill({ status: 429, json: { error: "Too many requests" } })
     );
-    await page.goto("/contact");
+    await page.goto("/contact", { waitUntil: "networkidle" });
     await page.getByLabel("닉네임").fill("테스터");
     await page.getByLabel("이메일").fill("user@example.com");
     await page.getByLabel("제목").fill("문의 제목");
@@ -185,7 +185,7 @@ test("contact success clears the form", async ({ page }) => {
     await page.route("**/api/contact", route =>
         route.fulfill({ status: 200, json: { message: "ok" } })
     );
-    await page.goto("/contact");
+    await page.goto("/contact", { waitUntil: "networkidle" });
     await page.getByLabel("닉네임").fill("테스터");
     await page.getByLabel("이메일").fill("user@example.com");
     await page.getByLabel("제목").fill("문의 제목");
