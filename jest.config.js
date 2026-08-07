@@ -24,9 +24,35 @@ const customJestConfig = {
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',
     '!src/**/*.d.ts',
+    '!src/constant/**',
+    '!src/data/**',
+    '!src/components/icons/**',
+    '!src/**/config.{ts,tsx}',
     '!**/node_modules/**',
   ],
+  coverageThreshold: {
+    'src/lib/api/request.ts': {
+      lines: 90,
+      branches: 80,
+      functions: 90,
+    },
+    'src/lib/api/upstream.ts': {
+      lines: 90,
+      branches: 80,
+      functions: 90,
+    },
+    'src/lib/utils/escape.ts': {
+      lines: 100,
+      branches: 100,
+      functions: 100,
+    },
+    'src/proxy.ts': {
+      lines: 90,
+      branches: 80,
+      functions: 90,
+    },
+  },
 };
 
 // createJestConfig를 내보내 Next.js가 비동기 설정을 위해 사용할 수 있도록 합니다
-module.exports = createJestConfig(customJestConfig); 
+module.exports = createJestConfig(customJestConfig);
