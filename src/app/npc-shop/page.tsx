@@ -200,6 +200,8 @@ export default function NPCShopPage() {
                                                 <Image
                                                     src={item.image_url}
                                                     alt={item.item_display_name}
+                                                    width={64}
+                                                    height={64}
                                                     className="w-16 h-16 mt-2"
                                                 />
                                             </li>

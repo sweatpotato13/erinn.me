@@ -1,31 +1,49 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as z from "zod";
 
+import itemIdMap from "@/data/item-id-map.json";
+import { parseQuery } from "@/lib/api/request";
+import {
+    createRequestDeadline,
+    fetchUpstream,
+    readUpstreamArrayBuffer,
+    upstreamErrorResponse,
+    UpstreamFailure,
+} from "@/lib/api/upstream";
 import { checkOrigin } from "@/lib/utils/check-origin";
+
+const idMap: Record<string, string> = itemIdMap;
+const querySchema = z
+    .object({
+        id: z
+            .string()
+            .min(1)
+            .max(64)
+            .regex(/^[A-Za-z0-9_-]+$/)
+            .optional(),
+        name: z.string().trim().min(1).max(100).optional(),
+    })
+    .refine(value => value.id || value.name);
 
 export async function GET(request: NextRequest) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;
 
-    const searchParams = request.nextUrl.searchParams;
-    const itemId = searchParams.get("id");
-
-    if (!itemId) {
-        return new NextResponse("Missing item ID", { status: 400 });
-    }
-
-    if (!/^[a-zA-Z0-9_-]+$/.test(itemId)) {
-        return new NextResponse("Invalid item ID", { status: 400 });
-    }
+    const query = parseQuery(request, querySchema);
+    if (!query.success) return query.response;
+    const itemId = query.data.id ?? idMap[query.data.name ?? ""] ?? "1000";
+    const deadline = createRequestDeadline(request.signal);
 
     try {
-        const imageUrl = `https://mabires2.pril.cc/invimage/kr/${itemId}/${itemId}.png`;
-        const imageResponse = await fetch(imageUrl);
-
-        if (!imageResponse.ok) {
-            return new NextResponse("Image not found", { status: 404 });
-        }
-
-        const imageBuffer = await imageResponse.arrayBuffer();
+        const imageUrl = new URL(
+            `/invimage/kr/${itemId}/${itemId}.png`,
+            "https://mabires2.pril.cc"
+        );
+        const imageResponse = await fetchUpstream(imageUrl, {}, deadline);
+        const imageBuffer = await readUpstreamArrayBuffer(
+            imageResponse,
+            deadline
+        );
 
         return new NextResponse(imageBuffer, {
             status: 200,
@@ -37,7 +55,9 @@ export async function GET(request: NextRequest) {
             },
         });
     } catch (error) {
-        console.error("Error fetching image:", error);
-        return new NextResponse("Error fetching image", { status: 500 });
+        if (error instanceof UpstreamFailure && error.upstreamStatus === 404) {
+            return new NextResponse("Image not found", { status: 404 });
+        }
+        return upstreamErrorResponse("/api/item-image", error);
     }
 }
