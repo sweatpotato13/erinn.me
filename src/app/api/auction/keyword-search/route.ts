@@ -1,87 +1,73 @@
 import { NextResponse } from "next/server";
+import * as z from "zod";
 
+import { parseQuery } from "@/lib/api/request";
+import {
+    createRequestDeadline,
+    fetchUpstream,
+    parseUpstreamJson,
+    throwIfDeadlineExpired,
+    upstreamErrorResponse,
+} from "@/lib/api/upstream";
 import { AuctionListResponseSchema } from "@/lib/schemas/nexon";
 import { checkOrigin } from "@/lib/utils/check-origin";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
+const MAX_PAGES = 5;
+const querySchema = z.object({
+    keyword: z.string().trim().min(1).max(100),
+    cursor: z.string().max(2048).optional(),
+});
 
 export async function GET(request: Request) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;
 
-    const { searchParams } = new URL(request.url);
-    const keyword = searchParams.get("keyword");
+    const query = parseQuery(request, querySchema);
+    if (!query.success) return query.response;
 
-    if (!keyword) {
-        return NextResponse.json(
-            { error: "keyword parameter is required" },
-            { status: 400 }
-        );
-    }
-
-    const MAX_PAGES = 5;
-    const cursor = searchParams.get("cursor");
-
-    let allItems: Record<string, unknown>[] = [];
-    let nextCursor: string | null = cursor || "";
+    const deadline = createRequestDeadline(request.signal);
+    const allItems: Record<string, unknown>[] = [];
+    let nextCursor: string | null = query.data.cursor ?? "";
     let pageCount = 0;
 
     try {
         do {
-            let url = `${NXOPEN_API_URL}/mabinogi/v1/auction/keyword-search?`;
-            url += `keyword=${encodeURIComponent(keyword)}&`;
-            if (nextCursor) {
-                url += `cursor=${encodeURIComponent(nextCursor)}`;
-            }
+            throwIfDeadlineExpired(deadline);
+            const url = new URL(
+                "/mabinogi/v1/auction/keyword-search",
+                NXOPEN_API_URL
+            );
+            url.searchParams.set("keyword", query.data.keyword);
+            if (nextCursor) url.searchParams.set("cursor", nextCursor);
 
-            const response = await fetch(url, {
-                headers: {
-                    "Content-Type": "application/json",
-                    "x-nxopen-api-key": NXOPEN_API_KEY || "",
+            const response = await fetchUpstream(
+                url,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "x-nxopen-api-key": NXOPEN_API_KEY || "",
+                    },
                 },
-            });
-
-            if (!response.ok) {
-                console.error(await response.json());
-                return NextResponse.json(
-                    { error: "Failed to fetch data" },
-                    { status: 500 }
-                );
-            }
-
-            const raw = await response.json();
-            const parsed = AuctionListResponseSchema.safeParse(raw);
-
-            if (!parsed.success) {
-                console.error(
-                    "NEXON response validation failed:",
-                    parsed.error
-                );
-                return NextResponse.json(
-                    { error: "Upstream data format error" },
-                    { status: 502 }
-                );
-            }
-
-            const data = parsed.data;
-            if (data.auction_item.length > 0) {
-                allItems = [...allItems, ...data.auction_item];
-            }
-
+                deadline
+            );
+            const data = await parseUpstreamJson(
+                response,
+                AuctionListResponseSchema,
+                deadline
+            );
+            allItems.push(...data.auction_item);
             nextCursor = data.next_cursor ?? null;
             pageCount++;
         } while (nextCursor && pageCount < MAX_PAGES);
 
+        throwIfDeadlineExpired(deadline);
         return NextResponse.json({
             items: allItems,
             hasMore: !!nextCursor,
-            nextCursor: nextCursor,
+            nextCursor,
         });
     } catch (error) {
-        console.error("Error fetching keyword search data:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch data" },
-            { status: 500 }
-        );
+        return upstreamErrorResponse("/api/auction/keyword-search", error);
     }
 }

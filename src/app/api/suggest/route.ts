@@ -1,6 +1,9 @@
 import { readFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import { resolve } from "path";
+import * as z from "zod";
+
+import { parseQuery } from "@/lib/api/request";
 
 const indexPath = resolve(process.cwd(), "src/data/suggest-index.json");
 let suggestIndex: Record<string, string[]> = {};
@@ -12,8 +15,12 @@ try {
     console.error("Failed to load suggest-index.json");
 }
 
+const querySchema = z.object({ q: z.string().max(100).optional() });
+
 export function GET(request: NextRequest) {
-    const q = request.nextUrl.searchParams.get("q")?.toLowerCase() ?? "";
+    const query = parseQuery(request, querySchema);
+    if (!query.success) return query.response;
+    const q = (query.data.q ?? "").toLowerCase();
 
     if (q.length < 2) {
         return NextResponse.json({ suggestions: [] });
