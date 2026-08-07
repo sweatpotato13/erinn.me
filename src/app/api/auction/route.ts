@@ -14,11 +14,18 @@ import { checkOrigin } from "@/lib/utils/check-origin";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 const MAX_PAGES = 5;
-const querySchema = z.object({
-    auction_item_category: z.string().max(50).optional(),
-    item_name: z.string().max(100).optional(),
-    cursor: z.string().max(2048).optional(),
-});
+const querySchema = z
+    .object({
+        auction_item_category: z.string().max(50).optional(),
+        item_name: z.string().max(100).optional(),
+        cursor: z.string().max(2048).optional(),
+    })
+    .refine(
+        q =>
+            (q.auction_item_category?.trim().length ?? 0) > 0 ||
+            (q.item_name?.trim().length ?? 0) > 0,
+        { message: "At least one search field is required" }
+    );
 
 export async function GET(request: Request) {
     const forbidden = checkOrigin(request);

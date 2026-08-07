@@ -31,14 +31,22 @@ describe("API query contracts", () => {
         }
     );
 
-    it("keeps empty auction filters valid", async () => {
+    it("rejects auction requests with no search fields", async () => {
+        const response = await getAuction(request("/api/auction"));
+        expect(response.status).toBe(400);
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it("accepts auction requests with a valid search field", async () => {
         jest.mocked(fetch).mockResolvedValue(
             new Response(
                 JSON.stringify({ auction_item: [], next_cursor: null }),
                 { status: 200 }
             )
         );
-        const response = await getAuction(request("/api/auction"));
+        const response = await getAuction(
+            request("/api/auction?item_name=sword")
+        );
         expect(response.status).toBe(200);
         expect(await response.json()).toEqual({
             items: [],
@@ -147,7 +155,9 @@ describe("API upstream failure contracts", () => {
             },
         } as Response);
 
-        const response = await getAuction(request("/api/auction"));
+        const response = await getAuction(
+            request("/api/auction?item_name=sword")
+        );
         expect(response.status).toBe(504);
         expect(await response.json()).toEqual({
             error: "Upstream request timed out",
