@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import type { RefObject } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Fetches auction suggestions for a search term.
@@ -22,13 +23,16 @@ async function fetchSuggestions(searchTerm: string, signal: AbortSignal) {
  *
  * @param activeIndex - The index of the suggestion to bring into view
  */
-function useActiveSuggestionScroll(activeIndex: number) {
+function useActiveSuggestionScroll(
+    activeIndex: number,
+    activeSuggestionRef: RefObject<HTMLButtonElement | null>
+) {
     useEffect(() => {
-        document.getElementById(`suggestion-${activeIndex}`)?.scrollIntoView({
+        activeSuggestionRef.current?.scrollIntoView({
             block: "nearest",
             behavior: "smooth",
         });
-    }, [activeIndex]);
+    }, [activeIndex, activeSuggestionRef]);
 }
 
 /**
@@ -41,6 +45,7 @@ export function useAuctionSuggestions(searchTerm: string) {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(false);
+    const activeSuggestionRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
         if (searchTerm.length < 2) {
@@ -69,12 +74,13 @@ export function useAuctionSuggestions(searchTerm: string) {
         };
     }, [searchTerm]);
 
-    useActiveSuggestionScroll(activeIndex);
+    useActiveSuggestionScroll(activeIndex, activeSuggestionRef);
     return {
         suggestions,
         activeIndex,
         setActiveIndex,
         isVisible,
         setIsVisible,
+        activeSuggestionRef,
     };
 }

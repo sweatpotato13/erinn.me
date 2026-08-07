@@ -36,7 +36,13 @@ export function useFavorites() {
     const [addButtonText, setAddButtonText] = useState("즐겨찾기 등록");
 
     useEffect(() => {
-        setFavorites(parseStoredFavorites(localStorage.getItem("favorites")));
+        try {
+            setFavorites(
+                parseStoredFavorites(localStorage.getItem("favorites"))
+            );
+        } catch {
+            setFavorites([]);
+        }
     }, []);
     useEffect(() => {
         if (addButtonText !== "✔") return;
@@ -46,7 +52,11 @@ export function useFavorites() {
 
     const save = (nextFavorites: Favorite[]) => {
         setFavorites(nextFavorites);
-        localStorage.setItem("favorites", JSON.stringify(nextFavorites));
+        try {
+            localStorage.setItem("favorites", JSON.stringify(nextFavorites));
+        } catch {
+            // Keep favorites usable in memory when storage is unavailable.
+        }
     };
     const add = (itemName: string, category: string) => {
         if (favorites.length >= 20) {

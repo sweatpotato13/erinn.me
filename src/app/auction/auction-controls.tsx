@@ -47,16 +47,23 @@ function SuggestionList({ props }: { props: InputProps }) {
     return (
         <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
             {model.suggestions.map((suggestion, index) => (
-                <li
-                    key={`suggestion-${suggestion}-${index}`}
-                    id={`suggestion-${index}`}
-                    className={`p-2 cursor-pointer ${index === model.activeIndex ? "bg-gray-200" : ""}`}
-                    onClick={() => {
-                        setSearchTerm(suggestion);
-                        model.setIsVisible(false);
-                    }}
-                >
-                    {suggestion}
+                <li key={`suggestion-${suggestion}-${index}`} role="none">
+                    <button
+                        ref={
+                            index === model.activeIndex
+                                ? model.activeSuggestionRef
+                                : undefined
+                        }
+                        type="button"
+                        className={`w-full p-2 text-left cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${index === model.activeIndex ? "bg-gray-200" : ""}`}
+                        onMouseDown={event => event.preventDefault()}
+                        onClick={() => {
+                            setSearchTerm(suggestion);
+                            model.setIsVisible(false);
+                        }}
+                    >
+                        {suggestion}
+                    </button>
                 </li>
             ))}
         </ul>
@@ -122,9 +129,13 @@ function CategoryDropdown({
                 >
                     {categories.map(category => (
                         <li key={`category-${category}`}>
-                            <a onClick={() => setSelectedCategory(category)}>
+                            <button
+                                type="button"
+                                className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+                                onClick={() => setSelectedCategory(category)}
+                            >
                                 {category}
-                            </a>
+                            </button>
                         </li>
                     ))}
                 </ul>
