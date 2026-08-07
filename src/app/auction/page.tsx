@@ -1,605 +1,136 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Loader } from "lucide-react";
-import dynamic from "next/dynamic";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 
+import { AuctionControls } from "@/app/auction/auction-controls";
+import {
+    AuctionResults,
+    ItemOptionsDialog,
+} from "@/app/auction/auction-results";
+import {
+    FavoritesDialog,
+    FavoriteToolbar,
+} from "@/app/auction/favorites-dialog";
+import type { Favorite, ItemOption } from "@/app/auction/types";
+import { useAuctionSearch } from "@/app/auction/use-auction-search";
+import { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
+import {
+    parseStoredFavorites,
+    useFavorites,
+} from "@/app/auction/use-favorites";
 import { categories } from "@/constant/categories";
-import { getItemImageUrl } from "@/lib/utils";
 
-const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
-    ssr: false,
-});
+export { parseStoredFavorites };
 
-type Favorite = { itemName: string; category: string };
+type AuctionViewProps = {
+    searchTerm: string;
+    selectedCategory: string;
+    showFavorites: boolean;
+    options: ItemOption[] | null;
+    currentPage: number;
+    suggestions: ReturnType<typeof useAuctionSuggestions>;
+    favorites: ReturnType<typeof useFavorites>;
+    auction: ReturnType<typeof useAuctionSearch>;
+    setSearchTerm: (value: string) => void;
+    setSelectedCategory: (value: string) => void;
+    setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
+    onSearch: () => void;
+    onSelectFavorite: (favorite: Favorite) => void;
+    onShowFavorites: (show: boolean) => void;
+    onShowOptions: (options: ItemOption[] | null) => void;
+};
 
-export function parseStoredFavorites(value: string | null): Favorite[] {
-    if (!value) return [];
+function useCloseOnEscape(isOpen: boolean, close: () => void) {
+    useEffect(() => {
+        if (!isOpen) return;
+        const handleEscape = (event: KeyboardEvent) => {
+            if (event.key === "Escape") close();
+        };
+        window.addEventListener("keydown", handleEscape);
+        return () => window.removeEventListener("keydown", handleEscape);
+    }, [isOpen, close]);
+}
 
-    try {
-        const parsed: unknown = JSON.parse(value);
-        if (!Array.isArray(parsed)) return [];
-        if (
-            !parsed.every(
-                (item): item is Favorite =>
-                    !!item &&
-                    typeof item === "object" &&
-                    typeof (item as Favorite).itemName === "string" &&
-                    typeof (item as Favorite).category === "string"
-            )
-        ) {
-            return [];
-        }
-        return parsed;
-    } catch {
-        return [];
-    }
+function AuctionPageView(props: AuctionViewProps) {
+    return (
+        <div className="flex flex-col items-center justify-start min-h-screen p-6">
+            <div className="w-full max-w-4xl p-6 backdrop-blur-sm rounded-lg flex-grow">
+                {props.auction.errorMessage && (
+                    <div className="alert alert-error mb-4">
+                        {props.auction.errorMessage}
+                    </div>
+                )}
+                <FavoriteToolbar
+                    addButtonText={props.favorites.addButtonText}
+                    onAdd={() =>
+                        props.favorites.add(
+                            props.searchTerm,
+                            props.selectedCategory
+                        )
+                    }
+                    onShow={() => props.onShowFavorites(true)}
+                />
+                <AuctionControls {...props} loading={props.auction.loading} />
+                {props.showFavorites && (
+                    <FavoritesDialog
+                        favorites={props.favorites.favorites}
+                        onSelect={props.onSelectFavorite}
+                        onRemove={props.favorites.remove}
+                        onClose={() => props.onShowFavorites(false)}
+                    />
+                )}
+                <AuctionResults
+                    {...props.auction}
+                    currentPage={props.currentPage}
+                    setCurrentPage={props.setCurrentPage}
+                    onSort={props.auction.sortByPrice}
+                    onItemClick={item =>
+                        props.onShowOptions(item.item_option ?? [])
+                    }
+                />
+                {props.options && (
+                    <ItemOptionsDialog
+                        options={props.options}
+                        onClose={() => props.onShowOptions(null)}
+                    />
+                )}
+            </div>
+        </div>
+    );
 }
 
 export default function AuctionPage() {
     const [currentPage, setCurrentPage] = useState(1);
-    const itemsPerPage = 10;
-    const [selectedCategory, setSelectedCategory] = useState<string>(
-        categories[0]
-    );
+    const [selectedCategory, setSelectedCategory] = useState(categories[0]);
     const [searchTerm, setSearchTerm] = useState("");
-    const [filteredItems, setFilteredItems] = useState<any>([]);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [popupItemOptions, setPopupItemOptions] = useState<any>(null);
-    const [isPopupVisible, setIsPopupVisible] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(0);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const [favorites, setFavorites] = useState<
-        { itemName: string; category: string }[]
-    >([]);
-    const [isFavoritesPopupVisible, setIsFavoritesPopupVisible] =
-        useState(false);
-    const [addFavoriteText, setAddFavoriteText] = useState("즐겨찾기 등록");
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc" | null>(
-        null
-    );
+    const [showFavorites, setShowFavorites] = useState(false);
+    const [options, setOptions] = useState<ItemOption[] | null>(null);
+    const suggestions = useAuctionSuggestions(searchTerm);
+    const favorites = useFavorites();
+    const auction = useAuctionSearch();
+    const closeOptions = () => setOptions(null);
+    useCloseOnEscape(options !== null, closeOptions);
 
-    useEffect(() => {
-        if (searchTerm.length < 2) {
-            setShowSuggestions(false);
-            setSuggestions([]);
-            return;
-        }
-
-        const controller = new AbortController();
-        const timer = setTimeout(() => {
-            fetch(`/api/suggest?q=${encodeURIComponent(searchTerm)}`, {
-                signal: controller.signal,
-            })
-                .then(res => {
-                    if (!res.ok) throw new Error("Suggestion request failed");
-                    return res.json();
-                })
-                .then(data => {
-                    if (controller.signal.aborted) return;
-                    const names: string[] = data.suggestions ?? [];
-                    setSuggestions(names);
-                    setActiveSuggestionIndex(0);
-                    setShowSuggestions(names.length > 0);
-                })
-                .catch(error => {
-                    if (
-                        controller.signal.aborted ||
-                        (error instanceof DOMException &&
-                            error.name === "AbortError")
-                    ) {
-                        return;
-                    }
-                    setSuggestions([]);
-                    setShowSuggestions(false);
-                });
-        }, 300);
-
-        return () => {
-            clearTimeout(timer);
-            controller.abort();
-        };
-    }, [searchTerm]);
-
-    const fetchItems = async (
-        itemName = searchTerm,
-        category = selectedCategory
-    ) => {
-        try {
-            setLoading(true);
-            setFilteredItems([]);
-            setCurrentPage(1);
-            setSortDirection(null);
-
-            let url: string;
-            let response: Response;
-
-            // 검색 조건에 따른 API 선택
-            if (category !== categories[0]) {
-                // 카테고리가 기본값이 아닌 경우 기존 API 사용
-                const params = new URLSearchParams({
-                    auction_item_category: category,
-                });
-                if (itemName !== "") params.set("item_name", itemName);
-                url = `/api/auction?${params}`;
-                response = await fetch(url);
-            } else if (itemName !== "") {
-                // 카테고리가 기본값이고 검색어만 있는 경우 키워드 검색 API 사용
-                const keywordSearchUrl = `/api/auction/keyword-search?${new URLSearchParams({ keyword: itemName })}`;
-                response = await fetch(keywordSearchUrl);
-            } else {
-                // 카테고리가 기본값이고 검색어가 없는 경우 기존 API 사용
-                url = "/api/auction?";
-                response = await fetch(url);
-            }
-
-            if (!response.ok) {
-                throw new Error("네트워크 오류가 발생했습니다.");
-            }
-            const data = await response.json();
-
-            data.items.sort(
-                (a: any, b: any) =>
-                    a.auction_price_per_unit - b.auction_price_per_unit
-            );
-            setFilteredItems(data.items);
-            setErrorMessage(null);
-        } catch (error) {
-            console.error("API 호출 중 오류가 발생했습니다:", error);
-            setErrorMessage(
-                "아이템을 불러오는 중 오류가 발생했습니다. 아이템명 입력 시 아이템의 이름을 정확히 입력해주세요."
-            );
-        } finally {
-            setLoading(false);
-        }
+    const search = (itemName = searchTerm, category = selectedCategory) => {
+        setCurrentPage(1);
+        return auction.search(itemName, category);
     };
-
-    function handleItemClick(item: any) {
-        setPopupItemOptions(item.item_option || []);
-        setIsPopupVisible(true);
-    }
-
-    function handleClosePopup() {
-        setIsPopupVisible(false);
-        setPopupItemOptions(null);
-    }
-
-    const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (showSuggestions) {
-            if (e.key === "ArrowDown") {
-                setActiveSuggestionIndex(prevIndex =>
-                    Math.min(prevIndex + 1, suggestions.length - 1)
-                );
-            } else if (e.key === "ArrowUp") {
-                setActiveSuggestionIndex(prevIndex =>
-                    Math.max(prevIndex - 1, 0)
-                );
-            } else if (e.key === "Enter") {
-                setSearchTerm(suggestions[`${activeSuggestionIndex}`]);
-                setShowSuggestions(false);
-            } else if (e.key === "Escape") {
-                setShowSuggestions(false);
-            }
-        } else if (e.key === "Escape") {
-            // 키워드 검색 모드에서도 ESC로 입력 필드 클리어 가능
-            setSearchTerm("");
-        }
-    };
-
-    const handleSuggestionClick = (suggestion: string) => {
-        setSearchTerm(suggestion);
-        setShowSuggestions(false);
-    };
-
-    useEffect(() => {
-        const activeSuggestionElement = document.getElementById(
-            `suggestion-${activeSuggestionIndex}`
-        );
-        if (activeSuggestionElement) {
-            activeSuggestionElement.scrollIntoView({
-                block: "nearest",
-                behavior: "smooth",
-            });
-        }
-    }, [activeSuggestionIndex]);
-
-    useEffect(() => {
-        const storedFavorites = localStorage.getItem("favorites");
-        if (storedFavorites) {
-            setFavorites(parseStoredFavorites(storedFavorites));
-        }
-    }, []);
-
-    const saveFavorites = (
-        newFavorites: { itemName: string; category: string }[]
-    ) => {
-        setFavorites(newFavorites);
-        localStorage.setItem("favorites", JSON.stringify(newFavorites));
-    };
-
-    const addFavorite = () => {
-        if (favorites.length >= 20) {
-            alert("즐겨찾기는 최대 20개까지 저장할 수 있습니다.");
-            return;
-        }
-
-        const newFavorite = {
-            itemName: searchTerm,
-            category: selectedCategory,
-        };
-
-        if (!searchTerm.trim()) {
-            alert("아이템 이름을 입력해주세요.");
-            return;
-        }
-
-        const newFavorites = [...favorites, newFavorite];
-        saveFavorites(newFavorites);
-        setAddFavoriteText("✔");
-    };
-
-    const removeFavorite = (index: number) => {
-        const newFavorites = favorites.filter((_, i) => i !== index);
-        saveFavorites(newFavorites);
-    };
-
-    const handleFavoriteClick = (favorite: {
-        itemName: string;
-        category: string;
-    }) => {
+    const selectFavorite = (favorite: Favorite) => {
         setSearchTerm(favorite.itemName);
         setSelectedCategory(favorite.category);
-        fetchItems(favorite.itemName, favorite.category).catch(error => {
-            console.error(error);
-        });
-        setIsFavoritesPopupVisible(false);
-    };
-
-    useEffect(() => {
-        if (addFavoriteText === "✔") {
-            const timer = setTimeout(() => {
-                setAddFavoriteText("즐겨찾기 등록");
-            }, 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [addFavoriteText]);
-
-    // ESC 키 이벤트 리스너 추가
-    useEffect(() => {
-        const handleEsc = (event: KeyboardEvent) => {
-            if (event.key === "Escape") {
-                handleClosePopup();
-            }
-        };
-
-        if (isPopupVisible) {
-            window.addEventListener("keydown", handleEsc);
-        }
-
-        // 컴포넌트가 언마운트되거나 isPopupVisible이 false가 될 때 이벤트 리스너 제거
-        return () => {
-            window.removeEventListener("keydown", handleEsc);
-        };
-    }, [isPopupVisible]); // isPopupVisible이 변경될 때마다 실행
-
-    // 정렬 처리 함수
-    const handleSortByPrice = () => {
-        const newDirection = sortDirection === "asc" ? "desc" : "asc";
-        setSortDirection(newDirection);
-
-        const sortedItems = [...filteredItems].sort((a, b) => {
-            if (newDirection === "asc") {
-                return a.auction_price_per_unit - b.auction_price_per_unit;
-            } else {
-                return b.auction_price_per_unit - a.auction_price_per_unit;
-            }
-        });
-
-        setFilteredItems(sortedItems);
+        void search(favorite.itemName, favorite.category);
+        setShowFavorites(false);
     };
 
     return (
-        <div className="flex flex-col items-center justify-start min-h-screen p-6">
-            <div className="w-full max-w-4xl p-6 backdrop-blur-sm rounded-lg flex-grow">
-                {errorMessage && (
-                    <div className="alert alert-error mb-4">{errorMessage}</div>
-                )}
-                <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full mb-2">
-                    <button
-                        className="btn btn-outline w-auto min-w-[50px]"
-                        onClick={addFavorite}
-                    >
-                        {addFavoriteText}
-                    </button>
-                    <button
-                        className="btn btn-outline w-auto  min-w-[50px]"
-                        onClick={() => setIsFavoritesPopupVisible(true)}
-                    >
-                        즐겨찾기 보기
-                    </button>
-                </div>
-                <div className="flex flex-col md:flex-row md:justify-between mb-2">
-                    <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full">
-                        <div className="relative w-full">
-                            <input
-                                className="input input-bordered w-full"
-                                placeholder="아이템명"
-                                value={searchTerm || ""}
-                                onChange={e => setSearchTerm(e.target.value)}
-                                onKeyDown={handleKeyDown}
-                                onBlur={() => {
-                                    // 약간의 지연을 두어 클릭 이벤트가 먼저 처리되도록 함
-                                    setTimeout(() => {
-                                        setShowSuggestions(false);
-                                    }, 150);
-                                }}
-                                onFocus={() => {
-                                    // 포커스시 자동완성 다시 표시 (조건에 맞는 경우)
-                                    if (
-                                        searchTerm.length >= 2 &&
-                                        suggestions.length > 0
-                                    ) {
-                                        setShowSuggestions(true);
-                                    }
-                                }}
-                            />
-                            {/* 자동완성 리스트 */}
-                            {showSuggestions && suggestions.length > 0 && (
-                                <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                                    {suggestions.map((suggestion, index) => (
-                                        <li
-                                            key={`suggestion-${suggestion}-${index}`}
-                                            id={`suggestion-${index}`}
-                                            className={`p-2 cursor-pointer ${
-                                                index === activeSuggestionIndex
-                                                    ? "bg-gray-200"
-                                                    : ""
-                                            }`}
-                                            onClick={() =>
-                                                handleSuggestionClick(
-                                                    suggestion
-                                                )
-                                            }
-                                        >
-                                            {suggestion}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                        <button
-                            className="btn btn-outline w-full md:w-auto"
-                            onClick={() => {
-                                fetchItems().catch(error => {
-                                    console.error(error);
-                                });
-                            }}
-                        >
-                            {loading ? (
-                                <Loader className="animate-spin" />
-                            ) : (
-                                "검색"
-                            )}
-                        </button>
-                        <div className="mt-2 md:mt-0">
-                            <div className="dropdown dropdown-end">
-                                <div
-                                    tabIndex={0}
-                                    role="button"
-                                    className="btn w-full md:w-auto"
-                                >
-                                    {selectedCategory}
-                                </div>
-                                <ul
-                                    tabIndex={0}
-                                    className="max-h-80 overflow-y-auto dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
-                                >
-                                    {categories.map(category => (
-                                        <li key={`category-${category}`}>
-                                            <a
-                                                onClick={() =>
-                                                    setSelectedCategory(
-                                                        category
-                                                    )
-                                                }
-                                            >
-                                                {category}
-                                            </a>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {isFavoritesPopupVisible && (
-                    <div className="fixed inset-0 flex items-center justify-center z-50">
-                        <div className="bg-white border p-4 rounded-lg shadow-lg w-80">
-                            <h2 className="text-lg font-bold mb-2">
-                                즐겨찾기 목록
-                            </h2>
-                            {favorites.length === 0 ? (
-                                <div>저장된 즐겨찾기가 없습니다.</div>
-                            ) : (
-                                <ul className="list-disc ml-4">
-                                    {favorites.map((favorite, index) => (
-                                        <li
-                                            key={`favorite-${favorite.itemName}-${favorite.category}-${index}`}
-                                            className="flex justify-between items-center"
-                                        >
-                                            <button
-                                                className="underline"
-                                                onClick={() =>
-                                                    handleFavoriteClick(
-                                                        favorite
-                                                    )
-                                                }
-                                            >
-                                                {favorite.itemName} (
-                                                {favorite.category})
-                                            </button>
-                                            <button
-                                                className="text-red-500 ml-4"
-                                                onClick={() =>
-                                                    removeFavorite(index)
-                                                }
-                                            >
-                                                삭제
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                            <button
-                                className="btn btn-outline mt-4 w-full"
-                                onClick={() =>
-                                    setIsFavoritesPopupVisible(false)
-                                }
-                            >
-                                닫기
-                            </button>
-                        </div>
-                    </div>
-                )}
-                <div className="overflow-auto h-[50%] rounded-md border">
-                    <table className="table w-full">
-                        <thead>
-                            <tr>
-                                <th className="w-[50px] hidden md:table-cell"></th>
-                                <th className="w-[45%]">아이템명</th>
-                                <th
-                                    className="cursor-pointer hover:bg-base-200"
-                                    onClick={handleSortByPrice}
-                                >
-                                    가격{" "}
-                                    {sortDirection === "asc"
-                                        ? "↑"
-                                        : sortDirection === "desc"
-                                          ? "↓"
-                                          : ""}
-                                </th>
-                                <th>갯수</th>
-                                <th>만료 시간</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filteredItems.length === 0 &&
-                            errorMessage === null &&
-                            loading === false ? (
-                                <tr>
-                                    <td colSpan={5} className="text-center">
-                                        결과가 없습니다.
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredItems
-                                    .slice(
-                                        (currentPage - 1) * itemsPerPage,
-                                        currentPage * itemsPerPage
-                                    )
-                                    .map((item: any, index: number) => {
-                                        return (
-                                            <tr
-                                                key={`item-${item.item_display_name}-${item.auction_price_per_unit}-${item.date_auction_expire}-${index}`}
-                                                onClick={() =>
-                                                    handleItemClick(item)
-                                                }
-                                                className="cursor-pointer hover:bg-gray-100"
-                                            >
-                                                <td className="w-[50px] hidden md:table-cell">
-                                                    <Image
-                                                        src={getItemImageUrl(
-                                                            item.item_name
-                                                        )}
-                                                        alt={item.item_name}
-                                                        width={40}
-                                                        height={40}
-                                                        sizes="40px"
-                                                        className="object-contain cursor-pointer"
-                                                        priority={false}
-                                                        unoptimized={true}
-                                                    />
-                                                </td>
-                                                <td className="font-medium">
-                                                    {item.item_display_name}
-                                                </td>
-                                                <td>
-                                                    {item.auction_price_per_unit.toLocaleString()}{" "}
-                                                    Gold
-                                                </td>
-                                                <td>{item.item_count}</td>
-                                                <td>
-                                                    {item.date_auction_expire}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-                <div className="flex items-center justify-between mt-4">
-                    <button
-                        className="btn btn-outline btn-sm"
-                        onClick={() =>
-                            setCurrentPage(prev => Math.max(prev - 1, 1))
-                        }
-                        disabled={currentPage === 1}
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    <span>
-                        {currentPage} /{" "}
-                        {Math.ceil(filteredItems.length / itemsPerPage)}
-                    </span>
-                    <button
-                        className="btn btn-outline btn-sm"
-                        onClick={() =>
-                            setCurrentPage(prev =>
-                                Math.min(
-                                    prev + 1,
-                                    Math.ceil(
-                                        filteredItems.length / itemsPerPage
-                                    )
-                                )
-                            )
-                        }
-                        disabled={
-                            currentPage ===
-                            Math.ceil(filteredItems.length / itemsPerPage)
-                        }
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </button>
-                </div>
-
-                {isPopupVisible && (
-                    <div className="fixed inset-0 flex items-start justify-center z-50">
-                        <div className="bg-white border p-4 rounded-lg shadow-lg">
-                            <h2 className="text-lg font-bold">아이템 옵션</h2>
-                            <div className="mt-2">
-                                {popupItemOptions &&
-                                popupItemOptions.length > 0 ? (
-                                    <OptionRenderer
-                                        options={popupItemOptions}
-                                    />
-                                ) : (
-                                    <div>옵션이 없습니다.</div>
-                                )}
-                            </div>
-                            <button
-                                className="btn btn-outline mt-4"
-                                onClick={handleClosePopup}
-                            >
-                                닫기
-                            </button>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
+        <AuctionPageView
+            {...{ searchTerm, selectedCategory, showFavorites, options }}
+            {...{ currentPage, suggestions, favorites, auction }}
+            {...{ setSearchTerm, setSelectedCategory, setCurrentPage }}
+            onSearch={() => void search()}
+            onSelectFavorite={selectFavorite}
+            onShowFavorites={setShowFavorites}
+            onShowOptions={setOptions}
+        />
     );
 }
