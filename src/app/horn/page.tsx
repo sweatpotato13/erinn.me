@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useSound from "use-sound";
 
 const servers = ["류트", "울프", "하프", "만돌린"];
@@ -22,9 +22,20 @@ export default function HornPage() {
     const [isAlertKeyaordPopupVisible, setIsAlertKeyaordPopupVisible] =
         useState(false);
     const [lastAlertTime, setLastAlertTime] = useState("");
+    const selectedServerRef = useRef(selectedServer);
+    const alertKeywordsRef = useRef(alertKeywords);
+    const lastAlertTimeRef = useRef(lastAlertTime);
+    const playRef = useRef(play);
+
+    selectedServerRef.current = selectedServer;
+    alertKeywordsRef.current = alertKeywords;
+    lastAlertTimeRef.current = lastAlertTime;
+    playRef.current = play;
 
     useEffect(() => {
-        setLastAlertTime(new Date().toISOString());
+        const now = new Date().toISOString();
+        lastAlertTimeRef.current = now;
+        setLastAlertTime(now);
     }, []);
 
     useEffect(() => {
@@ -43,7 +54,7 @@ export default function HornPage() {
 
         try {
             const response = await fetch(
-                `/api/horn?server_name=${selectedServer}`,
+                `/api/horn?${new URLSearchParams({ server_name: selectedServerRef.current })}`,
                 {
                     headers: {
                         "Content-Type": "application/json",
@@ -72,7 +83,7 @@ export default function HornPage() {
             date_send: string;
         }>
     ) {
-        if (alertKeywords.length === 0) {
+        if (alertKeywordsRef.current.length === 0) {
             // Just skip if there is no alert keywords
             return;
         }
@@ -80,13 +91,17 @@ export default function HornPage() {
         const now = new Date().toISOString();
 
         for (const message of messages) {
-            for (const keyword of alertKeywords) {
-                if (new Date(message.date_send) < new Date(lastAlertTime)) {
+            for (const keyword of alertKeywordsRef.current) {
+                if (
+                    new Date(message.date_send) <
+                    new Date(lastAlertTimeRef.current)
+                ) {
                     // Skip if the message is older than the last alert time
                     continue;
                 }
                 if (message.message.includes(keyword.keyword)) {
-                    play();
+                    playRef.current();
+                    lastAlertTimeRef.current = now;
                     setLastAlertTime(now);
                     return;
                 }
@@ -121,7 +136,11 @@ export default function HornPage() {
                 <div className="flex mb-4 flex-col sm:flex-row gap-2 sm:gap-0">
                     <div className="flex items-center gap-2">
                         <div className="dropdown">
-                            <div tabIndex={0} role="button" className="btn m-1">
+                            <div
+                                tabIndex={0}
+                                role="button"
+                                className="btn m-1 whitespace-nowrap"
+                            >
                                 {selectedServer}
                             </div>
                             <ul
