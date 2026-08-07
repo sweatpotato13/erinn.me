@@ -108,10 +108,15 @@ test("superseded suggestions cannot overwrite the latest results", async ({
 
     await page.goto("/auction");
     const input = page.getByPlaceholder("아이템명");
+    const oldRequest = page.waitForRequest(request => {
+        const url = new URL(request.url());
+        return (
+            url.pathname === "/api/suggest" &&
+            url.searchParams.get("q") === "오래된"
+        );
+    });
     await input.fill("오래된");
-    await page.waitForRequest(request =>
-        request.url().includes("/api/suggest?q=%EC%98%A4%EB%9E%98%EB%90%9C")
-    );
+    await oldRequest;
     await input.fill("최신");
     await expect(page.getByText("최신 결과")).toBeVisible();
     releaseOld?.();
@@ -124,19 +129,25 @@ test("dungeon cards do not issue independent initial queries", async ({
 }) => {
     let priceRequests = 0;
     const requestedNames: string[] = [];
-    await page.route("**/api/auction/price-summary?**", route => {
+    let releaseInitialRequest: (() => void) | undefined;
+    const initialRequestReleased = new Promise<void>(resolve => {
+        releaseInitialRequest = resolve;
+    });
+    await page.route("**/api/auction/price-summary?**", async route => {
         priceRequests++;
         requestedNames.push(
             new URL(route.request().url()).searchParams.get("item_name") ?? ""
         );
-        return route.fulfill({ json: priceSummary });
+        if (priceRequests === 1) await initialRequestReleased;
+        await route.fulfill({ json: priceSummary });
     });
 
     await page.goto("/dungeon");
     await expect(page.getByText("던전 아이템 목록")).toBeVisible();
     await expect.poll(() => priceRequests).toBe(1);
-    await page.waitForTimeout(200);
+    await page.waitForTimeout(100);
     expect(priceRequests).toBe(1);
+    releaseInitialRequest?.();
 
     const refresh = page
         .locator('button[aria-label="가격 정보 새로고침"]:not([disabled])')
@@ -160,7 +171,12 @@ test("contact failure preserves the form and shows an error", async ({
     await page.getByLabel("이메일").fill("user@example.com");
     await page.getByLabel("제목").fill("문의 제목");
     await page.getByLabel("메시지").fill("열 글자가 넘는 문의 메시지입니다.");
-    await page.getByRole("button", { name: "전송" }).click();
+    await Promise.all([
+        page.waitForResponse(
+            response => new URL(response.url()).pathname === "/api/contact"
+        ),
+        page.getByRole("button", { name: "전송" }).click(),
+    ]);
     await expect(page.getByText("Too many requests")).toBeVisible();
     await expect(page.getByLabel("닉네임")).toHaveValue("테스터");
 });
@@ -174,7 +190,12 @@ test("contact success clears the form", async ({ page }) => {
     await page.getByLabel("이메일").fill("user@example.com");
     await page.getByLabel("제목").fill("문의 제목");
     await page.getByLabel("메시지").fill("열 글자가 넘는 문의 메시지입니다.");
-    await page.getByRole("button", { name: "전송" }).click();
+    await Promise.all([
+        page.waitForResponse(
+            response => new URL(response.url()).pathname === "/api/contact"
+        ),
+        page.getByRole("button", { name: "전송" }).click(),
+    ]);
     await expect(
         page.getByText("문의가 성공적으로 전송되었습니다.")
     ).toBeVisible();
