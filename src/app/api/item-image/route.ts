@@ -25,6 +25,12 @@ const querySchema = z
     })
     .refine(value => value.id || value.name);
 
+/**
+ * Serves an item image identified by its query parameters.
+ *
+ * @param request - The incoming request containing the item ID or name.
+ * @returns The item image, a validation response, a not-found response, or an upstream error response.
+ */
 export async function GET(request: NextRequest) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;

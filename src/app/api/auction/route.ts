@@ -28,6 +28,12 @@ const querySchema = z
         { message: "At least one search field is required" }
     );
 
+/**
+ * Searches Mabinogi auction listings using the request query parameters.
+ *
+ * @param request - The incoming request containing auction search filters and pagination data
+ * @returns A JSON response containing matching items, pagination status, and the next cursor
+ */
 export async function GET(request: Request) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;

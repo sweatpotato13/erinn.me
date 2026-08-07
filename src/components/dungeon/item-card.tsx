@@ -15,6 +15,17 @@ interface ItemCardProps {
     onRefresh: (itemName: string) => void;
 }
 
+/**
+ * Displays a dungeon item with its drop difficulties, price status, and refresh controls.
+ *
+ * @param item - The dungeon item to display.
+ * @param selectedDungeon - The dungeon whose drop information is shown.
+ * @param selectedDifficulty - The difficulty to highlight.
+ * @param priceInfo - The current price information, when available.
+ * @param isRefreshing - Whether a price refresh is in progress.
+ * @param error - The price lookup error message, when applicable.
+ * @param onRefresh - Handles a request to refresh the item's price.
+ */
 export function ItemCard({
     item,
     selectedDungeon,

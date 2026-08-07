@@ -12,7 +12,13 @@ import {
     PricedCraftingItem,
 } from "@/lib/api/crafting";
 
-// React Query 캐시에서 아이템의 총 가격을 가져오는 함수
+/**
+ * Calculates the cached material price for a crafting item.
+ *
+ * @param itemName - The name of the item to price
+ * @param considerCraftingCount - Whether to apply the selected crafting count
+ * @returns The cached total price, or `null` when the item or a valid material price is unavailable
+ */
 function getCachedItemTotalPrice(
     queryClient: ReturnType<typeof useQueryClient>,
     itemName: string,
@@ -308,6 +314,11 @@ function ItemCard({ item }: { item: PricedCraftingItem }) {
 type SortOption = "name" | "price" | null;
 type SortDirection = "asc" | "desc";
 
+/**
+ * Displays craftable items with their material prices and sorting controls.
+ *
+ * @returns The crafting item list, loading indicator, or error state with a retry action.
+ */
 export default function CraftingPage() {
     const [sortBy, setSortBy] = useState<SortOption>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc");

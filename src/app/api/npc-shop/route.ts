@@ -19,6 +19,11 @@ const querySchema = z.object({
     channel: z.coerce.number().int().min(1).max(42),
 });
 
+/**
+ * Retrieves NPC shop data for a specified character, server, and channel.
+ *
+ * @returns A JSON response containing the validated NPC shop data or an error response.
+ */
 export async function GET(request: Request) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;

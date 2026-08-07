@@ -25,6 +25,12 @@ const bodySchema = object({
     message: string().min(10).max(5000).required(),
 });
 
+/**
+ * Reads and parses a request body as JSON within the configured size limit.
+ *
+ * @param request - The request containing the JSON body
+ * @returns The parsed JSON value
+ */
 async function readLimitedJson(request: Request): Promise<unknown> {
     if (!request.body) throw new Error("Missing request body");
 
@@ -52,6 +58,12 @@ async function readLimitedJson(request: Request): Promise<unknown> {
     return JSON.parse(new TextDecoder().decode(body));
 }
 
+/**
+ * Validates a contact form submission and sends it by email.
+ *
+ * @returns A successful response, or an error response for forbidden origins,
+ * invalid data, or email delivery failures.
+ */
 export async function POST(request: Request) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;

@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 
 import type { Favorite } from "@/app/auction/types";
 
+/**
+ * Parses stored JSON into a validated list of favorite items.
+ *
+ * @param value - The stored JSON string, or `null` when no value is available
+ * @returns The parsed favorite items, or an empty array for missing, invalid, or structurally invalid data
+ */
 export function parseStoredFavorites(value: string | null): Favorite[] {
     if (!value) return [];
     try {
@@ -20,6 +26,11 @@ export function parseStoredFavorites(value: string | null): Favorite[] {
     }
 }
 
+/**
+ * Manages stored favorites and the add-button feedback state.
+ *
+ * @returns The current favorites, button label, and operations for adding or removing favorites.
+ */
 export function useFavorites() {
     const [favorites, setFavorites] = useState<Favorite[]>([]);
     const [addButtonText, setAddButtonText] = useState("즐겨찾기 등록");

@@ -7,6 +7,13 @@ type FavoritesDialogProps = {
     onClose: () => void;
 };
 
+/**
+ * Provides controls for adding a favorite and viewing saved favorites.
+ *
+ * @param addButtonText - The label displayed on the add button
+ * @param onAdd - Called when the add button is clicked
+ * @param onShow - Called when the favorites button is clicked
+ */
 export function FavoriteToolbar({
     addButtonText,
     onAdd,
@@ -34,6 +41,13 @@ export function FavoriteToolbar({
     );
 }
 
+/**
+ * Renders the saved favorites and provides actions to select or remove each entry.
+ *
+ * @param favorites - The favorites to display.
+ * @param onSelect - Called with a favorite when it is selected.
+ * @param onRemove - Called with the index of a favorite when it is removed.
+ */
 function FavoriteList({ favorites, onSelect, onRemove }: FavoritesDialogProps) {
     if (favorites.length === 0) return <div>저장된 즐겨찾기가 없습니다.</div>;
     return (
@@ -61,6 +75,11 @@ function FavoriteList({ favorites, onSelect, onRemove }: FavoritesDialogProps) {
     );
 }
 
+/**
+ * Renders a modal dialog containing the saved favorites and a close action.
+ *
+ * @param props - Favorite data and callbacks for selecting, removing, and closing the dialog
+ */
 export function FavoritesDialog(props: FavoritesDialogProps) {
     return (
         <div className="fixed inset-0 flex items-center justify-center z-50">

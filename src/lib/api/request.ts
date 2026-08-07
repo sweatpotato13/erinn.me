@@ -5,6 +5,13 @@ type ParsedQuery<T> =
     | { success: true; data: T }
     | { success: false; response: NextResponse };
 
+/**
+ * Parses and validates query parameters from a request.
+ *
+ * @param request - The request containing the query parameters
+ * @param schema - The schema used to validate the query parameters
+ * @returns A successful result with validated data, or a 400 response for invalid parameters
+ */
 export function parseQuery<T>(
     request: Request,
     schema: z.ZodType<T>

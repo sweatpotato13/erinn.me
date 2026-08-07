@@ -40,6 +40,12 @@ type AuctionViewProps = {
     onShowOptions: (options: ItemOption[] | null) => void;
 };
 
+/**
+ * Closes an open dialog when the user presses the Escape key.
+ *
+ * @param isOpen - Whether the dialog is currently open
+ * @param close - Callback invoked when Escape is pressed
+ */
 function useCloseOnEscape(isOpen: boolean, close: () => void) {
     useEffect(() => {
         if (!isOpen) return;
@@ -51,6 +57,12 @@ function useCloseOnEscape(isOpen: boolean, close: () => void) {
     }, [isOpen, close]);
 }
 
+/**
+ * Renders the auction page view, including controls, favorites, results, and dialogs.
+ *
+ * @param props - State and event handlers used to render and interact with the auction view
+ * @returns The auction page view
+ */
 function AuctionPageView(props: AuctionViewProps) {
     return (
         <div className="flex flex-col items-center justify-start min-h-screen p-6">
@@ -99,6 +111,9 @@ function AuctionPageView(props: AuctionViewProps) {
     );
 }
 
+/**
+ * Renders the auction search page and manages its search, favorites, pagination, and item options state.
+ */
 export default function AuctionPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState(categories[0]);

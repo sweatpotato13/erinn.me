@@ -15,6 +15,12 @@ import { checkOrigin } from "@/lib/utils/check-origin";
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 const querySchema = z.object({ server_name: serverNameSchema });
 
+/**
+ * Retrieves horn-bugle history for the requested server.
+ *
+ * @param request - The incoming request containing the server query parameter.
+ * @returns The horn-bugle history, a validation or origin error response, or an upstream error response.
+ */
 export async function GET(request: Request) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;
