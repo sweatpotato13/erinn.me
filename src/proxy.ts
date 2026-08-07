@@ -4,13 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 type Bucket = "contact" | "upstream" | "image" | "suggest";
 type RateLimitCheck = typeof checkRateLimit;
 
-const limits: Record<Bucket, number> = {
+const LIMITS: Readonly<Record<Bucket, number>> = {
     contact: 3,
     upstream: 60,
     image: 120,
     suggest: 120,
 };
-const rateLimitIds: Record<Bucket, string> = {
+const RATE_LIMIT_IDS: Readonly<Record<Bucket, string>> = {
     contact: "erinn-contact",
     upstream: "erinn-upstream",
     image: "erinn-image",
@@ -80,7 +80,7 @@ function limitedResponse(bucket: Bucket) {
             status: 429,
             headers: {
                 "Retry-After": "60",
-                "X-RateLimit-Limit": limits[bucket].toString(),
+                "X-RateLimit-Limit": LIMITS[bucket].toString(),
             },
         }
     );
@@ -96,19 +96,19 @@ function limitedResponse(bucket: Bucket) {
 export async function applyRateLimit(
     request: NextRequest,
     check: RateLimitCheck = checkRateLimit
-) {
+): Promise<NextResponse> {
     const bucket = resolveBucket(request.nextUrl.pathname);
     if (!bucket) return NextResponse.next();
 
     try {
-        const result = await check(rateLimitIds[bucket], {
+        const result = await check(RATE_LIMIT_IDS[bucket], {
             request,
             rateLimitKey: resolveClientKey(request.headers),
         });
         if (result.error === "not-found") return unavailableResponse();
         if (result.rateLimited) return limitedResponse(bucket);
         const response = NextResponse.next();
-        response.headers.set("X-RateLimit-Limit", limits[bucket].toString());
+        response.headers.set("X-RateLimit-Limit", LIMITS[bucket].toString());
         return response;
     } catch {
         console.error({
@@ -124,7 +124,7 @@ export async function applyRateLimit(
  *
  * @returns The response produced by rate-limit processing or request forwarding.
  */
-export async function proxy(request: NextRequest) {
+export async function proxy(request: NextRequest): Promise<NextResponse> {
     if (process.env.NODE_ENV !== "production") return NextResponse.next();
     return applyRateLimit(request);
 }

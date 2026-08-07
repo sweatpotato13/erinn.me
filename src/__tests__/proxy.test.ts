@@ -37,6 +37,9 @@ describe("rate limiter", () => {
                 })
             )
         ).toBe("203.0.113.10");
+        expect(
+            resolveClientKey(new Headers({ "x-vercel-forwarded-for": " , , " }))
+        ).toBe("127.0.0.1");
     });
 
     it("checks the matching WAF rule with the trusted identity", async () => {
