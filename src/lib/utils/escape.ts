@@ -7,7 +7,7 @@ const ESCAPE_MAP: Record<string, string> = {
 };
 
 export function escapeHtml(str: string): string {
-    return str.replace(/[&<>"']/g, ch => ESCAPE_MAP[ch] || ch);
+    return str.replace(/[&<>"']/g, ch => ESCAPE_MAP[ch]);
 }
 
 export function containsHeaderInjection(value: string): boolean {
