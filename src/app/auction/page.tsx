@@ -12,6 +12,26 @@ const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
     ssr: false,
 });
 
+type Favorite = { itemName: string; category: string };
+
+export function parseStoredFavorites(value: string | null): Favorite[] {
+    if (!value) return [];
+
+    try {
+        const parsed: unknown = JSON.parse(value);
+        if (!Array.isArray(parsed)) return [];
+        return parsed.filter(
+            (item): item is Favorite =>
+                !!item &&
+                typeof item === "object" &&
+                typeof (item as Favorite).itemName === "string" &&
+                typeof (item as Favorite).category === "string"
+        );
+    } catch {
+        return [];
+    }
+}
+
 export default function AuctionPage() {
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
@@ -44,25 +64,45 @@ export default function AuctionPage() {
             return;
         }
 
+        const controller = new AbortController();
         const timer = setTimeout(() => {
-            fetch(`/api/suggest?q=${encodeURIComponent(searchTerm)}`)
-                .then(res => res.json())
+            fetch(`/api/suggest?q=${encodeURIComponent(searchTerm)}`, {
+                signal: controller.signal,
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error("Suggestion request failed");
+                    return res.json();
+                })
                 .then(data => {
+                    if (controller.signal.aborted) return;
                     const names: string[] = data.suggestions ?? [];
                     setSuggestions(names);
                     setActiveSuggestionIndex(0);
                     setShowSuggestions(names.length > 0);
                 })
-                .catch(() => {
+                .catch(error => {
+                    if (
+                        controller.signal.aborted ||
+                        (error instanceof DOMException &&
+                            error.name === "AbortError")
+                    ) {
+                        return;
+                    }
                     setSuggestions([]);
                     setShowSuggestions(false);
                 });
         }, 300);
 
-        return () => clearTimeout(timer);
+        return () => {
+            clearTimeout(timer);
+            controller.abort();
+        };
     }, [searchTerm]);
 
-    const fetchItems = async () => {
+    const fetchItems = async (
+        itemName = searchTerm,
+        category = selectedCategory
+    ) => {
         try {
             setLoading(true);
             setFilteredItems([]);
@@ -73,17 +113,17 @@ export default function AuctionPage() {
             let response: Response;
 
             // 검색 조건에 따른 API 선택
-            if (selectedCategory !== categories[0]) {
+            if (category !== categories[0]) {
                 // 카테고리가 기본값이 아닌 경우 기존 API 사용
-                url = "/api/auction?";
-                url += `auction_item_category=${selectedCategory}`;
-                if (searchTerm !== "") {
-                    url += `&item_name=${encodeURIComponent(searchTerm).replace(/\+/g, "%2B")}`;
-                }
+                const params = new URLSearchParams({
+                    auction_item_category: category,
+                });
+                if (itemName !== "") params.set("item_name", itemName);
+                url = `/api/auction?${params}`;
                 response = await fetch(url);
-            } else if (searchTerm !== "") {
+            } else if (itemName !== "") {
                 // 카테고리가 기본값이고 검색어만 있는 경우 키워드 검색 API 사용
-                const keywordSearchUrl = `/api/auction/keyword-search?keyword=${encodeURIComponent(searchTerm)}`;
+                const keywordSearchUrl = `/api/auction/keyword-search?${new URLSearchParams({ keyword: itemName })}`;
                 response = await fetch(keywordSearchUrl);
             } else {
                 // 카테고리가 기본값이고 검색어가 없는 경우 기존 API 사용
@@ -164,7 +204,7 @@ export default function AuctionPage() {
     useEffect(() => {
         const storedFavorites = localStorage.getItem("favorites");
         if (storedFavorites) {
-            setFavorites(JSON.parse(storedFavorites));
+            setFavorites(parseStoredFavorites(storedFavorites));
         }
     }, []);
 
@@ -207,7 +247,7 @@ export default function AuctionPage() {
     }) => {
         setSearchTerm(favorite.itemName);
         setSelectedCategory(favorite.category);
-        fetchItems().catch(error => {
+        fetchItems(favorite.itemName, favorite.category).catch(error => {
             console.error(error);
         });
         setIsFavoritesPopupVisible(false);
