@@ -3,11 +3,17 @@
 import { NextRequest } from "next/server";
 
 import {
-    consumeRateLimit,
+    applyRateLimit,
     proxy,
     resolveBucket,
     resolveClientKey,
 } from "@/proxy";
+
+function request(path: string, ip = "203.0.113.8") {
+    return new NextRequest(`http://localhost${path}`, {
+        headers: { "x-vercel-forwarded-for": ip },
+    });
+}
 
 describe("rate limiter", () => {
     it("resolves only the four exact route buckets", () => {
@@ -18,45 +24,7 @@ describe("rate limiter", () => {
         expect(resolveBucket("/api/unknown")).toBeNull();
     });
 
-    it("enforces the boundary and renews exactly at reset", () => {
-        const store = new Map();
-        expect(consumeRateLimit(store, "contact", "ip", 1000).remaining).toBe(
-            2
-        );
-        expect(consumeRateLimit(store, "contact", "ip", 1001).remaining).toBe(
-            1
-        );
-        expect(consumeRateLimit(store, "contact", "ip", 1002).remaining).toBe(
-            0
-        );
-        expect(consumeRateLimit(store, "contact", "ip", 1003).success).toBe(
-            false
-        );
-        expect(consumeRateLimit(store, "contact", "ip", 61000)).toMatchObject({
-            success: true,
-            remaining: 2,
-        });
-    });
-
-    it("isolates buckets and emits deterministic response headers", () => {
-        const store = new Map();
-        expect(consumeRateLimit(store, "contact", "ip", 0).remaining).toBe(2);
-        expect(consumeRateLimit(store, "suggest", "ip", 0).remaining).toBe(119);
-
-        const allowed = proxy(
-            new NextRequest("http://localhost/api/contact", {
-                headers: { "x-vercel-forwarded-for": "203.0.113.8" },
-            })
-        );
-        expect(allowed.headers.get("X-RateLimit-Limit")).toBe("3");
-        expect(allowed.headers.get("X-RateLimit-Remaining")).toBe("2");
-        expect(allowed.headers.get("X-RateLimit-Reset")).toBeTruthy();
-
-        const bypass = proxy(new NextRequest("http://localhost/api/unknown"));
-        expect(bypass.headers.get("X-RateLimit-Limit")).toBeNull();
-    });
-
-    it("uses the trusted edge identity and ignores client forwarding headers", () => {
+    it("uses the trusted edge identity and ignores client headers", () => {
         expect(
             resolveClientKey(
                 new Headers({ "x-forwarded-for": "198.51.100.20" })
@@ -71,31 +39,56 @@ describe("rate limiter", () => {
         ).toBe("203.0.113.10");
     });
 
-    it("returns 429 with retry-after after the last allowed request", () => {
-        const ip = `198.51.100.${Math.floor(Math.random() * 100)}`;
-        const request = () =>
-            new NextRequest("http://localhost/api/contact", {
-                headers: { "x-vercel-forwarded-for": ip },
-            });
-        proxy(request());
-        proxy(request());
-        const last = proxy(request());
-        expect(last.headers.get("X-RateLimit-Remaining")).toBe("0");
-        const rejected = proxy(request());
-        expect(rejected.status).toBe(429);
-        expect(rejected.headers.get("Retry-After")).toBeTruthy();
-        expect(rejected.headers.get("X-RateLimit-Limit")).toBe("3");
+    it("checks the matching WAF rule with the trusted identity", async () => {
+        const check = jest.fn().mockResolvedValue({ rateLimited: false });
+        const response = await applyRateLimit(request("/api/contact"), check);
+        expect(check).toHaveBeenCalledWith("erinn-contact", {
+            request: expect.any(Request),
+            rateLimitKey: "203.0.113.8",
+        });
+        expect(response.headers.get("X-RateLimit-Limit")).toBe("3");
     });
 
-    it("sweeps expired entries on the maintenance interval", () => {
-        const now = Date.now();
-        const clock = jest.spyOn(Date, "now").mockReturnValue(now + 180_000);
-        const response = proxy(
-            new NextRequest("http://localhost/api/suggest", {
-                headers: { "x-vercel-forwarded-for": "192.0.2.10" },
-            })
-        );
-        expect(response.status).toBe(200);
-        clock.mockRestore();
+    it.each([
+        ["/api/contact", "3"],
+        ["/api/auction", "60"],
+        ["/api/item-image", "120"],
+        ["/api/suggest", "120"],
+    ])("returns 429 for an exhausted %s WAF rule", async (path, limit) => {
+        const check = jest.fn().mockResolvedValue({ rateLimited: true });
+        const response = await applyRateLimit(request(path), check);
+        expect(response.status).toBe(429);
+        expect(response.headers.get("Retry-After")).toBe("60");
+        expect(response.headers.get("X-RateLimit-Limit")).toBe(limit);
+    });
+
+    it("fails closed when the WAF rule is missing or unavailable", async () => {
+        const missing = jest.fn().mockResolvedValue({
+            rateLimited: false,
+            error: "not-found",
+        });
+        expect(
+            (await applyRateLimit(request("/api/contact"), missing)).status
+        ).toBe(503);
+
+        const log = jest.spyOn(console, "error").mockImplementation();
+        const failing = jest.fn().mockRejectedValue(new Error("secret"));
+        expect(
+            (await applyRateLimit(request("/api/contact"), failing)).status
+        ).toBe(503);
+        expect(log).toHaveBeenCalledWith({
+            route: "/api/contact",
+            failureClass: "rate_limit_service",
+        });
+        log.mockRestore();
+    });
+
+    it("bypasses unrelated routes and WAF checks in development", async () => {
+        const check = jest.fn();
+        expect(
+            (await applyRateLimit(request("/api/unknown"), check)).status
+        ).toBe(200);
+        expect(check).not.toHaveBeenCalled();
+        expect((await proxy(request("/api/contact"))).status).toBe(200);
     });
 });

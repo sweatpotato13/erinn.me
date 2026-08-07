@@ -1,21 +1,20 @@
+import { checkRateLimit } from "@vercel/firewall";
 import { NextRequest, NextResponse } from "next/server";
 
 type Bucket = "contact" | "upstream" | "image" | "suggest";
-type RateLimitEntry = { count: number; resetAt: number };
-type RateLimitResult = {
-    success: boolean;
-    limit: number;
-    remaining: number;
-    resetAt: number;
-};
+type RateLimitCheck = typeof checkRateLimit;
 
-const WINDOW_MS = 60_000;
-const SWEEP_INTERVAL_MS = 120_000;
 const limits: Record<Bucket, number> = {
     contact: 3,
     upstream: 60,
     image: 120,
     suggest: 120,
+};
+const rateLimitIds: Record<Bucket, string> = {
+    contact: "erinn-contact",
+    upstream: "erinn-upstream",
+    image: "erinn-image",
+    suggest: "erinn-suggest",
 };
 const upstreamRoutes = new Set([
     "/api/auction",
@@ -24,8 +23,6 @@ const upstreamRoutes = new Set([
     "/api/horn",
     "/api/npc-shop",
 ]);
-const requests = new Map<string, RateLimitEntry>();
-let lastSweep = Date.now();
 
 export function resolveBucket(pathname: string): Bucket | null {
     if (pathname === "/api/contact") return "contact";
@@ -46,92 +43,55 @@ export function resolveClientKey(headers: Headers): string {
     );
 }
 
-export function consumeRateLimit(
-    store: Map<string, RateLimitEntry>,
-    bucket: Bucket,
-    clientKey: string,
-    now = Date.now()
-): RateLimitResult {
-    const limit = limits[bucket];
-    const key = `${bucket}:${clientKey}`;
-    let entry = store.get(key);
-
-    if (!entry || now >= entry.resetAt) {
-        entry = { count: 1, resetAt: now + WINDOW_MS };
-        store.set(key, entry);
-        return {
-            success: true,
-            limit,
-            remaining: limit - 1,
-            resetAt: entry.resetAt,
-        };
-    }
-
-    if (entry.count >= limit) {
-        return {
-            success: false,
-            limit,
-            remaining: 0,
-            resetAt: entry.resetAt,
-        };
-    }
-
-    entry.count++;
-    return {
-        success: true,
-        limit,
-        remaining: limit - entry.count,
-        resetAt: entry.resetAt,
-    };
+function unavailableResponse() {
+    return NextResponse.json(
+        { error: "Rate limit service unavailable" },
+        { status: 503, headers: { "Retry-After": "1" } }
+    );
 }
 
-function maybeSweep(now: number) {
-    if (now - lastSweep < SWEEP_INTERVAL_MS) return;
-    lastSweep = now;
-    requests.forEach((entry, key) => {
-        if (now >= entry.resetAt) requests.delete(key);
-    });
+function limitedResponse(bucket: Bucket) {
+    return NextResponse.json(
+        { error: "Too many requests" },
+        {
+            status: 429,
+            headers: {
+                "Retry-After": "60",
+                "X-RateLimit-Limit": limits[bucket].toString(),
+            },
+        }
+    );
 }
 
-function rateLimitHeaders(result: RateLimitResult) {
-    return {
-        "X-RateLimit-Limit": result.limit.toString(),
-        "X-RateLimit-Remaining": result.remaining.toString(),
-        "X-RateLimit-Reset": Math.ceil(result.resetAt / 1000).toString(),
-    };
-}
-
-export function proxy(request: NextRequest) {
+export async function applyRateLimit(
+    request: NextRequest,
+    check: RateLimitCheck = checkRateLimit
+) {
     const bucket = resolveBucket(request.nextUrl.pathname);
     if (!bucket) return NextResponse.next();
 
-    const now = Date.now();
-    maybeSweep(now);
-    const clientKey = resolveClientKey(request.headers);
-    const result = consumeRateLimit(requests, bucket, clientKey, now);
-    const headers = rateLimitHeaders(result);
-
-    if (!result.success) {
-        return NextResponse.json(
-            { error: "Too many requests" },
-            {
-                status: 429,
-                headers: {
-                    ...headers,
-                    "Retry-After": Math.max(
-                        1,
-                        Math.ceil((result.resetAt - now) / 1000)
-                    ).toString(),
-                },
-            }
-        );
+    try {
+        const result = await check(rateLimitIds[bucket], {
+            request,
+            rateLimitKey: resolveClientKey(request.headers),
+        });
+        if (result.error === "not-found") return unavailableResponse();
+        if (result.rateLimited) return limitedResponse(bucket);
+        const response = NextResponse.next();
+        response.headers.set("X-RateLimit-Limit", limits[bucket].toString());
+        return response;
+    } catch {
+        console.error({
+            route: request.nextUrl.pathname,
+            failureClass: "rate_limit_service",
+        });
+        return unavailableResponse();
     }
+}
 
-    const response = NextResponse.next();
-    for (const [name, value] of Object.entries(headers)) {
-        response.headers.set(name, value);
-    }
-    return response;
+export async function proxy(request: NextRequest) {
+    if (process.env.NODE_ENV !== "production") return NextResponse.next();
+    return applyRateLimit(request);
 }
 
 export const config = {
