@@ -38,6 +38,7 @@ cypress/screenshots
 coverage/
 playwright-report/
 artifacts/
+test-results/
 
 # Sentry
 .sentryclirc
