@@ -48,6 +48,11 @@ describe("item image route", () => {
         expect((jest.mocked(fetch).mock.calls[2][0] as URL).pathname).toBe(
             "/invimage/kr/1000/1000.png"
         );
+
+        await GET(request("name=toString") as never);
+        expect((jest.mocked(fetch).mock.calls[3][0] as URL).pathname).toBe(
+            "/invimage/kr/1000/1000.png"
+        );
     });
 
     it("rejects missing and invalid identifiers without fetch", async () => {

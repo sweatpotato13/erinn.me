@@ -139,7 +139,7 @@ describe("API upstream failure contracts", () => {
             ok: true,
             status: 200,
             json: () => {
-                clock.mockReturnValue(startedAt + 5_001);
+                clock.mockReturnValue(startedAt + 15_001);
                 return Promise.resolve({
                     auction_item: [
                         {
