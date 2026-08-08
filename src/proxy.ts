@@ -3,6 +3,11 @@ import { NextRequest, NextResponse } from "next/server";
 
 type Bucket = "contact" | "upstream" | "image" | "suggest";
 type RateLimitCheck = typeof checkRateLimit;
+type RateLimitEnvironment = {
+    NODE_ENV?: string;
+    VERCEL_ENV?: string;
+    ENABLE_PREVIEW_RATE_LIMIT?: string;
+};
 
 const LIMITS: Readonly<Record<Bucket, number>> = {
     contact: 3,
@@ -119,13 +124,23 @@ export async function applyRateLimit(
     }
 }
 
+export function shouldApplyRateLimit(
+    environment: RateLimitEnvironment = process.env
+): boolean {
+    if (environment.NODE_ENV !== "production") return false;
+    return (
+        environment.VERCEL_ENV !== "preview" ||
+        environment.ENABLE_PREVIEW_RATE_LIMIT === "true"
+    );
+}
+
 /**
  * Applies API rate limiting in production and forwards requests unchanged in other environments.
  *
  * @returns The response produced by rate-limit processing or request forwarding.
  */
 export async function proxy(request: NextRequest): Promise<NextResponse> {
-    if (process.env.NODE_ENV !== "production") return NextResponse.next();
+    if (!shouldApplyRateLimit()) return NextResponse.next();
     return applyRateLimit(request);
 }
 

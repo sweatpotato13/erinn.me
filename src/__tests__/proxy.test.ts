@@ -7,6 +7,7 @@ import {
     proxy,
     resolveBucket,
     resolveClientKey,
+    shouldApplyRateLimit,
 } from "@/proxy";
 
 function request(path: string, ip = "203.0.113.8") {
@@ -93,5 +94,48 @@ describe("rate limiter", () => {
         ).toBe(200);
         expect(check).not.toHaveBeenCalled();
         expect((await proxy(request("/api/contact"))).status).toBe(200);
+    });
+
+    it("bypasses WAF checks in Vercel preview deployments", async () => {
+        const originalNodeEnv = process.env.NODE_ENV;
+        const originalVercelEnv = process.env.VERCEL_ENV;
+        process.env.NODE_ENV = "production";
+        process.env.VERCEL_ENV = "preview";
+
+        try {
+            expect((await proxy(request("/api/contact"))).status).toBe(200);
+        } finally {
+            process.env.NODE_ENV = originalNodeEnv;
+            if (originalVercelEnv === undefined) {
+                delete process.env.VERCEL_ENV;
+            } else {
+                process.env.VERCEL_ENV = originalVercelEnv;
+            }
+        }
+    });
+
+    it.each([
+        ["development", { NODE_ENV: "development" }, false],
+        [
+            "preview by default",
+            { NODE_ENV: "production", VERCEL_ENV: "preview" },
+            false,
+        ],
+        [
+            "opted-in preview",
+            {
+                NODE_ENV: "production",
+                VERCEL_ENV: "preview",
+                ENABLE_PREVIEW_RATE_LIMIT: "true",
+            },
+            true,
+        ],
+        [
+            "production deployment",
+            { NODE_ENV: "production", VERCEL_ENV: "production" },
+            true,
+        ],
+    ])("selects the WAF path for %s", (_case, environment, expected) => {
+        expect(shouldApplyRateLimit(environment)).toBe(expected);
     });
 });
