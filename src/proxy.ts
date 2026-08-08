@@ -1,7 +1,6 @@
 import { checkRateLimit } from "@vercel/firewall";
 import { NextRequest, NextResponse } from "next/server";
 
-type Bucket = "contact" | "upstream" | "image" | "suggest";
 type RateLimitCheck = typeof checkRateLimit;
 type RateLimitEnvironment = {
     NODE_ENV?: string;
@@ -9,38 +8,17 @@ type RateLimitEnvironment = {
     ENABLE_PREVIEW_RATE_LIMIT?: string;
 };
 
-const LIMITS: Readonly<Record<Bucket, number>> = {
-    contact: 3,
-    upstream: 60,
-    image: 120,
-    suggest: 120,
-};
-const RATE_LIMIT_IDS: Readonly<Record<Bucket, string>> = {
-    contact: "erinn-contact",
-    upstream: "erinn-upstream",
-    image: "erinn-image",
-    suggest: "erinn-suggest",
-};
-const upstreamRoutes = new Set([
-    "/api/auction",
-    "/api/auction/keyword-search",
-    "/api/auction/price-summary",
-    "/api/horn",
-    "/api/npc-shop",
-]);
+const RATE_LIMIT_ID = "erinn-api";
+const RATE_LIMIT = 120;
 
 /**
- * Determines the rate-limit bucket for an API route.
+ * Checks whether the request targets an API route that should be rate-limited.
  *
  * @param pathname - The request path to classify
- * @returns The matching rate-limit bucket, or `null` when the path has no configured bucket
+ * @returns `true` when the path falls under the `/api/` namespace
  */
-export function resolveBucket(pathname: string): Bucket | null {
-    if (pathname === "/api/contact") return "contact";
-    if (pathname === "/api/item-image") return "image";
-    if (pathname === "/api/suggest") return "suggest";
-    if (upstreamRoutes.has(pathname)) return "upstream";
-    return null;
+export function isApiRoute(pathname: string): boolean {
+    return pathname.startsWith("/api/");
 }
 
 /**
@@ -60,67 +38,45 @@ export function resolveClientKey(headers: Headers): string {
     );
 }
 
-/**
- * Creates a response indicating that the rate-limit service is temporarily unavailable.
- *
- * @returns An HTTP 503 response with a one-second retry interval.
- */
-function unavailableResponse() {
-    return NextResponse.json(
-        { error: "Rate limit service unavailable" },
-        { status: 503, headers: { "Retry-After": "1" } }
-    );
-}
-
-/**
- * Creates a response indicating that the request exceeded its rate limit.
- *
- * @param bucket - The rate-limit bucket that determines the request limit header.
- * @returns A 429 response with retry guidance and the configured bucket limit.
- */
-function limitedResponse(bucket: Bucket) {
+function limitedResponse() {
     return NextResponse.json(
         { error: "Too many requests" },
         {
             status: 429,
             headers: {
                 "Retry-After": "60",
-                "X-RateLimit-Limit": LIMITS[bucket].toString(),
+                "X-RateLimit-Limit": RATE_LIMIT.toString(),
             },
         }
     );
 }
 
 /**
- * Applies rate limiting to recognized API routes and forwards allowed requests.
+ * Applies rate limiting to API routes via Vercel Firewall WAF.
+ * Fails open (passes through) when the WAF rule is unavailable.
  *
  * @param request - The incoming request to evaluate.
  * @param check - The rate-limit service used to evaluate the request.
- * @returns A response that forwards the request, indicates rate limiting, or reports service unavailability.
+ * @returns A response that forwards the request or indicates rate limiting.
  */
 export async function applyRateLimit(
     request: NextRequest,
     check: RateLimitCheck = checkRateLimit
 ): Promise<NextResponse> {
-    const bucket = resolveBucket(request.nextUrl.pathname);
-    if (!bucket) return NextResponse.next();
+    if (!isApiRoute(request.nextUrl.pathname)) return NextResponse.next();
 
     try {
-        const result = await check(RATE_LIMIT_IDS[bucket], {
+        const result = await check(RATE_LIMIT_ID, {
             request,
             rateLimitKey: resolveClientKey(request.headers),
         });
-        if (result.error === "not-found") return unavailableResponse();
-        if (result.rateLimited) return limitedResponse(bucket);
+        if (result.error === "not-found") return NextResponse.next();
+        if (result.rateLimited) return limitedResponse();
         const response = NextResponse.next();
-        response.headers.set("X-RateLimit-Limit", LIMITS[bucket].toString());
+        response.headers.set("X-RateLimit-Limit", RATE_LIMIT.toString());
         return response;
     } catch {
-        console.error({
-            route: request.nextUrl.pathname,
-            failureClass: "rate_limit_service",
-        });
-        return unavailableResponse();
+        return NextResponse.next();
     }
 }
 

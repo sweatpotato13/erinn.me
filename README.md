@@ -76,32 +76,23 @@ identity and ignores `x-forwarded-for`. Any reverse proxy placed in front of
 Vercel must strip client-supplied `x-vercel-forwarded-for` values before
 forwarding requests.
 
-Configure these programmatic rate-limit IDs in the Vercel Firewall dashboard:
+Configure a single programmatic rate-limit rule in the Vercel Firewall dashboard:
 
-| ID | Limit | Window |
-| --- | ---: | ---: |
-| `erinn-contact` | 3 | 60 seconds |
-| `erinn-upstream` | 60 | 60 seconds |
-| `erinn-image` | 120 | 60 seconds |
-| `erinn-suggest` | 120 | 60 seconds |
+| ID | Path | Limit | Window |
+| --- | --- | ---: | ---: |
+| `erinn-api` | `/api/*` | 120 | 60 seconds |
 
-Each rule must use the `@vercel/firewall` condition with its matching ID. A
-missing rule or WAF check failure returns HTTP 503 instead of bypassing the
-quota. Local development and Vercel Preview deployments bypass these checks;
-Preview deployments must remain protected with Vercel Authentication. This
-avoids requiring an Automation Bypass secret for the SDK's internal request,
-while Production continues to fail closed.
+The rule uses `@vercel/firewall` with the ID `erinn-api`. If the rule is
+missing or the WAF check fails, requests pass through (fail-open). Local
+development and Vercel Preview deployments bypass WAF checks entirely.
 
 To verify the Production WAF path before merging to `main`:
 
-1. Enable **Automatically expose System Environment Variables** and
-   **Protection Bypass for Automation** in the Vercel project settings.
-2. Add `ENABLE_PREVIEW_RATE_LIMIT=true` to the Preview environment, scoped to
+1. Add `ENABLE_PREVIEW_RATE_LIMIT=true` to the Preview environment, scoped to
    the `develop` branch, and redeploy it.
-3. Request a protected API route and confirm it returns HTTP 200 with an
-   `X-RateLimit-Limit` header. HTTP 503 means the matching rate-limit ID or the
-   Automation Bypass setup is still unavailable.
-4. Remove `ENABLE_PREVIEW_RATE_LIMIT` after verification and redeploy
+2. Request a protected API route and confirm it returns HTTP 200 with an
+   `X-RateLimit-Limit: 120` header.
+3. Remove `ENABLE_PREVIEW_RATE_LIMIT` after verification and redeploy
    `develop` to restore the default Preview bypass.
 
 Never add `ENABLE_PREVIEW_RATE_LIMIT` to Production: Production always applies
