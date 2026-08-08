@@ -1,35 +1,62 @@
 import { NextResponse } from "next/server";
+import * as z from "zod";
 
+import { parseQuery, serverNameSchema } from "@/lib/api/request";
+import {
+    createRequestDeadline,
+    createUpstreamUrl,
+    fetchUpstream,
+    parseUpstreamJson,
+    upstreamErrorResponse,
+} from "@/lib/api/upstream";
+import { NpcShopResponseSchema } from "@/lib/schemas/nexon";
 import { checkOrigin } from "@/lib/utils/check-origin";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
+const querySchema = z.object({
+    npc_name: z.string().trim().min(1).max(50),
+    server_name: serverNameSchema,
+    channel: z.coerce.number().int().min(1).max(42),
+});
 
+/**
+ * Retrieves NPC shop data for a specified character, server, and channel.
+ *
+ * @returns A JSON response containing the validated NPC shop data or an error response.
+ */
 export async function GET(request: Request) {
     const forbidden = checkOrigin(request);
     if (forbidden) return forbidden;
 
-    const { searchParams } = new URL(request.url);
-    const npcName = searchParams.get("npc_name");
-    const serverName = searchParams.get("server_name");
-    const channel = searchParams.get("channel");
+    const query = parseQuery(request, querySchema);
+    if (!query.success) return query.response;
+    const deadline = createRequestDeadline(request.signal);
 
-    const response = await fetch(
-        `${NXOPEN_API_URL}/mabinogi/v1/npcshop/list?npc_name=${npcName}&server_name=${serverName}&channel=${parseInt(channel || "1")}`,
-        {
-            headers: {
-                "Content-Type": "application/json",
-                "x-nxopen-api-key": NXOPEN_API_KEY || "",
-            },
-        }
-    );
-
-    if (!response.ok) {
-        return NextResponse.json(
-            { error: "Failed to fetch data" },
-            { status: 500 }
+    try {
+        const url = createUpstreamUrl(
+            "/mabinogi/v1/npcshop/list",
+            NXOPEN_API_URL
         );
+        url.searchParams.set("npc_name", query.data.npc_name);
+        url.searchParams.set("server_name", query.data.server_name);
+        url.searchParams.set("channel", query.data.channel.toString());
+        const response = await fetchUpstream(
+            url,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-nxopen-api-key": NXOPEN_API_KEY || "",
+                },
+            },
+            deadline
+        );
+        const data = await parseUpstreamJson(
+            response,
+            NpcShopResponseSchema,
+            deadline
+        );
+        return NextResponse.json(data);
+    } catch (error) {
+        return upstreamErrorResponse("/api/npc-shop", error);
     }
-
-    const data = await response.json();
-    return NextResponse.json(data);
 }

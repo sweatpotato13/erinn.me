@@ -15,7 +15,7 @@ export default defineConfig({
   projects: [
     {
       name: '크롬',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } },
     },
     {
       name: '파이어폭스',
@@ -23,7 +23,7 @@ export default defineConfig({
     },
     {
       name: '모바일 크롬',
-      use: { ...devices['Pixel 5'] },
+      use: { ...devices['Pixel 5'], viewport: { width: 390, height: 844 } },
     },
     {
       name: '모바일 사파리',
@@ -31,8 +31,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'npm run dev',
+    command: 'pnpm dev',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },
-}); 
+});

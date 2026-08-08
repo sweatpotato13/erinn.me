@@ -5,27 +5,38 @@ import Image from "next/image";
 import { useState } from "react";
 
 import { craftingItems } from "@/constant/craft-items";
-import { getItemPriceWithQuantity } from "@/lib/api/auction";
-import { CraftingItem, Material } from "@/types";
+import {
+    applyPriceSummaries,
+    fetchPriceSummaries,
+    loadCraftingPrices,
+    PricedCraftingItem,
+} from "@/lib/api/crafting";
 
-// React Query 캐시에서 아이템의 총 가격을 가져오는 함수
+/**
+ * Calculates the cached material price for a crafting item.
+ *
+ * @param itemName - The name of the item to price
+ * @param considerCraftingCount - Whether to apply the selected crafting count
+ * @returns The cached total price, or `null` when the item or a valid material price is unavailable
+ */
 function getCachedItemTotalPrice(
     queryClient: ReturnType<typeof useQueryClient>,
     itemName: string,
     considerCraftingCount: boolean = false
 ): number | null {
-    const cachedData = queryClient.getQueryData<CraftingItem[]>([
+    const cachedData = queryClient.getQueryData<PricedCraftingItem[]>([
         "craftingPrices",
     ]);
     if (!cachedData) return null;
 
     const cachedItem = cachedData.find(
-        (item: CraftingItem) => item.name === itemName
+        (item: PricedCraftingItem) => item.name === itemName
     );
     if (!cachedItem) return null;
+    if (cachedItem.materials.some(material => material.priceError)) return null;
 
     const materialPrice = cachedItem.materials.reduce(
-        (sum: number, m: Material) => sum + m.quantity * m.price,
+        (sum, material) => sum + material.totalPrice,
         0
     );
 
@@ -46,7 +57,7 @@ function getCachedItemTotalPrice(
     return materialPrice;
 }
 
-function ItemCard({ item }: { item: CraftingItem }) {
+function ItemCard({ item }: { item: PricedCraftingItem }) {
     const queryClient = useQueryClient();
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [craftingCount, setCraftingCount] = useState(1);
@@ -68,60 +79,53 @@ function ItemCard({ item }: { item: CraftingItem }) {
             [item.name]: count,
         });
 
-        // 이 아이템을 재료로 사용하는 다른 아이템의 가격 업데이트를 위해 캐시 무효화
-        void queryClient.invalidateQueries({ queryKey: ["craftingPrices"] });
+        // 이 값은 다른 제작 아이템을 수동 갱신할 때 참조된다.
     };
 
     const handleRefresh = async () => {
         setIsRefreshing(true);
         try {
-            const materialsWithPrices = await Promise.all(
-                item.materials.map(async material => {
-                    // 먼저 React Query 캐시에서 완성된 아이템의 총 가격을 확인
-                    // 공허의 로브와 같이 공정 횟수가 있는 아이템은 공정 횟수를 고려한 가격 사용
-                    const cachedTotalPrice = getCachedItemTotalPrice(
-                        queryClient,
-                        material.name,
-                        true // 공정 횟수 고려
-                    );
-                    if (cachedTotalPrice !== null && cachedTotalPrice > 0) {
-                        return {
-                            ...material,
-                            price: cachedTotalPrice / material.quantity, // 캐시된 총 가격을 사용
-                        };
-                    }
+            const auctionNames: string[] = [];
+            const cachedTotals = new Map<string, number>();
+            for (const material of item.materials) {
+                if (!material.isMarketPrice) continue;
+                // 먼저 React Query 캐시에서 완성된 아이템의 총 가격을 확인
+                // 공허의 로브와 같이 공정 횟수가 있는 아이템은 공정 횟수를 고려한 가격 사용
+                const cachedTotalPrice = getCachedItemTotalPrice(
+                    queryClient,
+                    material.name,
+                    true // 공정 횟수 고려
+                );
+                if (cachedTotalPrice !== null && cachedTotalPrice > 0) {
+                    cachedTotals.set(material.name, cachedTotalPrice);
+                } else {
+                    auctionNames.push(material.name);
+                }
+            }
 
-                    // 캐시에 없거나 가격이 0인 경우 경매장에서 가격 조회
-                    if (material.price === 0) {
-                        const priceInfo = await getItemPriceWithQuantity(
-                            material.name,
-                            material.quantity
-                        );
-                        return {
-                            ...material,
-                            price:
-                                priceInfo.totalPrice / material.quantity > 0
-                                    ? priceInfo.totalPrice / material.quantity
-                                    : 0,
-                        };
-                    }
-                    return material;
-                })
-            );
-
-            const updatedItem = {
-                ...item,
-                materials: materialsWithPrices,
-            };
+            const summaries = await fetchPriceSummaries(auctionNames);
 
             // 현재 캐시된 데이터를 업데이트
-            const currentData = queryClient.getQueryData<CraftingItem[]>([
+            const currentData = queryClient.getQueryData<PricedCraftingItem[]>([
                 "craftingPrices",
             ]);
             if (currentData) {
-                const updatedData = currentData.map(i =>
-                    i.name === item.name ? updatedItem : i
-                );
+                let updatedData = applyPriceSummaries(currentData, summaries);
+                updatedData = updatedData.map(currentItem => ({
+                    ...currentItem,
+                    materials: currentItem.materials.map(material => {
+                        const cachedTotal = cachedTotals.get(material.name);
+                        return cachedTotal === undefined
+                            ? material
+                            : {
+                                  ...material,
+                                  unitPrice: cachedTotal,
+                                  availableQuantity: 1,
+                                  totalPrice: cachedTotal,
+                                  priceError: undefined,
+                              };
+                    }),
+                }));
                 queryClient.setQueryData(["craftingPrices"], updatedData);
             }
         } finally {
@@ -134,11 +138,11 @@ function ItemCard({ item }: { item: CraftingItem }) {
         0
     );
     const oneCraftPrice = item.materials.reduce(
-        (sum, m) => sum + m.quantity * m.price,
+        (sum, material) => sum + material.totalPrice,
         0
     );
     const totalPrice = oneCraftPrice * craftingCount;
-    const hasZeroPrice = item.materials.some(m => m.price === 0);
+    const hasPriceError = item.materials.some(material => material.priceError);
 
     return (
         <section className="bg-white rounded-lg shadow p-4 mb-4 w-full max-w-xs">
@@ -148,6 +152,9 @@ function ItemCard({ item }: { item: CraftingItem }) {
                         <Image
                             src={item.imageUrl}
                             alt={item.name}
+                            width={40}
+                            height={40}
+                            unoptimized={true}
                             className="w-10 h-10 object-contain"
                         />
                     </div>
@@ -230,6 +237,9 @@ function ItemCard({ item }: { item: CraftingItem }) {
                             <Image
                                 src={mat.imageUrl}
                                 alt={mat.name}
+                                width={24}
+                                height={24}
+                                unoptimized={true}
                                 className="w-6 h-6 object-contain"
                             />
                         </div>
@@ -238,12 +248,12 @@ function ItemCard({ item }: { item: CraftingItem }) {
                             x{mat.quantity}
                         </span>
                         <span className="ml-2 text-xs text-gray-500">
-                            {mat.price === 0 ? (
+                            {mat.priceError ? (
                                 <span className="text-red-500">
-                                    가격 조회 중
+                                    가격 조회 실패
                                 </span>
                             ) : (
-                                `(${(mat.price * mat.quantity).toLocaleString()} G)`
+                                `(${mat.totalPrice.toLocaleString()} G)`
                             )}
                         </span>
                     </li>
@@ -260,9 +270,9 @@ function ItemCard({ item }: { item: CraftingItem }) {
                         <div className="flex justify-between">
                             <span>1회 공정 가격</span>
                             <span className="font-semibold">
-                                {hasZeroPrice ? (
+                                {hasPriceError ? (
                                     <span className="text-red-500">
-                                        가격 조회 중
+                                        가격 조회 실패
                                     </span>
                                 ) : (
                                     `${oneCraftPrice.toLocaleString()} G`
@@ -272,9 +282,9 @@ function ItemCard({ item }: { item: CraftingItem }) {
                         <div className="flex justify-between border-t border-gray-200 pt-1 mt-1">
                             <span>{craftingCount}회 공정 총액</span>
                             <span className="font-semibold text-blue-700">
-                                {hasZeroPrice ? (
+                                {hasPriceError ? (
                                     <span className="text-red-500">
-                                        가격 조회 중
+                                        가격 조회 실패
                                     </span>
                                 ) : (
                                     `${totalPrice.toLocaleString()} G`
@@ -286,9 +296,9 @@ function ItemCard({ item }: { item: CraftingItem }) {
                     <div className="flex justify-between">
                         <span>총 합 가격</span>
                         <span className="font-semibold text-blue-700">
-                            {hasZeroPrice ? (
+                            {hasPriceError ? (
                                 <span className="text-red-500">
-                                    가격 조회 중
+                                    가격 조회 실패
                                 </span>
                             ) : (
                                 `${totalPrice.toLocaleString()} G`
@@ -304,65 +314,38 @@ function ItemCard({ item }: { item: CraftingItem }) {
 type SortOption = "name" | "price" | null;
 type SortDirection = "asc" | "desc";
 
+/**
+ * Displays craftable items with their material prices and sorting controls.
+ *
+ * @returns The crafting item list, loading indicator, or error state with a retry action.
+ */
 export default function CraftingPage() {
     const [sortBy, setSortBy] = useState<SortOption>(null);
     const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
     // 모든 재료의 가격 정보를 가져오는 쿼리
-    const { data: priceData, isLoading } = useQuery({
+    const {
+        data: priceData,
+        isLoading,
+        isError,
+        refetch,
+    } = useQuery({
         queryKey: ["craftingPrices"],
-        queryFn: async () => {
-            try {
-                const itemsWithPrices = await Promise.all(
-                    craftingItems.map(async item => {
-                        const materialsWithPrices = await Promise.all(
-                            item.materials.map(async material => {
-                                if (material.price === 0) {
-                                    const priceInfo =
-                                        await getItemPriceWithQuantity(
-                                            material.name,
-                                            material.quantity
-                                        );
-                                    return {
-                                        ...material,
-                                        price:
-                                            priceInfo.totalPrice /
-                                                material.quantity >
-                                            0
-                                                ? priceInfo.totalPrice /
-                                                  material.quantity
-                                                : 0,
-                                    };
-                                }
-                                return material;
-                            })
-                        );
-                        return {
-                            ...item,
-                            materials: materialsWithPrices,
-                        };
-                    })
-                );
-                return itemsWithPrices;
-            } catch (error: any) {
-                console.error("Failed to fetch crafting prices:", error);
-                return craftingItems; // Return initial data as fallback
-            }
-        },
+        queryFn: () => loadCraftingPrices(craftingItems),
     });
 
-    const sortedItems = [...(priceData || craftingItems)].sort((a, b) => {
+    const sortedItems = [...(priceData ?? [])].sort((a, b) => {
         if (sortBy === "name") {
             const comparison = a.name.localeCompare(b.name);
             return sortDirection === "asc" ? comparison : -comparison;
         }
         if (sortBy === "price") {
             const totalPriceA = a.materials.reduce(
-                (sum, m) => sum + m.quantity * m.price,
+                (sum, material) => sum + material.totalPrice,
                 0
             );
             const totalPriceB = b.materials.reduce(
-                (sum, m) => sum + m.quantity * m.price,
+                (sum, material) => sum + material.totalPrice,
                 0
             );
             return sortDirection === "asc"
@@ -385,6 +368,23 @@ export default function CraftingPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
                 <div className="loading loading-spinner loading-lg"></div>
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-6">
+                <div role="alert" className="alert alert-error max-w-xl">
+                    <span>제작 가격 정보를 불러오지 못했습니다.</span>
+                    <button
+                        type="button"
+                        className="btn btn-sm"
+                        onClick={() => void refetch()}
+                    >
+                        다시 시도
+                    </button>
+                </div>
             </div>
         );
     }

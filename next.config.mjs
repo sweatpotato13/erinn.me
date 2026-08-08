@@ -12,6 +12,11 @@ const nextConfig = {
                 protocol: "https",
                 hostname: "mabires2.pril.cc",
             },
+            {
+                protocol: "https",
+                hostname: "open.api.nexon.com",
+                pathname: "/static/mabinogi/img/**",
+            },
         ],
         deviceSizes: [40, 120, 200],
         imageSizes: [40, 120, 200],

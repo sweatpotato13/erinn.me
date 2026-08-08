@@ -1,11 +1,9 @@
-import itemIdMap from "@/data/item-id-map.json";
-
-const idMap: Record<string, string> = itemIdMap;
-
+/**
+ * Builds the image endpoint URL for an item name.
+ *
+ * @param itemName - The name of the item to retrieve an image for
+ * @returns The URL for the item's image endpoint
+ */
 export function getItemImageUrl(itemName: string): string {
-    const id = idMap[itemName];
-    if (!id) {
-        return `/api/item-image?id=1000`;
-    }
-    return `/api/item-image?id=${id}`;
+    return `/api/item-image?${new URLSearchParams({ name: itemName })}`;
 }

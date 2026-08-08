@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import React from "react";
 
 import { ItemCard } from "@/components/dungeon/item-card";
@@ -9,10 +9,13 @@ import {
     getItemsByDungeon,
     getItemsByDungeonDifficulty,
 } from "@/constant/dungeons-items";
-import { getItemPrice, ItemPriceResponse } from "@/lib/api/auction";
+import { fetchItemPriceSummary, ItemPriceResponse } from "@/lib/api/auction";
 
 type SortType = "name-asc" | "name-desc" | "price-asc" | "price-desc";
 
+/**
+ * Displays dungeon items with difficulty filtering, auction price information, sorting, and refresh controls.
+ */
 export default function DungeonPage() {
     const [selectedDungeon, setSelectedDungeon] = React.useState<DungeonType>(
         DUNGEON_LIST[0]
@@ -27,8 +30,10 @@ export default function DungeonPage() {
         Record<string, ItemPriceResponse>
     >({});
     const [loadingItemIndex, setLoadingItemIndex] = useState<number>(0);
-    const [isLoadingPrice, setIsLoadingPrice] = useState<boolean>(false);
     const [refreshing, setRefreshing] = useState<Record<string, boolean>>({});
+    const [itemErrors, setItemErrors] = useState<Record<string, string>>({});
+    const generationRef = useRef(0);
+    const refreshingItemsRef = useRef(new Set<string>());
 
     // 선택된 던전과 난이도에 따라 아이템 목록 가져오기
     const items = React.useMemo(() => {
@@ -41,81 +46,112 @@ export default function DungeonPage() {
         return getItemsByDungeon(selectedDungeon);
     }, [selectedDungeon, selectedDifficulty]);
 
-    // 던전이나 난이도가 변경되면 가격 로딩을 초기화
-    useEffect(() => {
-        setItemPrices({});
-        setLoadingItemIndex(0);
-        setIsLoadingPrice(false);
-        setRefreshing({});
-    }, [selectedDungeon, selectedDifficulty]);
-
     // 개별 아이템 가격 새로고침 기능
     const handleRefreshItem = (itemName: string) => {
         // 이미 새로고침 중인 아이템은 중복 호출 방지
-        if (refreshing[itemName]) return;
+        if (refreshingItemsRef.current.has(itemName)) return;
 
+        const generation = generationRef.current;
+        refreshingItemsRef.current.add(itemName);
         setRefreshing(prev => ({ ...prev, [itemName]: true }));
+        setItemErrors(prev => ({ ...prev, [itemName]: "" }));
 
         // 비동기 함수를 즉시 실행하여 Promise 처리
         void (async () => {
             try {
-                const price = await getItemPrice(itemName);
+                const summary = await fetchItemPriceSummary(itemName);
+
+                if (generation !== generationRef.current) return;
 
                 setItemPrices(prev => ({
                     ...prev,
-                    [itemName]: price,
+                    [itemName]: {
+                        unitPrice: summary.minPrice,
+                        averagePrice: summary.averagePrice,
+                        isComplete: summary.isComplete,
+                    },
                 }));
-            } catch (error) {
-                console.error(`${itemName} 가격 새로고침 중 오류:`, error);
+            } catch {
+                if (generation !== generationRef.current) return;
+                setItemErrors(prev => ({
+                    ...prev,
+                    [itemName]: "가격 조회에 실패했습니다.",
+                }));
             } finally {
-                setRefreshing(prev => ({ ...prev, [itemName]: false }));
+                if (generation === generationRef.current) {
+                    refreshingItemsRef.current.delete(itemName);
+                    setRefreshing(prev => ({ ...prev, [itemName]: false }));
+                }
             }
         })();
     };
 
     // 순차적으로 아이템 가격 로딩
     useEffect(() => {
-        if (loadingItemIndex >= items.length || isLoadingPrice) return;
+        const generation = generationRef.current + 1;
+        generationRef.current = generation;
+        refreshingItemsRef.current.clear();
+        const controller = new AbortController();
+        let delayTimer: ReturnType<typeof setTimeout> | undefined;
+        let resolveDelay: (() => void) | undefined;
 
-        const loadNextItemPrice = async () => {
-            if (loadingItemIndex < items.length) {
-                const currentItem = items[loadingItemIndex];
+        setItemPrices({});
+        setItemErrors({});
+        setLoadingItemIndex(0);
+        setRefreshing({});
 
-                // 이미 가격이 로딩된 아이템은 건너뛰기
-                if (itemPrices[currentItem.name]) {
-                    setLoadingItemIndex(prevIndex => prevIndex + 1);
-                    return;
-                }
-
-                setIsLoadingPrice(true);
+        const loadPrices = async () => {
+            for (let index = 0; index < items.length; index++) {
+                if (generation !== generationRef.current) return;
+                const currentItem = items[index];
                 try {
-                    // 아이템 가격 로딩 (1초 간격으로)
-                    const price = await getItemPrice(currentItem.name);
+                    const summary = await fetchItemPriceSummary(
+                        currentItem.name,
+                        controller.signal
+                    );
+                    if (generation !== generationRef.current) return;
 
-                    // 가격 정보 업데이트
                     setItemPrices(prev => ({
                         ...prev,
-                        [currentItem.name]: price,
+                        [currentItem.name]: {
+                            unitPrice: summary.minPrice,
+                            averagePrice: summary.averagePrice,
+                            isComplete: summary.isComplete,
+                        },
                     }));
+                } catch {
+                    if (generation !== generationRef.current) return;
+                    setItemErrors(prev => ({
+                        ...prev,
+                        [currentItem.name]: "가격 조회에 실패했습니다.",
+                    }));
+                }
 
-                    // 다음 아이템으로 이동하기 전에 1초 대기
-                    setTimeout(() => {
-                        setLoadingItemIndex(prevIndex => prevIndex + 1);
-                        setIsLoadingPrice(false);
-                    }, 1000);
-                } catch (error) {
-                    console.error("가격 조회 중 오류:", error);
-                    // 오류 발생 시에도 다음 아이템으로 진행
-                    setTimeout(() => {
-                        setLoadingItemIndex(prevIndex => prevIndex + 1);
-                        setIsLoadingPrice(false);
-                    }, 1000);
+                if (generation !== generationRef.current) return;
+                setLoadingItemIndex(index + 1);
+
+                if (index < items.length - 1) {
+                    await new Promise<void>(resolve => {
+                        resolveDelay = resolve;
+                        delayTimer = setTimeout(resolve, 1000);
+                    });
+                    resolveDelay = undefined;
                 }
             }
         };
 
-        void loadNextItemPrice();
-    }, [items, loadingItemIndex, isLoadingPrice, itemPrices]);
+        // Deferring by one task lets React Strict Mode clean up its probe
+        // effect before a network request is sent.
+        const startTimer = setTimeout(() => void loadPrices(), 0);
+
+        return () => {
+            generationRef.current++;
+            controller.abort();
+            if (startTimer) clearTimeout(startTimer);
+            if (delayTimer) clearTimeout(delayTimer);
+            resolveDelay?.();
+        };
+    }, [items]);
 
     // 아이템 정렬
     const sortedItems = React.useMemo(() => {
@@ -326,6 +362,8 @@ export default function DungeonPage() {
                         selectedDungeon={selectedDungeon}
                         selectedDifficulty={selectedDifficulty}
                         priceInfo={itemPrices[item.name]}
+                        isRefreshing={refreshing[item.name] ?? false}
+                        error={itemErrors[item.name]}
                         onRefresh={handleRefreshItem}
                     />
                 ))}
