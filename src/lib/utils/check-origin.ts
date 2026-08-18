@@ -12,6 +12,9 @@ function extractOrigin(value: string): string | null {
 }
 
 export function checkOrigin(request: Request): NextResponse | null {
+    // Vercel protects preview deployments with SSO, so only production needs origin validation.
+    if (process.env.VERCEL_ENV !== "production") return null;
+
     const allowedDomain = BASE_URL || "http://localhost:3000";
     const allowedOrigin = extractOrigin(allowedDomain);
 
