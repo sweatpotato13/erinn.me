@@ -19,7 +19,7 @@ const statsPath = resolve(
     ".next/diagnostics/route-bundle-stats.json"
 );
 const stats = JSON.parse(readFileSync(statsPath, "utf8")) as RouteStat[];
-const auditedRoutes = ["/auction", "/dungeon", "/crafting"] as const;
+const auditedRoutes = ["/auction"] as const;
 const commit = execFileSync("git", ["rev-parse", "HEAD"], {
     encoding: "utf8",
 }).trim();

@@ -1,4 +1,4 @@
-import { ArrowLeftRightIcon, Swords } from "lucide-react";
+import { ArrowLeftRightIcon } from "lucide-react";
 import Link from "next/link";
 
 import AuctionIcon from "@/components/icons/auction-icon";
@@ -46,12 +46,6 @@ export default function Page() {
                     title="경매장"
                     description="실시간 경매장 아이템 가격을 확인하세요"
                     icon={<AuctionIcon className="h-6 w-6 text-slate-600" />}
-                />
-                <NavigationCard
-                    href="/dungeon"
-                    title="던전 아이템"
-                    description="던전별 드롭 아이템과 가격을 확인하세요"
-                    icon={<Swords className="h-6 w-6 text-slate-600" />}
                 />
                 <NavigationCard
                     href="/horn"
