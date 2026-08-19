@@ -11,6 +11,9 @@ test("auction search shows a responsive incomplete market summary", async ({
         date_auction_expire: "2026-08-20T00:00:00Z",
         item_option: [],
     }));
+    await page.route("**/api/suggest?**", route =>
+        route.fulfill({ json: { suggestions: [] } })
+    );
     await page.route("**/api/auction/keyword-search?**", route =>
         route.fulfill({
             json: { items, hasMore: true, nextCursor: "next" },
