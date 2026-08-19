@@ -20,7 +20,7 @@ test("auction search shows a responsive incomplete market summary", async ({
         })
     );
 
-    await page.goto("/auction");
+    await page.goto("/auction", { waitUntil: "networkidle" });
     await page.getByPlaceholder("아이템명").fill("아이템");
     await page.getByRole("button", { name: "검색" }).click();
 
