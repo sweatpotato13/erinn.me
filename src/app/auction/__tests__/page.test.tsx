@@ -4,6 +4,7 @@ import {
     render,
     renderHook,
     screen,
+    within,
 } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createRef, useRef, useState } from "react";
@@ -18,7 +19,10 @@ import {
     FavoriteToolbar,
 } from "@/app/auction/favorites-dialog";
 import type { AuctionItem } from "@/app/auction/types";
-import { useAuctionSearch } from "@/app/auction/use-auction-search";
+import {
+    prepareAuctionResults,
+    useAuctionSearch,
+} from "@/app/auction/use-auction-search";
 import { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
 import {
     parseStoredFavorites,
@@ -34,21 +38,21 @@ function deferred<T>() {
     return { promise, resolve };
 }
 
-function item(name: string, price: number): AuctionItem {
+function item(name: string, price: number, quantity = 1): AuctionItem {
     return {
         item_name: name,
         item_display_name: name,
-        item_count: 1,
+        item_count: quantity,
         auction_price_per_unit: price,
         date_auction_expire: "2026-01-01",
         item_option: [],
     };
 }
 
-function response(items: AuctionItem[]) {
+function response(items: AuctionItem[], hasMore = false) {
     return {
         ok: true,
-        json: () => Promise.resolve({ items }),
+        json: () => Promise.resolve({ items, hasMore }),
     } as Response;
 }
 
@@ -155,10 +159,68 @@ describe("AuctionControls", () => {
     });
 });
 
+describe("prepareAuctionResults", () => {
+    it("calculates listing statistics without mutating the input", () => {
+        const items = [
+            item("비싼 아이템", 300, 3),
+            item("싼 아이템", 100, 1),
+            item("중간 아이템", 200, 2),
+        ];
+        const original = [...items];
+
+        expect(prepareAuctionResults(items)).toEqual({
+            items: [items[1], items[2], items[0]],
+            summary: {
+                lowestUnitPrice: 100,
+                medianUnitPrice: 200,
+                listingCount: 3,
+                totalQuantity: 6,
+            },
+        });
+        expect(items).toEqual(original);
+    });
+
+    it("averages the middle two prices without rounding", () => {
+        expect(
+            prepareAuctionResults([
+                item("첫 아이템", 100),
+                item("둘째 아이템", 101),
+            ]).summary?.medianUnitPrice
+        ).toBe(100.5);
+    });
+
+    it("removes invalid listings and returns an explicit empty summary", () => {
+        const invalidItems = [
+            item("가격 없음", 0),
+            item("음수 가격", -1),
+            item("잘못된 가격", Number.NaN),
+            item("수량 없음", 100, 0),
+            item("잘못된 수량", 100, Number.NaN),
+        ];
+
+        expect(
+            prepareAuctionResults([...invalidItems, item("유효", 50, 2)])
+        ).toEqual({
+            items: [item("유효", 50, 2)],
+            summary: {
+                lowestUnitPrice: 50,
+                medianUnitPrice: 50,
+                listingCount: 1,
+                totalQuantity: 2,
+            },
+        });
+        expect(prepareAuctionResults(invalidItems)).toEqual({
+            items: [],
+            summary: null,
+        });
+    });
+});
+
 describe("useAuctionSearch", () => {
     const originalFetch = global.fetch;
 
     afterEach(() => {
+        jest.useRealTimers();
         global.fetch = originalFetch;
         jest.restoreAllMocks();
     });
@@ -212,6 +274,77 @@ describe("useAuctionSearch", () => {
         ).toEqual([10, 20]);
     });
 
+    it("updates summary metadata for each successful search", async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date("2026-08-19T01:00:00.000Z"));
+        global.fetch = jest
+            .fn()
+            .mockResolvedValueOnce(
+                response(
+                    [item("첫 아이템", 100, 2), item("둘째 아이템", 300, 4)],
+                    true
+                )
+            )
+            .mockResolvedValueOnce(response([item("최신 아이템", 500, 3)]));
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () => result.current.search("첫 검색", categories[0]));
+        expect(result.current.summary).toEqual({
+            lowestUnitPrice: 100,
+            medianUnitPrice: 200,
+            listingCount: 2,
+            totalQuantity: 6,
+        });
+        expect(result.current.hasMore).toBe(true);
+        expect(result.current.refreshedAt).toBe("2026-08-19T01:00:00.000Z");
+
+        jest.setSystemTime(new Date("2026-08-19T02:00:00.000Z"));
+        await act(async () =>
+            result.current.search("다음 검색", categories[0])
+        );
+        expect(result.current.summary).toEqual({
+            lowestUnitPrice: 500,
+            medianUnitPrice: 500,
+            listingCount: 1,
+            totalQuantity: 3,
+        });
+        expect(result.current.hasMore).toBe(false);
+        expect(result.current.refreshedAt).toBe("2026-08-19T02:00:00.000Z");
+    });
+
+    it("clears prior summary metadata while a failing search is pending", async () => {
+        const pendingRequest = deferred<Response>();
+        global.fetch = jest
+            .fn()
+            .mockResolvedValueOnce(response([item("이전 결과", 100)], true))
+            .mockReturnValueOnce(pendingRequest.promise);
+        const log = jest
+            .spyOn(console, "error")
+            .mockImplementation(() => undefined);
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () => result.current.search("이전", categories[0]));
+        expect(result.current.summary).not.toBeNull();
+
+        let nextSearch!: Promise<void>;
+        act(() => {
+            nextSearch = result.current.search("실패", categories[0]);
+        });
+        expect(result.current.summary).toBeNull();
+        expect(result.current.hasMore).toBe(false);
+        expect(result.current.refreshedAt).toBeNull();
+
+        await act(async () => {
+            pendingRequest.resolve({ ok: false } as Response);
+            await nextSearch;
+        });
+        expect(result.current.summary).toBeNull();
+        expect(result.current.hasMore).toBe(false);
+        expect(result.current.refreshedAt).toBeNull();
+        expect(result.current.errorMessage).not.toBeNull();
+        expect(log).toHaveBeenCalled();
+    });
+
     it("aborts superseded requests and ignores their stale responses", async () => {
         const oldRequest = deferred<Response>();
         const newRequest = deferred<Response>();
@@ -234,10 +367,13 @@ describe("useAuctionSearch", () => {
         expect(oldSignal.aborted).toBe(true);
 
         await act(async () => {
-            newRequest.resolve(response([item("최신 결과", 20)]));
+            newRequest.resolve(response([item("최신 결과", 20)], true));
             await newSearch;
         });
         expect(result.current.items[0].item_name).toBe("최신 결과");
+        const latestSummary = result.current.summary;
+        const latestRefreshedAt = result.current.refreshedAt;
+        expect(result.current.hasMore).toBe(true);
         expect(result.current.loading).toBe(false);
 
         await act(async () => {
@@ -245,6 +381,9 @@ describe("useAuctionSearch", () => {
             await oldSearch;
         });
         expect(result.current.items[0].item_name).toBe("최신 결과");
+        expect(result.current.summary).toEqual(latestSummary);
+        expect(result.current.hasMore).toBe(true);
+        expect(result.current.refreshedAt).toBe(latestRefreshedAt);
         expect(result.current.loading).toBe(false);
     });
 
@@ -354,6 +493,9 @@ describe("AuctionResults", () => {
     const baseProps = {
         currentPage: 1,
         sortDirection: null,
+        summary: null,
+        hasMore: false,
+        refreshedAt: null,
         errorMessage: null,
         loading: false,
         onSort: jest.fn(),
@@ -364,8 +506,63 @@ describe("AuctionResults", () => {
     it("does not render or mutate pagination for empty results", () => {
         render(<AuctionResults {...baseProps} items={[]} />);
         expect(screen.getByText("결과가 없습니다.")).toBeInTheDocument();
+        expect(
+            screen.queryByRole("region", { name: "현재 검색 결과 요약" })
+        ).not.toBeInTheDocument();
         expect(screen.queryByLabelText("다음 페이지")).not.toBeInTheDocument();
         expect(baseProps.setCurrentPage).not.toHaveBeenCalled();
+    });
+
+    it("renders complete market statistics and refresh metadata", () => {
+        const refreshedAt = "2026-08-19T01:00:00.000Z";
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("아이템", 100, 6)]}
+                summary={{
+                    lowestUnitPrice: 100,
+                    medianUnitPrice: 200,
+                    listingCount: 3,
+                    totalQuantity: 6,
+                }}
+                refreshedAt={refreshedAt}
+            />
+        );
+        const summary = within(
+            screen.getByRole("region", { name: "현재 검색 결과 요약" })
+        );
+        expect(summary.getByText("100 Gold")).toBeInTheDocument();
+        expect(summary.getByText("200 Gold")).toBeInTheDocument();
+        expect(summary.getByText("3개")).toBeInTheDocument();
+        expect(summary.getByText("6개")).toBeInTheDocument();
+        expect(summary.getByText(/조회 완료:/)).toBeInTheDocument();
+        expect(
+            summary.getByText(/조회 완료:/).querySelector("time")
+        ).toHaveAttribute("datetime", refreshedAt);
+        expect(
+            summary.queryByText("현재 불러온 일부 매물만 반영한 요약입니다.")
+        ).not.toBeInTheDocument();
+    });
+
+    it("renders empty and incomplete states without zero-valued statistics", () => {
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                hasMore={true}
+                refreshedAt="2026-08-19T01:00:00.000Z"
+            />
+        );
+        const summary = within(
+            screen.getByRole("region", { name: "현재 검색 결과 요약" })
+        );
+        expect(
+            summary.getByText("현재 검색 조건에 유효한 매물이 없습니다.")
+        ).toBeInTheDocument();
+        expect(
+            summary.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
+        ).toBeInTheDocument();
+        expect(summary.queryByText(/0 Gold/)).not.toBeInTheDocument();
     });
 
     it("uses buttons for sorting, item options, and non-empty pagination", async () => {

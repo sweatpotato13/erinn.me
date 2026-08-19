@@ -4,6 +4,7 @@ import Image from "next/image";
 
 import type {
     AuctionItem,
+    AuctionSummary,
     ItemOption,
     SortDirection,
 } from "@/app/auction/types";
@@ -14,6 +15,13 @@ const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
     ssr: false,
 });
 const ITEMS_PER_PAGE = 10;
+const numberFormatter = new Intl.NumberFormat("ko-KR", {
+    maximumFractionDigits: 1,
+});
+const dateTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "short",
+    timeStyle: "medium",
+});
 
 /**
  * Renders a clickable auction item row with its image, name, price, quantity, and expiration time.
@@ -225,10 +233,85 @@ export function ItemOptionsDialog({
 }
 
 type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
+    summary: AuctionSummary | null;
+    hasMore: boolean;
+    refreshedAt: string | null;
     errorMessage: string | null;
     loading: boolean;
     setCurrentPage: (update: (page: number) => number) => void;
 };
+
+function CurrentListingsSummary({
+    summary,
+    hasMore,
+    refreshedAt,
+}: Pick<AuctionResultsProps, "summary" | "hasMore" | "refreshedAt">) {
+    if (!refreshedAt) return null;
+
+    return (
+        <section
+            aria-labelledby="auction-summary-title"
+            className="mb-4 rounded-lg border bg-base-100 p-4"
+        >
+            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <h2 id="auction-summary-title" className="text-lg font-bold">
+                    현재 검색 결과 요약
+                </h2>
+                <p className="text-sm text-base-content/70">
+                    조회 완료:{" "}
+                    <time dateTime={refreshedAt}>
+                        {dateTimeFormatter.format(new Date(refreshedAt))}
+                    </time>
+                </p>
+            </div>
+            {summary ? (
+                <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                    <div>
+                        <dt className="text-sm text-base-content/70">
+                            최저 단가
+                        </dt>
+                        <dd className="font-semibold">
+                            {numberFormatter.format(summary.lowestUnitPrice)}{" "}
+                            Gold
+                        </dd>
+                    </div>
+                    <div>
+                        <dt className="text-sm text-base-content/70">
+                            매물 단가 중앙값
+                        </dt>
+                        <dd className="font-semibold">
+                            {numberFormatter.format(summary.medianUnitPrice)}{" "}
+                            Gold
+                        </dd>
+                    </div>
+                    <div>
+                        <dt className="text-sm text-base-content/70">
+                            매물 수
+                        </dt>
+                        <dd className="font-semibold">
+                            {numberFormatter.format(summary.listingCount)}개
+                        </dd>
+                    </div>
+                    <div>
+                        <dt className="text-sm text-base-content/70">
+                            총 수량
+                        </dt>
+                        <dd className="font-semibold">
+                            {numberFormatter.format(summary.totalQuantity)}개
+                        </dd>
+                    </div>
+                </dl>
+            ) : (
+                <p>현재 검색 조건에 유효한 매물이 없습니다.</p>
+            )}
+            {hasMore && (
+                <p className="alert alert-warning mt-3 text-sm">
+                    현재 불러온 일부 매물만 반영한 요약입니다.
+                </p>
+            )}
+        </section>
+    );
+}
 
 /**
  * Renders auction results with sortable table content and pagination controls.
@@ -238,6 +321,7 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
 export function AuctionResults(props: AuctionResultsProps) {
     return (
         <>
+            <CurrentListingsSummary {...props} />
             <ResultsTable
                 {...props}
                 isEmpty={

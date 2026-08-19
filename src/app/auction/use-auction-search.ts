@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from "react";
 
-import type { AuctionItem, SortDirection } from "@/app/auction/types";
+import type {
+    AuctionItem,
+    AuctionSummary,
+    SortDirection,
+} from "@/app/auction/types";
 import { categories } from "@/constant/categories";
 
 /**
@@ -13,6 +17,53 @@ import { categories } from "@/constant/categories";
 const EMPTY_SEARCH_ERROR = "아이템명 또는 카테고리를 선택해주세요.";
 const REQUEST_ERROR =
     "아이템을 불러오는 중 오류가 발생했습니다. 아이템명 입력 시 아이템의 이름을 정확히 입력해주세요.";
+
+type AuctionSearchResponse = {
+    items: AuctionItem[];
+    hasMore: boolean;
+};
+
+type PreparedAuctionResults = {
+    items: AuctionItem[];
+    summary: AuctionSummary | null;
+};
+
+export function prepareAuctionResults(
+    items: AuctionItem[]
+): PreparedAuctionResults {
+    const validItems = items
+        .filter(
+            item =>
+                Number.isFinite(item.auction_price_per_unit) &&
+                item.auction_price_per_unit > 0 &&
+                Number.isFinite(item.item_count) &&
+                item.item_count > 0
+        )
+        .sort((a, b) => a.auction_price_per_unit - b.auction_price_per_unit);
+
+    if (validItems.length === 0) return { items: [], summary: null };
+
+    const middle = Math.floor(validItems.length / 2);
+    const medianUnitPrice =
+        validItems.length % 2 === 1
+            ? validItems[middle].auction_price_per_unit
+            : (validItems[middle - 1].auction_price_per_unit +
+                  validItems[middle].auction_price_per_unit) /
+              2;
+
+    return {
+        items: validItems,
+        summary: {
+            lowestUnitPrice: validItems[0].auction_price_per_unit,
+            medianUnitPrice,
+            listingCount: validItems.length,
+            totalQuantity: validItems.reduce(
+                (sum, item) => sum + item.item_count,
+                0
+            ),
+        },
+    };
+}
 
 async function requestItems(
     itemName: string,
@@ -33,7 +84,12 @@ async function requestItems(
 
 type SearchActions = {
     isActive: () => boolean;
-    commit: (items: AuctionItem[]) => void;
+    commit: (
+        results: PreparedAuctionResults & {
+            hasMore: boolean;
+            refreshedAt: string;
+        }
+    ) => void;
     fail: (message: string) => void;
     finish: () => void;
 };
@@ -51,12 +107,13 @@ async function executeSearch(
             controller.signal
         );
         if (!response.ok) throw new Error("네트워크 오류가 발생했습니다.");
-        const data = (await response.json()) as { items: AuctionItem[] };
+        const data = (await response.json()) as AuctionSearchResponse;
         if (!actions.isActive()) return;
-        data.items.sort(
-            (a, b) => a.auction_price_per_unit - b.auction_price_per_unit
-        );
-        actions.commit(data.items);
+        actions.commit({
+            ...prepareAuctionResults(data.items),
+            hasMore: data.hasMore,
+            refreshedAt: new Date().toISOString(),
+        });
     } catch (error) {
         if (controller.signal.aborted || !actions.isActive()) return;
         const isValidationError =
@@ -77,6 +134,9 @@ async function executeSearch(
  */
 export function useAuctionSearch() {
     const [items, setItems] = useState<AuctionItem[]>([]);
+    const [summary, setSummary] = useState<AuctionSummary | null>(null);
+    const [hasMore, setHasMore] = useState(false);
+    const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
     const [sortDirection, setSortDirection] = useState<SortDirection>(null);
@@ -98,11 +158,17 @@ export function useAuctionSearch() {
         activeControllerRef.current = controller;
         setLoading(true);
         setItems([]);
+        setSummary(null);
+        setHasMore(false);
+        setRefreshedAt(null);
         setSortDirection(null);
         return executeSearch(itemName, category, controller, {
             isActive: () => sequence === sequenceRef.current,
-            commit: nextItems => {
-                setItems(nextItems);
+            commit: results => {
+                setItems(results.items);
+                setSummary(results.summary);
+                setHasMore(results.hasMore);
+                setRefreshedAt(results.refreshedAt);
                 setErrorMessage(null);
             },
             fail: setErrorMessage,
@@ -123,5 +189,15 @@ export function useAuctionSearch() {
             )
         );
     };
-    return { items, errorMessage, loading, sortDirection, search, sortByPrice };
+    return {
+        items,
+        summary,
+        hasMore,
+        refreshedAt,
+        errorMessage,
+        loading,
+        sortDirection,
+        search,
+        sortByPrice,
+    };
 }

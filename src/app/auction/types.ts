@@ -17,4 +17,11 @@ export type AuctionItem = {
     item_option?: ItemOption[] | null;
 };
 
+export type AuctionSummary = {
+    lowestUnitPrice: number;
+    medianUnitPrice: number;
+    listingCount: number;
+    totalQuantity: number;
+};
+
 export type SortDirection = "asc" | "desc" | null;
