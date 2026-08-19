@@ -28,11 +28,6 @@ jest.mock("lucide-react", () => ({
         MockIcon.displayName = "MockArrowIcon";
         return <MockIcon />;
     },
-    Swords: () => {
-        const MockIcon = () => <div data-testid="swords-icon" />;
-        MockIcon.displayName = "MockSwordsIcon";
-        return <MockIcon />;
-    },
 }));
 
 jest.mock("@/components/icons/auction-icon", () => {
@@ -73,10 +68,13 @@ describe("Homepage Component", () => {
             screen.getByRole("heading", { name: "NPC 상점" })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("heading", { name: "던전 아이템" })
+            screen.getByRole("heading", { name: "뿔피리 조회" })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("heading", { name: "뿔피리 조회" })
+            screen.getByRole("heading", { name: "변경 이력" })
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole("heading", { name: "문의하기" })
         ).toBeInTheDocument();
     });
 
@@ -91,18 +89,29 @@ describe("Homepage Component", () => {
         const shopLink = shopHeading.closest("a");
         expect(shopLink).toHaveAttribute("href", "/npc-shop");
 
-        // Check dungeon link
-        const dungeonHeading = screen.getByRole("heading", {
-            name: "던전 아이템",
-        });
-        const dungeonLink = dungeonHeading.closest("a");
-        expect(dungeonLink).toHaveAttribute("href", "/dungeon");
-
         // Check horn link
         const hornHeading = screen.getByRole("heading", {
             name: "뿔피리 조회",
         });
         const hornLink = hornHeading.closest("a");
         expect(hornLink).toHaveAttribute("href", "/horn");
+
+        const changelogHeading = screen.getByRole("heading", {
+            name: "변경 이력",
+        });
+        expect(changelogHeading.closest("a")).toHaveAttribute(
+            "href",
+            "/changelog"
+        );
+
+        const contactHeading = screen.getByRole("heading", {
+            name: "문의하기",
+        });
+        expect(contactHeading.closest("a")).toHaveAttribute("href", "/contact");
+    });
+
+    test("Retired feature links should not render", () => {
+        expect(document.querySelector('a[href="/dungeon"]')).toBeNull();
+        expect(document.querySelector('a[href="/crafting"]')).toBeNull();
     });
 });

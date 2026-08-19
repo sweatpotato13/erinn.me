@@ -1,55 +1,5 @@
 import { expect, test } from "@playwright/test";
 
-const priceSummary = {
-    minPrice: 100,
-    averagePrice: 120,
-    availableQuantity: 10,
-    isComplete: true,
-};
-
-test("crafting renders without page errors and bounds price requests", async ({
-    page,
-}) => {
-    const pageErrors: Error[] = [];
-    let active = 0;
-    let maximumActive = 0;
-    const requestedNames: string[] = [];
-    page.on("pageerror", error => pageErrors.push(error));
-
-    await page.route("**/api/auction/price-summary?**", async route => {
-        active++;
-        maximumActive = Math.max(maximumActive, active);
-        requestedNames.push(
-            new URL(route.request().url()).searchParams.get("item_name") ?? ""
-        );
-        await new Promise(resolve => setTimeout(resolve, 10));
-        active--;
-        await route.fulfill({ json: priceSummary });
-    });
-    await page.route("**/api/item-image?**", route =>
-        route.fulfill({
-            status: 200,
-            contentType: "image/png",
-            body: Buffer.from(
-                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-                "base64"
-            ),
-        })
-    );
-
-    await page.goto("/crafting");
-    await expect(
-        page.getByRole("heading", { name: "제작 아이템" })
-    ).toBeVisible();
-    await expect(
-        page.getByRole("heading", { name: "파멸의 문장", exact: true })
-    ).toBeVisible();
-    expect(pageErrors).toEqual([]);
-    expect(maximumActive).toBeLessThanOrEqual(4);
-    expect(new Set(requestedNames).size).toBe(requestedNames.length);
-    expect(requestedNames.length).toBeLessThanOrEqual(25);
-});
-
 test("favorite click uses the selected favorite in its first request", async ({
     page,
 }) => {
@@ -122,42 +72,6 @@ test("superseded suggestions cannot overwrite the latest results", async ({
     releaseOld?.();
     await page.waitForTimeout(100);
     await expect(page.getByText("오래된 결과")).toHaveCount(0);
-});
-
-test("dungeon cards do not issue independent initial queries", async ({
-    page,
-}) => {
-    let priceRequests = 0;
-    const requestedNames: string[] = [];
-    let releaseInitialRequest: (() => void) | undefined;
-    const initialRequestReleased = new Promise<void>(resolve => {
-        releaseInitialRequest = resolve;
-    });
-    await page.route("**/api/auction/price-summary?**", async route => {
-        priceRequests++;
-        requestedNames.push(
-            new URL(route.request().url()).searchParams.get("item_name") ?? ""
-        );
-        if (priceRequests === 1) await initialRequestReleased;
-        await route.fulfill({ json: priceSummary });
-    });
-
-    await page.goto("/dungeon");
-    await expect(page.getByText("던전 아이템 목록")).toBeVisible();
-    await expect.poll(() => priceRequests).toBe(1);
-    await page.waitForTimeout(100);
-    expect(priceRequests).toBe(1);
-    releaseInitialRequest?.();
-
-    const refresh = page
-        .locator('button[aria-label="가격 정보 새로고침"]:not([disabled])')
-        .first();
-    await expect(refresh).toBeEnabled();
-    await refresh.click();
-    const refreshedName = requestedNames[0];
-    await expect
-        .poll(() => requestedNames.filter(name => name === refreshedName).length)
-        .toBe(2);
 });
 
 test("contact failure preserves the form and shows an error", async ({
@@ -273,44 +187,4 @@ test("npc shop validates and renders upstream images without page errors", async
         /_next\/image\?url=https%3A%2F%2Fopen\.api\.nexon\.com%2Fstatic%2Fmabinogi%2Fimg%2F/
     );
     expect(errors).toEqual([]);
-});
-
-test("mocked navigation smoke stays within request budgets", async ({ page }) => {
-    let priceRequests = 0;
-    let imageRequests = 0;
-    let localRateLimits = 0;
-
-    page.on("response", response => {
-        if (response.status() === 429) localRateLimits++;
-    });
-    await page.route("**/api/auction/price-summary?**", route => {
-        priceRequests++;
-        return route.fulfill({ json: priceSummary });
-    });
-    await page.route("**/api/item-image?**", route => {
-        imageRequests++;
-        return route.fulfill({
-            status: 200,
-            contentType: "image/png",
-            headers: { "Cache-Control": "public, max-age=86400" },
-            body: Buffer.from(
-                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-                "base64"
-            ),
-        });
-    });
-
-    await page.goto("/");
-    await page.goto("/dungeon");
-    await expect.poll(() => priceRequests).toBeGreaterThan(0);
-    await page.goto("/crafting");
-    await expect(
-        page.getByRole("heading", { name: "제작 아이템" })
-    ).toBeVisible();
-    await expect.poll(() => priceRequests).toBeGreaterThan(1);
-    await page.waitForTimeout(250);
-
-    expect(localRateLimits).toBe(0);
-    expect(priceRequests).toBeLessThanOrEqual(25);
-    expect(imageRequests).toBeLessThanOrEqual(40);
 });
