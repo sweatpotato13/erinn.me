@@ -22,7 +22,14 @@ test("auction search shows a responsive incomplete market summary", async ({
 
     await page.goto("/auction", { waitUntil: "networkidle" });
     await page.getByPlaceholder("아이템명").fill("아이템");
-    await page.getByRole("button", { name: "검색" }).click();
+    await Promise.all([
+        page.waitForResponse(
+            response =>
+                new URL(response.url()).pathname ===
+                    "/api/auction/keyword-search" && response.ok()
+        ),
+        page.getByRole("button", { name: "검색" }).click(),
+    ]);
 
     const summary = page.getByRole("region", {
         name: "현재 검색 결과 요약",
