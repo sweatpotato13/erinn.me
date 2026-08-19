@@ -1,6 +1,11 @@
 /** @jest-environment node */
 
-import { checkOrigin } from "@/lib/utils/check-origin";
+const originalBaseUrl = process.env.BASE_URL;
+process.env.BASE_URL = "http://localhost:3000";
+
+const { checkOrigin } = jest.requireActual<
+    typeof import("@/lib/utils/check-origin")
+>("@/lib/utils/check-origin");
 
 const originalVercelEnv = process.env.VERCEL_ENV;
 
@@ -11,6 +16,14 @@ function request(origin?: string) {
 }
 
 describe("origin validation", () => {
+    afterAll(() => {
+        if (originalBaseUrl === undefined) {
+            delete process.env.BASE_URL;
+        } else {
+            process.env.BASE_URL = originalBaseUrl;
+        }
+    });
+
     afterEach(() => {
         if (originalVercelEnv === undefined) {
             delete process.env.VERCEL_ENV;
