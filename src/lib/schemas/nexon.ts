@@ -30,7 +30,7 @@ export const AuctionListResponseSchema = z
 
 export type AuctionListResponse = z.infer<typeof AuctionListResponseSchema>;
 
-const AuctionHistoryItemSchema = z
+export const AuctionHistoryItemSchema = z
     .object({
         item_name: z.string(),
         item_display_name: z.string(),
@@ -52,6 +52,7 @@ export const AuctionHistoryResponseSchema = z
 export type AuctionHistoryResponse = z.infer<
     typeof AuctionHistoryResponseSchema
 >;
+export type AuctionHistoryItem = z.infer<typeof AuctionHistoryItemSchema>;
 
 const HornMessageSchema = z
     .object({

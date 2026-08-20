@@ -10,7 +10,10 @@ import {
     throwIfDeadlineExpired,
     upstreamErrorResponse,
 } from "@/lib/api/upstream";
-import { AuctionHistoryResponseSchema } from "@/lib/schemas/nexon";
+import {
+    type AuctionHistoryResponse,
+    AuctionHistoryResponseSchema,
+} from "@/lib/schemas/nexon";
 import { checkOrigin } from "@/lib/utils/check-origin";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
@@ -33,7 +36,7 @@ export async function GET(request: Request) {
     if (!query.success) return query.response;
 
     const deadline = createRequestDeadline(request.signal, 15_000);
-    const sales: Record<string, unknown>[] = [];
+    const sales: AuctionHistoryResponse["auction_history"] = [];
     let nextCursor: string | null = null;
     let pageCount = 0;
 

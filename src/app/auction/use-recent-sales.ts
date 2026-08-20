@@ -1,17 +1,38 @@
+import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
+import * as z from "zod";
 
-import type { AuctionSale, RecentSalesSummary } from "@/app/auction/types";
+import type {
+    AuctionSale,
+    RecentSalesModel,
+    RecentSalesState,
+    RecentSalesSummary,
+} from "@/app/auction/types";
+import { AuctionHistoryResponseSchema } from "@/lib/schemas/nexon";
 
 const REQUEST_ERROR = "최근 완료 거래를 불러오는 중 오류가 발생했습니다.";
-
-interface AuctionHistoryResponse {
-    sales: AuctionSale[];
-    hasMore: boolean;
-}
+const RecentSalesResponseSchema = z.object({
+    sales: AuctionHistoryResponseSchema.shape.auction_history,
+    hasMore: z.boolean(),
+});
+const INITIAL_RECENT_SALES_STATE: RecentSalesState = {
+    sales: [],
+    summary: null,
+    hasMore: false,
+    refreshedAt: null,
+    queriedItemName: null,
+    errorMessage: null,
+    loading: false,
+};
 
 interface PreparedRecentSales {
     sales: AuctionSale[];
     summary: RecentSalesSummary;
+}
+
+interface RecentSalesRequest {
+    sequence: number;
+    controller: AbortController | null;
 }
 
 export function prepareRecentSales(sales: AuctionSale[]): PreparedRecentSales {
@@ -55,92 +76,77 @@ export function prepareRecentSales(sales: AuctionSale[]): PreparedRecentSales {
     };
 }
 
+async function fetchRecentSales(itemName: string, signal: AbortSignal) {
+    const params = new URLSearchParams({ item_name: itemName });
+    const response = await fetch(`/api/auction/history?${params}`, { signal });
+    if (!response.ok) throw new Error("Recent sales request failed");
+    return RecentSalesResponseSchema.parse(await response.json());
+}
+
+async function searchRecentSales(
+    itemName: string,
+    request: RecentSalesRequest,
+    setState: Dispatch<SetStateAction<RecentSalesState>>
+): Promise<void> {
+    const sequence = ++request.sequence;
+    request.controller?.abort();
+    request.controller = null;
+    const normalizedItemName = itemName.trim();
+    setState({
+        ...INITIAL_RECENT_SALES_STATE,
+        queriedItemName: normalizedItemName || null,
+        loading: !!normalizedItemName,
+    });
+    if (!normalizedItemName) return;
+
+    const controller = new AbortController();
+    request.controller = controller;
+    try {
+        const data = await fetchRecentSales(
+            normalizedItemName,
+            controller.signal
+        );
+        if (sequence !== request.sequence) return;
+        setState(current => ({
+            ...current,
+            ...prepareRecentSales(data.sales),
+            hasMore: data.hasMore,
+            refreshedAt: new Date().toISOString(),
+        }));
+    } catch (error) {
+        if (controller.signal.aborted || sequence !== request.sequence) return;
+        console.error("최근 완료 거래 API 호출 중 오류가 발생했습니다:", error);
+        setState(current => ({ ...current, errorMessage: REQUEST_ERROR }));
+    } finally {
+        if (sequence === request.sequence) {
+            request.controller = null;
+            setState(current => ({ ...current, loading: false }));
+        }
+    }
+}
+
 /**
  * Manages completed-sale requests independently from current auction listings.
  *
  * @returns Recent sales, their summary and request state, plus a search action.
  */
-export function useRecentSales() {
-    const [sales, setSales] = useState<AuctionSale[]>([]);
-    const [summary, setSummary] = useState<RecentSalesSummary | null>(null);
-    const [hasMore, setHasMore] = useState(false);
-    const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
-    const [queriedItemName, setQueriedItemName] = useState<string | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-    const sequenceRef = useRef(0);
-    const activeControllerRef = useRef<AbortController | null>(null);
+export function useRecentSales(): RecentSalesModel {
+    const [state, setState] = useState(INITIAL_RECENT_SALES_STATE);
+    const request = useRef<RecentSalesRequest>({
+        sequence: 0,
+        controller: null,
+    });
 
     useEffect(
         () => () => {
-            sequenceRef.current += 1;
-            activeControllerRef.current?.abort();
+            request.current.sequence += 1;
+            request.current.controller?.abort();
         },
         []
     );
 
-    const search = async (itemName: string) => {
-        const sequence = ++sequenceRef.current;
-        activeControllerRef.current?.abort();
-        activeControllerRef.current = null;
-        setSales([]);
-        setSummary(null);
-        setHasMore(false);
-        setRefreshedAt(null);
-        setErrorMessage(null);
+    const search = (itemName: string) =>
+        searchRecentSales(itemName, request.current, setState);
 
-        const normalizedItemName = itemName.trim();
-        if (!normalizedItemName) {
-            setQueriedItemName(null);
-            setLoading(false);
-            return;
-        }
-
-        const controller = new AbortController();
-        activeControllerRef.current = controller;
-        setQueriedItemName(normalizedItemName);
-        setLoading(true);
-
-        try {
-            const params = new URLSearchParams({
-                item_name: normalizedItemName,
-            });
-            const response = await fetch(`/api/auction/history?${params}`, {
-                signal: controller.signal,
-            });
-            if (!response.ok) throw new Error("Recent sales request failed");
-            const data = (await response.json()) as AuctionHistoryResponse;
-            if (sequence !== sequenceRef.current) return;
-            const prepared = prepareRecentSales(data.sales);
-            setSales(prepared.sales);
-            setSummary(prepared.summary);
-            setHasMore(data.hasMore);
-            setRefreshedAt(new Date().toISOString());
-        } catch (error) {
-            if (controller.signal.aborted || sequence !== sequenceRef.current) {
-                return;
-            }
-            console.error(
-                "최근 완료 거래 API 호출 중 오류가 발생했습니다:",
-                error
-            );
-            setErrorMessage(REQUEST_ERROR);
-        } finally {
-            if (sequence === sequenceRef.current) {
-                activeControllerRef.current = null;
-                setLoading(false);
-            }
-        }
-    };
-
-    return {
-        sales,
-        summary,
-        hasMore,
-        refreshedAt,
-        queriedItemName,
-        errorMessage,
-        loading,
-        search,
-    };
+    return { ...state, search };
 }
