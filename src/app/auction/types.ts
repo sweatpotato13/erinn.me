@@ -24,4 +24,20 @@ export type AuctionSummary = {
     totalQuantity: number;
 };
 
+export type AuctionSale = {
+    item_name: string;
+    item_display_name: string;
+    item_count: number;
+    auction_price_per_unit: number;
+    date_auction_buy: string;
+    auction_buy_id: string;
+    item_option?: ItemOption[] | null;
+};
+
+export type RecentSalesSummary = {
+    transactionCount: number;
+    totalQuantity: number;
+    medianUnitPrice: number | null;
+};
+
 export type SortDirection = "asc" | "desc" | null;
