@@ -18,7 +18,7 @@ import {
     FavoritesDialog,
     FavoriteToolbar,
 } from "@/app/auction/favorites-dialog";
-import type { AuctionItem } from "@/app/auction/types";
+import type { AuctionItem, AuctionSale } from "@/app/auction/types";
 import {
     prepareAuctionResults,
     useAuctionSearch,
@@ -28,6 +28,10 @@ import {
     parseStoredFavorites,
     useFavorites,
 } from "@/app/auction/use-favorites";
+import {
+    prepareRecentSales,
+    useRecentSales,
+} from "@/app/auction/use-recent-sales";
 import { categories } from "@/constant/categories";
 
 function deferred<T>() {
@@ -53,6 +57,30 @@ function response(items: AuctionItem[], hasMore = false) {
     return {
         ok: true,
         json: () => Promise.resolve({ items, hasMore }),
+    } as Response;
+}
+
+function sale(
+    id: string,
+    price: number,
+    quantity = 1,
+    date = "2026-08-20T00:00:00Z"
+): AuctionSale {
+    return {
+        item_name: id,
+        item_display_name: id,
+        item_count: quantity,
+        auction_price_per_unit: price,
+        date_auction_buy: date,
+        auction_buy_id: id,
+        item_option: [],
+    };
+}
+
+function historyResponse(sales: AuctionSale[], hasMore = false) {
+    return {
+        ok: true,
+        json: () => Promise.resolve({ sales, hasMore }),
     } as Response;
 }
 
@@ -397,6 +425,163 @@ describe("useAuctionSearch", () => {
     });
 });
 
+describe("prepareRecentSales", () => {
+    it.each([
+        [0, null],
+        [1, null],
+        [2, null],
+        [3, 200],
+        [4, 250],
+    ])(
+        "applies the three-transaction median threshold to %i sales",
+        (count, median) => {
+            const sales = [100, 200, 300, 400]
+                .slice(0, count)
+                .map((price, index) => sale(`sale-${index}`, price, index + 1));
+            expect(prepareRecentSales(sales).summary).toEqual({
+                transactionCount: count,
+                totalQuantity: sales.reduce(
+                    (sum, transaction) => sum + transaction.item_count,
+                    0
+                ),
+                medianUnitPrice: median,
+            });
+        }
+    );
+
+    it("filters invalid sales and orders valid sales newest first", () => {
+        const newest = sale("newest", 300, 3, "2026-08-20T03:00:00Z");
+        const sameTimeA = sale("a", 100, 1, "2026-08-20T02:00:00Z");
+        const sameTimeB = sale("b", 200, 2, "2026-08-20T02:00:00Z");
+        const valid = [sameTimeB, newest, sameTimeA];
+        const invalid = [
+            sale("zero-price", 0),
+            sale("bad-price", Number.NaN),
+            sale("zero-quantity", 100, 0),
+            sale("bad-date", 100, 1, "not-a-date"),
+            sale("", 100),
+        ];
+        const input = [...valid, ...invalid];
+
+        expect(
+            prepareRecentSales(input).sales.map(
+                transaction => transaction.auction_buy_id
+            )
+        ).toEqual(["newest", "a", "b"]);
+        expect(input).toEqual([...valid, ...invalid]);
+    });
+});
+
+describe("useRecentSales", () => {
+    const originalFetch = global.fetch;
+
+    afterEach(() => {
+        jest.useRealTimers();
+        global.fetch = originalFetch;
+        jest.restoreAllMocks();
+    });
+
+    it("requests the item name and records successful summary metadata", async () => {
+        jest.useFakeTimers();
+        jest.setSystemTime(new Date("2026-08-20T04:00:00Z"));
+        const fetchMock = jest
+            .fn()
+            .mockResolvedValue(
+                historyResponse([
+                    sale("one", 100, 1),
+                    sale("two", 200, 2),
+                    sale("three", 300, 3),
+                ])
+            );
+        global.fetch = fetchMock;
+        const { result } = renderHook(() => useRecentSales());
+
+        await act(async () => result.current.search(" 한글+&雪 "));
+        expect(fetchMock.mock.calls[0][0]).toBe(
+            "/api/auction/history?item_name=%ED%95%9C%EA%B8%80%2B%26%E9%9B%AA"
+        );
+        expect(result.current.summary).toEqual({
+            transactionCount: 3,
+            totalQuantity: 6,
+            medianUnitPrice: 200,
+        });
+        expect(result.current.refreshedAt).toBe("2026-08-20T04:00:00.000Z");
+        expect(result.current.queriedItemName).toBe("한글+&雪");
+        expect(result.current.loading).toBe(false);
+    });
+
+    it("clears recent sales without fetching for a blank item name", async () => {
+        global.fetch = jest
+            .fn()
+            .mockResolvedValue(historyResponse([sale("old", 100)]));
+        const { result } = renderHook(() => useRecentSales());
+        await act(async () => result.current.search("old"));
+        await act(async () => result.current.search("   "));
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(result.current.sales).toEqual([]);
+        expect(result.current.summary).toBeNull();
+        expect(result.current.queriedItemName).toBeNull();
+        expect(result.current.refreshedAt).toBeNull();
+    });
+
+    it("aborts superseded requests and ignores stale responses", async () => {
+        const oldRequest = deferred<Response>();
+        const newRequest = deferred<Response>();
+        const fetchMock = jest
+            .fn()
+            .mockReturnValueOnce(oldRequest.promise)
+            .mockReturnValueOnce(newRequest.promise);
+        global.fetch = fetchMock;
+        const { result, unmount } = renderHook(() => useRecentSales());
+
+        let oldSearch!: Promise<void>;
+        let newSearch!: Promise<void>;
+        act(() => {
+            oldSearch = result.current.search("old");
+        });
+        const oldSignal = fetchMock.mock.calls[0][1].signal as AbortSignal;
+        act(() => {
+            newSearch = result.current.search("new");
+        });
+        expect(oldSignal.aborted).toBe(true);
+        await act(async () => {
+            newRequest.resolve(historyResponse([sale("new", 300)]));
+            await newSearch;
+        });
+        await act(async () => {
+            oldRequest.resolve(historyResponse([sale("old", 100)]));
+            await oldSearch;
+        });
+        expect(result.current.sales[0].auction_buy_id).toBe("new");
+        const latestSignal = fetchMock.mock.calls[1][1].signal as AbortSignal;
+        unmount();
+        expect(latestSignal.aborted).toBe(false);
+    });
+
+    it("keeps failures in the recent-sales state", async () => {
+        const log = jest
+            .spyOn(console, "error")
+            .mockImplementation(() => undefined);
+        global.fetch = jest.fn().mockResolvedValue({ ok: false } as Response);
+        const { result } = renderHook(() => useRecentSales());
+        await act(async () => result.current.search("failed"));
+        expect(result.current.errorMessage).toBe(
+            "최근 완료 거래를 불러오는 중 오류가 발생했습니다."
+        );
+        expect(result.current.summary).toBeNull();
+        expect(log).toHaveBeenCalled();
+    });
+
+    it("aborts the active recent-sales request on unmount", () => {
+        global.fetch = jest.fn(() => new Promise(() => undefined));
+        const { result, unmount } = renderHook(() => useRecentSales());
+        act(() => void result.current.search("active"));
+        const signal = jest.mocked(fetch).mock.calls[0][1]?.signal;
+        unmount();
+        expect(signal?.aborted).toBe(true);
+    });
+});
+
 describe("useAuctionSuggestions", () => {
     const originalFetch = global.fetch;
 
@@ -501,6 +686,15 @@ describe("AuctionResults", () => {
         onSort: jest.fn(),
         onItemClick: jest.fn(),
         setCurrentPage: jest.fn(),
+        recentSales: {
+            sales: [],
+            summary: null,
+            hasMore: false,
+            refreshedAt: null,
+            queriedItemName: null,
+            errorMessage: null,
+            loading: false,
+        },
     } as const;
 
     it("does not render or mutate pagination for empty results", () => {
@@ -588,6 +782,104 @@ describe("AuctionResults", () => {
         expect(onItemClick).toHaveBeenCalledWith(items[0]);
         await user.click(screen.getByLabelText("다음 페이지"));
         expect(setCurrentPage.mock.calls[0][0](1)).toBe(2);
+    });
+
+    it("renders the dedicated empty recent-sales state", () => {
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...baseProps.recentSales,
+                    summary: {
+                        transactionCount: 0,
+                        totalQuantity: 0,
+                        medianUnitPrice: null,
+                    },
+                    refreshedAt: "2026-08-20T04:00:00Z",
+                    queriedItemName: "거래 없음",
+                }}
+            />
+        );
+        const panel = within(
+            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
+        );
+        expect(
+            panel.getByText("최근 1시간 내 완료 거래가 없습니다.")
+        ).toBeInTheDocument();
+        expect(panel.queryByText(/0 Gold/)).not.toBeInTheDocument();
+    });
+
+    it("shows low-sample sales without a median", () => {
+        const sales = [sale("first", 100, 2), sale("second", 300, 4)];
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...baseProps.recentSales,
+                    sales,
+                    summary: prepareRecentSales(sales).summary,
+                    refreshedAt: "2026-08-20T04:00:00Z",
+                    queriedItemName: "적은 거래",
+                }}
+            />
+        );
+        const panel = within(
+            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
+        );
+        expect(panel.getByText("2건")).toBeInTheDocument();
+        expect(panel.getByText("6개")).toBeInTheDocument();
+        expect(
+            panel.getByText(
+                "최근 거래가 3건 미만이므로 중앙값을 표시하지 않습니다."
+            )
+        ).toBeInTheDocument();
+        expect(panel.queryByText("거래 단가 중앙값")).not.toBeInTheDocument();
+    });
+
+    it("shows a complete median and partial-data limits", () => {
+        const sales = Array.from({ length: 11 }, (_, index) =>
+            sale(
+                `sale-${index}`,
+                (index + 1) * 100,
+                index + 1,
+                `2026-08-20T${String(index).padStart(2, "0")}:00:00Z`
+            )
+        );
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...baseProps.recentSales,
+                    sales: prepareRecentSales(sales).sales,
+                    summary: prepareRecentSales(sales).summary,
+                    hasMore: true,
+                    refreshedAt: "2026-08-20T12:00:00Z",
+                    queriedItemName: "활발한 거래",
+                }}
+            />
+        );
+        const panel = within(
+            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
+        );
+        expect(panel.getByText("불러온 거래 수")).toBeInTheDocument();
+        expect(panel.getByText("11건")).toBeInTheDocument();
+        expect(panel.getByText("66개")).toBeInTheDocument();
+        const median = panel
+            .getByText("불러온 거래 단가 중앙값")
+            .closest("div");
+        expect(within(median!).getByText("600 Gold")).toBeInTheDocument();
+        expect(
+            panel.getByText("가장 최근 10건을 표시합니다.")
+        ).toBeInTheDocument();
+        expect(panel.queryByText("sale-0")).not.toBeInTheDocument();
+        expect(
+            panel.getByText(
+                "최근 1시간 전체가 아닌 현재 불러온 일부 완료 거래만 반영했습니다."
+            )
+        ).toBeInTheDocument();
     });
 });
 
