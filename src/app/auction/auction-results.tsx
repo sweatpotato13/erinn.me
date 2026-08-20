@@ -4,8 +4,10 @@ import Image from "next/image";
 
 import type {
     AuctionItem,
+    AuctionSale,
     AuctionSummary,
     ItemOption,
+    RecentSalesSummary,
     SortDirection,
 } from "@/app/auction/types";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
@@ -238,6 +240,15 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     refreshedAt: string | null;
     errorMessage: string | null;
     loading: boolean;
+    recentSales: {
+        sales: AuctionSale[];
+        summary: RecentSalesSummary | null;
+        hasMore: boolean;
+        refreshedAt: string | null;
+        queriedItemName: string | null;
+        errorMessage: string | null;
+        loading: boolean;
+    };
     setCurrentPage: (update: (page: number) => number) => void;
 };
 
@@ -313,6 +324,150 @@ function CurrentListingsSummary({
     );
 }
 
+function RecentSalesTable({ sales }: { sales: AuctionSale[] }) {
+    return (
+        <div className="mt-3 overflow-x-auto rounded-md border">
+            <table className="table w-full">
+                <thead>
+                    <tr>
+                        <th>거래 시각</th>
+                        <th>아이템명</th>
+                        <th>완료 단가</th>
+                        <th>수량</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {sales.slice(0, 10).map(sale => (
+                        <tr key={sale.auction_buy_id}>
+                            <td>
+                                <time dateTime={sale.date_auction_buy}>
+                                    {dateTimeFormatter.format(
+                                        new Date(sale.date_auction_buy)
+                                    )}
+                                </time>
+                            </td>
+                            <td>{sale.item_display_name}</td>
+                            <td>
+                                {numberFormatter.format(
+                                    sale.auction_price_per_unit
+                                )}{" "}
+                                Gold
+                            </td>
+                            <td>{numberFormatter.format(sale.item_count)}개</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+}
+
+function RecentSalesPanel({
+    recentSales,
+}: Pick<AuctionResultsProps, "recentSales">) {
+    if (!recentSales.queriedItemName) return null;
+
+    const labelPrefix = recentSales.hasMore ? "불러온 " : "";
+    return (
+        <section
+            aria-labelledby="recent-sales-title"
+            className="mb-4 rounded-lg border bg-base-100 p-4"
+        >
+            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 id="recent-sales-title" className="text-lg font-bold">
+                        최근 1시간 완료 거래
+                    </h2>
+                    <p className="text-sm text-base-content/70">
+                        {recentSales.queriedItemName}
+                    </p>
+                </div>
+                {recentSales.refreshedAt && (
+                    <p className="text-sm text-base-content/70">
+                        조회 완료:{" "}
+                        <time dateTime={recentSales.refreshedAt}>
+                            {dateTimeFormatter.format(
+                                new Date(recentSales.refreshedAt)
+                            )}
+                        </time>
+                    </p>
+                )}
+            </div>
+            {recentSales.loading ? (
+                <p>최근 1시간 완료 거래를 불러오는 중입니다.</p>
+            ) : recentSales.errorMessage ? (
+                <p className="alert alert-error">{recentSales.errorMessage}</p>
+            ) : recentSales.summary ? (
+                <>
+                    {recentSales.summary.transactionCount === 0 ? (
+                        <p>최근 1시간 내 완료 거래가 없습니다.</p>
+                    ) : (
+                        <>
+                            <dl className="grid grid-cols-2 gap-3 md:grid-cols-3">
+                                <div>
+                                    <dt className="text-sm text-base-content/70">
+                                        {labelPrefix}거래 수
+                                    </dt>
+                                    <dd className="font-semibold">
+                                        {numberFormatter.format(
+                                            recentSales.summary.transactionCount
+                                        )}
+                                        건
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt className="text-sm text-base-content/70">
+                                        {labelPrefix}총 수량
+                                    </dt>
+                                    <dd className="font-semibold">
+                                        {numberFormatter.format(
+                                            recentSales.summary.totalQuantity
+                                        )}
+                                        개
+                                    </dd>
+                                </div>
+                                {recentSales.summary.medianUnitPrice !==
+                                    null && (
+                                    <div>
+                                        <dt className="text-sm text-base-content/70">
+                                            {labelPrefix}거래 단가 중앙값
+                                        </dt>
+                                        <dd className="font-semibold">
+                                            {numberFormatter.format(
+                                                recentSales.summary
+                                                    .medianUnitPrice
+                                            )}{" "}
+                                            Gold
+                                        </dd>
+                                    </div>
+                                )}
+                            </dl>
+                            {recentSales.summary.transactionCount < 3 && (
+                                <p className="mt-3 text-sm text-base-content/70">
+                                    최근 거래가 3건 미만이므로 중앙값을 표시하지
+                                    않습니다.
+                                </p>
+                            )}
+                            <RecentSalesTable sales={recentSales.sales} />
+                            {recentSales.sales.length > 10 && (
+                                <p className="mt-2 text-sm text-base-content/70">
+                                    가장 최근 10건을 표시합니다.
+                                </p>
+                            )}
+                        </>
+                    )}
+                    {recentSales.hasMore && (
+                        <p className="alert alert-warning mt-3 text-sm">
+                            최근 1시간 전체가 아닌 현재 불러온 일부 완료 거래만
+                            반영했습니다.
+                        </p>
+                    )}
+                </>
+            ) : null}
+        </section>
+    );
+}
+
 /**
  * Renders auction results with sortable table content and pagination controls.
  *
@@ -322,6 +477,7 @@ export function AuctionResults(props: AuctionResultsProps) {
     return (
         <>
             <CurrentListingsSummary {...props} />
+            <RecentSalesPanel recentSales={props.recentSales} />
             <ResultsTable
                 {...props}
                 isEmpty={

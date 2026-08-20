@@ -686,6 +686,15 @@ describe("AuctionResults", () => {
         onSort: jest.fn(),
         onItemClick: jest.fn(),
         setCurrentPage: jest.fn(),
+        recentSales: {
+            sales: [],
+            summary: null,
+            hasMore: false,
+            refreshedAt: null,
+            queriedItemName: null,
+            errorMessage: null,
+            loading: false,
+        },
     } as const;
 
     it("does not render or mutate pagination for empty results", () => {
@@ -773,6 +782,104 @@ describe("AuctionResults", () => {
         expect(onItemClick).toHaveBeenCalledWith(items[0]);
         await user.click(screen.getByLabelText("다음 페이지"));
         expect(setCurrentPage.mock.calls[0][0](1)).toBe(2);
+    });
+
+    it("renders the dedicated empty recent-sales state", () => {
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...baseProps.recentSales,
+                    summary: {
+                        transactionCount: 0,
+                        totalQuantity: 0,
+                        medianUnitPrice: null,
+                    },
+                    refreshedAt: "2026-08-20T04:00:00Z",
+                    queriedItemName: "거래 없음",
+                }}
+            />
+        );
+        const panel = within(
+            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
+        );
+        expect(
+            panel.getByText("최근 1시간 내 완료 거래가 없습니다.")
+        ).toBeInTheDocument();
+        expect(panel.queryByText(/0 Gold/)).not.toBeInTheDocument();
+    });
+
+    it("shows low-sample sales without a median", () => {
+        const sales = [sale("first", 100, 2), sale("second", 300, 4)];
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...baseProps.recentSales,
+                    sales,
+                    summary: prepareRecentSales(sales).summary,
+                    refreshedAt: "2026-08-20T04:00:00Z",
+                    queriedItemName: "적은 거래",
+                }}
+            />
+        );
+        const panel = within(
+            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
+        );
+        expect(panel.getByText("2건")).toBeInTheDocument();
+        expect(panel.getByText("6개")).toBeInTheDocument();
+        expect(
+            panel.getByText(
+                "최근 거래가 3건 미만이므로 중앙값을 표시하지 않습니다."
+            )
+        ).toBeInTheDocument();
+        expect(panel.queryByText("거래 단가 중앙값")).not.toBeInTheDocument();
+    });
+
+    it("shows a complete median and partial-data limits", () => {
+        const sales = Array.from({ length: 11 }, (_, index) =>
+            sale(
+                `sale-${index}`,
+                (index + 1) * 100,
+                index + 1,
+                `2026-08-20T${String(index).padStart(2, "0")}:00:00Z`
+            )
+        );
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...baseProps.recentSales,
+                    sales: prepareRecentSales(sales).sales,
+                    summary: prepareRecentSales(sales).summary,
+                    hasMore: true,
+                    refreshedAt: "2026-08-20T12:00:00Z",
+                    queriedItemName: "활발한 거래",
+                }}
+            />
+        );
+        const panel = within(
+            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
+        );
+        expect(panel.getByText("불러온 거래 수")).toBeInTheDocument();
+        expect(panel.getByText("11건")).toBeInTheDocument();
+        expect(panel.getByText("66개")).toBeInTheDocument();
+        const median = panel
+            .getByText("불러온 거래 단가 중앙값")
+            .closest("div");
+        expect(within(median!).getByText("600 Gold")).toBeInTheDocument();
+        expect(
+            panel.getByText("가장 최근 10건을 표시합니다.")
+        ).toBeInTheDocument();
+        expect(panel.queryByText("sale-0")).not.toBeInTheDocument();
+        expect(
+            panel.getByText(
+                "최근 1시간 전체가 아닌 현재 불러온 일부 완료 거래만 반영했습니다."
+            )
+        ).toBeInTheDocument();
     });
 });
 
