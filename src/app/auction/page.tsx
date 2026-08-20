@@ -118,7 +118,7 @@ export default function AuctionPage() {
 
     const search = (itemName = searchTerm, category = selectedCategory) => {
         setCurrentPage(1);
-        return Promise.all([
+        return Promise.allSettled([
             auction.search(itemName, category),
             recentSales.search(itemName),
         ]);
