@@ -1,5 +1,55 @@
 import { expect, test } from "@playwright/test";
 
+test("auction search shows a responsive incomplete market summary", async ({
+    page,
+}) => {
+    const items = Array.from({ length: 11 }, (_, index) => ({
+        item_name: `아이템 ${index + 1}`,
+        item_display_name: `아이템 ${index + 1}`,
+        item_count: index + 1,
+        auction_price_per_unit: (index + 1) * 100,
+        date_auction_expire: "2026-08-20T00:00:00Z",
+        item_option: [],
+    }));
+    await page.route("**/api/suggest?**", route =>
+        route.fulfill({ json: { suggestions: [] } })
+    );
+    await page.route("**/api/auction/keyword-search?**", route =>
+        route.fulfill({
+            json: { items, hasMore: true, nextCursor: "next" },
+        })
+    );
+
+    await page.goto("/auction", { waitUntil: "networkidle" });
+    await page.getByPlaceholder("아이템명").fill("아이템");
+    await Promise.all([
+        page.waitForResponse(
+            response =>
+                new URL(response.url()).pathname ===
+                    "/api/auction/keyword-search" && response.ok()
+        ),
+        page.getByRole("button", { name: "검색" }).click(),
+    ]);
+
+    const summary = page.getByRole("region", {
+        name: "현재 검색 결과 요약",
+    });
+    await expect(summary.getByText("100 Gold")).toBeVisible();
+    await expect(summary.getByText("600 Gold")).toBeVisible();
+    await expect(summary.getByText("11개")).toBeVisible();
+    await expect(summary.getByText("66개")).toBeVisible();
+    await expect(summary.getByText(/조회 완료:/)).toBeVisible();
+    await expect(
+        summary.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
+    ).toBeVisible();
+
+    await expect(
+        page.getByRole("button", { name: "아이템 1", exact: true })
+    ).toBeVisible();
+    await page.getByLabel("다음 페이지").click();
+    await expect(page.getByRole("button", { name: "아이템 11" })).toBeVisible();
+});
+
 test("favorite click uses the selected favorite in its first request", async ({
     page,
 }) => {
