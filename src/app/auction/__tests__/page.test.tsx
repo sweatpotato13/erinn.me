@@ -18,7 +18,11 @@ import {
     FavoritesDialog,
     FavoriteToolbar,
 } from "@/app/auction/favorites-dialog";
-import type { AuctionItem, AuctionSale } from "@/app/auction/types";
+import type {
+    AuctionItem,
+    AuctionSale,
+    RecentSalesState,
+} from "@/app/auction/types";
 import {
     prepareAuctionResults,
     useAuctionSearch,
@@ -83,6 +87,16 @@ function historyResponse(sales: AuctionSale[], hasMore = false) {
         json: () => Promise.resolve({ sales, hasMore }),
     } as Response;
 }
+
+const emptyRecentSales: RecentSalesState = {
+    sales: [],
+    summary: null,
+    hasMore: false,
+    refreshedAt: null,
+    queriedItemName: null,
+    errorMessage: null,
+    loading: false,
+};
 
 function suggestionResponse(suggestions: string[]) {
     return {
@@ -510,6 +524,16 @@ describe("useRecentSales", () => {
         expect(result.current.loading).toBe(false);
     });
 
+    it("propagates an incomplete history response", async () => {
+        global.fetch = jest
+            .fn()
+            .mockResolvedValue(historyResponse([sale("partial", 100)], true));
+        const { result } = renderHook(() => useRecentSales());
+
+        await act(async () => result.current.search("partial"));
+        expect(result.current.hasMore).toBe(true);
+    });
+
     it("clears recent sales without fetching for a blank item name", async () => {
         global.fetch = jest
             .fn()
@@ -565,6 +589,24 @@ describe("useRecentSales", () => {
         global.fetch = jest.fn().mockResolvedValue({ ok: false } as Response);
         const { result } = renderHook(() => useRecentSales());
         await act(async () => result.current.search("failed"));
+        expect(result.current.errorMessage).toBe(
+            "최근 완료 거래를 불러오는 중 오류가 발생했습니다."
+        );
+        expect(result.current.summary).toBeNull();
+        expect(log).toHaveBeenCalled();
+    });
+
+    it("rejects malformed recent-sales responses", async () => {
+        const log = jest
+            .spyOn(console, "error")
+            .mockImplementation(() => undefined);
+        global.fetch = jest.fn().mockResolvedValue({
+            ok: true,
+            json: () => Promise.resolve({ sales: null, hasMore: false }),
+        } as Response);
+        const { result } = renderHook(() => useRecentSales());
+
+        await act(async () => result.current.search("malformed"));
         expect(result.current.errorMessage).toBe(
             "최근 완료 거래를 불러오는 중 오류가 발생했습니다."
         );
@@ -686,15 +728,7 @@ describe("AuctionResults", () => {
         onSort: jest.fn(),
         onItemClick: jest.fn(),
         setCurrentPage: jest.fn(),
-        recentSales: {
-            sales: [],
-            summary: null,
-            hasMore: false,
-            refreshedAt: null,
-            queriedItemName: null,
-            errorMessage: null,
-            loading: false,
-        },
+        recentSales: emptyRecentSales,
     } as const;
 
     it("does not render or mutate pagination for empty results", () => {
@@ -808,6 +842,36 @@ describe("AuctionResults", () => {
             panel.getByText("최근 1시간 내 완료 거래가 없습니다.")
         ).toBeInTheDocument();
         expect(panel.queryByText(/0 Gold/)).not.toBeInTheDocument();
+    });
+
+    it("announces recent-sales loading and error states", () => {
+        const { rerender } = render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...emptyRecentSales,
+                    queriedItemName: "조회 중",
+                    loading: true,
+                }}
+            />
+        );
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "최근 1시간 완료 거래를 불러오는 중입니다."
+        );
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...emptyRecentSales,
+                    queriedItemName: "오류",
+                    errorMessage: "요청 실패",
+                }}
+            />
+        );
+        expect(screen.getByRole("alert")).toHaveTextContent("요청 실패");
     });
 
     it("shows low-sample sales without a median", () => {
