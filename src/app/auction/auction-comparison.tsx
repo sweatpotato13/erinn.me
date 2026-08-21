@@ -174,10 +174,41 @@ function reforgeEntry(option: ItemOption): ComparisonEntry {
     };
 }
 
-function knownEntry(option: ItemOption, type: string): ComparisonEntry | null {
+function upgradeEntry(option: ItemOption, type: string): ComparisonEntry {
     const subtype = normalize(option.option_sub_type);
     const first = normalize(option.option_value);
     const second = normalize(option.option_value2);
+    const parts = [first, second].filter(Boolean);
+    return {
+        key: `upgrade:${type}:${subtype}`,
+        label: subtype ? `${type} (${subtype})` : type,
+        value: {
+            text: joinValues(subtype, first, second),
+            numeric: parts.length
+                ? numericFromParts(`upgrade:${type}:${subtype}`, parts)
+                : undefined,
+        },
+    };
+}
+
+function setEffectEntry(option: ItemOption): ComparisonEntry {
+    const first = normalize(option.option_value);
+    const second = normalize(option.option_value2);
+    return {
+        key: `set:${first}`,
+        label: first ? `세트 효과 · ${first}` : "세트 효과",
+        value: {
+            text: joinValues(first, second),
+            numeric: second
+                ? numericFromParts(`set:${first}`, [second])
+                : undefined,
+        },
+    };
+}
+
+function knownEntry(option: ItemOption, type: string): ComparisonEntry | null {
+    const subtype = normalize(option.option_sub_type);
+    const first = normalize(option.option_value);
     if (type === "에르그") {
         return {
             key: "erg",
@@ -202,31 +233,8 @@ function knownEntry(option: ItemOption, type: string): ComparisonEntry | null {
             },
         };
     }
-    if (UPGRADES.has(type)) {
-        const parts = [first, second].filter(Boolean);
-        return {
-            key: `upgrade:${type}:${subtype}`,
-            label: subtype ? `${type} (${subtype})` : type,
-            value: {
-                text: joinValues(subtype, first, second),
-                numeric: parts.length
-                    ? numericFromParts(`upgrade:${type}:${subtype}`, parts)
-                    : undefined,
-            },
-        };
-    }
-    if (type === "세트 효과") {
-        return {
-            key: `set:${first}`,
-            label: first ? `세트 효과 · ${first}` : "세트 효과",
-            value: {
-                text: joinValues(first, second),
-                numeric: second
-                    ? numericFromParts(`set:${first}`, [second])
-                    : undefined,
-            },
-        };
-    }
+    if (UPGRADES.has(type)) return upgradeEntry(option, type);
+    if (type === "세트 효과") return setEffectEntry(option);
     return null;
 }
 
@@ -294,32 +302,31 @@ function hasNumericDifference(values: Array<ComparisonValue | null>): boolean {
 
 export function prepareComparisonRows(items: AuctionItem[]): ComparisonRow[] {
     const entriesByItem = items.map(itemEntries);
-    const orderedKeys = Array.from(
-        new Set(entriesByItem.flatMap(entries => Array.from(entries.keys())))
-    );
-    return orderedKeys.map(key => {
-        const entry = entriesByItem
-            .find(entries => entries.has(key))!
-            .get(key)!;
+    const orderedEntries = new Map<string, string>();
+    for (const entries of entriesByItem) {
+        entries.forEach((entry, key) => {
+            if (!orderedEntries.has(key)) orderedEntries.set(key, entry.label);
+        });
+    }
+    return Array.from(orderedEntries, ([key, label]) => {
         const values = entriesByItem.map(
             entries => entries.get(key)?.value ?? null
         );
         return {
             key,
-            label: entry.label,
+            label,
             values,
             emphasizeDifference: hasNumericDifference(values),
         };
     });
 }
 
-function ListingIdentity({
-    item,
-    index,
-}: {
+interface ListingIdentityProps {
     item: AuctionItem;
     index: number;
-}) {
+}
+
+function ListingIdentity({ item, index }: ListingIdentityProps) {
     return (
         <>
             <strong>매물 {index + 1}</strong>
@@ -341,7 +348,11 @@ interface ComparisonDialogProps {
     triggerRef: RefObject<HTMLButtonElement | null>;
 }
 
-function ComparisonTable({ items }: { items: AuctionItem[] }) {
+interface ComparisonTableProps {
+    items: AuctionItem[];
+}
+
+function ComparisonTable({ items }: ComparisonTableProps) {
     const rows = prepareComparisonRows(items);
     return (
         <div
@@ -387,7 +398,11 @@ function ComparisonTable({ items }: { items: AuctionItem[] }) {
     );
 }
 
-function ComparisonTableRow({ row }: { row: ComparisonRow }) {
+interface ComparisonTableRowProps {
+    row: ComparisonRow;
+}
+
+function ComparisonTableRow({ row }: ComparisonTableRowProps) {
     return (
         <tr>
             <th scope="row" className="sticky left-0 z-10 bg-base-100">
@@ -461,6 +476,69 @@ interface AuctionComparisonProps {
     onClear: () => void;
 }
 
+interface ComparisonPanelHeaderProps {
+    itemCount: number;
+    onClear: () => void;
+}
+
+function ComparisonPanelHeader({
+    itemCount,
+    onClear,
+}: ComparisonPanelHeaderProps) {
+    return (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+                <h4
+                    id="auction-comparison-selection-title"
+                    className="font-bold"
+                >
+                    비교할 매물
+                </h4>
+                <p className="text-sm text-base-content/70">
+                    2~4개를 선택하세요. ({itemCount}/{MAX_COMPARISON_ITEMS})
+                </p>
+            </div>
+            <button
+                type="button"
+                className="btn btn-ghost btn-sm"
+                onClick={onClear}
+            >
+                전체 해제
+            </button>
+        </div>
+    );
+}
+
+interface SelectedListingsProps {
+    items: AuctionItem[];
+    onRemove: (item: AuctionItem) => void;
+}
+
+function SelectedListings({ items, onRemove }: SelectedListingsProps) {
+    return (
+        <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {items.map((item, index) => (
+                <li
+                    key={index}
+                    className="flex items-start justify-between gap-2 rounded-md bg-base-200 p-3"
+                >
+                    <div className="flex min-w-0 flex-col">
+                        <ListingIdentity item={item} index={index} />
+                    </div>
+                    <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        aria-label={`매물 ${index + 1} ${item.item_display_name} 비교에서 제거`}
+                        onClick={() => onRemove(item)}
+                    >
+                        제거
+                    </button>
+                </li>
+            ))}
+        </ul>
+    );
+}
+
 export function AuctionComparison({
     items,
     notice,
@@ -478,47 +556,8 @@ export function AuctionComparison({
             aria-labelledby="auction-comparison-selection-title"
             className="rounded-lg border bg-base-100 p-4"
         >
-            <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                    <h4
-                        id="auction-comparison-selection-title"
-                        className="font-bold"
-                    >
-                        비교할 매물
-                    </h4>
-                    <p className="text-sm text-base-content/70">
-                        2~4개를 선택하세요. ({items.length}/
-                        {MAX_COMPARISON_ITEMS})
-                    </p>
-                </div>
-                <button
-                    type="button"
-                    className="btn btn-ghost btn-sm"
-                    onClick={onClear}
-                >
-                    전체 해제
-                </button>
-            </div>
-            <ul className="mt-3 grid gap-2 sm:grid-cols-2">
-                {items.map((item, index) => (
-                    <li
-                        key={index}
-                        className="flex items-start justify-between gap-2 rounded-md bg-base-200 p-3"
-                    >
-                        <div className="flex min-w-0 flex-col">
-                            <ListingIdentity item={item} index={index} />
-                        </div>
-                        <button
-                            type="button"
-                            className="btn btn-ghost btn-xs"
-                            aria-label={`매물 ${index + 1} ${item.item_display_name} 비교에서 제거`}
-                            onClick={() => onRemove(item)}
-                        >
-                            제거
-                        </button>
-                    </li>
-                ))}
-            </ul>
+            <ComparisonPanelHeader itemCount={items.length} onClear={onClear} />
+            <SelectedListings items={items} onRemove={onRemove} />
             {notice && (
                 <p role="alert" className="alert alert-warning mt-3 text-sm">
                     {notice}
