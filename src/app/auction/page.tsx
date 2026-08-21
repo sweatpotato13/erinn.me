@@ -54,11 +54,6 @@ function AuctionPageView(props: AuctionViewProps) {
     return (
         <div className="flex flex-col items-center justify-start min-h-screen p-6">
             <div className="w-full max-w-4xl p-6 backdrop-blur-sm rounded-lg flex-grow">
-                {props.auction.errorMessage && (
-                    <div className="alert alert-error mb-4">
-                        {props.auction.errorMessage}
-                    </div>
-                )}
                 <FavoriteToolbar
                     addButtonText={props.favorites.addButtonText}
                     onAdd={() =>

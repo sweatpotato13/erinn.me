@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { type RefObject, useRef, useState } from "react";
 
 import type {
     AuctionItem,
@@ -246,65 +247,44 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     setCurrentPage: (update: (page: number) => number) => void;
 };
 
-function CurrentListingsSummary({
+interface SummaryMetricProps {
+    label: string;
+    value: string;
+}
+
+function SummaryMetric({ label, value }: SummaryMetricProps) {
+    return (
+        <div>
+            <dt className="text-sm text-base-content/70">{label}</dt>
+            <dd className="font-semibold">{value}</dd>
+        </div>
+    );
+}
+
+function CurrentListingsMetrics({
     summary,
     hasMore,
-    refreshedAt,
-}: Pick<AuctionResultsProps, "summary" | "hasMore" | "refreshedAt">) {
-    if (!refreshedAt) return null;
-
+}: Pick<AuctionResultsProps, "summary" | "hasMore">) {
     return (
-        <section
-            aria-labelledby="auction-summary-title"
-            className="mb-4 rounded-lg border bg-base-100 p-4"
-        >
-            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <h2 id="auction-summary-title" className="text-lg font-bold">
-                    현재 검색 결과 요약
-                </h2>
-                <p className="text-sm text-base-content/70">
-                    조회 완료:{" "}
-                    <time dateTime={refreshedAt}>
-                        {dateTimeFormatter.format(new Date(refreshedAt))}
-                    </time>
-                </p>
-            </div>
+        <>
             {summary ? (
                 <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            최저 단가
-                        </dt>
-                        <dd className="font-semibold">
-                            {numberFormatter.format(summary.lowestUnitPrice)}{" "}
-                            Gold
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            매물 단가 중앙값
-                        </dt>
-                        <dd className="font-semibold">
-                            {numberFormatter.format(summary.medianUnitPrice)}{" "}
-                            Gold
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            매물 수
-                        </dt>
-                        <dd className="font-semibold">
-                            {numberFormatter.format(summary.listingCount)}개
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            총 수량
-                        </dt>
-                        <dd className="font-semibold">
-                            {numberFormatter.format(summary.totalQuantity)}개
-                        </dd>
-                    </div>
+                    <SummaryMetric
+                        label="최저 단가"
+                        value={`${numberFormatter.format(summary.lowestUnitPrice)} Gold`}
+                    />
+                    <SummaryMetric
+                        label="매물 단가 중앙값"
+                        value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
+                    />
+                    <SummaryMetric
+                        label="매물 수"
+                        value={`${numberFormatter.format(summary.listingCount)}개`}
+                    />
+                    <SummaryMetric
+                        label="총 수량"
+                        value={`${numberFormatter.format(summary.totalQuantity)}개`}
+                    />
                 </dl>
             ) : (
                 <p>현재 검색 조건에 유효한 매물이 없습니다.</p>
@@ -314,6 +294,76 @@ function CurrentListingsSummary({
                     현재 불러온 일부 매물만 반영한 요약입니다.
                 </p>
             )}
+        </>
+    );
+}
+
+function CurrentListingsPanel(props: AuctionResultsProps) {
+    if (!props.loading && !props.errorMessage && !props.refreshedAt)
+        return (
+            <RecentSalesLauncher
+                key={`${props.recentSales.queriedItemName}-${props.recentSales.refreshedAt}`}
+                recentSales={props.recentSales}
+            />
+        );
+
+    let body = <CurrentListingsMetrics {...props} />;
+    if (props.loading) {
+        body = <p role="status">현재 등록 매물을 불러오는 중입니다.</p>;
+    } else if (props.errorMessage) {
+        body = (
+            <p role="alert" className="alert alert-error">
+                {props.errorMessage}
+            </p>
+        );
+    }
+
+    return (
+        <section aria-labelledby="current-listings-title" className="space-y-4">
+            <div className="rounded-lg border bg-base-100 p-4">
+                <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h3
+                            id="current-listings-title"
+                            className="text-lg font-bold"
+                        >
+                            현재 등록 매물
+                        </h3>
+                        <p className="text-sm text-base-content/70">
+                            판매자가 현재 제시한 매물의 가격과 수량입니다.
+                        </p>
+                    </div>
+                    {props.refreshedAt &&
+                        !props.loading &&
+                        !props.errorMessage && (
+                            <p className="text-sm text-base-content/70">
+                                조회 완료:{" "}
+                                <time dateTime={props.refreshedAt}>
+                                    {dateTimeFormatter.format(
+                                        new Date(props.refreshedAt)
+                                    )}
+                                </time>
+                            </p>
+                        )}
+                </div>
+                {body}
+                <RecentSalesLauncher
+                    key={`${props.recentSales.queriedItemName}-${props.recentSales.refreshedAt}`}
+                    recentSales={props.recentSales}
+                />
+            </div>
+            {!props.loading &&
+                !props.errorMessage &&
+                props.items.length > 0 && (
+                    <div>
+                        <ResultsTable {...props} isEmpty={false} />
+                        <Pagination
+                            currentPage={props.currentPage}
+                            itemCount={props.items.length}
+                            setCurrentPage={props.setCurrentPage}
+                        />
+                    </div>
+                )}
         </section>
     );
 }
@@ -356,42 +406,6 @@ function RecentSalesTable({ sales }: { sales: AuctionSale[] }) {
     );
 }
 
-function RecentSalesHeader({
-    itemName,
-    refreshedAt,
-}: {
-    itemName: string;
-    refreshedAt: string | null;
-}) {
-    return (
-        <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h2 id="recent-sales-title" className="text-lg font-bold">
-                    최근 1시간 완료 거래
-                </h2>
-                <p className="text-sm text-base-content/70">{itemName}</p>
-            </div>
-            {refreshedAt && (
-                <p className="text-sm text-base-content/70">
-                    조회 완료:{" "}
-                    <time dateTime={refreshedAt}>
-                        {dateTimeFormatter.format(new Date(refreshedAt))}
-                    </time>
-                </p>
-            )}
-        </div>
-    );
-}
-
-function RecentSalesMetric({ label, value }: { label: string; value: string }) {
-    return (
-        <div>
-            <dt className="text-sm text-base-content/70">{label}</dt>
-            <dd className="font-semibold">{value}</dd>
-        </div>
-    );
-}
-
 function RecentSalesSummaryMetrics({
     summary,
     hasMore,
@@ -402,16 +416,16 @@ function RecentSalesSummaryMetrics({
     const labelPrefix = hasMore ? "불러온 " : "";
     return (
         <dl className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            <RecentSalesMetric
+            <SummaryMetric
                 label={`${labelPrefix}거래 수`}
                 value={`${numberFormatter.format(summary.transactionCount)}건`}
             />
-            <RecentSalesMetric
+            <SummaryMetric
                 label={`${labelPrefix}총 수량`}
                 value={`${numberFormatter.format(summary.totalQuantity)}개`}
             />
             {summary.medianUnitPrice !== null && (
-                <RecentSalesMetric
+                <SummaryMetric
                     label={`${labelPrefix}거래 단가 중앙값`}
                     value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
                 />
@@ -462,32 +476,147 @@ function RecentSalesResultsBody({
     );
 }
 
-function RecentSalesPanel({
-    recentSales,
-}: Pick<AuctionResultsProps, "recentSales">) {
-    if (!recentSales.queriedItemName) return null;
+interface RecentSalesModalHeaderProps {
+    itemName: string;
+    onClose: () => void;
+}
 
-    let body = <RecentSalesResultsBody recentSales={recentSales} />;
-    if (recentSales.loading) {
-        body = <p role="status">최근 1시간 완료 거래를 불러오는 중입니다.</p>;
-    } else if (recentSales.errorMessage) {
-        body = (
-            <p role="alert" className="alert alert-error">
+function RecentSalesModalHeader({
+    itemName,
+    onClose,
+}: RecentSalesModalHeaderProps) {
+    return (
+        <div className="flex items-start justify-between gap-4 border-b p-4">
+            <div>
+                <h2
+                    id="recent-sales-dialog-title"
+                    className="text-lg font-bold"
+                >
+                    최근 1시간 완료 거래
+                </h2>
+                <p className="text-sm text-base-content/70">{itemName}</p>
+            </div>
+            <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={onClose}
+            >
+                닫기
+            </button>
+        </div>
+    );
+}
+
+interface RecentSalesModalProps {
+    recentSales: RecentSalesState;
+    onClose: () => void;
+    triggerRef: RefObject<HTMLButtonElement | null>;
+}
+
+function RecentSalesModal({
+    recentSales,
+    onClose,
+    triggerRef,
+}: RecentSalesModalProps) {
+    const dialogRef = useDialogFocus(onClose, triggerRef);
+    return (
+        <div className="fixed inset-0 z-50 flex bg-black/40 sm:items-center sm:justify-center sm:p-4">
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="recent-sales-dialog-title"
+                tabIndex={-1}
+                className="flex h-full w-full flex-col bg-base-100 outline-none sm:h-auto sm:max-h-[85vh] sm:max-w-3xl sm:rounded-lg sm:border sm:shadow-xl"
+            >
+                <RecentSalesModalHeader
+                    itemName={recentSales.queriedItemName ?? ""}
+                    onClose={onClose}
+                />
+                <div className="overflow-y-auto p-4">
+                    {recentSales.refreshedAt && (
+                        <p className="mb-3 text-sm text-base-content/70">
+                            조회 완료:{" "}
+                            <time dateTime={recentSales.refreshedAt}>
+                                {dateTimeFormatter.format(
+                                    new Date(recentSales.refreshedAt)
+                                )}
+                            </time>
+                        </p>
+                    )}
+                    <RecentSalesResultsBody recentSales={recentSales} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+interface RecentSalesLauncherProps {
+    recentSales: RecentSalesState;
+}
+
+function RecentSalesLauncher({ recentSales }: RecentSalesLauncherProps) {
+    const [open, setOpen] = useState(false);
+    const triggerRef = useRef<HTMLButtonElement>(null);
+    if (!recentSales.queriedItemName) return null;
+    if (recentSales.loading)
+        return (
+            <p role="status" className="mt-4">
+                최근 1시간 완료 거래를 불러오는 중입니다.
+            </p>
+        );
+    if (recentSales.errorMessage)
+        return (
+            <p role="alert" className="alert alert-error mt-4">
                 {recentSales.errorMessage}
             </p>
         );
-    }
 
+    const count = recentSales.summary?.transactionCount ?? 0;
     return (
-        <section
-            aria-labelledby="recent-sales-title"
-            className="mb-4 rounded-lg border bg-base-100 p-4"
-        >
-            <RecentSalesHeader
-                itemName={recentSales.queriedItemName}
-                refreshedAt={recentSales.refreshedAt}
-            />
-            {body}
+        <>
+            <button
+                ref={triggerRef}
+                type="button"
+                className="btn btn-outline mt-4 w-full sm:w-auto"
+                disabled={count === 0}
+                onClick={() => setOpen(true)}
+            >
+                최근 1시간 완료 거래 {count === 0 ? "없음" : `${count}건 보기`}
+            </button>
+            {open && (
+                <RecentSalesModal
+                    recentSales={recentSales}
+                    onClose={() => setOpen(false)}
+                    triggerRef={triggerRef}
+                />
+            )}
+        </>
+    );
+}
+
+function hasMarketSnapshot(props: AuctionResultsProps) {
+    return Boolean(
+        props.loading ||
+        props.errorMessage ||
+        props.refreshedAt ||
+        props.recentSales.queriedItemName
+    );
+}
+
+function MarketSnapshot(props: AuctionResultsProps) {
+    return (
+        <section aria-labelledby="market-snapshot-title" className="space-y-4">
+            <div>
+                <h2 id="market-snapshot-title" className="text-xl font-bold">
+                    경매 시장 현황
+                </h2>
+                <p className="text-sm text-base-content/70">
+                    현재 매물은 판매자의 제시 가격이며, 최근 거래는 최근 1시간
+                    동안 실제 완료된 가격입니다.
+                </p>
+            </div>
+            <CurrentListingsPanel {...props} />
         </section>
     );
 }
@@ -497,24 +626,8 @@ function RecentSalesPanel({
  *
  * @param props - Auction data, loading and error state, and pagination controls.
  */
-export function AuctionResults(props: AuctionResultsProps) {
-    return (
-        <>
-            <CurrentListingsSummary {...props} />
-            <RecentSalesPanel recentSales={props.recentSales} />
-            <ResultsTable
-                {...props}
-                isEmpty={
-                    props.items.length === 0 &&
-                    !props.errorMessage &&
-                    !props.loading
-                }
-            />
-            <Pagination
-                currentPage={props.currentPage}
-                itemCount={props.items.length}
-                setCurrentPage={props.setCurrentPage}
-            />
-        </>
-    );
+export function AuctionResults(props: AuctionResultsProps): React.JSX.Element {
+    if (hasMarketSnapshot(props)) return <MarketSnapshot {...props} />;
+
+    return <ResultsTable {...props} isEmpty={props.items.length === 0} />;
 }
