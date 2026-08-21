@@ -6,6 +6,7 @@ import {
     prepareComparisonRows,
 } from "@/app/auction/auction-comparison";
 import type { AuctionItem, ItemOption } from "@/app/auction/types";
+import OptionRenderer from "@/components/option-renderer";
 
 function item(
     name: string,
@@ -80,12 +81,9 @@ describe("prepareComparisonRows", () => {
             expect.objectContaining({ text: "정보 없음" }),
             null,
         ]);
-        expect(rows.filter(row => row.label === "기타")).toHaveLength(2);
-        expect(rows.filter(row => row.label === "기타")).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({ emphasizeDifference: false }),
-            ])
-        );
+        const unknownRows = rows.filter(row => row.label === "기타");
+        expect(unknownRows).toHaveLength(2);
+        expect(unknownRows.every(row => !row.emphasizeDifference)).toBe(true);
     });
 
     it("emphasizes only comparable signed and ranged numbers", () => {
@@ -120,6 +118,24 @@ describe("prepareComparisonRows", () => {
         prepareComparisonRows(items);
 
         expect(items).toEqual(before);
+    });
+});
+
+describe("OptionRenderer", () => {
+    it("omits nullable stat and color values", () => {
+        const { container } = render(
+            <OptionRenderer
+                options={[
+                    option("공격", null, { option_value2: null }),
+                    option("크리티컬", "10"),
+                    option("아이템 색상", null, { option_sub_type: "색상 1" }),
+                ]}
+            />
+        );
+
+        expect(container).not.toHaveTextContent(/null|undefined/);
+        expect(screen.getByText("크리티컬 10")).toBeInTheDocument();
+        expect(screen.queryByText(/색상 1/)).not.toBeInTheDocument();
     });
 });
 
