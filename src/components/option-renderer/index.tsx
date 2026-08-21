@@ -1,17 +1,11 @@
 import React from "react";
 
+import type { ItemOption } from "@/app/auction/types";
+
 import { ENCHANT_OPTIONS } from "../../constant/enchants";
 
-interface OptionProps {
-    option_type: string;
-    option_sub_type?: string | null;
-    option_value: string;
-    option_value2?: string | null;
-    option_desc?: string | null;
-}
-
 interface OptionRendererProps {
-    options: OptionProps[];
+    options: ItemOption[];
 }
 
 function OptionSection({
@@ -368,7 +362,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
                         )
                         .map((option, index) => {
                             // 레벨 정보 분리를 위한 새로운 정규식
-                            const levelMatch = option.option_value.match(
+                            const levelMatch = option.option_value?.match(
                                 /(.+?)\((\d+)레벨:(.+)\)/
                             );
 
