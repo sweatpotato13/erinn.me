@@ -476,13 +476,15 @@ function RecentSalesResultsBody({
     );
 }
 
+interface RecentSalesModalHeaderProps {
+    itemName: string;
+    onClose: () => void;
+}
+
 function RecentSalesModalHeader({
     itemName,
     onClose,
-}: {
-    itemName: string;
-    onClose: () => void;
-}) {
+}: RecentSalesModalHeaderProps) {
     return (
         <div className="flex items-start justify-between gap-4 border-b p-4">
             <div>
@@ -505,14 +507,17 @@ function RecentSalesModalHeader({
     );
 }
 
+interface RecentSalesModalProps {
+    recentSales: RecentSalesState;
+    onClose: () => void;
+    triggerRef: RefObject<HTMLButtonElement | null>;
+}
+
 function RecentSalesModal({
     recentSales,
     onClose,
     triggerRef,
-}: Pick<AuctionResultsProps, "recentSales"> & {
-    onClose: () => void;
-    triggerRef: RefObject<HTMLButtonElement | null>;
-}) {
+}: RecentSalesModalProps) {
     const dialogRef = useDialogFocus(onClose, triggerRef);
     return (
         <div className="fixed inset-0 z-50 flex bg-black/40 sm:items-center sm:justify-center sm:p-4">
@@ -546,9 +551,11 @@ function RecentSalesModal({
     );
 }
 
-function RecentSalesLauncher({
-    recentSales,
-}: Pick<AuctionResultsProps, "recentSales">) {
+interface RecentSalesLauncherProps {
+    recentSales: RecentSalesState;
+}
+
+function RecentSalesLauncher({ recentSales }: RecentSalesLauncherProps) {
     const [open, setOpen] = useState(false);
     const triggerRef = useRef<HTMLButtonElement>(null);
     if (!recentSales.queriedItemName) return null;
