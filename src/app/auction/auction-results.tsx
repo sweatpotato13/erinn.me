@@ -246,7 +246,12 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     setCurrentPage: (update: (page: number) => number) => void;
 };
 
-function SummaryMetric({ label, value }: { label: string; value: string }) {
+interface SummaryMetricProps {
+    label: string;
+    value: string;
+}
+
+function SummaryMetric({ label, value }: SummaryMetricProps) {
     return (
         <div>
             <dt className="text-sm text-base-content/70">{label}</dt>
