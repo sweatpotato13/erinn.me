@@ -727,6 +727,11 @@ describe("AuctionResults", () => {
         loading: false,
         onSort: jest.fn(),
         onItemClick: jest.fn(),
+        comparisonItems: [],
+        comparisonNotice: null,
+        onToggleComparison: jest.fn(),
+        onRemoveComparison: jest.fn(),
+        onClearComparison: jest.fn(),
         setCurrentPage: jest.fn(),
         recentSales: emptyRecentSales,
     } as const;
@@ -845,6 +850,7 @@ describe("AuctionResults", () => {
         const user = userEvent.setup();
         const onSort = jest.fn();
         const onItemClick = jest.fn();
+        const onToggleComparison = jest.fn();
         const setCurrentPage = jest.fn();
         const items = Array.from({ length: 11 }, (_, index) =>
             item(`아이템 ${index}`, index)
@@ -855,6 +861,7 @@ describe("AuctionResults", () => {
                 items={items}
                 onSort={onSort}
                 onItemClick={onItemClick}
+                onToggleComparison={onToggleComparison}
                 setCurrentPage={setCurrentPage}
                 refreshedAt="2026-08-20T04:00:00Z"
             />
@@ -863,6 +870,10 @@ describe("AuctionResults", () => {
         expect(onSort).toHaveBeenCalled();
         await user.click(screen.getByRole("button", { name: "아이템 0" }));
         expect(onItemClick).toHaveBeenCalledWith(items[0]);
+        await user.click(
+            screen.getByRole("checkbox", { name: /아이템 0.*비교 선택/ })
+        );
+        expect(onToggleComparison).toHaveBeenCalledWith(items[0]);
         await user.click(screen.getByLabelText("다음 페이지"));
         expect(setCurrentPage.mock.calls[0][0](1)).toBe(2);
     });
