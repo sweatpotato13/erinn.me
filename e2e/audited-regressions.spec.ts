@@ -1,67 +1,71 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
-test("auction search shows a responsive incomplete market summary", async ({
-    page,
-}) => {
-    let auctionRequestCount = 0;
-    let historyRequestCount = 0;
-    const items = Array.from({ length: 11 }, (_, index) => ({
-        item_name: `아이템 ${index + 1}`,
-        item_display_name: `아이템 ${index + 1}`,
-        item_count: index + 1,
-        auction_price_per_unit: (index + 1) * 100,
-        date_auction_expire: "2026-08-20T00:00:00Z",
+const marketItems = Array.from({ length: 11 }, (_, index) => ({
+    item_name: `아이템 ${index + 1}`,
+    item_display_name: `아이템 ${index + 1}`,
+    item_count: index + 1,
+    auction_price_per_unit: (index + 1) * 100,
+    date_auction_expire: "2026-08-20T00:00:00Z",
+    item_option: [],
+}));
+const marketSales = [
+    {
+        item_name: "아이템",
+        item_display_name: "두 번째 거래",
+        item_count: 2,
+        auction_price_per_unit: 200,
+        date_auction_buy: "2026-08-20T02:00:00Z",
+        auction_buy_id: "second",
         item_option: [],
-    }));
+    },
+    {
+        item_name: "아이템",
+        item_display_name: "가장 최근 거래",
+        item_count: 3,
+        auction_price_per_unit: 300,
+        date_auction_buy: "2026-08-20T03:00:00Z",
+        auction_buy_id: "latest",
+        item_option: [],
+    },
+    {
+        item_name: "아이템",
+        item_display_name: "첫 번째 거래",
+        item_count: 1,
+        auction_price_per_unit: 100,
+        date_auction_buy: "2026-08-20T01:00:00Z",
+        auction_buy_id: "first",
+        item_option: [],
+    },
+];
+
+async function setupMarketRoutes(page: Page) {
+    const counts = { auction: 0, history: 0 };
     await page.route("**/api/suggest?**", route =>
         route.fulfill({ json: { suggestions: [] } })
     );
     await page.route("**/api/auction/keyword-search?**", route => {
-        auctionRequestCount += 1;
+        counts.auction += 1;
         return route.fulfill({
-            json: { items, hasMore: true, nextCursor: "next" },
+            json: { items: marketItems, hasMore: true, nextCursor: "next" },
         });
     });
     await page.route("**/api/auction/history?**", route => {
-        historyRequestCount += 1;
+        counts.history += 1;
         return route.fulfill({
-            json: {
-                sales: [
-                    {
-                        item_name: "아이템",
-                        item_display_name: "두 번째 거래",
-                        item_count: 2,
-                        auction_price_per_unit: 200,
-                        date_auction_buy: "2026-08-20T02:00:00Z",
-                        auction_buy_id: "second",
-                        item_option: [],
-                    },
-                    {
-                        item_name: "아이템",
-                        item_display_name: "가장 최근 거래",
-                        item_count: 3,
-                        auction_price_per_unit: 300,
-                        date_auction_buy: "2026-08-20T03:00:00Z",
-                        auction_buy_id: "latest",
-                        item_option: [],
-                    },
-                    {
-                        item_name: "아이템",
-                        item_display_name: "첫 번째 거래",
-                        item_count: 1,
-                        auction_price_per_unit: 100,
-                        date_auction_buy: "2026-08-20T01:00:00Z",
-                        auction_buy_id: "first",
-                        item_option: [],
-                    },
-                ],
-                hasMore: false,
-            },
+            json: { sales: marketSales, hasMore: false },
         });
     });
+    return counts;
+}
 
+async function openMarket(page: Page) {
+    const counts = await setupMarketRoutes(page);
     await page.goto("/auction", { waitUntil: "networkidle" });
-    await page.getByPlaceholder("아이템명").fill("아이템");
+    return counts;
+}
+
+async function searchMarket(page: Page, itemName = "아이템") {
+    await page.getByPlaceholder("아이템명").fill(itemName);
     await Promise.all([
         page.waitForResponse(
             response =>
@@ -75,59 +79,60 @@ test("auction search shows a responsive incomplete market summary", async ({
         ),
         page.getByRole("button", { name: "검색" }).click(),
     ]);
+}
 
-    const snapshot = page.getByRole("region", {
-        name: "경매 시장 현황",
+function recentSalesDetails(page: Page) {
+    return page.locator("details").filter({
+        has: page.getByText("최근 완료 거래 상세 보기", { exact: true }),
     });
+}
+
+test("auction search renders the incomplete market snapshot", async ({
+    page,
+}) => {
+    const counts = await openMarket(page);
+    await searchMarket(page);
+    const snapshot = page.getByRole("region", { name: "경매 시장 현황" });
     await expect(
         snapshot.getByText(
             "현재 매물은 판매자의 제시 가격이며, 최근 거래는 최근 1시간 동안 실제 완료된 가격입니다."
         )
     ).toBeVisible();
-    const summary = page.getByRole("region", {
-        name: "현재 등록 매물",
-    });
-    const currentMetrics = summary.locator("dl");
-    await expect(currentMetrics.getByText("100 Gold")).toBeVisible();
-    await expect(currentMetrics.getByText("600 Gold")).toBeVisible();
-    await expect(currentMetrics.getByText("11개")).toBeVisible();
-    await expect(currentMetrics.getByText("66개")).toBeVisible();
-    await expect(summary.getByText(/조회 완료:/)).toBeVisible();
+    const listings = page.getByRole("region", { name: "현재 등록 매물" });
+    const metrics = listings.locator("dl");
+    await expect(metrics.getByText("100 Gold")).toBeVisible();
+    await expect(metrics.getByText("600 Gold")).toBeVisible();
+    await expect(metrics.getByText("11개")).toBeVisible();
+    await expect(metrics.getByText("66개")).toBeVisible();
+    await expect(listings.getByText(/조회 완료:/)).toBeVisible();
     await expect(
-        summary.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
+        listings.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
     ).toBeVisible();
-    await expect.poll(() => auctionRequestCount).toBe(1);
-    await expect.poll(() => historyRequestCount).toBe(1);
-
-    const recentSales = page.getByRole("region", {
-        name: "최근 1시간 완료 거래",
-    });
-    await expect(recentSales.getByText("3건")).toBeVisible();
-    await expect(recentSales.getByText("6개")).toBeVisible();
+    const sales = page.getByRole("region", { name: "최근 1시간 완료 거래" });
+    await expect(sales.getByText("3건")).toBeVisible();
+    await expect(sales.getByText("6개")).toBeVisible();
     await expect(
-        recentSales.getByRole("definition").filter({ hasText: "200 Gold" })
+        sales.getByRole("definition").filter({ hasText: "200 Gold" })
     ).toBeVisible();
-    await expect(recentSales.getByText(/조회 완료:/)).toBeVisible();
-    const currentDetails = page.locator("details").filter({
-        has: page.getByText("현재 매물 상세 보기", { exact: true }),
-    });
-    const recentDetails = page.locator("details").filter({
-        has: page.getByText("최근 완료 거래 상세 보기", { exact: true }),
-    });
-    await expect(currentDetails).not.toHaveAttribute("open", "");
-    await expect(recentDetails).not.toHaveAttribute("open", "");
+    await expect(sales.getByText(/조회 완료:/)).toBeVisible();
+    await expect.poll(() => counts.auction).toBe(1);
+    await expect.poll(() => counts.history).toBe(1);
+});
 
-    await currentDetails.locator("summary").click();
-    await recentDetails.locator("summary").click();
-    const saleNames = recentSales.locator("tbody tr td:nth-child(2)");
-    await expect(saleNames).toHaveText([
+test("market details preserve search context without requests", async ({
+    page,
+}) => {
+    const counts = await openMarket(page);
+    await searchMarket(page);
+    const details = recentSalesDetails(page);
+    await expect(details).not.toHaveAttribute("open", "");
+    await details.locator("summary").click();
+    const sales = page.getByRole("region", { name: "최근 1시간 완료 거래" });
+    await expect(sales.locator("tbody tr td:nth-child(2)")).toHaveText([
         "가장 최근 거래",
         "두 번째 거래",
         "첫 번째 거래",
     ]);
-    await expect(
-        page.getByRole("button", { name: "아이템 1", exact: true })
-    ).toBeVisible();
     await page.getByRole("button", { name: "아이템 1", exact: true }).click();
     await expect(
         page.getByRole("dialog", { name: "아이템 옵션" })
@@ -137,47 +142,40 @@ test("auction search shows a responsive incomplete market summary", async ({
     await expect(
         page.getByRole("button", { name: "모든 카테고리", exact: true })
     ).toBeVisible();
-    await expect(currentDetails).toHaveAttribute("open", "");
+    await details.locator("summary").click();
+    await expect(details).not.toHaveAttribute("open", "");
+    expect(counts).toEqual({ auction: 1, history: 1 });
+});
 
+test("auction pagination survives recent-sales disclosure", async ({
+    page,
+}) => {
+    const counts = await openMarket(page);
+    await searchMarket(page);
     await page.getByLabel("다음 페이지").click();
     await expect(page.getByRole("button", { name: "아이템 11" })).toBeVisible();
+    const details = recentSalesDetails(page);
+    await details.locator("summary").click();
+    await details.locator("summary").click();
+    await expect(page.getByRole("button", { name: "아이템 11" })).toBeVisible();
+    expect(counts).toEqual({ auction: 1, history: 1 });
+});
 
-    await currentDetails.locator("summary").click();
-    await recentDetails.locator("summary").click();
-    await expect(currentDetails).not.toHaveAttribute("open", "");
-    await expect(recentDetails).not.toHaveAttribute("open", "");
-    expect(auctionRequestCount).toBe(1);
-    expect(historyRequestCount).toBe(1);
-
-    await currentDetails.locator("summary").click();
-    await recentDetails.locator("summary").click();
-    await page.getByPlaceholder("아이템명").fill("새 아이템");
-    await Promise.all([
-        page.waitForResponse(
-            response =>
-                new URL(response.url()).pathname ===
-                    "/api/auction/keyword-search" && response.ok()
-        ),
-        page.waitForResponse(
-            response =>
-                new URL(response.url()).pathname === "/api/auction/history" &&
-                response.ok()
-        ),
-        page.getByRole("button", { name: "검색" }).click(),
-    ]);
+test("a new auction search resets pagination and disclosure", async ({
+    page,
+}) => {
+    const counts = await openMarket(page);
+    await searchMarket(page);
+    await page.getByLabel("다음 페이지").click();
+    const details = recentSalesDetails(page);
+    await details.locator("summary").click();
+    await searchMarket(page, "새 아이템");
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("새 아이템");
     await expect(
-        page.locator("details").filter({
-            has: page.getByText("현재 매물 상세 보기", { exact: true }),
-        })
-    ).not.toHaveAttribute("open", "");
-    await expect(
-        page.locator("details").filter({
-            has: page.getByText("최근 완료 거래 상세 보기", { exact: true }),
-        })
-    ).not.toHaveAttribute("open", "");
-    expect(auctionRequestCount).toBe(2);
-    expect(historyRequestCount).toBe(2);
+        page.getByRole("button", { name: "아이템 1", exact: true })
+    ).toBeVisible();
+    await expect(recentSalesDetails(page)).not.toHaveAttribute("open", "");
+    expect(counts).toEqual({ auction: 2, history: 2 });
 });
 
 test("favorite click uses the selected favorite in its first request", async ({
