@@ -1,3 +1,5 @@
+import type { AuctionHistoryItem } from "@/lib/schemas/nexon";
+
 export type Favorite = { itemName: string; category: string };
 
 export type ItemOption = {
@@ -23,5 +25,29 @@ export type AuctionSummary = {
     listingCount: number;
     totalQuantity: number;
 };
+
+export interface AuctionSale extends AuctionHistoryItem {
+    [key: string]: unknown;
+}
+
+export interface RecentSalesSummary {
+    transactionCount: number;
+    totalQuantity: number;
+    medianUnitPrice: number | null;
+}
+
+export interface RecentSalesState {
+    sales: AuctionSale[];
+    summary: RecentSalesSummary | null;
+    hasMore: boolean;
+    refreshedAt: string | null;
+    queriedItemName: string | null;
+    errorMessage: string | null;
+    loading: boolean;
+}
+
+export interface RecentSalesModel extends RecentSalesState {
+    search: (itemName: string) => Promise<void>;
+}
 
 export type SortDirection = "asc" | "desc" | null;

@@ -18,6 +18,7 @@ import {
     parseStoredFavorites,
     useFavorites,
 } from "@/app/auction/use-favorites";
+import { useRecentSales } from "@/app/auction/use-recent-sales";
 import { categories } from "@/constant/categories";
 
 export { parseStoredFavorites };
@@ -31,6 +32,8 @@ type AuctionViewProps = {
     suggestions: ReturnType<typeof useAuctionSuggestions>;
     favorites: ReturnType<typeof useFavorites>;
     auction: ReturnType<typeof useAuctionSearch>;
+    recentSales: ReturnType<typeof useRecentSales>;
+    searchLoading: boolean;
     setSearchTerm: (value: string) => void;
     setSelectedCategory: (value: string) => void;
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
@@ -67,7 +70,7 @@ function AuctionPageView(props: AuctionViewProps) {
                     onShow={() => props.onShowFavorites(true)}
                     showButtonRef={props.favoritesTriggerRef}
                 />
-                <AuctionControls {...props} loading={props.auction.loading} />
+                <AuctionControls {...props} loading={props.searchLoading} />
                 {props.showFavorites && (
                     <FavoritesDialog
                         favorites={props.favorites.favorites}
@@ -85,6 +88,7 @@ function AuctionPageView(props: AuctionViewProps) {
                     onItemClick={item =>
                         props.onShowOptions(item.item_option ?? [])
                     }
+                    recentSales={props.recentSales}
                 />
                 {props.options && (
                     <ItemOptionsDialog
@@ -110,10 +114,14 @@ export default function AuctionPage() {
     const suggestions = useAuctionSuggestions(searchTerm);
     const favorites = useFavorites();
     const auction = useAuctionSearch();
+    const recentSales = useRecentSales();
 
     const search = (itemName = searchTerm, category = selectedCategory) => {
         setCurrentPage(1);
-        return auction.search(itemName, category);
+        return Promise.allSettled([
+            auction.search(itemName, category),
+            recentSales.search(itemName),
+        ]);
     };
     const selectFavorite = (favorite: Favorite) => {
         setSearchTerm(favorite.itemName);
@@ -125,7 +133,8 @@ export default function AuctionPage() {
     return (
         <AuctionPageView
             {...{ searchTerm, selectedCategory, showFavorites, options }}
-            {...{ currentPage, suggestions, favorites, auction }}
+            {...{ currentPage, suggestions, favorites, auction, recentSales }}
+            searchLoading={auction.loading || recentSales.loading}
             favoritesTriggerRef={favoritesTriggerRef}
             {...{ setSearchTerm, setSelectedCategory, setCurrentPage }}
             onSearch={() => void search()}

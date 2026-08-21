@@ -19,6 +19,42 @@ test("auction search shows a responsive incomplete market summary", async ({
             json: { items, hasMore: true, nextCursor: "next" },
         })
     );
+    await page.route("**/api/auction/history?**", route =>
+        route.fulfill({
+            json: {
+                sales: [
+                    {
+                        item_name: "아이템",
+                        item_display_name: "두 번째 거래",
+                        item_count: 2,
+                        auction_price_per_unit: 200,
+                        date_auction_buy: "2026-08-20T02:00:00Z",
+                        auction_buy_id: "second",
+                        item_option: [],
+                    },
+                    {
+                        item_name: "아이템",
+                        item_display_name: "가장 최근 거래",
+                        item_count: 3,
+                        auction_price_per_unit: 300,
+                        date_auction_buy: "2026-08-20T03:00:00Z",
+                        auction_buy_id: "latest",
+                        item_option: [],
+                    },
+                    {
+                        item_name: "아이템",
+                        item_display_name: "첫 번째 거래",
+                        item_count: 1,
+                        auction_price_per_unit: 100,
+                        date_auction_buy: "2026-08-20T01:00:00Z",
+                        auction_buy_id: "first",
+                        item_option: [],
+                    },
+                ],
+                hasMore: false,
+            },
+        })
+    );
 
     await page.goto("/auction", { waitUntil: "networkidle" });
     await page.getByPlaceholder("아이템명").fill("아이템");
@@ -27,6 +63,11 @@ test("auction search shows a responsive incomplete market summary", async ({
             response =>
                 new URL(response.url()).pathname ===
                     "/api/auction/keyword-search" && response.ok()
+        ),
+        page.waitForResponse(
+            response =>
+                new URL(response.url()).pathname === "/api/auction/history" &&
+                response.ok()
         ),
         page.getByRole("button", { name: "검색" }).click(),
     ]);
@@ -43,6 +84,22 @@ test("auction search shows a responsive incomplete market summary", async ({
         summary.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
     ).toBeVisible();
 
+    const recentSales = page.getByRole("region", {
+        name: "최근 1시간 완료 거래",
+    });
+    await expect(recentSales.getByText("3건")).toBeVisible();
+    await expect(recentSales.getByText("6개")).toBeVisible();
+    await expect(
+        recentSales.getByRole("definition").filter({ hasText: "200 Gold" })
+    ).toBeVisible();
+    await expect(recentSales.getByText(/조회 완료:/)).toBeVisible();
+    const saleNames = recentSales.locator("tbody tr td:nth-child(2)");
+    await expect(saleNames).toHaveText([
+        "가장 최근 거래",
+        "두 번째 거래",
+        "첫 번째 거래",
+    ]);
+
     await expect(
         page.getByRole("button", { name: "아이템 1", exact: true })
     ).toBeVisible();
@@ -54,6 +111,7 @@ test("favorite click uses the selected favorite in its first request", async ({
     page,
 }) => {
     const auctionRequests: URL[] = [];
+    const historyRequests: URL[] = [];
     await page.addInitScript(() => {
         localStorage.setItem(
             "favorites",
@@ -66,15 +124,21 @@ test("favorite click uses the selected favorite in its first request", async ({
             json: { items: [], hasMore: false, nextCursor: null },
         });
     });
+    await page.route("**/api/auction/history?**", route => {
+        historyRequests.push(new URL(route.request().url()));
+        return route.fulfill({ json: { sales: [], hasMore: false } });
+    });
 
     await page.goto("/auction");
     await page.getByRole("button", { name: "즐겨찾기 보기" }).click();
     await page.getByRole("button", { name: "테스트+검 (검)" }).click();
     await expect.poll(() => auctionRequests.length).toBe(1);
+    await expect.poll(() => historyRequests.length).toBe(1);
     expect(auctionRequests[0].searchParams.get("item_name")).toBe("테스트+검");
     expect(auctionRequests[0].searchParams.get("auction_item_category")).toBe(
         "검"
     );
+    expect(historyRequests[0].searchParams.get("item_name")).toBe("테스트+검");
 });
 
 test("corrupt favorite storage does not crash auction", async ({ page }) => {

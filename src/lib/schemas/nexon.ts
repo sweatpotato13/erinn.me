@@ -30,6 +30,30 @@ export const AuctionListResponseSchema = z
 
 export type AuctionListResponse = z.infer<typeof AuctionListResponseSchema>;
 
+export const AuctionHistoryItemSchema = z
+    .object({
+        item_name: z.string(),
+        item_display_name: z.string(),
+        item_count: z.number().nonnegative(),
+        auction_price_per_unit: z.number().nonnegative(),
+        date_auction_buy: z.string(),
+        auction_buy_id: z.string(),
+        item_option: z.array(AuctionItemOptionSchema).nullish(),
+    })
+    .passthrough();
+
+export const AuctionHistoryResponseSchema = z
+    .object({
+        auction_history: z.array(AuctionHistoryItemSchema),
+        next_cursor: z.string().nullish(),
+    })
+    .passthrough();
+
+export type AuctionHistoryResponse = z.infer<
+    typeof AuctionHistoryResponseSchema
+>;
+export type AuctionHistoryItem = z.infer<typeof AuctionHistoryItemSchema>;
+
 const HornMessageSchema = z
     .object({
         character_name: z.string(),
