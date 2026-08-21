@@ -884,16 +884,12 @@ describe("AuctionResults", () => {
                 }}
             />
         );
-        const panel = within(
-            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
-        );
-        expect(
-            panel.getByText("최근 1시간 내 완료 거래가 없습니다.")
-        ).toBeInTheDocument();
-        expect(panel.queryByText(/0 Gold/)).not.toBeInTheDocument();
-        expect(
-            panel.queryByText("최근 완료 거래 상세 보기")
-        ).not.toBeInTheDocument();
+        const trigger = screen.getByRole("button", {
+            name: "최근 1시간 완료 거래 없음",
+        });
+        expect(trigger).toBeDisabled();
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(screen.queryByText(/0 Gold/)).not.toBeInTheDocument();
     });
 
     it("announces recent-sales loading and error states", () => {
@@ -926,7 +922,8 @@ describe("AuctionResults", () => {
         expect(screen.getByRole("alert")).toHaveTextContent("요청 실패");
     });
 
-    it("shows low-sample sales without a median", () => {
+    it("shows low-sample sales without a median", async () => {
+        const user = userEvent.setup();
         const sales = [sale("first", 100, 2), sale("second", 300, 4)];
         render(
             <AuctionResults
@@ -941,8 +938,13 @@ describe("AuctionResults", () => {
                 }}
             />
         );
+        await user.click(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 2건 보기",
+            })
+        );
         const panel = within(
-            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
+            screen.getByRole("dialog", { name: "최근 1시간 완료 거래" })
         );
         expect(panel.getByText("2건")).toBeInTheDocument();
         expect(panel.getByText("6개")).toBeInTheDocument();
@@ -952,9 +954,7 @@ describe("AuctionResults", () => {
             )
         ).toBeInTheDocument();
         expect(panel.queryByText("거래 단가 중앙값")).not.toBeInTheDocument();
-        expect(
-            panel.getByText("최근 완료 거래 상세 보기").closest("details")
-        ).not.toHaveAttribute("open");
+        expect(panel.getByRole("table")).toBeVisible();
     });
 
     it("shows a complete median and partial-data limits", async () => {
@@ -981,9 +981,18 @@ describe("AuctionResults", () => {
                 }}
             />
         );
-        const panel = within(
-            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
-        );
+        const trigger = screen.getByRole("button", {
+            name: "최근 1시간 완료 거래 11건 보기",
+        });
+        await user.click(trigger);
+        const dialog = screen.getByRole("dialog", {
+            name: "최근 1시간 완료 거래",
+        });
+        const panel = within(dialog);
+        expect(dialog).toHaveAttribute("aria-modal", "true");
+        expect(panel.getByRole("button", { name: "닫기" })).toHaveFocus();
+        expect(panel.getByText("활발한 거래")).toBeInTheDocument();
+        expect(panel.getByText(/조회 완료:/)).toBeInTheDocument();
         expect(panel.getByText("불러온 거래 수")).toBeInTheDocument();
         expect(panel.getByText("11건")).toBeInTheDocument();
         expect(panel.getByText("66개")).toBeInTheDocument();
@@ -991,7 +1000,6 @@ describe("AuctionResults", () => {
             .getByText("불러온 거래 단가 중앙값")
             .closest("div");
         expect(within(median!).getByText("600 Gold")).toBeInTheDocument();
-        await user.click(panel.getByText("최근 완료 거래 상세 보기"));
         expect(
             panel.getByText("가장 최근 10건을 표시합니다.")
         ).toBeInTheDocument();
@@ -1001,6 +1009,9 @@ describe("AuctionResults", () => {
                 "최근 1시간 전체가 아닌 현재 불러온 일부 완료 거래만 반영했습니다."
             )
         ).toBeInTheDocument();
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(trigger).toHaveFocus();
     });
 
     it("keeps current and recent request states independent", () => {
@@ -1027,7 +1038,11 @@ describe("AuctionResults", () => {
         expect(screen.getByRole("status")).toHaveTextContent(
             "현재 등록 매물을 불러오는 중입니다."
         );
-        expect(screen.getByText("3건")).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 3건 보기",
+            })
+        ).toBeInTheDocument();
 
         rerender(
             <AuctionResults
@@ -1047,7 +1062,11 @@ describe("AuctionResults", () => {
         expect(
             currentListings.queryByText(/조회 완료:/)
         ).not.toBeInTheDocument();
-        expect(screen.getByText("3건")).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 3건 보기",
+            })
+        ).toBeInTheDocument();
     });
 });
 
