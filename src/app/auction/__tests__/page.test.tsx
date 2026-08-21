@@ -815,6 +815,9 @@ describe("AuctionResults", () => {
             panel.queryByText("현재 불러온 일부 매물만 반영한 요약입니다.")
         ).not.toBeInTheDocument();
         expect(panel.getByRole("button", { name: "아이템" })).toBeVisible();
+        expect(
+            panel.getByText("최저 단가").closest(".rounded-lg")
+        ).not.toContainElement(panel.getByRole("table"));
     });
 
     it("renders empty and incomplete states without zero-valued statistics", () => {

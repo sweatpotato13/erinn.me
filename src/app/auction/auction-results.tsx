@@ -313,38 +313,39 @@ function CurrentListingsPanel(props: AuctionResultsProps) {
     }
 
     return (
-        <section
-            aria-labelledby="current-listings-title"
-            className="rounded-lg border bg-base-100 p-4"
-        >
-            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                    <h3
-                        id="current-listings-title"
-                        className="text-lg font-bold"
-                    >
-                        현재 등록 매물
-                    </h3>
-                    <p className="text-sm text-base-content/70">
-                        판매자가 현재 제시한 매물의 가격과 수량입니다.
-                    </p>
+        <section aria-labelledby="current-listings-title" className="space-y-4">
+            <div className="rounded-lg border bg-base-100 p-4">
+                <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                        <h3
+                            id="current-listings-title"
+                            className="text-lg font-bold"
+                        >
+                            현재 등록 매물
+                        </h3>
+                        <p className="text-sm text-base-content/70">
+                            판매자가 현재 제시한 매물의 가격과 수량입니다.
+                        </p>
+                    </div>
+                    {props.refreshedAt &&
+                        !props.loading &&
+                        !props.errorMessage && (
+                            <p className="text-sm text-base-content/70">
+                                조회 완료:{" "}
+                                <time dateTime={props.refreshedAt}>
+                                    {dateTimeFormatter.format(
+                                        new Date(props.refreshedAt)
+                                    )}
+                                </time>
+                            </p>
+                        )}
                 </div>
-                {props.refreshedAt && !props.loading && !props.errorMessage && (
-                    <p className="text-sm text-base-content/70">
-                        조회 완료:{" "}
-                        <time dateTime={props.refreshedAt}>
-                            {dateTimeFormatter.format(
-                                new Date(props.refreshedAt)
-                            )}
-                        </time>
-                    </p>
-                )}
+                {body}
             </div>
-            {body}
             {!props.loading &&
                 !props.errorMessage &&
                 props.items.length > 0 && (
-                    <div className="mt-4">
+                    <div>
                         <ResultsTable {...props} isEmpty={false} />
                         <Pagination
                             currentPage={props.currentPage}
