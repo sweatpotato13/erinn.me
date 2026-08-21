@@ -735,13 +735,13 @@ describe("AuctionResults", () => {
         render(<AuctionResults {...baseProps} items={[]} />);
         expect(screen.getByText("결과가 없습니다.")).toBeInTheDocument();
         expect(
-            screen.queryByRole("region", { name: "현재 검색 결과 요약" })
+            screen.queryByRole("region", { name: "경매 시장 현황" })
         ).not.toBeInTheDocument();
         expect(screen.queryByLabelText("다음 페이지")).not.toBeInTheDocument();
         expect(baseProps.setCurrentPage).not.toHaveBeenCalled();
     });
 
-    it("renders complete market statistics and refresh metadata", () => {
+    it("renders the named market snapshot with distinct data sources", () => {
         const refreshedAt = "2026-08-19T01:00:00.000Z";
         render(
             <AuctionResults
@@ -756,13 +756,52 @@ describe("AuctionResults", () => {
                 refreshedAt={refreshedAt}
             />
         );
-        const summary = within(
-            screen.getByRole("region", { name: "현재 검색 결과 요약" })
+        const snapshot = within(
+            screen.getByRole("region", { name: "경매 시장 현황" })
         );
-        expect(summary.getByText("100 Gold")).toBeInTheDocument();
-        expect(summary.getByText("200 Gold")).toBeInTheDocument();
-        expect(summary.getByText("3개")).toBeInTheDocument();
-        expect(summary.getByText("6개")).toBeInTheDocument();
+        expect(
+            snapshot.getByText(
+                "현재 매물은 판매자의 제시 가격이며, 최근 거래는 최근 1시간 동안 실제 완료된 가격입니다."
+            )
+        ).toBeInTheDocument();
+        expect(
+            snapshot.getByRole("heading", {
+                level: 2,
+                name: "경매 시장 현황",
+            })
+        ).toBeInTheDocument();
+        const summary = within(
+            snapshot.getByRole("region", { name: "현재 등록 매물" })
+        );
+        expect(
+            summary.getByRole("heading", {
+                level: 3,
+                name: "현재 등록 매물",
+            })
+        ).toBeInTheDocument();
+        expect(
+            summary.getByText("판매자가 현재 제시한 매물의 가격과 수량입니다.")
+        ).toBeInTheDocument();
+        expect(
+            within(summary.getByText("최저 단가").closest("div")!).getByText(
+                "100 Gold"
+            )
+        ).toBeInTheDocument();
+        expect(
+            within(
+                summary.getByText("매물 단가 중앙값").closest("div")!
+            ).getByText("200 Gold")
+        ).toBeInTheDocument();
+        expect(
+            within(summary.getByText("매물 수").closest("div")!).getByText(
+                "3개"
+            )
+        ).toBeInTheDocument();
+        expect(
+            within(summary.getByText("총 수량").closest("div")!).getByText(
+                "6개"
+            )
+        ).toBeInTheDocument();
         expect(summary.getByText(/조회 완료:/)).toBeInTheDocument();
         expect(
             summary.getByText(/조회 완료:/).querySelector("time")
@@ -770,6 +809,9 @@ describe("AuctionResults", () => {
         expect(
             summary.queryByText("현재 불러온 일부 매물만 반영한 요약입니다.")
         ).not.toBeInTheDocument();
+        expect(
+            summary.getByText("현재 매물 상세 보기").closest("details")
+        ).not.toHaveAttribute("open");
     });
 
     it("renders empty and incomplete states without zero-valued statistics", () => {
@@ -782,7 +824,7 @@ describe("AuctionResults", () => {
             />
         );
         const summary = within(
-            screen.getByRole("region", { name: "현재 검색 결과 요약" })
+            screen.getByRole("region", { name: "현재 등록 매물" })
         );
         expect(
             summary.getByText("현재 검색 조건에 유효한 매물이 없습니다.")
@@ -791,6 +833,9 @@ describe("AuctionResults", () => {
             summary.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
         ).toBeInTheDocument();
         expect(summary.queryByText(/0 Gold/)).not.toBeInTheDocument();
+        expect(
+            summary.queryByText("현재 매물 상세 보기")
+        ).not.toBeInTheDocument();
     });
 
     it("uses buttons for sorting, item options, and non-empty pagination", async () => {
@@ -808,8 +853,15 @@ describe("AuctionResults", () => {
                 onSort={onSort}
                 onItemClick={onItemClick}
                 setCurrentPage={setCurrentPage}
+                refreshedAt="2026-08-20T04:00:00Z"
             />
         );
+        const details = screen
+            .getByText("현재 매물 상세 보기")
+            .closest("details");
+        expect(details).not.toHaveAttribute("open");
+        await user.click(screen.getByText("현재 매물 상세 보기"));
+        expect(details).toHaveAttribute("open");
         await user.click(screen.getByRole("button", { name: "가격" }));
         expect(onSort).toHaveBeenCalled();
         await user.click(screen.getByRole("button", { name: "아이템 0" }));
@@ -842,6 +894,9 @@ describe("AuctionResults", () => {
             panel.getByText("최근 1시간 내 완료 거래가 없습니다.")
         ).toBeInTheDocument();
         expect(panel.queryByText(/0 Gold/)).not.toBeInTheDocument();
+        expect(
+            panel.queryByText("최근 완료 거래 상세 보기")
+        ).not.toBeInTheDocument();
     });
 
     it("announces recent-sales loading and error states", () => {
@@ -900,9 +955,13 @@ describe("AuctionResults", () => {
             )
         ).toBeInTheDocument();
         expect(panel.queryByText("거래 단가 중앙값")).not.toBeInTheDocument();
+        expect(
+            panel.getByText("최근 완료 거래 상세 보기").closest("details")
+        ).not.toHaveAttribute("open");
     });
 
-    it("shows a complete median and partial-data limits", () => {
+    it("shows a complete median and partial-data limits", async () => {
+        const user = userEvent.setup();
         const sales = Array.from({ length: 11 }, (_, index) =>
             sale(
                 `sale-${index}`,
@@ -935,6 +994,7 @@ describe("AuctionResults", () => {
             .getByText("불러온 거래 단가 중앙값")
             .closest("div");
         expect(within(median!).getByText("600 Gold")).toBeInTheDocument();
+        await user.click(panel.getByText("최근 완료 거래 상세 보기"));
         expect(
             panel.getByText("가장 최근 10건을 표시합니다.")
         ).toBeInTheDocument();
@@ -944,6 +1004,49 @@ describe("AuctionResults", () => {
                 "최근 1시간 전체가 아닌 현재 불러온 일부 완료 거래만 반영했습니다."
             )
         ).toBeInTheDocument();
+    });
+
+    it("keeps current and recent request states independent", () => {
+        const sales = [
+            sale("first", 100),
+            sale("second", 200),
+            sale("third", 300),
+        ];
+        const recentSales = {
+            ...emptyRecentSales,
+            sales,
+            summary: prepareRecentSales(sales).summary,
+            refreshedAt: "2026-08-20T04:00:00Z",
+            queriedItemName: "독립 상태",
+        };
+        const { rerender } = render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                loading={true}
+                recentSales={recentSales}
+            />
+        );
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "현재 등록 매물을 불러오는 중입니다."
+        );
+        expect(screen.getByText("3건")).toBeInTheDocument();
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                errorMessage="현재 매물 요청 실패"
+                recentSales={recentSales}
+            />
+        );
+        const currentListings = within(
+            screen.getByRole("region", { name: "현재 등록 매물" })
+        );
+        expect(currentListings.getByRole("alert")).toHaveTextContent(
+            "현재 매물 요청 실패"
+        );
+        expect(screen.getByText("3건")).toBeInTheDocument();
     });
 });
 
