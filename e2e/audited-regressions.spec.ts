@@ -81,10 +81,14 @@ async function searchMarket(page: Page, itemName = "아이템") {
     ]);
 }
 
-function recentSalesDetails(page: Page) {
-    return page.locator("details").filter({
-        has: page.getByText("최근 완료 거래 상세 보기", { exact: true }),
+function recentSalesButton(page: Page) {
+    return page.getByRole("button", {
+        name: "최근 1시간 완료 거래 3건 보기",
     });
+}
+
+function recentSalesDialog(page: Page) {
+    return page.getByRole("dialog", { name: "최근 1시간 완료 거래" });
 }
 
 test("auction search renders the incomplete market snapshot", async ({
@@ -108,31 +112,28 @@ test("auction search renders the incomplete market snapshot", async ({
     await expect(
         listings.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
     ).toBeVisible();
-    const sales = page.getByRole("region", { name: "최근 1시간 완료 거래" });
-    await expect(sales.getByText("3건")).toBeVisible();
-    await expect(sales.getByText("6개")).toBeVisible();
-    await expect(
-        sales.getByRole("definition").filter({ hasText: "200 Gold" })
-    ).toBeVisible();
-    await expect(sales.getByText(/조회 완료:/)).toBeVisible();
+    await expect(recentSalesButton(page)).toBeVisible();
+    await expect(recentSalesDialog(page)).not.toBeVisible();
     await expect.poll(() => counts.auction).toBe(1);
     await expect.poll(() => counts.history).toBe(1);
 });
 
-test("market details preserve search context without requests", async ({
+test("recent-sales modal preserves search context without requests", async ({
     page,
 }) => {
     const counts = await openMarket(page);
     await searchMarket(page);
-    const details = recentSalesDetails(page);
-    await expect(details).not.toHaveAttribute("open", "");
-    await details.locator("summary").click();
-    const sales = page.getByRole("region", { name: "최근 1시간 완료 거래" });
-    await expect(sales.locator("tbody tr td:nth-child(2)")).toHaveText([
+    const trigger = recentSalesButton(page);
+    await trigger.click();
+    const dialog = recentSalesDialog(page);
+    await expect(dialog.locator("tbody tr td:nth-child(2)")).toHaveText([
         "가장 최근 거래",
         "두 번째 거래",
         "첫 번째 거래",
     ]);
+    await dialog.getByRole("button", { name: "닫기" }).click();
+    await expect(dialog).not.toBeVisible();
+    await expect(trigger).toBeFocused();
     await page.getByRole("button", { name: "아이템 1", exact: true }).click();
     await expect(
         page.getByRole("dialog", { name: "아이템 옵션" })
@@ -142,39 +143,35 @@ test("market details preserve search context without requests", async ({
     await expect(
         page.getByRole("button", { name: "모든 카테고리", exact: true })
     ).toBeVisible();
-    await details.locator("summary").click();
-    await expect(details).not.toHaveAttribute("open", "");
     expect(counts).toEqual({ auction: 1, history: 1 });
 });
 
-test("auction pagination survives recent-sales disclosure", async ({
+test("auction pagination survives the recent-sales modal", async ({ page }) => {
+    const counts = await openMarket(page);
+    await searchMarket(page);
+    await page.getByLabel("다음 페이지").click();
+    await expect(page.getByRole("button", { name: "아이템 11" })).toBeVisible();
+    await recentSalesButton(page).click();
+    await recentSalesDialog(page).getByRole("button", { name: "닫기" }).click();
+    await expect(page.getByRole("button", { name: "아이템 11" })).toBeVisible();
+    expect(counts).toEqual({ auction: 1, history: 1 });
+});
+
+test("a new auction search resets pagination after closing the modal", async ({
     page,
 }) => {
     const counts = await openMarket(page);
     await searchMarket(page);
     await page.getByLabel("다음 페이지").click();
-    await expect(page.getByRole("button", { name: "아이템 11" })).toBeVisible();
-    const details = recentSalesDetails(page);
-    await details.locator("summary").click();
-    await details.locator("summary").click();
-    await expect(page.getByRole("button", { name: "아이템 11" })).toBeVisible();
-    expect(counts).toEqual({ auction: 1, history: 1 });
-});
-
-test("a new auction search resets pagination and disclosure", async ({
-    page,
-}) => {
-    const counts = await openMarket(page);
-    await searchMarket(page);
-    await page.getByLabel("다음 페이지").click();
-    const details = recentSalesDetails(page);
-    await details.locator("summary").click();
+    await recentSalesButton(page).click();
+    await page.keyboard.press("Escape");
     await searchMarket(page, "새 아이템");
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("새 아이템");
     await expect(
         page.getByRole("button", { name: "아이템 1", exact: true })
     ).toBeVisible();
-    await expect(recentSalesDetails(page)).not.toHaveAttribute("open", "");
+    await expect(recentSalesDialog(page)).not.toBeVisible();
+    await expect(recentSalesButton(page)).toBeVisible();
     expect(counts).toEqual({ auction: 2, history: 2 });
 });
 
