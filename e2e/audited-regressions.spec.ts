@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 const marketItems = Array.from({ length: 11 }, (_, index) => ({
     item_name: `아이템 ${index + 1}`,
