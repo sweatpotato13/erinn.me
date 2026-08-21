@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 
+import { MAX_COMPARISON_ITEMS } from "@/app/auction/auction-comparison";
 import { AuctionControls } from "@/app/auction/auction-controls";
 import {
     AuctionResults,
@@ -11,7 +12,7 @@ import {
     FavoritesDialog,
     FavoriteToolbar,
 } from "@/app/auction/favorites-dialog";
-import type { Favorite, ItemOption } from "@/app/auction/types";
+import type { AuctionItem, Favorite, ItemOption } from "@/app/auction/types";
 import { useAuctionSearch } from "@/app/auction/use-auction-search";
 import { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
 import {
@@ -22,6 +23,11 @@ import { useRecentSales } from "@/app/auction/use-recent-sales";
 import { categories } from "@/constant/categories";
 
 export { parseStoredFavorites };
+
+interface ComparisonSelection {
+    items: AuctionItem[];
+    notice: string | null;
+}
 
 type AuctionViewProps = {
     searchTerm: string;
@@ -34,6 +40,7 @@ type AuctionViewProps = {
     auction: ReturnType<typeof useAuctionSearch>;
     recentSales: ReturnType<typeof useRecentSales>;
     searchLoading: boolean;
+    comparison: ComparisonSelection;
     setSearchTerm: (value: string) => void;
     setSelectedCategory: (value: string) => void;
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
@@ -41,6 +48,9 @@ type AuctionViewProps = {
     onSelectFavorite: (favorite: Favorite) => void;
     onShowFavorites: (show: boolean) => void;
     onShowOptions: (options: ItemOption[] | null) => void;
+    onToggleComparison: (item: AuctionItem) => void;
+    onRemoveComparison: (item: AuctionItem) => void;
+    onClearComparison: () => void;
     favoritesTriggerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
@@ -83,6 +93,11 @@ function AuctionPageView(props: AuctionViewProps) {
                     onItemClick={item =>
                         props.onShowOptions(item.item_option ?? [])
                     }
+                    comparisonItems={props.comparison.items}
+                    comparisonNotice={props.comparison.notice}
+                    onToggleComparison={props.onToggleComparison}
+                    onRemoveComparison={props.onRemoveComparison}
+                    onClearComparison={props.onClearComparison}
                     recentSales={props.recentSales}
                 />
                 {props.options && (
@@ -105,6 +120,10 @@ export default function AuctionPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showFavorites, setShowFavorites] = useState(false);
     const [options, setOptions] = useState<ItemOption[] | null>(null);
+    const [comparison, setComparison] = useState<ComparisonSelection>({
+        items: [],
+        notice: null,
+    });
     const favoritesTriggerRef = useRef<HTMLButtonElement>(null);
     const suggestions = useAuctionSuggestions(searchTerm);
     const favorites = useFavorites();
@@ -113,6 +132,7 @@ export default function AuctionPage() {
 
     const search = (itemName = searchTerm, category = selectedCategory) => {
         setCurrentPage(1);
+        setComparison({ items: [], notice: null });
         return Promise.allSettled([
             auction.search(itemName, category),
             recentSales.search(itemName),
@@ -124,11 +144,34 @@ export default function AuctionPage() {
         void search(favorite.itemName, favorite.category);
         setShowFavorites(false);
     };
+    const toggleComparison = (item: AuctionItem) =>
+        setComparison(current => {
+            if (current.items.includes(item)) {
+                return {
+                    items: current.items.filter(selected => selected !== item),
+                    notice: null,
+                };
+            }
+            if (current.items.length >= MAX_COMPARISON_ITEMS) {
+                return {
+                    ...current,
+                    notice: "최대 4개까지 비교할 수 있습니다.",
+                };
+            }
+            return { items: [...current.items, item], notice: null };
+        });
+    const removeComparison = (item: AuctionItem) =>
+        setComparison(current => ({
+            items: current.items.filter(selected => selected !== item),
+            notice: null,
+        }));
+    const clearComparison = () => setComparison({ items: [], notice: null });
 
     return (
         <AuctionPageView
             {...{ searchTerm, selectedCategory, showFavorites, options }}
             {...{ currentPage, suggestions, favorites, auction, recentSales }}
+            comparison={comparison}
             searchLoading={auction.loading || recentSales.loading}
             favoritesTriggerRef={favoritesTriggerRef}
             {...{ setSearchTerm, setSelectedCategory, setCurrentPage }}
@@ -136,6 +179,9 @@ export default function AuctionPage() {
             onSelectFavorite={selectFavorite}
             onShowFavorites={setShowFavorites}
             onShowOptions={setOptions}
+            onToggleComparison={toggleComparison}
+            onRemoveComparison={removeComparison}
+            onClearComparison={clearComparison}
         />
     );
 }

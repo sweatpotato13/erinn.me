@@ -3,6 +3,7 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import { type RefObject, useRef, useState } from "react";
 
+import { AuctionComparison } from "@/app/auction/auction-comparison";
 import type {
     AuctionItem,
     AuctionSale,
@@ -37,9 +38,13 @@ const dateTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
 function AuctionRow({
     item,
     onClick,
+    selectedForComparison,
+    onToggleComparison,
 }: {
     item: AuctionItem;
     onClick: () => void;
+    selectedForComparison: boolean;
+    onToggleComparison: () => void;
 }) {
     return (
         <tr className="hover:bg-gray-100">
@@ -67,6 +72,16 @@ function AuctionRow({
             <td>{item.auction_price_per_unit.toLocaleString()} Gold</td>
             <td>{item.item_count}</td>
             <td>{item.date_auction_expire}</td>
+            <td>
+                <input
+                    type="checkbox"
+                    className="checkbox checkbox-sm"
+                    aria-label={`${item.item_display_name}, ${item.auction_price_per_unit.toLocaleString()} Gold, ${item.item_count}개, 만료 ${item.date_auction_expire} 비교 선택`}
+                    aria-describedby="auction-comparison-selection-help"
+                    checked={selectedForComparison}
+                    onChange={onToggleComparison}
+                />
+            </td>
         </tr>
     );
 }
@@ -78,6 +93,8 @@ type TableProps = {
     sortDirection: SortDirection;
     onSort: () => void;
     onItemClick: (item: AuctionItem) => void;
+    comparisonItems: AuctionItem[];
+    onToggleComparison: (item: AuctionItem) => void;
 };
 
 function ResultsHeader({
@@ -102,6 +119,15 @@ function ResultsHeader({
                 </th>
                 <th>갯수</th>
                 <th>만료 시간</th>
+                <th>
+                    비교
+                    <span
+                        id="auction-comparison-selection-help"
+                        className="sr-only"
+                    >
+                        최대 4개까지 선택할 수 있습니다.
+                    </span>
+                </th>
             </tr>
         </thead>
     );
@@ -125,7 +151,7 @@ function ResultsTable(props: TableProps) {
                 <tbody>
                     {props.isEmpty ? (
                         <tr>
-                            <td colSpan={5} className="text-center">
+                            <td colSpan={6} className="text-center">
                                 결과가 없습니다.
                             </td>
                         </tr>
@@ -135,6 +161,12 @@ function ResultsTable(props: TableProps) {
                                 key={`item-${item.item_display_name}-${item.auction_price_per_unit}-${item.date_auction_expire}-${index}`}
                                 item={item}
                                 onClick={() => props.onItemClick(item)}
+                                selectedForComparison={props.comparisonItems.includes(
+                                    item
+                                )}
+                                onToggleComparison={() =>
+                                    props.onToggleComparison(item)
+                                }
                             />
                         ))
                     )}
@@ -244,6 +276,9 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     errorMessage: string | null;
     loading: boolean;
     recentSales: RecentSalesState;
+    comparisonNotice: string | null;
+    onRemoveComparison: (item: AuctionItem) => void;
+    onClearComparison: () => void;
     setCurrentPage: (update: (page: number) => number) => void;
 };
 
@@ -352,6 +387,12 @@ function CurrentListingsPanel(props: AuctionResultsProps) {
                     recentSales={props.recentSales}
                 />
             </div>
+            <AuctionComparison
+                items={props.comparisonItems}
+                notice={props.comparisonNotice}
+                onRemove={props.onRemoveComparison}
+                onClear={props.onClearComparison}
+            />
             {!props.loading &&
                 !props.errorMessage &&
                 props.items.length > 0 && (
