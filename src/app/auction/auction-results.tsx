@@ -246,29 +246,12 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     setCurrentPage: (update: (page: number) => number) => void;
 };
 
-function CurrentListingsSummary({
+function CurrentListingsMetrics({
     summary,
     hasMore,
-    refreshedAt,
-}: Pick<AuctionResultsProps, "summary" | "hasMore" | "refreshedAt">) {
-    if (!refreshedAt) return null;
-
+}: Pick<AuctionResultsProps, "summary" | "hasMore">) {
     return (
-        <section
-            aria-labelledby="auction-summary-title"
-            className="mb-4 rounded-lg border bg-base-100 p-4"
-        >
-            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-                <h2 id="auction-summary-title" className="text-lg font-bold">
-                    현재 검색 결과 요약
-                </h2>
-                <p className="text-sm text-base-content/70">
-                    조회 완료:{" "}
-                    <time dateTime={refreshedAt}>
-                        {dateTimeFormatter.format(new Date(refreshedAt))}
-                    </time>
-                </p>
-            </div>
+        <>
             {summary ? (
                 <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
                     <div>
@@ -314,6 +297,75 @@ function CurrentListingsSummary({
                     현재 불러온 일부 매물만 반영한 요약입니다.
                 </p>
             )}
+        </>
+    );
+}
+
+function CurrentListingsDetails(props: AuctionResultsProps) {
+    return (
+        <details className="mt-4">
+            <summary className="cursor-pointer font-semibold">
+                현재 매물 상세 보기
+            </summary>
+            <div className="mt-3">
+                <ResultsTable {...props} isEmpty={false} />
+                <Pagination
+                    currentPage={props.currentPage}
+                    itemCount={props.items.length}
+                    setCurrentPage={props.setCurrentPage}
+                />
+            </div>
+        </details>
+    );
+}
+
+function CurrentListingsPanel(props: AuctionResultsProps) {
+    if (!props.loading && !props.errorMessage && !props.refreshedAt)
+        return null;
+
+    let body = <CurrentListingsMetrics {...props} />;
+    if (props.loading) {
+        body = <p role="status">현재 등록 매물을 불러오는 중입니다.</p>;
+    } else if (props.errorMessage) {
+        body = (
+            <p role="alert" className="alert alert-error">
+                {props.errorMessage}
+            </p>
+        );
+    }
+
+    return (
+        <section
+            aria-labelledby="current-listings-title"
+            className="rounded-lg border bg-base-100 p-4"
+        >
+            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h3
+                        id="current-listings-title"
+                        className="text-lg font-bold"
+                    >
+                        현재 등록 매물
+                    </h3>
+                    <p className="text-sm text-base-content/70">
+                        판매자가 현재 제시한 매물의 가격과 수량입니다.
+                    </p>
+                </div>
+                {props.refreshedAt && !props.loading && (
+                    <p className="text-sm text-base-content/70">
+                        조회 완료:{" "}
+                        <time dateTime={props.refreshedAt}>
+                            {dateTimeFormatter.format(
+                                new Date(props.refreshedAt)
+                            )}
+                        </time>
+                    </p>
+                )}
+            </div>
+            {body}
+            {!props.loading &&
+                !props.errorMessage &&
+                props.items.length > 0 && <CurrentListingsDetails {...props} />}
         </section>
     );
 }
@@ -366,9 +418,12 @@ function RecentSalesHeader({
     return (
         <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
             <div>
-                <h2 id="recent-sales-title" className="text-lg font-bold">
+                <h3 id="recent-sales-title" className="text-lg font-bold">
                     최근 1시간 완료 거래
-                </h2>
+                </h3>
+                <p className="text-sm text-base-content/70">
+                    최근 1시간 동안 실제 완료된 거래입니다.
+                </p>
                 <p className="text-sm text-base-content/70">{itemName}</p>
             </div>
             {refreshedAt && (
@@ -429,6 +484,22 @@ function PartialRecentSalesNotice({ hasMore }: { hasMore: boolean }) {
     );
 }
 
+function RecentSalesDetails({ sales }: { sales: AuctionSale[] }) {
+    return (
+        <details className="mt-4">
+            <summary className="cursor-pointer font-semibold">
+                최근 완료 거래 상세 보기
+            </summary>
+            <RecentSalesTable sales={sales} />
+            {sales.length > RECENT_SALES_LIMIT && (
+                <p className="mt-2 text-sm text-base-content/70">
+                    가장 최근 {RECENT_SALES_LIMIT}건을 표시합니다.
+                </p>
+            )}
+        </details>
+    );
+}
+
 function RecentSalesResultsBody({
     recentSales,
 }: Pick<AuctionResultsProps, "recentSales">) {
@@ -451,12 +522,7 @@ function RecentSalesResultsBody({
                     최근 거래가 3건 미만이므로 중앙값을 표시하지 않습니다.
                 </p>
             )}
-            <RecentSalesTable sales={sales} />
-            {sales.length > RECENT_SALES_LIMIT && (
-                <p className="mt-2 text-sm text-base-content/70">
-                    가장 최근 {RECENT_SALES_LIMIT}건을 표시합니다.
-                </p>
-            )}
+            <RecentSalesDetails sales={sales} />
             <PartialRecentSalesNotice hasMore={hasMore} />
         </>
     );
@@ -481,7 +547,7 @@ function RecentSalesPanel({
     return (
         <section
             aria-labelledby="recent-sales-title"
-            className="mb-4 rounded-lg border bg-base-100 p-4"
+            className="rounded-lg border bg-base-100 p-4"
         >
             <RecentSalesHeader
                 itemName={recentSales.queriedItemName}
@@ -492,29 +558,40 @@ function RecentSalesPanel({
     );
 }
 
+function hasMarketSnapshot(props: AuctionResultsProps) {
+    return Boolean(
+        props.loading ||
+        props.errorMessage ||
+        props.refreshedAt ||
+        props.recentSales.queriedItemName
+    );
+}
+
+function MarketSnapshot(props: AuctionResultsProps) {
+    return (
+        <section aria-labelledby="market-snapshot-title" className="space-y-4">
+            <div>
+                <h2 id="market-snapshot-title" className="text-xl font-bold">
+                    경매 시장 현황
+                </h2>
+                <p className="text-sm text-base-content/70">
+                    현재 매물은 판매자의 제시 가격이며, 최근 거래는 최근 1시간
+                    동안 실제 완료된 가격입니다.
+                </p>
+            </div>
+            <CurrentListingsPanel {...props} />
+            <RecentSalesPanel recentSales={props.recentSales} />
+        </section>
+    );
+}
+
 /**
  * Renders auction results with sortable table content and pagination controls.
  *
  * @param props - Auction data, loading and error state, and pagination controls.
  */
 export function AuctionResults(props: AuctionResultsProps) {
-    return (
-        <>
-            <CurrentListingsSummary {...props} />
-            <RecentSalesPanel recentSales={props.recentSales} />
-            <ResultsTable
-                {...props}
-                isEmpty={
-                    props.items.length === 0 &&
-                    !props.errorMessage &&
-                    !props.loading
-                }
-            />
-            <Pagination
-                currentPage={props.currentPage}
-                itemCount={props.items.length}
-                setCurrentPage={props.setCurrentPage}
-            />
-        </>
-    );
+    if (hasMarketSnapshot(props)) return <MarketSnapshot {...props} />;
+
+    return <ResultsTable {...props} isEmpty={props.items.length === 0} />;
 }
