@@ -94,6 +94,7 @@ const emptyRecentSales: RecentSalesState = {
     hasMore: false,
     refreshedAt: null,
     queriedItemName: null,
+    noticeMessage: null,
     errorMessage: null,
     loading: false,
 };
@@ -596,6 +597,20 @@ describe("useRecentSales", () => {
         expect(log).toHaveBeenCalled();
     });
 
+    it("treats an inexact item name as guidance instead of an error", async () => {
+        global.fetch = jest
+            .fn()
+            .mockResolvedValue({ ok: false, status: 422 } as Response);
+        const { result } = renderHook(() => useRecentSales());
+
+        await act(async () => result.current.search("부분 이름"));
+        expect(result.current.noticeMessage).toBe(
+            "최근 완료 거래는 정확한 아이템명으로만 조회할 수 있습니다. 검색 제안에서 아이템을 선택해 주세요."
+        );
+        expect(result.current.errorMessage).toBeNull();
+        expect(result.current.loading).toBe(false);
+    });
+
     it("rejects malformed recent-sales responses", async () => {
         const log = jest
             .spyOn(console, "error")
@@ -903,7 +918,7 @@ describe("AuctionResults", () => {
         expect(screen.queryByText(/0 Gold/)).not.toBeInTheDocument();
     });
 
-    it("announces recent-sales loading and error states", () => {
+    it("announces recent-sales loading, guidance, and error states", () => {
         const { rerender } = render(
             <AuctionResults
                 {...baseProps}
@@ -918,6 +933,22 @@ describe("AuctionResults", () => {
         expect(screen.getByRole("status")).toHaveTextContent(
             "최근 1시간 완료 거래를 불러오는 중입니다."
         );
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...emptyRecentSales,
+                    queriedItemName: "부분 이름",
+                    noticeMessage: "정확한 아이템명을 선택해 주세요.",
+                }}
+            />
+        );
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "정확한 아이템명을 선택해 주세요."
+        );
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 
         rerender(
             <AuctionResults

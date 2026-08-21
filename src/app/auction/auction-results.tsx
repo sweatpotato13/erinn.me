@@ -606,6 +606,12 @@ function RecentSalesLauncher({ recentSales }: RecentSalesLauncherProps) {
                 최근 1시간 완료 거래를 불러오는 중입니다.
             </p>
         );
+    if (recentSales.noticeMessage)
+        return (
+            <p role="status" className="alert alert-info mt-4 text-sm">
+                {recentSales.noticeMessage}
+            </p>
+        );
     if (recentSales.errorMessage)
         return (
             <p role="alert" className="alert alert-error mt-4">

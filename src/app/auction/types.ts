@@ -42,6 +42,7 @@ export interface RecentSalesState {
     hasMore: boolean;
     refreshedAt: string | null;
     queriedItemName: string | null;
+    noticeMessage: string | null;
     errorMessage: string | null;
     loading: boolean;
 }
