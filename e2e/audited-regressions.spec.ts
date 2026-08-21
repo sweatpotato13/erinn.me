@@ -198,6 +198,9 @@ test("auction comparison aligns options in an accessible dialog", async ({
     const counts = await openMarket(page);
     await searchMarket(page);
     await selectComparisonItems(page, [1, 2, 3, 4]);
+    const selection = page.getByRole("region", { name: "비교할 매물" });
+    await selection.getByText("아이템 1 옵션 보기").click();
+    await expect(selection.getByText("공격 10~20")).toBeVisible();
     const trigger = page.getByRole("button", { name: "선택한 매물 비교" });
     await trigger.click();
     const dialog = page.getByRole("dialog", { name: "장비 매물 비교" });
@@ -218,6 +221,39 @@ test("auction comparison aligns options in an accessible dialog", async ({
     await dialog.getByRole("button", { name: "닫기" }).click();
     await expect(trigger).toBeFocused();
     expect(counts).toEqual({ auction: 1, history: 1 });
+});
+
+test("inexact item names show recent-sales guidance", async ({ page }) => {
+    await openMarket(page);
+    await page.unroute("**/api/auction/history?**");
+    await page.route("**/api/auction/history?**", route =>
+        route.fulfill({
+            status: 422,
+            json: { error: "Exact item name required" },
+        })
+    );
+
+    await page.getByPlaceholder("아이템명").fill("부분 이름");
+    await Promise.all([
+        page.waitForResponse(
+            response =>
+                new URL(response.url()).pathname ===
+                    "/api/auction/keyword-search" && response.ok()
+        ),
+        page.waitForResponse(
+            response =>
+                new URL(response.url()).pathname === "/api/auction/history" &&
+                response.status() === 422
+        ),
+        page.getByRole("button", { name: "검색" }).click(),
+    ]);
+    await expect(
+        page.getByText(
+            "최근 완료 거래는 정확한 아이템명으로만 조회할 수 있습니다. 검색 제안에서 아이템을 선택해 주세요.",
+            { exact: true }
+        )
+    ).toHaveAttribute("role", "status");
+    await expect(page.locator(".alert-error")).not.toBeVisible();
 });
 
 test("auction comparison survives pagination and resets on search", async ({
