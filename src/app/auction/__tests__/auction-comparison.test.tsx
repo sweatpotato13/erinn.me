@@ -187,6 +187,9 @@ describe("AuctionComparison", () => {
         const trigger = screen.getByRole("button", {
             name: "선택한 매물 비교",
         });
+        const optionDisclosure = screen.getByText("첫 매물 옵션 보기");
+        await user.click(optionDisclosure);
+        expect(screen.getByText("밸런스 5")).toBeInTheDocument();
         await user.click(trigger);
         const dialog = screen.getByRole("dialog", { name: "장비 매물 비교" });
         const attackRow = within(dialog).getByRole("row", { name: /공격/ });

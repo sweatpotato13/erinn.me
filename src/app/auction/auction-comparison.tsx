@@ -2,6 +2,7 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 
 import type { AuctionItem, ItemOption } from "@/app/auction/types";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
+import OptionRenderer from "@/components/option-renderer";
 
 export const MAX_COMPARISON_ITEMS = 4;
 const EMPTY_VALUE = "정보 없음";
@@ -514,25 +515,52 @@ interface SelectedListingsProps {
     onRemove: (item: AuctionItem) => void;
 }
 
+interface ListingOptionsProps {
+    item: AuctionItem;
+}
+
+function ListingOptions({ item }: ListingOptionsProps) {
+    const options = item.item_option ?? [];
+    return (
+        <details className="mt-3 w-full rounded-md border bg-base-100">
+            <summary className="cursor-pointer p-2 text-sm font-semibold">
+                {item.item_display_name} 옵션 보기
+            </summary>
+            <div className="max-h-72 overflow-y-auto border-t p-2 sm:max-h-80">
+                {options.length > 0 ? (
+                    <OptionRenderer options={options} />
+                ) : (
+                    <p className="text-sm text-base-content/70">
+                        옵션이 없습니다.
+                    </p>
+                )}
+            </div>
+        </details>
+    );
+}
+
 function SelectedListings({ items, onRemove }: SelectedListingsProps) {
     return (
         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {items.map((item, index) => (
                 <li
                     key={index}
-                    className="flex items-start justify-between gap-2 rounded-md bg-base-200 p-3"
+                    className="flex flex-col rounded-md bg-base-200 p-3"
                 >
-                    <div className="flex min-w-0 flex-col">
-                        <ListingIdentity item={item} index={index} />
+                    <div className="flex items-start justify-between gap-2">
+                        <div className="flex min-w-0 flex-col">
+                            <ListingIdentity item={item} index={index} />
+                        </div>
+                        <button
+                            type="button"
+                            className="btn btn-ghost btn-xs"
+                            aria-label={`매물 ${index + 1} ${item.item_display_name} 비교에서 제거`}
+                            onClick={() => onRemove(item)}
+                        >
+                            제거
+                        </button>
                     </div>
-                    <button
-                        type="button"
-                        className="btn btn-ghost btn-xs"
-                        aria-label={`매물 ${index + 1} ${item.item_display_name} 비교에서 제거`}
-                        onClick={() => onRemove(item)}
-                    >
-                        제거
-                    </button>
+                    <ListingOptions item={item} />
                 </li>
             ))}
         </ul>
