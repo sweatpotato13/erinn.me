@@ -246,6 +246,15 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     setCurrentPage: (update: (page: number) => number) => void;
 };
 
+function SummaryMetric({ label, value }: { label: string; value: string }) {
+    return (
+        <div>
+            <dt className="text-sm text-base-content/70">{label}</dt>
+            <dd className="font-semibold">{value}</dd>
+        </div>
+    );
+}
+
 function CurrentListingsMetrics({
     summary,
     hasMore,
@@ -254,40 +263,22 @@ function CurrentListingsMetrics({
         <>
             {summary ? (
                 <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            최저 단가
-                        </dt>
-                        <dd className="font-semibold">
-                            {numberFormatter.format(summary.lowestUnitPrice)}{" "}
-                            Gold
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            매물 단가 중앙값
-                        </dt>
-                        <dd className="font-semibold">
-                            {numberFormatter.format(summary.medianUnitPrice)}{" "}
-                            Gold
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            매물 수
-                        </dt>
-                        <dd className="font-semibold">
-                            {numberFormatter.format(summary.listingCount)}개
-                        </dd>
-                    </div>
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            총 수량
-                        </dt>
-                        <dd className="font-semibold">
-                            {numberFormatter.format(summary.totalQuantity)}개
-                        </dd>
-                    </div>
+                    <SummaryMetric
+                        label="최저 단가"
+                        value={`${numberFormatter.format(summary.lowestUnitPrice)} Gold`}
+                    />
+                    <SummaryMetric
+                        label="매물 단가 중앙값"
+                        value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
+                    />
+                    <SummaryMetric
+                        label="매물 수"
+                        value={`${numberFormatter.format(summary.listingCount)}개`}
+                    />
+                    <SummaryMetric
+                        label="총 수량"
+                        value={`${numberFormatter.format(summary.totalQuantity)}개`}
+                    />
                 </dl>
             ) : (
                 <p>현재 검색 조건에 유효한 매물이 없습니다.</p>
@@ -298,24 +289,6 @@ function CurrentListingsMetrics({
                 </p>
             )}
         </>
-    );
-}
-
-function CurrentListingsDetails(props: AuctionResultsProps) {
-    return (
-        <details className="mt-4">
-            <summary className="cursor-pointer font-semibold">
-                현재 매물 상세 보기
-            </summary>
-            <div className="mt-3">
-                <ResultsTable {...props} isEmpty={false} />
-                <Pagination
-                    currentPage={props.currentPage}
-                    itemCount={props.items.length}
-                    setCurrentPage={props.setCurrentPage}
-                />
-            </div>
-        </details>
     );
 }
 
@@ -351,7 +324,7 @@ function CurrentListingsPanel(props: AuctionResultsProps) {
                         판매자가 현재 제시한 매물의 가격과 수량입니다.
                     </p>
                 </div>
-                {props.refreshedAt && !props.loading && (
+                {props.refreshedAt && !props.loading && !props.errorMessage && (
                     <p className="text-sm text-base-content/70">
                         조회 완료:{" "}
                         <time dateTime={props.refreshedAt}>
@@ -365,7 +338,16 @@ function CurrentListingsPanel(props: AuctionResultsProps) {
             {body}
             {!props.loading &&
                 !props.errorMessage &&
-                props.items.length > 0 && <CurrentListingsDetails {...props} />}
+                props.items.length > 0 && (
+                    <div className="mt-4">
+                        <ResultsTable {...props} isEmpty={false} />
+                        <Pagination
+                            currentPage={props.currentPage}
+                            itemCount={props.items.length}
+                            setCurrentPage={props.setCurrentPage}
+                        />
+                    </div>
+                )}
         </section>
     );
 }
@@ -438,15 +420,6 @@ function RecentSalesHeader({
     );
 }
 
-function RecentSalesMetric({ label, value }: { label: string; value: string }) {
-    return (
-        <div>
-            <dt className="text-sm text-base-content/70">{label}</dt>
-            <dd className="font-semibold">{value}</dd>
-        </div>
-    );
-}
-
 function RecentSalesSummaryMetrics({
     summary,
     hasMore,
@@ -457,16 +430,16 @@ function RecentSalesSummaryMetrics({
     const labelPrefix = hasMore ? "불러온 " : "";
     return (
         <dl className="grid grid-cols-2 gap-3 md:grid-cols-3">
-            <RecentSalesMetric
+            <SummaryMetric
                 label={`${labelPrefix}거래 수`}
                 value={`${numberFormatter.format(summary.transactionCount)}건`}
             />
-            <RecentSalesMetric
+            <SummaryMetric
                 label={`${labelPrefix}총 수량`}
                 value={`${numberFormatter.format(summary.totalQuantity)}개`}
             />
             {summary.medianUnitPrice !== null && (
-                <RecentSalesMetric
+                <SummaryMetric
                     label={`${labelPrefix}거래 단가 중앙값`}
                     value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
                 />
@@ -590,7 +563,7 @@ function MarketSnapshot(props: AuctionResultsProps) {
  *
  * @param props - Auction data, loading and error state, and pagination controls.
  */
-export function AuctionResults(props: AuctionResultsProps) {
+export function AuctionResults(props: AuctionResultsProps): React.JSX.Element {
     if (hasMarketSnapshot(props)) return <MarketSnapshot {...props} />;
 
     return <ResultsTable {...props} isEmpty={props.items.length === 0} />;
