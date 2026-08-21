@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import { type RefObject, useRef, useState } from "react";
 
 import type {
     AuctionItem,
@@ -299,7 +300,12 @@ function CurrentListingsMetrics({
 
 function CurrentListingsPanel(props: AuctionResultsProps) {
     if (!props.loading && !props.errorMessage && !props.refreshedAt)
-        return null;
+        return (
+            <RecentSalesLauncher
+                key={`${props.recentSales.queriedItemName}-${props.recentSales.refreshedAt}`}
+                recentSales={props.recentSales}
+            />
+        );
 
     let body = <CurrentListingsMetrics {...props} />;
     if (props.loading) {
@@ -341,6 +347,10 @@ function CurrentListingsPanel(props: AuctionResultsProps) {
                         )}
                 </div>
                 {body}
+                <RecentSalesLauncher
+                    key={`${props.recentSales.queriedItemName}-${props.recentSales.refreshedAt}`}
+                    recentSales={props.recentSales}
+                />
             </div>
             {!props.loading &&
                 !props.errorMessage &&
@@ -396,36 +406,6 @@ function RecentSalesTable({ sales }: { sales: AuctionSale[] }) {
     );
 }
 
-function RecentSalesHeader({
-    itemName,
-    refreshedAt,
-}: {
-    itemName: string;
-    refreshedAt: string | null;
-}) {
-    return (
-        <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-                <h3 id="recent-sales-title" className="text-lg font-bold">
-                    최근 1시간 완료 거래
-                </h3>
-                <p className="text-sm text-base-content/70">
-                    최근 1시간 동안 실제 완료된 거래입니다.
-                </p>
-                <p className="text-sm text-base-content/70">{itemName}</p>
-            </div>
-            {refreshedAt && (
-                <p className="text-sm text-base-content/70">
-                    조회 완료:{" "}
-                    <time dateTime={refreshedAt}>
-                        {dateTimeFormatter.format(new Date(refreshedAt))}
-                    </time>
-                </p>
-            )}
-        </div>
-    );
-}
-
 function RecentSalesSummaryMetrics({
     summary,
     hasMore,
@@ -463,22 +443,6 @@ function PartialRecentSalesNotice({ hasMore }: { hasMore: boolean }) {
     );
 }
 
-function RecentSalesDetails({ sales }: { sales: AuctionSale[] }) {
-    return (
-        <details className="mt-4">
-            <summary className="cursor-pointer font-semibold">
-                최근 완료 거래 상세 보기
-            </summary>
-            <RecentSalesTable sales={sales} />
-            {sales.length > RECENT_SALES_LIMIT && (
-                <p className="mt-2 text-sm text-base-content/70">
-                    가장 최근 {RECENT_SALES_LIMIT}건을 표시합니다.
-                </p>
-            )}
-        </details>
-    );
-}
-
 function RecentSalesResultsBody({
     recentSales,
 }: Pick<AuctionResultsProps, "recentSales">) {
@@ -501,39 +465,126 @@ function RecentSalesResultsBody({
                     최근 거래가 3건 미만이므로 중앙값을 표시하지 않습니다.
                 </p>
             )}
-            <RecentSalesDetails sales={sales} />
+            <RecentSalesTable sales={sales} />
+            {sales.length > RECENT_SALES_LIMIT && (
+                <p className="mt-2 text-sm text-base-content/70">
+                    가장 최근 {RECENT_SALES_LIMIT}건을 표시합니다.
+                </p>
+            )}
             <PartialRecentSalesNotice hasMore={hasMore} />
         </>
     );
 }
 
-function RecentSalesPanel({
+function RecentSalesModalHeader({
+    itemName,
+    onClose,
+}: {
+    itemName: string;
+    onClose: () => void;
+}) {
+    return (
+        <div className="flex items-start justify-between gap-4 border-b p-4">
+            <div>
+                <h2
+                    id="recent-sales-dialog-title"
+                    className="text-lg font-bold"
+                >
+                    최근 1시간 완료 거래
+                </h2>
+                <p className="text-sm text-base-content/70">{itemName}</p>
+            </div>
+            <button
+                type="button"
+                className="btn btn-outline btn-sm"
+                onClick={onClose}
+            >
+                닫기
+            </button>
+        </div>
+    );
+}
+
+function RecentSalesModal({
+    recentSales,
+    onClose,
+    triggerRef,
+}: Pick<AuctionResultsProps, "recentSales"> & {
+    onClose: () => void;
+    triggerRef: RefObject<HTMLButtonElement | null>;
+}) {
+    const dialogRef = useDialogFocus(onClose, triggerRef);
+    return (
+        <div className="fixed inset-0 z-50 flex bg-black/40 sm:items-center sm:justify-center sm:p-4">
+            <div
+                ref={dialogRef}
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="recent-sales-dialog-title"
+                tabIndex={-1}
+                className="flex h-full w-full flex-col bg-base-100 outline-none sm:h-auto sm:max-h-[85vh] sm:max-w-3xl sm:rounded-lg sm:border sm:shadow-xl"
+            >
+                <RecentSalesModalHeader
+                    itemName={recentSales.queriedItemName ?? ""}
+                    onClose={onClose}
+                />
+                <div className="overflow-y-auto p-4">
+                    {recentSales.refreshedAt && (
+                        <p className="mb-3 text-sm text-base-content/70">
+                            조회 완료:{" "}
+                            <time dateTime={recentSales.refreshedAt}>
+                                {dateTimeFormatter.format(
+                                    new Date(recentSales.refreshedAt)
+                                )}
+                            </time>
+                        </p>
+                    )}
+                    <RecentSalesResultsBody recentSales={recentSales} />
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function RecentSalesLauncher({
     recentSales,
 }: Pick<AuctionResultsProps, "recentSales">) {
+    const [open, setOpen] = useState(false);
+    const triggerRef = useRef<HTMLButtonElement>(null);
     if (!recentSales.queriedItemName) return null;
-
-    let body = <RecentSalesResultsBody recentSales={recentSales} />;
-    if (recentSales.loading) {
-        body = <p role="status">최근 1시간 완료 거래를 불러오는 중입니다.</p>;
-    } else if (recentSales.errorMessage) {
-        body = (
-            <p role="alert" className="alert alert-error">
+    if (recentSales.loading)
+        return (
+            <p role="status" className="mt-4">
+                최근 1시간 완료 거래를 불러오는 중입니다.
+            </p>
+        );
+    if (recentSales.errorMessage)
+        return (
+            <p role="alert" className="alert alert-error mt-4">
                 {recentSales.errorMessage}
             </p>
         );
-    }
 
+    const count = recentSales.summary?.transactionCount ?? 0;
     return (
-        <section
-            aria-labelledby="recent-sales-title"
-            className="rounded-lg border bg-base-100 p-4"
-        >
-            <RecentSalesHeader
-                itemName={recentSales.queriedItemName}
-                refreshedAt={recentSales.refreshedAt}
-            />
-            {body}
-        </section>
+        <>
+            <button
+                ref={triggerRef}
+                type="button"
+                className="btn btn-outline mt-4 w-full sm:w-auto"
+                disabled={count === 0}
+                onClick={() => setOpen(true)}
+            >
+                최근 1시간 완료 거래 {count === 0 ? "없음" : `${count}건 보기`}
+            </button>
+            {open && (
+                <RecentSalesModal
+                    recentSales={recentSales}
+                    onClose={() => setOpen(false)}
+                    triggerRef={triggerRef}
+                />
+            )}
+        </>
     );
 }
 
@@ -559,7 +610,6 @@ function MarketSnapshot(props: AuctionResultsProps) {
                 </p>
             </div>
             <CurrentListingsPanel {...props} />
-            <RecentSalesPanel recentSales={props.recentSales} />
         </section>
     );
 }
