@@ -2,7 +2,6 @@
 
 import { useRef, useState } from "react";
 
-import { MAX_COMPARISON_ITEMS } from "@/app/auction/auction-comparison";
 import { AuctionControls } from "@/app/auction/auction-controls";
 import {
     AuctionResults,
@@ -16,6 +15,10 @@ import type { AuctionItem, Favorite, ItemOption } from "@/app/auction/types";
 import { useAuctionSearch } from "@/app/auction/use-auction-search";
 import { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
 import {
+    type ComparisonSelection,
+    useComparisonSelection,
+} from "@/app/auction/use-comparison-selection";
+import {
     parseStoredFavorites,
     useFavorites,
 } from "@/app/auction/use-favorites";
@@ -23,11 +26,6 @@ import { useRecentSales } from "@/app/auction/use-recent-sales";
 import { categories } from "@/constant/categories";
 
 export { parseStoredFavorites };
-
-interface ComparisonSelection {
-    items: AuctionItem[];
-    notice: string | null;
-}
 
 type AuctionViewProps = {
     searchTerm: string;
@@ -120,10 +118,8 @@ export default function AuctionPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [showFavorites, setShowFavorites] = useState(false);
     const [options, setOptions] = useState<ItemOption[] | null>(null);
-    const [comparison, setComparison] = useState<ComparisonSelection>({
-        items: [],
-        notice: null,
-    });
+    const { comparison, toggleComparison, removeComparison, clearComparison } =
+        useComparisonSelection();
     const favoritesTriggerRef = useRef<HTMLButtonElement>(null);
     const suggestions = useAuctionSuggestions(searchTerm);
     const favorites = useFavorites();
@@ -132,7 +128,7 @@ export default function AuctionPage() {
 
     const search = (itemName = searchTerm, category = selectedCategory) => {
         setCurrentPage(1);
-        setComparison({ items: [], notice: null });
+        clearComparison();
         return Promise.allSettled([
             auction.search(itemName, category),
             recentSales.search(itemName),
@@ -144,29 +140,6 @@ export default function AuctionPage() {
         void search(favorite.itemName, favorite.category);
         setShowFavorites(false);
     };
-    const toggleComparison = (item: AuctionItem) =>
-        setComparison(current => {
-            if (current.items.includes(item)) {
-                return {
-                    items: current.items.filter(selected => selected !== item),
-                    notice: null,
-                };
-            }
-            if (current.items.length >= MAX_COMPARISON_ITEMS) {
-                return {
-                    ...current,
-                    notice: "최대 4개까지 비교할 수 있습니다.",
-                };
-            }
-            return { items: [...current.items, item], notice: null };
-        });
-    const removeComparison = (item: AuctionItem) =>
-        setComparison(current => ({
-            items: current.items.filter(selected => selected !== item),
-            notice: null,
-        }));
-    const clearComparison = () => setComparison({ items: [], notice: null });
-
     return (
         <AuctionPageView
             {...{ searchTerm, selectedCategory, showFavorites, options }}
