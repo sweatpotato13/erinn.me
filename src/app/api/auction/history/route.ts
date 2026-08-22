@@ -9,6 +9,7 @@ import {
     parseUpstreamJson,
     throwIfDeadlineExpired,
     upstreamErrorResponse,
+    UpstreamFailure,
 } from "@/lib/api/upstream";
 import {
     type AuctionHistoryResponse,
@@ -73,6 +74,12 @@ export async function GET(request: Request) {
         throwIfDeadlineExpired(deadline);
         return NextResponse.json({ sales, hasMore: !!nextCursor });
     } catch (error) {
+        if (error instanceof UpstreamFailure && error.upstreamStatus === 400) {
+            return NextResponse.json(
+                { error: "Exact item name required" },
+                { status: 422 }
+            );
+        }
         return upstreamErrorResponse("/api/auction/history", error);
     }
 }

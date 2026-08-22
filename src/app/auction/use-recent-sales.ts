@@ -11,6 +11,8 @@ import type {
 import { AuctionHistoryResponseSchema } from "@/lib/schemas/nexon";
 
 const REQUEST_ERROR = "최근 완료 거래를 불러오는 중 오류가 발생했습니다.";
+const EXACT_ITEM_NAME_NOTICE =
+    "최근 완료 거래는 정확한 아이템명으로만 조회할 수 있습니다. 검색 제안에서 아이템을 선택해 주세요.";
 const RecentSalesResponseSchema = z.object({
     sales: AuctionHistoryResponseSchema.shape.auction_history,
     hasMore: z.boolean(),
@@ -21,6 +23,7 @@ const INITIAL_RECENT_SALES_STATE: RecentSalesState = {
     hasMore: false,
     refreshedAt: null,
     queriedItemName: null,
+    noticeMessage: null,
     errorMessage: null,
     loading: false,
 };
@@ -79,6 +82,7 @@ export function prepareRecentSales(sales: AuctionSale[]): PreparedRecentSales {
 async function fetchRecentSales(itemName: string, signal: AbortSignal) {
     const params = new URLSearchParams({ item_name: itemName });
     const response = await fetch(`/api/auction/history?${params}`, { signal });
+    if (response.status === 422) return null;
     if (!response.ok) throw new Error("Recent sales request failed");
     return RecentSalesResponseSchema.parse(await response.json());
 }
@@ -107,6 +111,13 @@ async function searchRecentSales(
             controller.signal
         );
         if (sequence !== request.sequence) return;
+        if (!data) {
+            setState(current => ({
+                ...current,
+                noticeMessage: EXACT_ITEM_NAME_NOTICE,
+            }));
+            return;
+        }
         setState(current => ({
             ...current,
             ...prepareRecentSales(data.sales),

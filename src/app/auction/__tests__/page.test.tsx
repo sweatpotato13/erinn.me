@@ -48,6 +48,7 @@ function deferred<T>() {
 
 function item(name: string, price: number, quantity = 1): AuctionItem {
     return {
+        listingId: `${name}-${price}-${quantity}`,
         item_name: name,
         item_display_name: name,
         item_count: quantity,
@@ -94,6 +95,7 @@ const emptyRecentSales: RecentSalesState = {
     hasMore: false,
     refreshedAt: null,
     queriedItemName: null,
+    noticeMessage: null,
     errorMessage: null,
     loading: false,
 };
@@ -301,6 +303,10 @@ describe("useAuctionSearch", () => {
         expect(
             result.current.items.map(value => value.auction_price_per_unit)
         ).toEqual([10, 20]);
+        expect(result.current.items.map(value => value.listingId)).toEqual([
+            "1-1",
+            "1-0",
+        ]);
 
         act(() => result.current.sortByPrice());
         expect(
@@ -596,6 +602,20 @@ describe("useRecentSales", () => {
         expect(log).toHaveBeenCalled();
     });
 
+    it("treats an inexact item name as guidance instead of an error", async () => {
+        global.fetch = jest
+            .fn()
+            .mockResolvedValue({ ok: false, status: 422 } as Response);
+        const { result } = renderHook(() => useRecentSales());
+
+        await act(async () => result.current.search("부분 이름"));
+        expect(result.current.noticeMessage).toBe(
+            "최근 완료 거래는 정확한 아이템명으로만 조회할 수 있습니다. 검색 제안에서 아이템을 선택해 주세요."
+        );
+        expect(result.current.errorMessage).toBeNull();
+        expect(result.current.loading).toBe(false);
+    });
+
     it("rejects malformed recent-sales responses", async () => {
         const log = jest
             .spyOn(console, "error")
@@ -727,22 +747,17 @@ describe("AuctionResults", () => {
         loading: false,
         onSort: jest.fn(),
         onItemClick: jest.fn(),
+        comparisonItems: [],
+        comparisonNotice: null,
+        onToggleComparison: jest.fn(),
+        onRemoveComparison: jest.fn(),
+        onClearComparison: jest.fn(),
         setCurrentPage: jest.fn(),
         recentSales: emptyRecentSales,
     } as const;
+    const refreshedAt = "2026-08-19T01:00:00.000Z";
 
-    it("does not render or mutate pagination for empty results", () => {
-        render(<AuctionResults {...baseProps} items={[]} />);
-        expect(screen.getByText("결과가 없습니다.")).toBeInTheDocument();
-        expect(
-            screen.queryByRole("region", { name: "현재 검색 결과 요약" })
-        ).not.toBeInTheDocument();
-        expect(screen.queryByLabelText("다음 페이지")).not.toBeInTheDocument();
-        expect(baseProps.setCurrentPage).not.toHaveBeenCalled();
-    });
-
-    it("renders complete market statistics and refresh metadata", () => {
-        const refreshedAt = "2026-08-19T01:00:00.000Z";
+    function renderCurrentMarketSnapshot() {
         render(
             <AuctionResults
                 {...baseProps}
@@ -756,20 +771,78 @@ describe("AuctionResults", () => {
                 refreshedAt={refreshedAt}
             />
         );
-        const summary = within(
-            screen.getByRole("region", { name: "현재 검색 결과 요약" })
-        );
-        expect(summary.getByText("100 Gold")).toBeInTheDocument();
-        expect(summary.getByText("200 Gold")).toBeInTheDocument();
-        expect(summary.getByText("3개")).toBeInTheDocument();
-        expect(summary.getByText("6개")).toBeInTheDocument();
-        expect(summary.getByText(/조회 완료:/)).toBeInTheDocument();
+        const snapshot = screen.getByRole("region", {
+            name: "경매 시장 현황",
+        });
+        const currentListings = within(snapshot).getByRole("region", {
+            name: "현재 등록 매물",
+        });
+        return { snapshot, currentListings };
+    }
+
+    function expectMetric(
+        currentListings: HTMLElement,
+        label: string,
+        value: string
+    ) {
+        const metric = within(currentListings).getByText(label).closest("div");
+        expect(within(metric!).getByText(value)).toBeInTheDocument();
+    }
+
+    it("does not render or mutate pagination for empty results", () => {
+        render(<AuctionResults {...baseProps} items={[]} />);
+        expect(screen.getByText("결과가 없습니다.")).toBeInTheDocument();
         expect(
-            summary.getByText(/조회 완료:/).querySelector("time")
+            screen.queryByRole("region", { name: "경매 시장 현황" })
+        ).not.toBeInTheDocument();
+        expect(screen.queryByLabelText("다음 페이지")).not.toBeInTheDocument();
+        expect(baseProps.setCurrentPage).not.toHaveBeenCalled();
+    });
+
+    it("renders the named market snapshot with distinct data sources", () => {
+        const { snapshot, currentListings } = renderCurrentMarketSnapshot();
+        expect(
+            within(snapshot).getByText(
+                "현재 매물은 판매자의 제시 가격이며, 최근 거래는 최근 1시간 동안 실제 완료된 가격입니다."
+            )
+        ).toBeInTheDocument();
+        expect(
+            within(snapshot).getByRole("heading", {
+                level: 2,
+                name: "경매 시장 현황",
+            })
+        ).toBeInTheDocument();
+        expect(
+            within(currentListings).getByRole("heading", {
+                level: 3,
+                name: "현재 등록 매물",
+            })
+        ).toBeInTheDocument();
+        expect(
+            within(currentListings).getByText(
+                "판매자가 현재 제시한 매물의 가격과 수량입니다."
+            )
+        ).toBeInTheDocument();
+    });
+
+    it("renders current listing metrics and refresh metadata", () => {
+        const { currentListings } = renderCurrentMarketSnapshot();
+        expectMetric(currentListings, "최저 단가", "100 Gold");
+        expectMetric(currentListings, "매물 단가 중앙값", "200 Gold");
+        expectMetric(currentListings, "매물 수", "3개");
+        expectMetric(currentListings, "총 수량", "6개");
+        const panel = within(currentListings);
+        expect(panel.getByText(/조회 완료:/)).toBeInTheDocument();
+        expect(
+            panel.getByText(/조회 완료:/).querySelector("time")
         ).toHaveAttribute("datetime", refreshedAt);
         expect(
-            summary.queryByText("현재 불러온 일부 매물만 반영한 요약입니다.")
+            panel.queryByText("현재 불러온 일부 매물만 반영한 요약입니다.")
         ).not.toBeInTheDocument();
+        expect(panel.getByRole("button", { name: "아이템" })).toBeVisible();
+        expect(
+            panel.getByText("최저 단가").closest(".rounded-lg")
+        ).not.toContainElement(panel.getByRole("table"));
     });
 
     it("renders empty and incomplete states without zero-valued statistics", () => {
@@ -782,7 +855,7 @@ describe("AuctionResults", () => {
             />
         );
         const summary = within(
-            screen.getByRole("region", { name: "현재 검색 결과 요약" })
+            screen.getByRole("region", { name: "현재 등록 매물" })
         );
         expect(
             summary.getByText("현재 검색 조건에 유효한 매물이 없습니다.")
@@ -797,6 +870,7 @@ describe("AuctionResults", () => {
         const user = userEvent.setup();
         const onSort = jest.fn();
         const onItemClick = jest.fn();
+        const onToggleComparison = jest.fn();
         const setCurrentPage = jest.fn();
         const items = Array.from({ length: 11 }, (_, index) =>
             item(`아이템 ${index}`, index)
@@ -807,13 +881,19 @@ describe("AuctionResults", () => {
                 items={items}
                 onSort={onSort}
                 onItemClick={onItemClick}
+                onToggleComparison={onToggleComparison}
                 setCurrentPage={setCurrentPage}
+                refreshedAt="2026-08-20T04:00:00Z"
             />
         );
         await user.click(screen.getByRole("button", { name: "가격" }));
         expect(onSort).toHaveBeenCalled();
         await user.click(screen.getByRole("button", { name: "아이템 0" }));
         expect(onItemClick).toHaveBeenCalledWith(items[0]);
+        await user.click(
+            screen.getByRole("checkbox", { name: /아이템 0.*비교 선택/ })
+        );
+        expect(onToggleComparison).toHaveBeenCalledWith(items[0]);
         await user.click(screen.getByLabelText("다음 페이지"));
         expect(setCurrentPage.mock.calls[0][0](1)).toBe(2);
     });
@@ -835,16 +915,15 @@ describe("AuctionResults", () => {
                 }}
             />
         );
-        const panel = within(
-            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
-        );
-        expect(
-            panel.getByText("최근 1시간 내 완료 거래가 없습니다.")
-        ).toBeInTheDocument();
-        expect(panel.queryByText(/0 Gold/)).not.toBeInTheDocument();
+        const trigger = screen.getByRole("button", {
+            name: "최근 1시간 완료 거래 없음",
+        });
+        expect(trigger).toBeDisabled();
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(screen.queryByText(/0 Gold/)).not.toBeInTheDocument();
     });
 
-    it("announces recent-sales loading and error states", () => {
+    it("announces recent-sales loading, guidance, and error states", () => {
         const { rerender } = render(
             <AuctionResults
                 {...baseProps}
@@ -866,6 +945,22 @@ describe("AuctionResults", () => {
                 items={[]}
                 recentSales={{
                     ...emptyRecentSales,
+                    queriedItemName: "부분 이름",
+                    noticeMessage: "정확한 아이템명을 선택해 주세요.",
+                }}
+            />
+        );
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "정확한 아이템명을 선택해 주세요."
+        );
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...emptyRecentSales,
                     queriedItemName: "오류",
                     errorMessage: "요청 실패",
                 }}
@@ -874,7 +969,8 @@ describe("AuctionResults", () => {
         expect(screen.getByRole("alert")).toHaveTextContent("요청 실패");
     });
 
-    it("shows low-sample sales without a median", () => {
+    it("shows low-sample sales without a median", async () => {
+        const user = userEvent.setup();
         const sales = [sale("first", 100, 2), sale("second", 300, 4)];
         render(
             <AuctionResults
@@ -889,8 +985,13 @@ describe("AuctionResults", () => {
                 }}
             />
         );
+        await user.click(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 2건 보기",
+            })
+        );
         const panel = within(
-            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
+            screen.getByRole("dialog", { name: "최근 1시간 완료 거래" })
         );
         expect(panel.getByText("2건")).toBeInTheDocument();
         expect(panel.getByText("6개")).toBeInTheDocument();
@@ -900,9 +1001,11 @@ describe("AuctionResults", () => {
             )
         ).toBeInTheDocument();
         expect(panel.queryByText("거래 단가 중앙값")).not.toBeInTheDocument();
+        expect(panel.getByRole("table")).toBeVisible();
     });
 
-    it("shows a complete median and partial-data limits", () => {
+    it("shows a complete median and partial-data limits", async () => {
+        const user = userEvent.setup();
         const sales = Array.from({ length: 11 }, (_, index) =>
             sale(
                 `sale-${index}`,
@@ -925,9 +1028,18 @@ describe("AuctionResults", () => {
                 }}
             />
         );
-        const panel = within(
-            screen.getByRole("region", { name: "최근 1시간 완료 거래" })
-        );
+        const trigger = screen.getByRole("button", {
+            name: "최근 1시간 완료 거래 11건 보기",
+        });
+        await user.click(trigger);
+        const dialog = screen.getByRole("dialog", {
+            name: "최근 1시간 완료 거래",
+        });
+        const panel = within(dialog);
+        expect(dialog).toHaveAttribute("aria-modal", "true");
+        expect(panel.getByRole("button", { name: "닫기" })).toHaveFocus();
+        expect(panel.getByText("활발한 거래")).toBeInTheDocument();
+        expect(panel.getByText(/조회 완료:/)).toBeInTheDocument();
         expect(panel.getByText("불러온 거래 수")).toBeInTheDocument();
         expect(panel.getByText("11건")).toBeInTheDocument();
         expect(panel.getByText("66개")).toBeInTheDocument();
@@ -943,6 +1055,105 @@ describe("AuctionResults", () => {
             panel.getByText(
                 "최근 1시간 전체가 아닌 현재 불러온 일부 완료 거래만 반영했습니다."
             )
+        ).toBeInTheDocument();
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(trigger).toHaveFocus();
+    });
+
+    it("restores focus to the market heading when a search remounts an open sales modal", async () => {
+        const user = userEvent.setup();
+        const sales = [sale("first", 100), sale("second", 200)];
+        const recentSales = {
+            ...emptyRecentSales,
+            sales,
+            summary: prepareRecentSales(sales).summary,
+            refreshedAt: "2026-08-20T04:00:00Z",
+            queriedItemName: "첫 검색",
+        };
+        const { rerender } = render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={recentSales}
+            />
+        );
+        await user.click(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 2건 보기",
+            })
+        );
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...recentSales,
+                    refreshedAt: "2026-08-20T05:00:00Z",
+                    queriedItemName: "새 검색",
+                }}
+            />
+        );
+
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("heading", { name: "경매 시장 현황" })
+        ).toHaveFocus();
+    });
+
+    it("keeps current and recent request states independent", () => {
+        const sales = [
+            sale("first", 100),
+            sale("second", 200),
+            sale("third", 300),
+        ];
+        const recentSales = {
+            ...emptyRecentSales,
+            sales,
+            summary: prepareRecentSales(sales).summary,
+            refreshedAt: "2026-08-20T04:00:00Z",
+            queriedItemName: "독립 상태",
+        };
+        const { rerender } = render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                loading={true}
+                recentSales={recentSales}
+            />
+        );
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "현재 등록 매물을 불러오는 중입니다."
+        );
+        expect(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 3건 보기",
+            })
+        ).toBeInTheDocument();
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                errorMessage="현재 매물 요청 실패"
+                refreshedAt="2026-08-20T04:00:00Z"
+                recentSales={recentSales}
+            />
+        );
+        const currentListings = within(
+            screen.getByRole("region", { name: "현재 등록 매물" })
+        );
+        expect(currentListings.getByRole("alert")).toHaveTextContent(
+            "현재 매물 요청 실패"
+        );
+        expect(
+            currentListings.queryByText(/조회 완료:/)
+        ).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 3건 보기",
+            })
         ).toBeInTheDocument();
     });
 });

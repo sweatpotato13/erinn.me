@@ -221,6 +221,18 @@ describe("API upstream failure contracts", () => {
         ).toBe(502);
     });
 
+    it("maps an inexact history item name to 422", async () => {
+        jest.mocked(fetch).mockResolvedValue(new Response("", { status: 400 }));
+
+        const response = await getHistory(
+            request("/api/auction/history?item_name=partial")
+        );
+        expect(response.status).toBe(422);
+        expect(await response.json()).toEqual({
+            error: "Exact item name required",
+        });
+    });
+
     it("returns no partial auction success when the total deadline expires", async () => {
         const startedAt = Date.now();
         const clock = jest.spyOn(Date, "now").mockReturnValue(startedAt);

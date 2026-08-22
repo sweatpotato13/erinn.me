@@ -10,7 +10,8 @@ function getFocusableElements(dialog: HTMLElement) {
 
 export function useDialogFocus(
     onClose: () => void,
-    triggerRef?: RefObject<HTMLElement | null>
+    triggerRef?: RefObject<HTMLElement | null>,
+    fallbackFocusId?: string
 ) {
     const dialogRef = useRef<HTMLDivElement>(null);
     const onCloseRef = useRef(onClose);
@@ -50,9 +51,16 @@ export function useDialogFocus(
         document.addEventListener("keydown", handleKeyDown);
         return () => {
             document.removeEventListener("keydown", handleKeyDown);
-            if (previousFocus instanceof HTMLElement) previousFocus.focus();
+            const focusTarget =
+                previousFocus instanceof HTMLElement &&
+                previousFocus.isConnected
+                    ? previousFocus
+                    : fallbackFocusId
+                      ? document.getElementById(fallbackFocusId)
+                      : null;
+            focusTarget?.focus();
         };
-    }, [triggerRef]);
+    }, [fallbackFocusId, triggerRef]);
 
     return dialogRef;
 }

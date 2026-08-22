@@ -1,17 +1,11 @@
 import React from "react";
 
+import type { ItemOption } from "@/types/item-option";
+
 import { ENCHANT_OPTIONS } from "../../constant/enchants";
 
-interface OptionProps {
-    option_type: string;
-    option_sub_type?: string | null;
-    option_value: string;
-    option_value2?: string | null;
-    option_desc?: string | null;
-}
-
 interface OptionRendererProps {
-    options: OptionProps[];
+    options: ItemOption[];
 }
 
 function OptionSection({
@@ -27,6 +21,55 @@ function OptionSection({
             <div className="space-y-0.5">{children}</div>
         </div>
     );
+}
+
+interface ItemStatLineProps {
+    stat: ItemOption;
+}
+
+function ItemStatLine({ stat }: ItemStatLineProps) {
+    const value = stat.option_value;
+    const secondValue = stat.option_value2;
+    const separator =
+        stat.option_type === "내구력"
+            ? "/"
+            : ["공격", "부상률"].includes(stat.option_type)
+              ? "~"
+              : null;
+    if (separator && value) {
+        return (
+            <div className="text-white">
+                {stat.option_type} {value}
+                {secondValue ? `${separator}${secondValue}` : ""}
+            </div>
+        );
+    }
+    if (["크리티컬", "밸런스"].includes(stat.option_type) && value)
+        return (
+            <div className="text-white">
+                {stat.option_type} {value}
+            </div>
+        );
+    if (stat.option_type === "아이템 보호" && value)
+        return <div className="text-blue-400">{value} 보호</div>;
+    if (stat.option_type === "피어싱 레벨" && value)
+        return (
+            <div className="text-white">
+                피어싱 레벨 {value}
+                {secondValue ?? ""}
+            </div>
+        );
+    if (stat.option_type === "남은 전용 해제 가능 횟수" && value)
+        return (
+            <div className="text-[#FFD700]">
+                남은 전용 해제 기능 횟수: {value}
+            </div>
+        );
+    if (stat.option_type === "전용 해제 거래 보증서 사용 불가")
+        return (
+            <div className="text-red-400">전용 해제 거래 보증서 사용 불가</div>
+        );
+    return null;
 }
 
 function OptionRenderer({ options }: OptionRendererProps) {
@@ -56,7 +99,10 @@ function OptionRenderer({ options }: OptionRendererProps) {
     );
     const ergs = options.filter(opt => opt.option_type === "에르그");
     const sets = options.filter(opt => opt.option_type === "세트 효과");
-    const colors = options.filter(opt => opt.option_type === "아이템 색상");
+    const colors = options.filter(
+        (opt): opt is ItemOption & { option_value: string } =>
+            opt.option_type === "아이템 색상" && Boolean(opt.option_value)
+    );
     const petInfo = options.filter(opt => opt.option_type === "펫 정보");
     const enchantScrollInfo = options.filter(opt =>
         ["내구도", "인챈트 종류", "남은 거래 횟수"].includes(opt.option_type)
@@ -97,44 +143,10 @@ function OptionRenderer({ options }: OptionRendererProps) {
             {itemStats.length > 0 && (
                 <OptionSection title="아이템 속성">
                     {itemStats.map((stat, index) => (
-                        <div
+                        <ItemStatLine
                             key={`stat-${stat.option_type}-${stat.option_value}-${stat.option_value2}-${index}`}
-                            className="text-white"
-                        >
-                            {stat.option_type === "공격" &&
-                                `공격 ${stat.option_value}~${stat.option_value2}`}
-                            {stat.option_type === "부상률" &&
-                                `부상률 ${stat.option_value}~${stat.option_value2}`}
-                            {stat.option_type === "크리티컬" &&
-                                `크리티컬 ${stat.option_value}`}
-                            {stat.option_type === "밸런스" &&
-                                `밸런스 ${stat.option_value}`}
-                            {stat.option_type === "내구력" &&
-                                `내구력 ${stat.option_value}/${stat.option_value2}`}
-                            {stat.option_type === "아이템 보호" && (
-                                <div className="text-blue-400">
-                                    {stat.option_value} 보호
-                                </div>
-                            )}
-                            {stat.option_type === "피어싱 레벨" &&
-                                stat.option_value &&
-                                (stat.option_value2
-                                    ? `피어싱 레벨 ${stat.option_value}${stat.option_value2}`
-                                    : `피어싱 레벨 ${stat.option_value}`)}
-                            {stat.option_type ===
-                                "남은 전용 해제 가능 횟수" && (
-                                <div className="text-[#FFD700]">
-                                    남은 전용 해제 기능 횟수:{" "}
-                                    {stat.option_value}
-                                </div>
-                            )}
-                            {stat.option_type ===
-                                "전용 해제 거래 보증서 사용 불가" && (
-                                <div className="text-red-400">
-                                    전용 해제 거래 보증서 사용 불가
-                                </div>
-                            )}
-                        </div>
+                            stat={stat}
+                        />
                     ))}
                 </OptionSection>
             )}
@@ -368,7 +380,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
                         )
                         .map((option, index) => {
                             // 레벨 정보 분리를 위한 새로운 정규식
-                            const levelMatch = option.option_value.match(
+                            const levelMatch = option.option_value?.match(
                                 /(.+?)\((\d+)레벨:(.+)\)/
                             );
 
