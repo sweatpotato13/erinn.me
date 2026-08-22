@@ -120,6 +120,16 @@ describe("prepareComparisonRows", () => {
 
         expect(items).toEqual(before);
     });
+
+    it("merges duplicate option keys without numeric emphasis", () => {
+        const balance = findRow(
+            [item("첫 매물", [option("밸런스", "5"), option("밸런스", "10")])],
+            "밸런스"
+        );
+
+        expect(balance.values[0]).toEqual({ text: "5\n10" });
+        expect(balance.emphasizeDifference).toBe(false);
+    });
 });
 
 describe("OptionRenderer", () => {
@@ -128,6 +138,9 @@ describe("OptionRenderer", () => {
             <OptionRenderer
                 options={[
                     option("공격", null, { option_value2: null }),
+                    option("공격", "10"),
+                    option("부상률", "20"),
+                    option("내구력", "30"),
                     option("크리티컬", "10"),
                     option("아이템 색상", null, { option_sub_type: "색상 1" }),
                 ]}
@@ -135,6 +148,9 @@ describe("OptionRenderer", () => {
         );
 
         expect(container).not.toHaveTextContent(/null|undefined/);
+        expect(screen.getByText("공격 10")).toBeInTheDocument();
+        expect(screen.getByText("부상률 20")).toBeInTheDocument();
+        expect(screen.getByText("내구력 30")).toBeInTheDocument();
         expect(screen.getByText("크리티컬 10")).toBeInTheDocument();
         expect(screen.queryByText(/색상 1/)).not.toBeInTheDocument();
     });
@@ -190,6 +206,7 @@ describe("AuctionComparison", () => {
         });
         const optionDisclosure = screen.getByText("첫 매물 옵션 보기");
         await user.click(optionDisclosure);
+        expect(optionDisclosure.closest("details")).toHaveAttribute("open");
         expect(screen.getByText("밸런스 5")).toBeInTheDocument();
         await user.click(trigger);
         const dialog = screen.getByRole("dialog", { name: "장비 매물 비교" });

@@ -1,10 +1,10 @@
 import { type RefObject, useEffect, useRef, useState } from "react";
 
 import type { AuctionItem, ItemOption } from "@/app/auction/types";
+import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
 import OptionRenderer from "@/components/option-renderer";
 
-export const MAX_COMPARISON_ITEMS = 4;
 const EMPTY_VALUE = "정보 없음";
 const BASIC_STATS = new Set([
     "공격",
@@ -287,17 +287,20 @@ function hasNumericDifference(values: Array<ComparisonValue | null>): boolean {
     const present = values.filter(value => value !== null);
     if (present.length < 2 || present.some(value => !value.numeric))
         return false;
-    const first = present[0].numeric!;
+    const numeric = present.flatMap(value =>
+        value.numeric ? [value.numeric] : []
+    );
+    const first = numeric[0];
     if (
-        present.some(
+        numeric.some(
             value =>
-                value.numeric!.context !== first.context ||
-                value.numeric!.values.length !== first.values.length
+                value.context !== first.context ||
+                value.values.length !== first.values.length
         )
     )
         return false;
     return first.values.some((number, index) =>
-        present.some(value => value.numeric!.values[index] !== number)
+        numeric.some(value => value.values[index] !== number)
     );
 }
 
@@ -367,7 +370,10 @@ function ComparisonTable({ items }: ComparisonTableProps) {
                             옵션
                         </th>
                         {items.map((item, index) => (
-                            <th key={index} className="min-w-56 align-top">
+                            <th
+                                key={item.listingId}
+                                className="min-w-56 align-top"
+                            >
                                 <div className="flex flex-col gap-1">
                                     <ListingIdentity
                                         item={item}
@@ -544,7 +550,7 @@ function SelectedListings({ items, onRemove }: SelectedListingsProps) {
         <ul className="mt-3 grid gap-2 sm:grid-cols-2">
             {items.map((item, index) => (
                 <li
-                    key={index}
+                    key={item.listingId}
                     className="flex flex-col rounded-md bg-base-200 p-3"
                 >
                     <div className="flex items-start justify-between gap-2">
