@@ -19,7 +19,7 @@ const REQUEST_ERROR =
     "아이템을 불러오는 중 오류가 발생했습니다. 아이템명 입력 시 아이템의 이름을 정확히 입력해주세요.";
 
 type AuctionSearchResponse = {
-    items: AuctionItem[];
+    items: Array<Omit<AuctionItem, "listingId">>;
     hasMore: boolean;
 };
 
@@ -97,6 +97,7 @@ type SearchActions = {
 async function executeSearch(
     itemName: string,
     category: string,
+    searchId: number,
     controller: AbortController,
     actions: SearchActions
 ) {
@@ -108,9 +109,13 @@ async function executeSearch(
         );
         if (!response.ok) throw new Error("네트워크 오류가 발생했습니다.");
         const data = (await response.json()) as AuctionSearchResponse;
+        const items = data.items.map((item, index) => ({
+            ...item,
+            listingId: `${searchId}-${index}`,
+        }));
         if (!actions.isActive()) return;
         actions.commit({
-            ...prepareAuctionResults(data.items),
+            ...prepareAuctionResults(items),
             hasMore: data.hasMore,
             refreshedAt: new Date().toISOString(),
         });
@@ -162,7 +167,7 @@ export function useAuctionSearch() {
         setHasMore(false);
         setRefreshedAt(null);
         setSortDirection(null);
-        return executeSearch(itemName, category, controller, {
+        return executeSearch(itemName, category, sequence, controller, {
             isActive: () => sequence === sequenceRef.current,
             commit: results => {
                 setItems(results.items);

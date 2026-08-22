@@ -48,6 +48,7 @@ function deferred<T>() {
 
 function item(name: string, price: number, quantity = 1): AuctionItem {
     return {
+        listingId: `${name}-${price}-${quantity}`,
         item_name: name,
         item_display_name: name,
         item_count: quantity,
@@ -302,6 +303,10 @@ describe("useAuctionSearch", () => {
         expect(
             result.current.items.map(value => value.auction_price_per_unit)
         ).toEqual([10, 20]);
+        expect(result.current.items.map(value => value.listingId)).toEqual([
+            "1-1",
+            "1-0",
+        ]);
 
         act(() => result.current.sortByPrice());
         expect(
@@ -1054,6 +1059,47 @@ describe("AuctionResults", () => {
         await user.keyboard("{Escape}");
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
         expect(trigger).toHaveFocus();
+    });
+
+    it("restores focus to the market heading when a search remounts an open sales modal", async () => {
+        const user = userEvent.setup();
+        const sales = [sale("first", 100), sale("second", 200)];
+        const recentSales = {
+            ...emptyRecentSales,
+            sales,
+            summary: prepareRecentSales(sales).summary,
+            refreshedAt: "2026-08-20T04:00:00Z",
+            queriedItemName: "첫 검색",
+        };
+        const { rerender } = render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={recentSales}
+            />
+        );
+        await user.click(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 2건 보기",
+            })
+        );
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...recentSales,
+                    refreshedAt: "2026-08-20T05:00:00Z",
+                    queriedItemName: "새 검색",
+                }}
+            />
+        );
+
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(
+            screen.getByRole("heading", { name: "경매 시장 현황" })
+        ).toHaveFocus();
     });
 
     it("keeps current and recent request states independent", () => {

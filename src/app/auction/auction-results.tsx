@@ -13,6 +13,7 @@ import type {
     RecentSalesSummary,
     SortDirection,
 } from "@/app/auction/types";
+import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
 import { getItemImageUrl } from "@/lib/utils";
 
@@ -125,7 +126,7 @@ function ResultsHeader({
                         id="auction-comparison-selection-help"
                         className="sr-only"
                     >
-                        최대 4개까지 선택할 수 있습니다.
+                        최대 {MAX_COMPARISON_ITEMS}개까지 선택할 수 있습니다.
                     </span>
                 </th>
             </tr>
@@ -156,9 +157,9 @@ function ResultsTable(props: TableProps) {
                             </td>
                         </tr>
                     ) : (
-                        pageItems.map((item, index) => (
+                        pageItems.map(item => (
                             <AuctionRow
-                                key={`item-${item.item_display_name}-${item.auction_price_per_unit}-${item.date_auction_expire}-${index}`}
+                                key={item.listingId}
                                 item={item}
                                 onClick={() => props.onItemClick(item)}
                                 selectedForComparison={props.comparisonItems.includes(
@@ -333,55 +334,69 @@ function CurrentListingsMetrics({
     );
 }
 
-function CurrentListingsPanel(props: AuctionResultsProps) {
-    if (!props.loading && !props.errorMessage && !props.refreshedAt)
-        return (
-            <RecentSalesLauncher
-                key={`${props.recentSales.queriedItemName}-${props.recentSales.refreshedAt}`}
-                recentSales={props.recentSales}
-            />
-        );
+function CurrentListingsHeader(props: AuctionResultsProps) {
+    return (
+        <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+                <h3 id="current-listings-title" className="text-lg font-bold">
+                    현재 등록 매물
+                </h3>
+                <p className="text-sm text-base-content/70">
+                    판매자가 현재 제시한 매물의 가격과 수량입니다.
+                </p>
+            </div>
+            {props.refreshedAt && !props.loading && !props.errorMessage && (
+                <p className="text-sm text-base-content/70">
+                    조회 완료:{" "}
+                    <time dateTime={props.refreshedAt}>
+                        {dateTimeFormatter.format(new Date(props.refreshedAt))}
+                    </time>
+                </p>
+            )}
+        </div>
+    );
+}
 
-    let body = <CurrentListingsMetrics {...props} />;
-    if (props.loading) {
-        body = <p role="status">현재 등록 매물을 불러오는 중입니다.</p>;
-    } else if (props.errorMessage) {
-        body = (
+function CurrentListingsBody(props: AuctionResultsProps) {
+    if (props.loading)
+        return <p role="status">현재 등록 매물을 불러오는 중입니다.</p>;
+    if (props.errorMessage)
+        return (
             <p role="alert" className="alert alert-error">
                 {props.errorMessage}
             </p>
         );
-    }
+    return <CurrentListingsMetrics {...props} />;
+}
 
+function CurrentListingsResults(props: AuctionResultsProps) {
+    if (props.loading || props.errorMessage || props.items.length === 0)
+        return null;
     return (
-        <section aria-labelledby="current-listings-title" className="space-y-4">
-            <div className="rounded-lg border bg-base-100 p-4">
-                <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
-                    <div>
-                        <h3
-                            id="current-listings-title"
-                            className="text-lg font-bold"
-                        >
-                            현재 등록 매물
-                        </h3>
-                        <p className="text-sm text-base-content/70">
-                            판매자가 현재 제시한 매물의 가격과 수량입니다.
-                        </p>
-                    </div>
-                    {props.refreshedAt &&
-                        !props.loading &&
-                        !props.errorMessage && (
-                            <p className="text-sm text-base-content/70">
-                                조회 완료:{" "}
-                                <time dateTime={props.refreshedAt}>
-                                    {dateTimeFormatter.format(
-                                        new Date(props.refreshedAt)
-                                    )}
-                                </time>
-                            </p>
-                        )}
-                </div>
-                {body}
+        <div>
+            <ResultsTable {...props} isEmpty={false} />
+            <Pagination
+                currentPage={props.currentPage}
+                itemCount={props.items.length}
+                setCurrentPage={props.setCurrentPage}
+            />
+        </div>
+    );
+}
+
+function CurrentListingsPanel(props: AuctionResultsProps) {
+    const hasListingsState = Boolean(
+        props.loading || props.errorMessage || props.refreshedAt
+    );
+    const content = (
+        <>
+            <div
+                className={
+                    hasListingsState ? "rounded-lg border bg-base-100 p-4" : ""
+                }
+            >
+                {hasListingsState && <CurrentListingsHeader {...props} />}
+                {hasListingsState && <CurrentListingsBody {...props} />}
                 <RecentSalesLauncher
                     key={`${props.recentSales.queriedItemName}-${props.recentSales.refreshedAt}`}
                     recentSales={props.recentSales}
@@ -393,18 +408,13 @@ function CurrentListingsPanel(props: AuctionResultsProps) {
                 onRemove={props.onRemoveComparison}
                 onClear={props.onClearComparison}
             />
-            {!props.loading &&
-                !props.errorMessage &&
-                props.items.length > 0 && (
-                    <div>
-                        <ResultsTable {...props} isEmpty={false} />
-                        <Pagination
-                            currentPage={props.currentPage}
-                            itemCount={props.items.length}
-                            setCurrentPage={props.setCurrentPage}
-                        />
-                    </div>
-                )}
+            <CurrentListingsResults {...props} />
+        </>
+    );
+    if (!hasListingsState) return <div className="space-y-4">{content}</div>;
+    return (
+        <section aria-labelledby="current-listings-title" className="space-y-4">
+            {content}
         </section>
     );
 }
@@ -559,7 +569,11 @@ function RecentSalesModal({
     onClose,
     triggerRef,
 }: RecentSalesModalProps) {
-    const dialogRef = useDialogFocus(onClose, triggerRef);
+    const dialogRef = useDialogFocus(
+        onClose,
+        triggerRef,
+        "market-snapshot-title"
+    );
     return (
         <div className="fixed inset-0 z-50 flex bg-black/40 sm:items-center sm:justify-center sm:p-4">
             <div
@@ -655,7 +669,11 @@ function MarketSnapshot(props: AuctionResultsProps) {
     return (
         <section aria-labelledby="market-snapshot-title" className="space-y-4">
             <div>
-                <h2 id="market-snapshot-title" className="text-xl font-bold">
+                <h2
+                    id="market-snapshot-title"
+                    className="text-xl font-bold"
+                    tabIndex={-1}
+                >
                     경매 시장 현황
                 </h2>
                 <p className="text-sm text-base-content/70">

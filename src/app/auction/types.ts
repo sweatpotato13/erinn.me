@@ -1,16 +1,12 @@
 import type { AuctionHistoryItem } from "@/lib/schemas/nexon";
+import type { ItemOption } from "@/types/item-option";
+
+export type { ItemOption } from "@/types/item-option";
 
 export type Favorite = { itemName: string; category: string };
 
-export type ItemOption = {
-    option_type: string;
-    option_sub_type?: string | null;
-    option_value?: string | null;
-    option_value2?: string | null;
-    option_desc?: string | null;
-};
-
 export type AuctionItem = {
+    listingId: string;
     item_name: string;
     item_display_name: string;
     item_count: number;

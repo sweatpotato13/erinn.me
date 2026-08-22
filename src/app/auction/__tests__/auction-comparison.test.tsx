@@ -15,6 +15,7 @@ function item(
     quantity = 1
 ): AuctionItem {
     return {
+        listingId: `${name}-${price}-${quantity}`,
         item_name: name,
         item_display_name: name,
         item_count: quantity,
