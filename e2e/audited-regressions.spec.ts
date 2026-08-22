@@ -132,9 +132,11 @@ async function selectComparisonItems(page: Page, itemNumbers: number[]) {
 async function verifyMobileComparisonScroll(page: Page) {
     if ((page.viewportSize()?.width ?? 1000) >= 640) return;
     const scroll = page.getByTestId("auction-comparison-scroll");
-    expect(
-        await scroll.evaluate(node => node.scrollWidth > node.clientWidth)
-    ).toBe(true);
+    await expect
+        .poll(() =>
+            scroll.evaluate(node => node.scrollWidth > node.clientWidth)
+        )
+        .toBe(true);
     await scroll.evaluate(node => {
         node.scrollLeft = node.scrollWidth;
     });
@@ -253,7 +255,8 @@ test("inexact item names show recent-sales guidance", async ({ page }) => {
             { exact: true }
         )
     ).toHaveAttribute("role", "status");
-    await expect(page.locator(".alert-error")).not.toBeVisible();
+    const listings = page.getByRole("region", { name: "현재 등록 매물" });
+    await expect(listings.getByRole("alert")).not.toBeVisible();
 });
 
 test("auction comparison survives pagination and resets on search", async ({
