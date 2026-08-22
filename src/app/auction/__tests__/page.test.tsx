@@ -94,6 +94,7 @@ const emptyRecentSales: RecentSalesState = {
     hasMore: false,
     refreshedAt: null,
     queriedItemName: null,
+    noticeMessage: null,
     errorMessage: null,
     loading: false,
 };
@@ -596,6 +597,20 @@ describe("useRecentSales", () => {
         expect(log).toHaveBeenCalled();
     });
 
+    it("treats an inexact item name as guidance instead of an error", async () => {
+        global.fetch = jest
+            .fn()
+            .mockResolvedValue({ ok: false, status: 422 } as Response);
+        const { result } = renderHook(() => useRecentSales());
+
+        await act(async () => result.current.search("부분 이름"));
+        expect(result.current.noticeMessage).toBe(
+            "최근 완료 거래는 정확한 아이템명으로만 조회할 수 있습니다. 검색 제안에서 아이템을 선택해 주세요."
+        );
+        expect(result.current.errorMessage).toBeNull();
+        expect(result.current.loading).toBe(false);
+    });
+
     it("rejects malformed recent-sales responses", async () => {
         const log = jest
             .spyOn(console, "error")
@@ -727,6 +742,11 @@ describe("AuctionResults", () => {
         loading: false,
         onSort: jest.fn(),
         onItemClick: jest.fn(),
+        comparisonItems: [],
+        comparisonNotice: null,
+        onToggleComparison: jest.fn(),
+        onRemoveComparison: jest.fn(),
+        onClearComparison: jest.fn(),
         setCurrentPage: jest.fn(),
         recentSales: emptyRecentSales,
     } as const;
@@ -845,6 +865,7 @@ describe("AuctionResults", () => {
         const user = userEvent.setup();
         const onSort = jest.fn();
         const onItemClick = jest.fn();
+        const onToggleComparison = jest.fn();
         const setCurrentPage = jest.fn();
         const items = Array.from({ length: 11 }, (_, index) =>
             item(`아이템 ${index}`, index)
@@ -855,6 +876,7 @@ describe("AuctionResults", () => {
                 items={items}
                 onSort={onSort}
                 onItemClick={onItemClick}
+                onToggleComparison={onToggleComparison}
                 setCurrentPage={setCurrentPage}
                 refreshedAt="2026-08-20T04:00:00Z"
             />
@@ -863,6 +885,10 @@ describe("AuctionResults", () => {
         expect(onSort).toHaveBeenCalled();
         await user.click(screen.getByRole("button", { name: "아이템 0" }));
         expect(onItemClick).toHaveBeenCalledWith(items[0]);
+        await user.click(
+            screen.getByRole("checkbox", { name: /아이템 0.*비교 선택/ })
+        );
+        expect(onToggleComparison).toHaveBeenCalledWith(items[0]);
         await user.click(screen.getByLabelText("다음 페이지"));
         expect(setCurrentPage.mock.calls[0][0](1)).toBe(2);
     });
@@ -892,7 +918,7 @@ describe("AuctionResults", () => {
         expect(screen.queryByText(/0 Gold/)).not.toBeInTheDocument();
     });
 
-    it("announces recent-sales loading and error states", () => {
+    it("announces recent-sales loading, guidance, and error states", () => {
         const { rerender } = render(
             <AuctionResults
                 {...baseProps}
@@ -907,6 +933,22 @@ describe("AuctionResults", () => {
         expect(screen.getByRole("status")).toHaveTextContent(
             "최근 1시간 완료 거래를 불러오는 중입니다."
         );
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={{
+                    ...emptyRecentSales,
+                    queriedItemName: "부분 이름",
+                    noticeMessage: "정확한 아이템명을 선택해 주세요.",
+                }}
+            />
+        );
+        expect(screen.getByRole("status")).toHaveTextContent(
+            "정확한 아이템명을 선택해 주세요."
+        );
+        expect(screen.queryByRole("alert")).not.toBeInTheDocument();
 
         rerender(
             <AuctionResults
