@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { HornServer } from "@/app/horn/horn-preferences";
@@ -181,7 +182,8 @@ function findNewMatches(
 
 function displayNotifications(
     server: HornServer,
-    messages: HornMessage[]
+    messages: HornMessage[],
+    navigateToHorn: () => void
 ): boolean {
     for (const message of messages) {
         try {
@@ -191,8 +193,7 @@ function displayNotifications(
             );
             notification.onclick = () => {
                 notification.close();
-                if (window.location.pathname !== "/horn")
-                    window.history.replaceState(null, "", "/horn");
+                navigateToHorn();
                 window.focus();
             };
         } catch {
@@ -233,6 +234,8 @@ function useMessageProcessor(
     options: UseHornAlertsOptions,
     permission: ReturnType<typeof useNotificationPermission>
 ) {
+    const router = useRouter();
+    const navigate = useCallback(() => router.replace("/horn"), [router]);
     const { permissionRef, setNotificationError } = permission;
     const historyRef = useRef(createAlertHistory());
     const {
@@ -261,7 +264,7 @@ function useMessageProcessor(
                 !("Notification" in window)
             )
                 return;
-            if (displayNotifications(server, matches)) return;
+            if (displayNotifications(server, matches, navigate)) return;
 
             browserNotificationsEnabledRef.current = false;
             options.setBrowserNotificationsEnabled(false);
@@ -269,6 +272,7 @@ function useMessageProcessor(
         },
         [
             options.setBrowserNotificationsEnabled,
+            navigate,
             permissionRef,
             setNotificationError,
         ]
