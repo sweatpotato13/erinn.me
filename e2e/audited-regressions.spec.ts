@@ -125,7 +125,9 @@ function comparisonCheckbox(page: Page, itemNumber: number) {
 
 async function selectComparisonItems(page: Page, itemNumbers: number[]) {
     for (const itemNumber of itemNumbers) {
-        await comparisonCheckbox(page, itemNumber).click();
+        const checkbox = comparisonCheckbox(page, itemNumber);
+        await checkbox.click();
+        await expect(checkbox).toBeChecked();
     }
 }
 
