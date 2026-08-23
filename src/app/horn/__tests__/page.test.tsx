@@ -1,4 +1,10 @@
-import { act, render, screen, waitFor } from "@testing-library/react";
+import {
+    act,
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import {
@@ -9,6 +15,8 @@ import {
 import HornPage from "@/app/horn/page";
 
 const mockPlay = jest.fn();
+const mockRouterReplace = jest.fn();
+const mockRouter = { replace: mockRouterReplace };
 const originalNotificationDescriptor = Object.getOwnPropertyDescriptor(
     globalThis,
     "Notification"
@@ -18,6 +26,25 @@ jest.mock("use-sound", () => ({
     __esModule: true,
     default: () => [mockPlay],
 }));
+jest.mock("next/navigation", () => ({
+    useRouter: () => mockRouter,
+}));
+
+Object.defineProperties(HTMLDialogElement.prototype, {
+    showModal: {
+        configurable: true,
+        value(this: HTMLDialogElement) {
+            this.open = true;
+        },
+    },
+    close: {
+        configurable: true,
+        value(this: HTMLDialogElement) {
+            this.open = false;
+            this.dispatchEvent(new Event("close"));
+        },
+    },
+});
 
 function message(
     character: string,
@@ -147,13 +174,13 @@ describe("HornPage", () => {
     beforeEach(() => {
         localStorage.clear();
         mockPlay.mockClear();
+        mockRouterReplace.mockClear();
     });
 
     afterEach(() => {
         jest.useRealTimers();
         global.fetch = originalFetch;
         jest.restoreAllMocks();
-        window.history.replaceState(null, "", "/");
         if (originalNotificationDescriptor) {
             Object.defineProperty(
                 globalThis,
@@ -216,7 +243,7 @@ describe("HornPage", () => {
         await waitFor(() => expect(fetch).toHaveBeenCalled());
 
         await user.click(screen.getByRole("button", { name: "류트" }));
-        await user.click(screen.getByText("울프", { selector: "a" }));
+        await user.click(screen.getByText("울프", { selector: "button" }));
         await user.click(screen.getByRole("button", { name: "알림" }));
         await user.type(screen.getByPlaceholderText("알림 키워드"), "거래");
         await user.click(screen.getByRole("button", { name: "추가" }));
@@ -238,6 +265,28 @@ describe("HornPage", () => {
         );
     });
 
+    it("closes notification settings through the native dialog lifecycle", async () => {
+        const user = userEvent.setup();
+        global.fetch = jest
+            .fn()
+            .mockResolvedValue(hornResponse([message("초기", "메시지")]));
+        render(<HornPage />);
+        expect(await screen.findByText("메시지")).toBeVisible();
+        await user.click(screen.getByRole("button", { name: "알림" }));
+        const dialog = screen.getByRole("dialog", {
+            name: "알림 키워드 목록",
+        });
+        expect(dialog).toHaveAttribute("open");
+
+        fireEvent(
+            dialog,
+            new Event("cancel", { bubbles: false, cancelable: true })
+        );
+
+        await waitFor(() => expect(dialog).not.toHaveAttribute("open"));
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
+
     it("ignores stale responses after an immediate server refresh", async () => {
         const user = userEvent.setup();
         const oldRequest = deferred<Response>();
@@ -250,7 +299,7 @@ describe("HornPage", () => {
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
 
         await user.click(screen.getByRole("button", { name: "류트" }));
-        await user.click(screen.getByText("울프", { selector: "a" }));
+        await user.click(screen.getByText("울프", { selector: "button" }));
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
         await act(async () => {
             newRequest.resolve(hornResponse([message("최신", "새 서버")]));
@@ -422,7 +471,10 @@ describe("HornPage", () => {
 
         instances[0].onclick?.();
         expect(instances[0].close).toHaveBeenCalledTimes(1);
-        expect(window.location.pathname).toBe("/horn");
+        expect(mockRouterReplace).toHaveBeenCalledWith("/horn");
+        expect(
+            screen.getByRole("heading", { name: "메시지 목록" })
+        ).toBeVisible();
         expect(focus).toHaveBeenCalledTimes(1);
     });
 
@@ -465,7 +517,7 @@ describe("HornPage", () => {
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
 
         await user.click(screen.getByRole("button", { name: "검색" }));
-        expect(await screen.findByText("거래", { exact: true })).toBeVisible();
+        expect(await screen.findByRole("cell", { name: "거래" })).toBeVisible();
         await user.click(screen.getByRole("button", { name: "알림" }));
         expect(screen.getByRole("alert")).toHaveTextContent(
             "브라우저에서 시스템 알림을 표시하지 못했습니다."
@@ -532,7 +584,7 @@ describe("HornPage", () => {
         expect(await screen.findByText("기준")).toBeVisible();
 
         await user.click(screen.getByRole("button", { name: "류트" }));
-        await user.click(screen.getByText("울프", { selector: "a" }));
+        await user.click(screen.getByText("울프", { selector: "button" }));
         expect(await screen.findByText("테스터")).toBeVisible();
 
         expect(mockPlay).not.toHaveBeenCalled();
@@ -561,7 +613,7 @@ describe("HornPage", () => {
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
 
         await user.click(screen.getByRole("button", { name: "류트" }));
-        await user.click(screen.getByText("울프", { selector: "a" }));
+        await user.click(screen.getByText("울프", { selector: "button" }));
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
         await act(async () => {
             oldRequest.resolve(
