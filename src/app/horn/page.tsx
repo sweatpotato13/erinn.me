@@ -10,10 +10,75 @@ import {
     loadHornPreferences,
     saveHornPreferences,
 } from "@/app/horn/horn-preferences";
+import {
+    type BrowserNotificationPermission,
+    useHornAlerts,
+} from "@/app/horn/use-horn-alerts";
 import type { HornResponse } from "@/lib/schemas/nexon";
 
 const SOUND_PATH = "/sounds/money-drop.mp3";
 type HornMessage = HornResponse["horn_bugle_world_history"][number];
+
+interface BrowserNotificationControlsProps {
+    permission: BrowserNotificationPermission;
+    enabled: boolean;
+    error: string;
+    onEnable: () => Promise<void>;
+    onDisable: () => void;
+}
+
+function BrowserNotificationControls({
+    permission,
+    enabled,
+    error,
+    onEnable,
+    onDisable,
+}: BrowserNotificationControlsProps) {
+    const status =
+        permission === "unsupported"
+            ? "이 브라우저에서는 브라우저 알림을 사용할 수 없습니다."
+            : permission === "denied"
+              ? "브라우저 또는 기기 설정에서 Erinn.me 알림 권한을 허용해 주세요."
+              : permission === "default"
+                ? "브라우저 알림 권한을 아직 요청하지 않았습니다."
+                : enabled
+                  ? "브라우저 알림이 켜져 있습니다."
+                  : "브라우저 권한은 허용되어 있지만 Erinn.me 알림은 꺼져 있습니다.";
+
+    return (
+        <div className="mb-3 border-t pt-3">
+            <p className="text-sm">
+                저장한 키워드와 일치하는 새 뿔피리를 시스템 알림으로 표시합니다.
+            </p>
+            <p className="mt-1 text-sm text-base-content/70">
+                Erinn.me가 열려 있을 때만 최선을 다해 전달되며, 브라우저가
+                백그라운드 탭을 제한하면 늦거나 누락될 수 있습니다.
+            </p>
+            <p className="my-2 text-sm" role="status" aria-live="polite">
+                {status}
+            </p>
+            {error && (
+                <p className="mb-2 text-sm text-error" role="alert">
+                    {error}
+                </p>
+            )}
+            {(permission === "default" ||
+                (permission === "granted" && !enabled)) && (
+                <button
+                    className="btn btn-outline btn-sm"
+                    onClick={() => void onEnable()}
+                >
+                    브라우저 알림 켜기
+                </button>
+            )}
+            {permission === "granted" && enabled && (
+                <button className="btn btn-outline btn-sm" onClick={onDisable}>
+                    브라우저 알림 끄기
+                </button>
+            )}
+        </div>
+    );
+}
 
 /**
  * Displays and searches horn messages for the selected server, with configurable keyword alerts.
@@ -34,57 +99,58 @@ export default function HornPage() {
         defaults.alertKeywords
     );
     const [soundEnabled, setSoundEnabled] = useState(defaults.soundEnabled);
+    const [browserNotificationsEnabled, setBrowserNotificationsEnabled] =
+        useState(defaults.browserNotificationsEnabled);
     const [preferencesReady, setPreferencesReady] = useState(false);
     const [isAlertKeyaordPopupVisible, setIsAlertKeyaordPopupVisible] =
         useState(false);
     const selectedServerRef = useRef(selectedServer);
-    const alertKeywordsRef = useRef(alertKeywords);
-    const soundEnabledRef = useRef(soundEnabled);
-    const lastAlertTimeRef = useRef("");
-    const playRef = useRef(play);
     const requestSequenceRef = useRef(0);
     const activeControllerRef = useRef<AbortController | null>(null);
-
-    useEffect(() => {
-        playRef.current = play;
-    }, [play]);
+    const {
+        notificationPermission,
+        notificationError,
+        enableBrowserNotifications,
+        disableBrowserNotifications,
+        processMessages,
+        resetBaseline,
+    } = useHornAlerts({
+        alertKeywords,
+        soundEnabled,
+        browserNotificationsEnabled,
+        play,
+        setBrowserNotificationsEnabled,
+    });
 
     useEffect(() => {
         const preferences = loadHornPreferences();
-        const now = new Date().toISOString();
         selectedServerRef.current = preferences.selectedServer;
-        alertKeywordsRef.current = preferences.alertKeywords;
-        soundEnabledRef.current = preferences.soundEnabled;
-        lastAlertTimeRef.current = now;
         setSelectedServer(preferences.selectedServer);
         setAlertKeywords(preferences.alertKeywords);
         setSoundEnabled(preferences.soundEnabled);
+        setBrowserNotificationsEnabled(preferences.browserNotificationsEnabled);
         setPreferencesReady(true);
     }, []);
 
     useEffect(() => {
         if (!preferencesReady) return;
-        saveHornPreferences({ selectedServer, alertKeywords, soundEnabled });
-    }, [alertKeywords, preferencesReady, selectedServer, soundEnabled]);
-
-    const checkAlertKeywords = useCallback((messages: HornMessage[]) => {
-        if (!soundEnabledRef.current || alertKeywordsRef.current.length === 0)
-            return;
-        const hasMatch = messages.some(
-            message =>
-                new Date(message.date_send) >=
-                    new Date(lastAlertTimeRef.current) &&
-                alertKeywordsRef.current.some(keyword =>
-                    message.message.includes(keyword)
-                )
-        );
-        if (!hasMatch) return;
-        lastAlertTimeRef.current = new Date().toISOString();
-        playRef.current();
-    }, []);
+        saveHornPreferences({
+            selectedServer,
+            alertKeywords,
+            soundEnabled,
+            browserNotificationsEnabled,
+        });
+    }, [
+        alertKeywords,
+        browserNotificationsEnabled,
+        preferencesReady,
+        selectedServer,
+        soundEnabled,
+    ]);
 
     const fetchMessages = useCallback(async () => {
         const sequence = ++requestSequenceRef.current;
+        const server = selectedServerRef.current;
         activeControllerRef.current?.abort();
         const controller = new AbortController();
         activeControllerRef.current = controller;
@@ -93,7 +159,7 @@ export default function HornPage() {
 
         try {
             const response = await fetch(
-                `/api/horn?${new URLSearchParams({ server_name: selectedServerRef.current })}`,
+                `/api/horn?${new URLSearchParams({ server_name: server })}`,
                 {
                     signal: controller.signal,
                     headers: {
@@ -109,7 +175,7 @@ export default function HornPage() {
             const data = (await response.json()) as HornResponse;
             if (sequence !== requestSequenceRef.current) return;
             setMessagesData(data.horn_bugle_world_history);
-            checkAlertKeywords(data.horn_bugle_world_history);
+            processMessages(server, data.horn_bugle_world_history);
         } catch (error) {
             if (
                 controller.signal.aborted ||
@@ -127,7 +193,7 @@ export default function HornPage() {
                 setLoading(false);
             }
         }
-    }, [checkAlertKeywords]);
+    }, [processMessages]);
 
     useEffect(() => {
         if (!preferencesReady) return;
@@ -146,13 +212,12 @@ export default function HornPage() {
 
     function selectServer(server: HornServer) {
         selectedServerRef.current = server;
-        lastAlertTimeRef.current = new Date().toISOString();
+        resetBaseline();
         setSelectedServer(server);
     }
 
     function removeKeyword(index: number) {
         const nextKeywords = alertKeywords.filter((_, i) => i !== index);
-        alertKeywordsRef.current = nextKeywords;
         setAlertKeywords(nextKeywords);
     }
 
@@ -160,14 +225,11 @@ export default function HornPage() {
         const keyword = aleryKeyword.trim();
         if (!keyword) return;
         const nextKeywords = [...alertKeywords, keyword];
-        alertKeywordsRef.current = nextKeywords;
         setAlertKeywords(nextKeywords);
         setAleryKeyword("");
     }
 
     function toggleSound(enabled: boolean) {
-        soundEnabledRef.current = enabled;
-        if (enabled) lastAlertTimeRef.current = new Date().toISOString();
         setSoundEnabled(enabled);
     }
 
@@ -220,7 +282,7 @@ export default function HornPage() {
                         </button>
                         <div
                             className="tooltip tooltip-left"
-                            data-tip="1분마다 알림 키워드가 포함된 뿔피리 메시지가 있다면 소리로 알립니다."
+                            data-tip="알림 키워드와 소리·브라우저 알림을 설정합니다."
                         >
                             <button
                                 className="btn btn-outline"
@@ -237,7 +299,7 @@ export default function HornPage() {
                 {error && <p className="text-red-500">{error}</p>}
                 {isAlertKeyaordPopupVisible && (
                     <div className="fixed inset-0 flex items-center justify-center z-50">
-                        <div className="bg-white border p-4 rounded-lg shadow-lg w-80">
+                        <div className="max-h-[80vh] w-80 overflow-y-auto rounded-lg border bg-white p-4 shadow-lg">
                             <h2 className="text-lg font-bold mb-3">
                                 알림 키워드 목록
                             </h2>
@@ -268,6 +330,13 @@ export default function HornPage() {
                                 />
                                 소리 알림 사용
                             </label>
+                            <BrowserNotificationControls
+                                permission={notificationPermission}
+                                enabled={browserNotificationsEnabled}
+                                error={notificationError}
+                                onEnable={enableBrowserNotifications}
+                                onDisable={disableBrowserNotifications}
+                            />
                             <p className="mb-3 text-sm text-base-content/70">
                                 설정은 현재 브라우저와 기기에만 저장됩니다.
                             </p>
