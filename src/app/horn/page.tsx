@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { HORN_SERVERS } from "@/app/horn/horn-preferences";
 import type { BrowserNotificationPermission } from "@/app/horn/use-horn-alerts";
@@ -105,13 +105,18 @@ function ServerSelector({ horn }: HornControllerProps) {
             </div>
             <ul
                 tabIndex={0}
+                role="menu"
                 className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
             >
                 {HORN_SERVERS.map(server => (
                     <li key={server}>
-                        <a onClick={() => horn.selectServer(server)}>
+                        <button
+                            type="button"
+                            role="menuitem"
+                            onClick={() => horn.selectServer(server)}
+                        >
                             {server}
-                        </a>
+                        </button>
                     </li>
                 ))}
             </ul>
@@ -209,46 +214,52 @@ function KeywordList({ horn }: HornControllerProps) {
 }
 
 function AlertSettingsPanel({ horn }: HornControllerProps) {
-    if (!horn.showAlertSettings) return null;
+    const dialogRef = useRef<HTMLDialogElement>(null);
+    useEffect(() => {
+        const dialog = dialogRef.current;
+        if (!dialog) return;
+        if (horn.showAlertSettings && !dialog.open) dialog.showModal();
+        if (!horn.showAlertSettings && dialog.open) dialog.close();
+    }, [horn.showAlertSettings]);
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-            <div
-                className="max-h-[80vh] w-80 overflow-y-auto rounded-lg border bg-white p-4 shadow-lg"
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="horn-alert-settings-title"
+        <dialog
+            ref={dialogRef}
+            className="m-auto max-h-[80vh] w-80 overflow-y-auto rounded-lg border bg-white p-4 shadow-lg backdrop:bg-black/20"
+            aria-labelledby="horn-alert-settings-title"
+            onCancel={() => horn.setShowAlertSettings(false)}
+            onClose={() => horn.setShowAlertSettings(false)}
+        >
+            <h2
+                id="horn-alert-settings-title"
+                className="mb-3 text-lg font-bold"
             >
-                <h2
-                    id="horn-alert-settings-title"
-                    className="mb-3 text-lg font-bold"
-                >
-                    알림 키워드 목록
-                </h2>
-                <KeywordEditor horn={horn} />
-                <label className="mb-3 flex cursor-pointer items-center gap-2">
-                    <input
-                        type="checkbox"
-                        className="checkbox checkbox-sm"
-                        checked={horn.soundEnabled}
-                        onChange={event =>
-                            horn.setSoundEnabled(event.target.checked)
-                        }
-                    />
-                    소리 알림 사용
-                </label>
-                <BrowserNotificationControls horn={horn} />
-                <p className="mb-3 text-sm text-base-content/70">
-                    설정은 현재 브라우저와 기기에만 저장됩니다.
-                </p>
-                <KeywordList horn={horn} />
-                <button
-                    className="btn btn-outline mt-4 w-full"
-                    onClick={() => horn.setShowAlertSettings(false)}
-                >
-                    닫기
-                </button>
-            </div>
-        </div>
+                알림 키워드 목록
+            </h2>
+            <KeywordEditor horn={horn} />
+            <label className="mb-3 flex cursor-pointer items-center gap-2">
+                <input
+                    type="checkbox"
+                    className="checkbox checkbox-sm"
+                    checked={horn.soundEnabled}
+                    onChange={event =>
+                        horn.setSoundEnabled(event.target.checked)
+                    }
+                />
+                소리 알림 사용
+            </label>
+            <BrowserNotificationControls horn={horn} />
+            <p className="mb-3 text-sm text-base-content/70">
+                설정은 현재 브라우저와 기기에만 저장됩니다.
+            </p>
+            <KeywordList horn={horn} />
+            <button
+                type="button"
+                className="btn btn-outline mt-4 w-full"
+                onClick={() => dialogRef.current?.close()}
+            >
+                닫기
+            </button>
+        </dialog>
     );
 }
 
@@ -280,7 +291,9 @@ function MessageRows({
             <td className="p-2">{message.character_name}</td>
             <td className="p-2">{message.message}</td>
             <td className="p-2">
-                {new Date(message.date_send).toLocaleString()}
+                {new Date(message.date_send).toLocaleString("ko-KR", {
+                    timeZone: "Asia/Seoul",
+                })}
             </td>
         </tr>
     ));
