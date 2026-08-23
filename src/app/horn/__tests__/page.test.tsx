@@ -9,6 +9,10 @@ import {
 import HornPage from "@/app/horn/page";
 
 const mockPlay = jest.fn();
+const originalNotificationDescriptor = Object.getOwnPropertyDescriptor(
+    globalThis,
+    "Notification"
+);
 
 jest.mock("use-sound", () => ({
     __esModule: true,
@@ -38,12 +42,58 @@ function deferred<T>() {
     return { promise, resolve };
 }
 
-function savedPreferences() {
+function savedPreferences(
+    overrides: Partial<ReturnType<typeof defaultHornPreferences>> = {}
+) {
     return {
         selectedServer: "울프" as const,
         alertKeywords: ["거래"],
         soundEnabled: false,
+        browserNotificationsEnabled: false,
+        ...overrides,
     };
+}
+
+function installNotification(
+    initialPermission: NotificationPermission,
+    requestedPermission = initialPermission,
+    constructorFails = false
+) {
+    const instances: Array<{
+        title: string;
+        options?: NotificationOptions;
+        onclick: (() => void) | null;
+        close: jest.Mock;
+    }> = [];
+    let permission = initialPermission;
+    const requestPermission = jest.fn(() => {
+        permission = requestedPermission;
+        return Promise.resolve(permission);
+    });
+
+    class FakeNotification {
+        static get permission() {
+            return permission;
+        }
+
+        static requestPermission = requestPermission;
+        onclick: (() => void) | null = null;
+        close = jest.fn();
+
+        constructor(
+            public title: string,
+            public options?: NotificationOptions
+        ) {
+            if (constructorFails) throw new TypeError("unsupported");
+            instances.push(this);
+        }
+    }
+
+    Object.defineProperty(globalThis, "Notification", {
+        configurable: true,
+        value: FakeNotification,
+    });
+    return { instances, requestPermission };
 }
 
 describe("horn preferences", () => {
@@ -62,6 +112,26 @@ describe("horn preferences", () => {
                 })
             )
         ).toEqual(defaultHornPreferences());
+        expect(
+            parseHornPreferences(
+                JSON.stringify({
+                    ...savedPreferences(),
+                    browserNotificationsEnabled: "yes",
+                })
+            )
+        ).toEqual(defaultHornPreferences());
+    });
+
+    it("migrates preferences saved before browser notifications", () => {
+        const legacyPreferences = {
+            selectedServer: "울프",
+            alertKeywords: ["거래"],
+            soundEnabled: false,
+        };
+
+        expect(parseHornPreferences(JSON.stringify(legacyPreferences))).toEqual(
+            savedPreferences()
+        );
     });
 });
 
@@ -77,6 +147,15 @@ describe("HornPage", () => {
         jest.useRealTimers();
         global.fetch = originalFetch;
         jest.restoreAllMocks();
+        if (originalNotificationDescriptor) {
+            Object.defineProperty(
+                globalThis,
+                "Notification",
+                originalNotificationDescriptor
+            );
+        } else {
+            Reflect.deleteProperty(globalThis, "Notification");
+        }
     });
 
     it("restores preferences before loading and keeps filters working", async () => {
@@ -210,6 +289,160 @@ describe("HornPage", () => {
         await user.click(screen.getByRole("button", { name: "검색" }));
         await waitFor(() => expect(fetch).toHaveBeenCalledTimes(2));
         expect(mockPlay).not.toHaveBeenCalled();
+    });
+
+    it("requests notification permission only from the enable action", async () => {
+        const user = userEvent.setup();
+        const { requestPermission } = installNotification("default", "granted");
+        global.fetch = jest.fn().mockResolvedValue(hornResponse([]));
+        render(<HornPage />);
+        await waitFor(() => expect(fetch).toHaveBeenCalled());
+        expect(requestPermission).not.toHaveBeenCalled();
+
+        await user.click(screen.getByRole("button", { name: "알림" }));
+        expect(requestPermission).not.toHaveBeenCalled();
+        expect(
+            screen.getByText("브라우저 알림 권한을 아직 요청하지 않았습니다.")
+        ).toBeVisible();
+        await user.click(
+            screen.getByRole("button", { name: "브라우저 알림 켜기" })
+        );
+
+        expect(requestPermission).toHaveBeenCalledTimes(1);
+        expect(
+            screen.getByText("브라우저 알림이 켜져 있습니다.")
+        ).toBeVisible();
+        await waitFor(() =>
+            expect(
+                JSON.parse(localStorage.getItem(HORN_PREFERENCES_KEY)!)
+                    .browserNotificationsEnabled
+            ).toBe(true)
+        );
+    });
+
+    it("notifies each new matching message once", async () => {
+        const user = userEvent.setup();
+        const { instances } = installNotification("granted");
+        const focus = jest.spyOn(window, "focus").mockImplementation();
+        localStorage.setItem(
+            HORN_PREFERENCES_KEY,
+            JSON.stringify(
+                savedPreferences({
+                    alertKeywords: ["거래", "메시지"],
+                    browserNotificationsEnabled: true,
+                })
+            )
+        );
+        const existing = message("기존", "거래 메시지", "2026-01-01T00:00:00Z");
+        const matching = message("신규", "거래 메시지", "2026-01-01T00:01:00Z");
+        const nonMatching = message(
+            "무관",
+            "일반 안내",
+            "2026-01-01T00:02:00Z"
+        );
+        global.fetch = jest
+            .fn()
+            .mockResolvedValueOnce(hornResponse([existing]))
+            .mockResolvedValue(hornResponse([matching, nonMatching, existing]));
+        render(<HornPage />);
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+
+        await user.click(screen.getByRole("button", { name: "검색" }));
+        await waitFor(() => expect(instances).toHaveLength(1));
+        expect(instances[0]).toMatchObject({
+            title: "울프 · 신규",
+            options: { body: "거래 메시지" },
+        });
+        expect(mockPlay).not.toHaveBeenCalled();
+        await user.click(screen.getByRole("button", { name: "검색" }));
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(3));
+        expect(instances).toHaveLength(1);
+
+        instances[0].onclick?.();
+        expect(instances[0].close).toHaveBeenCalledTimes(1);
+        expect(focus).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps sound alerts active while browser notifications are off", async () => {
+        const user = userEvent.setup();
+        const { instances } = installNotification("granted");
+        localStorage.setItem(
+            HORN_PREFERENCES_KEY,
+            JSON.stringify(savedPreferences({ soundEnabled: true }))
+        );
+        const existing = message("기존", "거래", "2026-01-01T00:00:00Z");
+        const matching = message("신규", "거래", "2026-01-01T00:01:00Z");
+        global.fetch = jest
+            .fn()
+            .mockResolvedValueOnce(hornResponse([existing]))
+            .mockResolvedValueOnce(hornResponse([matching, existing]));
+        render(<HornPage />);
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+
+        await user.click(screen.getByRole("button", { name: "검색" }));
+        await waitFor(() => expect(mockPlay).toHaveBeenCalledTimes(1));
+        expect(instances).toHaveLength(0);
+    });
+
+    it("disables failed browser delivery without interrupting horn results", async () => {
+        const user = userEvent.setup();
+        installNotification("granted", "granted", true);
+        localStorage.setItem(
+            HORN_PREFERENCES_KEY,
+            JSON.stringify(
+                savedPreferences({ browserNotificationsEnabled: true })
+            )
+        );
+        const matching = message("신규", "거래", "2026-01-01T00:01:00Z");
+        global.fetch = jest
+            .fn()
+            .mockResolvedValueOnce(hornResponse([]))
+            .mockResolvedValueOnce(hornResponse([matching]));
+        render(<HornPage />);
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+
+        await user.click(screen.getByRole("button", { name: "검색" }));
+        expect(await screen.findByText("거래", { exact: true })).toBeVisible();
+        await user.click(screen.getByRole("button", { name: "알림" }));
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "브라우저에서 시스템 알림을 표시하지 못했습니다."
+        );
+        await waitFor(() =>
+            expect(
+                JSON.parse(localStorage.getItem(HORN_PREFERENCES_KEY)!)
+                    .browserNotificationsEnabled
+            ).toBe(false)
+        );
+    });
+
+    it("shows denied and unsupported notification states without blocking keywords", async () => {
+        const user = userEvent.setup();
+        installNotification("default", "denied");
+        global.fetch = jest.fn().mockResolvedValue(hornResponse([]));
+        const view = render(<HornPage />);
+        await waitFor(() => expect(fetch).toHaveBeenCalled());
+        await user.click(screen.getByRole("button", { name: "알림" }));
+        await user.click(
+            screen.getByRole("button", { name: "브라우저 알림 켜기" })
+        );
+        expect(
+            screen.getByText(
+                "브라우저 또는 기기 설정에서 Erinn.me 알림 권한을 허용해 주세요."
+            )
+        ).toBeVisible();
+        await user.type(screen.getByPlaceholderText("알림 키워드"), "거래");
+        await user.click(screen.getByRole("button", { name: "추가" }));
+        expect(screen.getByText("거래", { exact: true })).toBeVisible();
+
+        view.unmount();
+        Reflect.deleteProperty(globalThis, "Notification");
+        render(<HornPage />);
+        await user.click(screen.getByRole("button", { name: "알림" }));
+        expect(
+            screen.getByText(
+                "이 브라우저에서는 브라우저 알림을 사용할 수 없습니다."
+            )
+        ).toBeVisible();
     });
 
     it("resets the alert cutoff before changing servers", async () => {
