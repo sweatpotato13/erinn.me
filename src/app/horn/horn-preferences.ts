@@ -7,6 +7,7 @@ export interface HornPreferences {
     selectedServer: HornServer;
     alertKeywords: string[];
     soundEnabled: boolean;
+    browserNotificationsEnabled: boolean;
 }
 
 export function defaultHornPreferences(): HornPreferences {
@@ -14,6 +15,7 @@ export function defaultHornPreferences(): HornPreferences {
         selectedServer: HORN_SERVERS[0],
         alertKeywords: [],
         soundEnabled: true,
+        browserNotificationsEnabled: false,
     };
 }
 
@@ -30,13 +32,17 @@ export function parseHornPreferences(value: string | null): HornPreferences {
             !preferences.alertKeywords.every(
                 keyword => typeof keyword === "string" && keyword.trim()
             ) ||
-            typeof preferences.soundEnabled !== "boolean"
+            typeof preferences.soundEnabled !== "boolean" ||
+            (preferences.browserNotificationsEnabled !== undefined &&
+                typeof preferences.browserNotificationsEnabled !== "boolean")
         )
             return defaultHornPreferences();
         return {
             selectedServer: preferences.selectedServer as HornServer,
             alertKeywords: [...preferences.alertKeywords],
             soundEnabled: preferences.soundEnabled,
+            browserNotificationsEnabled:
+                preferences.browserNotificationsEnabled === true,
         };
     } catch {
         return defaultHornPreferences();

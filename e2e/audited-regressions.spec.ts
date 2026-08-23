@@ -125,7 +125,9 @@ function comparisonCheckbox(page: Page, itemNumber: number) {
 
 async function selectComparisonItems(page: Page, itemNumbers: number[]) {
     for (const itemNumber of itemNumbers) {
-        await comparisonCheckbox(page, itemNumber).click();
+        const checkbox = comparisonCheckbox(page, itemNumber);
+        await checkbox.click();
+        await expect(checkbox).toBeChecked();
     }
 }
 
@@ -143,6 +145,60 @@ async function verifyMobileComparisonScroll(page: Page) {
     await expect(
         page.getByRole("columnheader", { name: /매물 4/ })
     ).toBeInViewport();
+}
+
+async function installHornNotificationFake(page: Page) {
+    await page.addInitScript(() => {
+        const notifications: Array<{
+            title: string;
+            options?: NotificationOptions;
+        }> = [];
+        class FakeNotification {
+            static permission: NotificationPermission = "default";
+            static requestPermission() {
+                FakeNotification.permission = "granted";
+                return Promise.resolve(FakeNotification.permission);
+            }
+            onclick: (() => void) | null = null;
+
+            constructor(
+                public title: string,
+                public options?: NotificationOptions
+            ) {
+                notifications.push({ title, options });
+            }
+
+            close() {}
+        }
+        Object.defineProperty(window, "Notification", {
+            configurable: true,
+            value: FakeNotification,
+        });
+        Object.assign(window, { __hornNotifications: notifications });
+        localStorage.setItem(
+            "hornPreferences",
+            JSON.stringify({
+                selectedServer: "울프",
+                alertKeywords: ["거래", "메시지"],
+                soundEnabled: false,
+                browserNotificationsEnabled: false,
+            })
+        );
+    });
+}
+
+async function capturedHornNotifications(page: Page) {
+    return page.evaluate(
+        () =>
+            (
+                window as typeof window & {
+                    __hornNotifications: Array<{
+                        title: string;
+                        options?: NotificationOptions;
+                    }>;
+                }
+            ).__hornNotifications
+    );
 }
 
 test("auction search renders the incomplete market snapshot", async ({
@@ -525,6 +581,51 @@ test("horn preferences restore before automatic refresh and polling", async ({
     await expect(
         page.getByRole("checkbox", { name: "소리 알림 사용" })
     ).not.toBeChecked();
+});
+
+test("horn browser notifications require consent and avoid duplicate alerts", async ({
+    page,
+}) => {
+    const routeState = { includeNew: false };
+    await installHornNotificationFake(page);
+    await page.route("**/api/horn?**", route =>
+        route.fulfill({
+            json: {
+                horn_bugle_world_history: routeState.includeNew
+                    ? [
+                          {
+                              character_name: "신규",
+                              message: "거래 메시지",
+                              date_send: "2026-08-23T00:01:00Z",
+                          },
+                      ]
+                    : [],
+            },
+        })
+    );
+    await page.goto("/horn");
+    await page.getByRole("button", { name: "알림" }).click();
+    await expect(
+        page.getByText(/Erinn.me가 열려 있을 때만 최선을 다해 전달/)
+    ).toBeVisible();
+    await page.getByRole("button", { name: "브라우저 알림 켜기" }).click();
+    await expect(
+        page.getByText("브라우저 알림이 켜져 있습니다.")
+    ).toBeVisible();
+    await page.getByRole("button", { name: "닫기" }).click();
+
+    routeState.includeNew = true;
+    await page.getByRole("button", { name: "검색" }).click();
+    await expect
+        .poll(async () => (await capturedHornNotifications(page)).length)
+        .toBe(1);
+    expect(await capturedHornNotifications(page)).toEqual([
+        { title: "울프 · 신규", options: { body: "거래 메시지" } },
+    ]);
+    await page.getByRole("button", { name: "검색" }).click();
+    await expect
+        .poll(async () => (await capturedHornNotifications(page)).length)
+        .toBe(1);
 });
 
 test("npc shop validates and renders upstream images without page errors", async ({
