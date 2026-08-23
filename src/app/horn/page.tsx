@@ -1,59 +1,93 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import useSound from "use-sound";
 
-const servers = ["류트", "울프", "하프", "만돌린"];
+import {
+    defaultHornPreferences,
+    HORN_SERVERS,
+    type HornServer,
+    loadHornPreferences,
+    saveHornPreferences,
+} from "@/app/horn/horn-preferences";
+import type { HornResponse } from "@/lib/schemas/nexon";
+
 const SOUND_PATH = "/sounds/money-drop.mp3";
+type HornMessage = HornResponse["horn_bugle_world_history"][number];
 
 /**
  * Displays and searches horn messages for the selected server, with configurable keyword alerts.
  */
 export default function HornPage() {
     const [play] = useSound(SOUND_PATH);
-
-    const [selectedServer, setSelectedServer] = useState(servers[0]);
+    const defaults = defaultHornPreferences();
+    const [selectedServer, setSelectedServer] = useState<HornServer>(
+        defaults.selectedServer
+    );
     const [searchTerm, setSearchTerm] = useState("");
     const [searchNickname, setSearchNickname] = useState("");
-    const [messagesData, setMessagesData] = useState<any>([]);
+    const [messagesData, setMessagesData] = useState<HornMessage[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [aleryKeyword, setAleryKeyword] = useState("");
-    const [alertKeywords, setAlertKeywords] = useState<{ keyword: string }[]>(
-        []
+    const [alertKeywords, setAlertKeywords] = useState<string[]>(
+        defaults.alertKeywords
     );
+    const [soundEnabled, setSoundEnabled] = useState(defaults.soundEnabled);
+    const [preferencesReady, setPreferencesReady] = useState(false);
     const [isAlertKeyaordPopupVisible, setIsAlertKeyaordPopupVisible] =
         useState(false);
-    const [lastAlertTime, setLastAlertTime] = useState("");
     const selectedServerRef = useRef(selectedServer);
     const alertKeywordsRef = useRef(alertKeywords);
-    const lastAlertTimeRef = useRef(lastAlertTime);
+    const soundEnabledRef = useRef(soundEnabled);
+    const lastAlertTimeRef = useRef("");
     const playRef = useRef(play);
+    const requestSequenceRef = useRef(0);
+    const activeControllerRef = useRef<AbortController | null>(null);
 
     useEffect(() => {
-        selectedServerRef.current = selectedServer;
-        alertKeywordsRef.current = alertKeywords;
-        lastAlertTimeRef.current = lastAlertTime;
         playRef.current = play;
-    }, [selectedServer, alertKeywords, lastAlertTime, play]);
+    }, [play]);
 
     useEffect(() => {
+        const preferences = loadHornPreferences();
         const now = new Date().toISOString();
+        selectedServerRef.current = preferences.selectedServer;
+        alertKeywordsRef.current = preferences.alertKeywords;
+        soundEnabledRef.current = preferences.soundEnabled;
         lastAlertTimeRef.current = now;
-        setLastAlertTime(now);
+        setSelectedServer(preferences.selectedServer);
+        setAlertKeywords(preferences.alertKeywords);
+        setSoundEnabled(preferences.soundEnabled);
+        setPreferencesReady(true);
     }, []);
 
     useEffect(() => {
-        const interval = setInterval(() => {
-            fetchMessages().catch(error => {
-                console.error(error);
-            });
-        }, 60000);
+        if (!preferencesReady) return;
+        saveHornPreferences({ selectedServer, alertKeywords, soundEnabled });
+    }, [alertKeywords, preferencesReady, selectedServer, soundEnabled]);
 
-        return () => clearInterval(interval);
+    const checkAlertKeywords = useCallback((messages: HornMessage[]) => {
+        if (!soundEnabledRef.current || alertKeywordsRef.current.length === 0)
+            return;
+        const hasMatch = messages.some(
+            message =>
+                new Date(message.date_send) >=
+                    new Date(lastAlertTimeRef.current) &&
+                alertKeywordsRef.current.some(keyword =>
+                    message.message.includes(keyword)
+                )
+        );
+        if (!hasMatch) return;
+        lastAlertTimeRef.current = new Date().toISOString();
+        playRef.current();
     }, []);
 
-    async function fetchMessages() {
+    const fetchMessages = useCallback(async () => {
+        const sequence = ++requestSequenceRef.current;
+        activeControllerRef.current?.abort();
+        const controller = new AbortController();
+        activeControllerRef.current = controller;
         setLoading(true);
         setError("");
 
@@ -61,6 +95,7 @@ export default function HornPage() {
             const response = await fetch(
                 `/api/horn?${new URLSearchParams({ server_name: selectedServerRef.current })}`,
                 {
+                    signal: controller.signal,
                     headers: {
                         "Content-Type": "application/json",
                     },
@@ -71,67 +106,69 @@ export default function HornPage() {
                 throw new Error("메시지를 가져오는 데 실패했습니다.");
             }
 
-            const data = await response.json();
+            const data = (await response.json()) as HornResponse;
+            if (sequence !== requestSequenceRef.current) return;
             setMessagesData(data.horn_bugle_world_history);
             checkAlertKeywords(data.horn_bugle_world_history);
-        } catch (error: any) {
-            setError(error.message);
+        } catch (error) {
+            if (
+                controller.signal.aborted ||
+                sequence !== requestSequenceRef.current
+            )
+                return;
+            setError(
+                error instanceof Error
+                    ? error.message
+                    : "메시지를 가져오는 데 실패했습니다."
+            );
         } finally {
-            setLoading(false);
-        }
-    }
-
-    function checkAlertKeywords(
-        messages: Array<{
-            character_name: string;
-            message: string;
-            date_send: string;
-        }>
-    ) {
-        if (alertKeywordsRef.current.length === 0) {
-            // Just skip if there is no alert keywords
-            return;
-        }
-
-        const now = new Date().toISOString();
-
-        for (const message of messages) {
-            for (const keyword of alertKeywordsRef.current) {
-                if (
-                    new Date(message.date_send) <
-                    new Date(lastAlertTimeRef.current)
-                ) {
-                    // Skip if the message is older than the last alert time
-                    continue;
-                }
-                if (message.message.includes(keyword.keyword)) {
-                    playRef.current();
-                    lastAlertTimeRef.current = now;
-                    setLastAlertTime(now);
-                    return;
-                }
+            if (sequence === requestSequenceRef.current) {
+                activeControllerRef.current = null;
+                setLoading(false);
             }
         }
-    }
+    }, [checkAlertKeywords]);
+
+    useEffect(() => {
+        if (!preferencesReady) return;
+        void fetchMessages();
+        const interval = setInterval(() => void fetchMessages(), 60000);
+        return () => {
+            clearInterval(interval);
+            requestSequenceRef.current += 1;
+            activeControllerRef.current?.abort();
+        };
+    }, [fetchMessages, preferencesReady, selectedServer]);
 
     function handleSearch() {
-        fetchMessages().catch(error => {
-            console.error(error);
-        });
+        void fetchMessages();
+    }
+
+    function selectServer(server: HornServer) {
+        selectedServerRef.current = server;
+        lastAlertTimeRef.current = new Date().toISOString();
+        setSelectedServer(server);
     }
 
     function removeKeyword(index: number) {
-        const newFavorites = alertKeywords.filter((_, i) => i !== index);
-        setAlertKeywords(newFavorites);
+        const nextKeywords = alertKeywords.filter((_, i) => i !== index);
+        alertKeywordsRef.current = nextKeywords;
+        setAlertKeywords(nextKeywords);
     }
 
     function handleAddKeyword() {
-        if (aleryKeyword.trim() === "") {
-            return;
-        }
-
-        setAlertKeywords([...alertKeywords, { keyword: aleryKeyword }]);
+        const keyword = aleryKeyword.trim();
+        if (!keyword) return;
+        const nextKeywords = [...alertKeywords, keyword];
+        alertKeywordsRef.current = nextKeywords;
+        setAlertKeywords(nextKeywords);
         setAleryKeyword("");
+    }
+
+    function toggleSound(enabled: boolean) {
+        soundEnabledRef.current = enabled;
+        if (enabled) lastAlertTimeRef.current = new Date().toISOString();
+        setSoundEnabled(enabled);
     }
 
     return (
@@ -152,13 +189,9 @@ export default function HornPage() {
                                 tabIndex={0}
                                 className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
                             >
-                                {servers.map(server => (
+                                {HORN_SERVERS.map(server => (
                                     <li key={server}>
-                                        <a
-                                            onClick={() =>
-                                                setSelectedServer(server)
-                                            }
-                                        >
+                                        <a onClick={() => selectServer(server)}>
                                             {server}
                                         </a>
                                     </li>
@@ -224,16 +257,30 @@ export default function HornPage() {
                                     추가
                                 </button>
                             </div>
+                            <label className="mb-3 flex cursor-pointer items-center gap-2">
+                                <input
+                                    type="checkbox"
+                                    className="checkbox checkbox-sm"
+                                    checked={soundEnabled}
+                                    onChange={event =>
+                                        toggleSound(event.target.checked)
+                                    }
+                                />
+                                소리 알림 사용
+                            </label>
+                            <p className="mb-3 text-sm text-base-content/70">
+                                설정은 현재 브라우저와 기기에만 저장됩니다.
+                            </p>
                             {alertKeywords.length === 0 ? (
                                 <div>저장된 알림 키워드가 없습니다.</div>
                             ) : (
                                 <ul className="list-disc ml-4">
-                                    {alertKeywords.map((elem, index) => (
+                                    {alertKeywords.map((keyword, index) => (
                                         <li
                                             key={index}
                                             className="flex justify-between items-center"
                                         >
-                                            <span>{elem.keyword}</span>
+                                            <span>{keyword}</span>
                                             <button
                                                 className="text-red-500 ml-4"
                                                 onClick={() =>

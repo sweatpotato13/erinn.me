@@ -461,25 +461,70 @@ test("contact success clears the form", async ({ page }) => {
     await expect(page.getByLabel("닉네임")).toHaveValue("");
 });
 
-test("horn polling uses the latest server and keeps its label on one line", async ({
+test("horn preferences restore before automatic refresh and polling", async ({
     page,
 }) => {
     const hornRequests: URL[] = [];
     await page.clock.install();
+    await page.addInitScript(() => {
+        if (!localStorage.getItem("hornPreferences")) {
+            localStorage.setItem(
+                "hornPreferences",
+                JSON.stringify({
+                    selectedServer: "울프",
+                    alertKeywords: ["거래"],
+                    soundEnabled: false,
+                })
+            );
+        }
+    });
     await page.route("**/api/horn?**", route => {
         hornRequests.push(new URL(route.request().url()));
-        return route.fulfill({ json: { horn_bugle_world_history: [] } });
+        return route.fulfill({
+            json: {
+                horn_bugle_world_history: [
+                    {
+                        character_name: "테스터",
+                        message: "거래 메시지",
+                        date_send: "2026-08-23T00:00:00Z",
+                    },
+                ],
+            },
+        });
     });
 
     await page.goto("/horn");
+    await expect.poll(() => hornRequests.length).toBeGreaterThan(0);
+    expect(
+        hornRequests.every(
+            request => request.searchParams.get("server_name") === "울프"
+        )
+    ).toBe(true);
+    await expect(page.getByText("거래 메시지")).toBeVisible();
+    const requestCount = hornRequests.length;
     await page.locator(".dropdown").first().getByRole("button").click();
-    await page.getByText("울프", { exact: true }).click();
+    await page.getByText("류트", { exact: true }).click();
+    await expect.poll(() => hornRequests.length).toBeGreaterThan(requestCount);
+    expect(hornRequests.at(-1)?.searchParams.get("server_name")).toBe("류트");
+    const changedServerRequestCount = hornRequests.length;
     await page.clock.fastForward(60_000);
-    await expect.poll(() => hornRequests.length).toBe(1);
-    expect(hornRequests[0].searchParams.get("server_name")).toBe("울프");
+    await expect
+        .poll(() => hornRequests.length)
+        .toBeGreaterThan(changedServerRequestCount);
+    expect(hornRequests.at(-1)?.searchParams.get("server_name")).toBe("류트");
     await expect(
         page.locator(".dropdown").first().getByRole("button")
     ).toHaveCSS("white-space", "nowrap");
+
+    await page.reload();
+    await expect(
+        page.locator(".dropdown").first().getByRole("button")
+    ).toHaveText("류트");
+    await page.getByRole("button", { name: "알림" }).click();
+    await expect(page.getByText("거래", { exact: true })).toBeVisible();
+    await expect(
+        page.getByRole("checkbox", { name: "소리 알림 사용" })
+    ).not.toBeChecked();
 });
 
 test("npc shop validates and renders upstream images without page errors", async ({
