@@ -18,117 +18,240 @@ interface UseHornAlertsOptions {
     setBrowserNotificationsEnabled: (enabled: boolean) => void;
 }
 
-function messageId(server: HornServer, message: HornMessage): string {
-    return JSON.stringify([
-        server,
-        message.date_send,
-        message.character_name,
-        message.message,
-    ]);
+export interface UseHornAlertsResult {
+    notificationPermission: BrowserNotificationPermission;
+    notificationError: string;
+    enableBrowserNotifications: () => Promise<void>;
+    disableBrowserNotifications: () => void;
+    processMessages: (server: HornServer, messages: HornMessage[]) => void;
+    resetBaseline: () => void;
 }
 
-export function useHornAlerts({
-    alertKeywords,
-    soundEnabled,
-    browserNotificationsEnabled,
-    play,
-    setBrowserNotificationsEnabled,
-}: UseHornAlertsOptions) {
-    const [notificationPermission, setNotificationPermission] =
-        useState<BrowserNotificationPermission>("unsupported");
-    const [notificationError, setNotificationError] = useState("");
-    const permissionRef = useRef(notificationPermission);
-    const seenMessagesRef = useRef(new Set<string>());
-    const baselinePendingRef = useRef(true);
-    const latestMessageTimeRef = useRef(Number.NEGATIVE_INFINITY);
-    const keywordsRef = useRef(alertKeywords);
-    const soundEnabledRef = useRef(soundEnabled);
-    const browserNotificationsEnabledRef = useRef(browserNotificationsEnabled);
-    const playRef = useRef(play);
-    keywordsRef.current = alertKeywords;
-    soundEnabledRef.current = soundEnabled;
-    browserNotificationsEnabledRef.current = browserNotificationsEnabled;
-    playRef.current = play;
+interface AlertEntry {
+    id: string;
+    message: HornMessage;
+    time: number;
+}
 
-    const refreshPermission = useCallback(() => {
-        const permission =
-            typeof window !== "undefined" && "Notification" in window
-                ? Notification.permission
-                : "unsupported";
-        permissionRef.current = permission;
-        setNotificationPermission(permission);
-    }, []);
+interface AlertHistory {
+    baselinePending: boolean;
+    latestTime: number;
+    seenMessageTimes: Map<string, number>;
+}
 
+const REQUEST_PERMISSION_ERROR =
+    "브라우저 알림 권한을 요청하지 못했습니다. 잠시 후 다시 시도해 주세요.";
+const DISPLAY_NOTIFICATION_ERROR =
+    "브라우저에서 시스템 알림을 표시하지 못했습니다. 브라우저 또는 기기 설정을 확인해 주세요.";
+
+function currentPermission(): BrowserNotificationPermission {
+    return typeof window !== "undefined" && "Notification" in window
+        ? Notification.permission
+        : "unsupported";
+}
+
+async function requestPermission(): Promise<BrowserNotificationPermission> {
+    if (!("Notification" in window)) return "unsupported";
+    return Notification.permission === "default"
+        ? Notification.requestPermission()
+        : Notification.permission;
+}
+
+function usePermissionRefresh(
+    updatePermission: (permission: BrowserNotificationPermission) => void
+): () => void {
+    const refreshPermission = useCallback(
+        () => updatePermission(currentPermission()),
+        [updatePermission]
+    );
     useEffect(() => {
         refreshPermission();
         window.addEventListener("focus", refreshPermission);
         return () => window.removeEventListener("focus", refreshPermission);
     }, [refreshPermission]);
+    return refreshPermission;
+}
 
-    const enableBrowserNotifications = useCallback(async () => {
-        setNotificationError("");
-        if (!("Notification" in window)) {
-            refreshPermission();
-            setBrowserNotificationsEnabled(false);
-            return;
-        }
-        try {
-            const permission =
-                Notification.permission === "default"
-                    ? await Notification.requestPermission()
-                    : Notification.permission;
+function useNotificationPermission(
+    setBrowserNotificationsEnabled: (enabled: boolean) => void
+) {
+    const [notificationPermission, setNotificationPermission] =
+        useState<BrowserNotificationPermission>("unsupported");
+    const [notificationError, setNotificationError] = useState("");
+    const permissionRef = useRef(notificationPermission);
+    const updatePermission = useCallback(
+        (permission: BrowserNotificationPermission) => {
             permissionRef.current = permission;
             setNotificationPermission(permission);
+        },
+        []
+    );
+    const refreshPermission = usePermissionRefresh(updatePermission);
+
+    const enable = useCallback(async () => {
+        setNotificationError("");
+        try {
+            const permission = await requestPermission();
+            updatePermission(permission);
             setBrowserNotificationsEnabled(permission === "granted");
         } catch {
             refreshPermission();
             setBrowserNotificationsEnabled(false);
+            setNotificationError(REQUEST_PERMISSION_ERROR);
         }
-    }, [refreshPermission, setBrowserNotificationsEnabled]);
-
-    const disableBrowserNotifications = useCallback(() => {
+    }, [refreshPermission, setBrowserNotificationsEnabled, updatePermission]);
+    const disable = useCallback(() => {
         setNotificationError("");
         setBrowserNotificationsEnabled(false);
     }, [setBrowserNotificationsEnabled]);
 
-    const resetBaseline = useCallback(() => {
-        baselinePendingRef.current = true;
-        latestMessageTimeRef.current = Number.NEGATIVE_INFINITY;
-    }, []);
+    return {
+        notificationPermission,
+        notificationError,
+        permissionRef,
+        setNotificationError,
+        enable,
+        disable,
+    };
+}
 
+function createAlertHistory(): AlertHistory {
+    return {
+        baselinePending: true,
+        latestTime: Number.NEGATIVE_INFINITY,
+        seenMessageTimes: new Map(),
+    };
+}
+
+function alertEntry(server: HornServer, message: HornMessage): AlertEntry {
+    return {
+        id: JSON.stringify([
+            server,
+            message.date_send,
+            message.character_name,
+            message.message,
+        ]),
+        message,
+        time: Date.parse(message.date_send),
+    };
+}
+
+function retainLatestIds(history: AlertHistory): void {
+    history.seenMessageTimes.forEach((time, id) => {
+        if (time < history.latestTime) history.seenMessageTimes.delete(id);
+    });
+}
+
+function findNewMatches(
+    history: AlertHistory,
+    server: HornServer,
+    messages: HornMessage[],
+    keywords: string[]
+): HornMessage[] {
+    const entries = messages
+        .map(message => alertEntry(server, message))
+        .filter(({ time }) => !Number.isNaN(time));
+    const latestTime = Math.max(
+        history.latestTime,
+        ...entries.map(({ time }) => time)
+    );
+    if (history.baselinePending) {
+        entries.forEach(({ id, time }) =>
+            history.seenMessageTimes.set(id, time)
+        );
+        history.latestTime = latestTime;
+        history.baselinePending = false;
+        retainLatestIds(history);
+        return [];
+    }
+
+    const unseen = entries.filter(
+        ({ id }) => !history.seenMessageTimes.has(id)
+    );
+    unseen.forEach(({ id, time }) => history.seenMessageTimes.set(id, time));
+    const matches = unseen.filter(
+        ({ message, time }) =>
+            time >= history.latestTime &&
+            keywords.some(keyword => message.message.includes(keyword))
+    );
+    history.latestTime = latestTime;
+    retainLatestIds(history);
+    return matches.map(({ message }) => message);
+}
+
+function displayNotifications(
+    server: HornServer,
+    messages: HornMessage[]
+): boolean {
+    for (const message of messages) {
+        try {
+            const notification = new Notification(
+                `${server} · ${message.character_name}`,
+                { body: message.message }
+            );
+            notification.onclick = () => {
+                notification.close();
+                if (window.location.pathname !== "/horn")
+                    window.history.replaceState(null, "", "/horn");
+                window.focus();
+            };
+        } catch {
+            return false;
+        }
+    }
+    return true;
+}
+
+function useAlertRefs(options: UseHornAlertsOptions) {
+    const keywordsRef = useRef(options.alertKeywords);
+    const soundEnabledRef = useRef(options.soundEnabled);
+    const browserNotificationsEnabledRef = useRef(
+        options.browserNotificationsEnabled
+    );
+    const playRef = useRef(options.play);
+    useEffect(() => {
+        keywordsRef.current = options.alertKeywords;
+        soundEnabledRef.current = options.soundEnabled;
+        browserNotificationsEnabledRef.current =
+            options.browserNotificationsEnabled;
+        playRef.current = options.play;
+    }, [
+        options.alertKeywords,
+        options.browserNotificationsEnabled,
+        options.play,
+        options.soundEnabled,
+    ]);
+    return {
+        keywordsRef,
+        soundEnabledRef,
+        browserNotificationsEnabledRef,
+        playRef,
+    };
+}
+
+function useMessageProcessor(
+    options: UseHornAlertsOptions,
+    permission: ReturnType<typeof useNotificationPermission>
+) {
+    const { permissionRef, setNotificationError } = permission;
+    const historyRef = useRef(createAlertHistory());
+    const {
+        keywordsRef,
+        soundEnabledRef,
+        browserNotificationsEnabledRef,
+        playRef,
+    } = useAlertRefs(options);
+
+    const resetBaseline = useCallback(() => {
+        historyRef.current = createAlertHistory();
+    }, []);
     const processMessages = useCallback(
         (server: HornServer, messages: HornMessage[]) => {
-            const entries = messages.map(message => ({
-                id: messageId(server, message),
-                message,
-                time: Date.parse(message.date_send),
-            }));
-            const latestTime = Math.max(
-                latestMessageTimeRef.current,
-                ...entries.map(({ time }) =>
-                    Number.isNaN(time) ? -Infinity : time
-                )
-            );
-            if (baselinePendingRef.current) {
-                entries.forEach(({ id }) => seenMessagesRef.current.add(id));
-                latestMessageTimeRef.current = latestTime;
-                baselinePendingRef.current = false;
-                return;
-            }
-
-            const previousLatestTime = latestMessageTimeRef.current;
-            const unseen = entries.filter(
-                ({ id }) => !seenMessagesRef.current.has(id)
-            );
-            unseen.forEach(({ id }) => seenMessagesRef.current.add(id));
-            latestMessageTimeRef.current = latestTime;
-            const matches = unseen.filter(
-                ({ message, time }) =>
-                    !Number.isNaN(time) &&
-                    time >= previousLatestTime &&
-                    keywordsRef.current.some(keyword =>
-                        message.message.includes(keyword)
-                    )
+            const matches = findNewMatches(
+                historyRef.current,
+                server,
+                messages,
+                keywordsRef.current
             );
             if (matches.length === 0) return;
             if (soundEnabledRef.current) playRef.current();
@@ -138,36 +261,33 @@ export function useHornAlerts({
                 !("Notification" in window)
             )
                 return;
+            if (displayNotifications(server, matches)) return;
 
-            for (const { message } of matches) {
-                try {
-                    const notification = new Notification(
-                        `${server} · ${message.character_name}`,
-                        { body: message.message }
-                    );
-                    notification.onclick = () => {
-                        notification.close();
-                        window.focus();
-                    };
-                } catch {
-                    browserNotificationsEnabledRef.current = false;
-                    setBrowserNotificationsEnabled(false);
-                    setNotificationError(
-                        "브라우저에서 시스템 알림을 표시하지 못했습니다. 브라우저 또는 기기 설정을 확인해 주세요."
-                    );
-                    break;
-                }
-            }
+            browserNotificationsEnabledRef.current = false;
+            options.setBrowserNotificationsEnabled(false);
+            setNotificationError(DISPLAY_NOTIFICATION_ERROR);
         },
-        [setBrowserNotificationsEnabled]
+        [
+            options.setBrowserNotificationsEnabled,
+            permissionRef,
+            setNotificationError,
+        ]
     );
+    return { processMessages, resetBaseline };
+}
 
+export function useHornAlerts(
+    options: UseHornAlertsOptions
+): UseHornAlertsResult {
+    const permission = useNotificationPermission(
+        options.setBrowserNotificationsEnabled
+    );
+    const processor = useMessageProcessor(options, permission);
     return {
-        notificationPermission,
-        notificationError,
-        enableBrowserNotifications,
-        disableBrowserNotifications,
-        processMessages,
-        resetBaseline,
+        notificationPermission: permission.notificationPermission,
+        notificationError: permission.notificationError,
+        enableBrowserNotifications: permission.enable,
+        disableBrowserNotifications: permission.disable,
+        ...processor,
     };
 }
