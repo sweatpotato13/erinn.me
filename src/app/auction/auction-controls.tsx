@@ -1,7 +1,8 @@
-import { Loader } from "lucide-react";
+import { Loader, Share2 } from "lucide-react";
 import type { KeyboardEvent } from "react";
 
 import type { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
+import type { AuctionUrlFeedback } from "@/app/auction/use-auction-url-state";
 import { categories } from "@/constant/categories";
 
 type Suggestions = ReturnType<typeof useAuctionSuggestions>;
@@ -149,7 +150,34 @@ type AuctionControlsProps = InputProps & {
     setSelectedCategory: (category: string) => void;
     loading: boolean;
     onSearch: () => void;
+    canShare: boolean;
+    sharing: boolean;
+    feedback: AuctionUrlFeedback | null;
+    onShare: () => void;
 };
+
+function AuctionFeedback({
+    feedback,
+}: {
+    feedback: AuctionUrlFeedback | null;
+}) {
+    if (!feedback) return null;
+    const kindClass =
+        feedback.kind === "error"
+            ? "alert-error"
+            : feedback.kind === "success"
+              ? "alert-success"
+              : "alert-info";
+    return (
+        <div
+            className={`alert mt-2 ${kindClass}`}
+            role={feedback.kind === "error" ? "alert" : "status"}
+            aria-live={feedback.kind === "error" ? undefined : "polite"}
+        >
+            <span>{feedback.message}</span>
+        </div>
+    );
+}
 
 /**
  * Renders auction search controls with autocomplete, search submission, category selection, and loading feedback.
@@ -158,10 +186,11 @@ type AuctionControlsProps = InputProps & {
  */
 export function AuctionControls(props: AuctionControlsProps) {
     return (
-        <div className="flex flex-col md:flex-row md:justify-between mb-2">
-            <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full">
+        <div className="mb-2">
+            <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0 w-full">
                 <SuggestionInput {...props} />
                 <button
+                    type="button"
                     className="btn btn-outline w-full md:w-auto"
                     onClick={props.onSearch}
                 >
@@ -171,8 +200,22 @@ export function AuctionControls(props: AuctionControlsProps) {
                         "검색"
                     )}
                 </button>
+                <button
+                    type="button"
+                    className="btn btn-outline w-full md:w-auto"
+                    disabled={!props.canShare || props.sharing}
+                    onClick={props.onShare}
+                >
+                    {props.sharing ? (
+                        <Loader className="animate-spin" aria-hidden="true" />
+                    ) : (
+                        <Share2 aria-hidden="true" />
+                    )}
+                    {props.sharing ? "공유 중" : "검색 공유"}
+                </button>
                 <CategoryDropdown {...props} />
             </div>
+            <AuctionFeedback feedback={props.feedback} />
         </div>
     );
 }

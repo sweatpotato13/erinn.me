@@ -1,5 +1,9 @@
 import React from "react";
 
+import {
+    parseEnchantName,
+    parseReforgeOptionValue,
+} from "@/lib/auction-options";
 import type { ItemOption } from "@/types/item-option";
 
 import { ENCHANT_OPTIONS } from "../../constant/enchants";
@@ -167,7 +171,7 @@ function OptionRenderer({ options }: OptionRendererProps) {
                 <OptionSection title="인챈트">
                     {enchants.map((enchant, index) => {
                         const enchantName =
-                            enchant.option_value?.split("(")[0].trim() || "";
+                            parseEnchantName(enchant.option_value) ?? "";
                         const enchantInfo = enchantName
                             ? ENCHANT_OPTIONS[enchantName]
                             : undefined;
@@ -379,22 +383,20 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                 Number(b.option_sub_type)
                         )
                         .map((option, index) => {
-                            // 레벨 정보 분리를 위한 새로운 정규식
-                            const levelMatch = option.option_value?.match(
-                                /(.+?)\((\d+)레벨:(.+)\)/
+                            const parsed = parseReforgeOptionValue(
+                                option.option_value
                             );
 
-                            if (levelMatch) {
-                                const [, statName, level, effect] = levelMatch;
+                            if (parsed) {
                                 return (
                                     <div
                                         key={`magic-${option.option_sub_type}-${index}`}
                                     >
                                         <div className="text-blue-400">
-                                            • {statName}({level}레벨)
+                                            • {parsed.name}({parsed.level}레벨)
                                         </div>
                                         <div className="pl-6 text-white">
-                                            ㄴ {effect.trim()}
+                                            ㄴ {parsed.effect}
                                         </div>
                                     </div>
                                 );

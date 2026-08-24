@@ -75,6 +75,12 @@ async function setupMarketRoutes(page: Page) {
             json: { items: marketItems, hasMore: true, nextCursor: "next" },
         });
     });
+    await page.route("**/api/auction?**", route => {
+        counts.auction += 1;
+        return route.fulfill({
+            json: { items: marketItems, hasMore: true, nextCursor: "next" },
+        });
+    });
     await page.route("**/api/auction/history?**", route => {
         counts.history += 1;
         return route.fulfill({
@@ -103,7 +109,7 @@ async function searchMarket(page: Page, itemName = "아이템") {
                 new URL(response.url()).pathname === "/api/auction/history" &&
                 response.ok()
         ),
-        page.getByRole("button", { name: "검색" }).click(),
+        page.getByRole("button", { name: "검색", exact: true }).click(),
     ]);
 }
 
@@ -200,6 +206,184 @@ async function capturedHornNotifications(page: Page) {
             ).__hornNotifications
     );
 }
+
+test("auction URL restores on open and refresh", async ({ page }) => {
+    const counts = await setupMarketRoutes(page);
+    await page.goto("/auction?q=한글+검&category=검", {
+        waitUntil: "networkidle",
+    });
+
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("한글 검");
+    await expect(
+        page.getByRole("button", { name: "검", exact: true })
+    ).toBeVisible();
+    expect(counts).toEqual({ auction: 1, history: 1 });
+
+    await page.reload({ waitUntil: "networkidle" });
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("한글 검");
+    expect(counts).toEqual({ auction: 2, history: 2 });
+});
+
+test("auction history follows committed searches without duplicate entries", async ({
+    page,
+}) => {
+    const counts = await setupMarketRoutes(page);
+    await page.goto("/auction?view=compact", { waitUntil: "networkidle" });
+
+    await searchMarket(page, "첫 검색");
+    expect(new URL(page.url()).searchParams.get("view")).toBe("compact");
+    expect(new URL(page.url()).searchParams.get("q")).toBe("첫 검색");
+    await searchMarket(page, "첫 검색");
+    await searchMarket(page, "두 번째 검색");
+    expect(counts).toEqual({ auction: 3, history: 3 });
+
+    await page.goBack();
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("첫 검색");
+    await expect.poll(() => counts.auction).toBe(4);
+    await page.goBack();
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("");
+    expect(new URL(page.url()).searchParams.get("view")).toBe("compact");
+    expect(new URL(page.url()).searchParams.has("q")).toBe(false);
+
+    await page.goForward();
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("첫 검색");
+    await expect.poll(() => counts.auction).toBe(5);
+    await page.goForward();
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("두 번째 검색");
+    await expect.poll(() => counts.auction).toBe(6);
+});
+
+test("auction URL replaces obsolete values with visible feedback", async ({
+    page,
+}) => {
+    const counts = await setupMarketRoutes(page);
+    await page.goto("/auction?view=compact&q=한글+검&category=폐기된카테고리", {
+        waitUntil: "networkidle",
+    });
+
+    const url = new URL(page.url());
+    expect(url.searchParams.get("view")).toBe("compact");
+    expect(url.searchParams.get("q")).toBe("한글 검");
+    expect(url.searchParams.has("category")).toBe(false);
+    await expect(
+        page.getByRole("alert").filter({
+            hasText: "유효하지 않은 검색 링크의 일부 조건을 기본값으로 복원했습니다.",
+        })
+    ).toBeVisible();
+    await expect(
+        page.getByRole("button", { name: "모든 카테고리", exact: true })
+    ).toBeVisible();
+    expect(counts).toEqual({ auction: 1, history: 1 });
+});
+
+test("auction search uses native sharing without listing data", async ({
+    page,
+}) => {
+    const prohibitedParams = [
+        "cursor",
+        "listingId",
+        "price",
+        "item_count",
+        "item_option",
+        "date_auction_expire",
+    ];
+    await page.addInitScript(() => {
+        Object.defineProperty(navigator, "share", {
+            configurable: true,
+            value: (data: ShareData) => {
+                Object.assign(window, { __auctionShare: data });
+                return Promise.resolve();
+            },
+        });
+    });
+    await setupMarketRoutes(page);
+    const query = new URLSearchParams({ view: "compact", q: "한글 검" });
+    prohibitedParams.forEach(key => query.set(key, "stale"));
+    await page.goto(`/auction?${query}`, {
+        waitUntil: "networkidle",
+    });
+    for (const key of prohibitedParams) {
+        await expect
+            .poll(() => new URL(page.url()).searchParams.has(key))
+            .toBe(false);
+    }
+    await page.getByRole("button", { name: "검색 공유" }).click();
+
+    await expect(page.getByText("검색 링크를 공유했습니다.")).toBeVisible();
+    const shared = await page.evaluate(
+        () =>
+            (
+                window as typeof window & {
+                    __auctionShare: ShareData;
+                }
+            ).__auctionShare
+    );
+    expect(shared.title).toBe("Erinn.me 경매장 검색");
+    const sharedUrl = new URL(shared.url ?? "");
+    expect(sharedUrl.searchParams.get("q")).toBe("한글 검");
+    expect(sharedUrl.searchParams.get("view")).toBe("compact");
+    for (const key of prohibitedParams) {
+        expect(sharedUrl.searchParams.has(key)).toBe(false);
+    }
+});
+
+test("auction search copies the URL when native sharing is unavailable", async ({
+    page,
+}) => {
+    await page.addInitScript(() => {
+        Object.defineProperty(navigator, "share", {
+            configurable: true,
+            value: undefined,
+        });
+        Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: {
+                writeText: (url: string) => {
+                    Object.assign(window, { __auctionCopy: url });
+                    return Promise.resolve();
+                },
+            },
+        });
+    });
+    await setupMarketRoutes(page);
+    await page.goto("/auction?q=복사+검색", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "검색 공유" }).click();
+
+    await expect(page.getByText("검색 링크를 복사했습니다.")).toBeVisible();
+    const copied = await page.evaluate(
+        () =>
+            (
+                window as typeof window & {
+                    __auctionCopy: string;
+                }
+            ).__auctionCopy
+    );
+    expect(new URL(copied).searchParams.get("q")).toBe("복사 검색");
+});
+
+test("auction search reports a copy failure", async ({ page }) => {
+    await page.addInitScript(() => {
+        Object.defineProperty(navigator, "share", {
+            configurable: true,
+            value: undefined,
+        });
+        Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: {
+                writeText: () => Promise.reject(new Error("denied")),
+            },
+        });
+    });
+    await setupMarketRoutes(page);
+    await page.goto("/auction?q=실패+검색", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "검색 공유" }).click();
+
+    await expect(
+        page.getByRole("alert").filter({
+            hasText: "검색 링크를 공유하거나 복사하지 못했습니다.",
+        })
+    ).toBeVisible();
+});
 
 test("auction search renders the incomplete market snapshot", async ({
     page,
@@ -303,7 +487,7 @@ test("inexact item names show recent-sales guidance", async ({ page }) => {
                 new URL(response.url()).pathname === "/api/auction/history" &&
                 response.status() === 422
         ),
-        page.getByRole("button", { name: "검색" }).click(),
+        page.getByRole("button", { name: "검색", exact: true }).click(),
     ]);
     await expect(
         page.getByText(
@@ -615,14 +799,14 @@ test("horn browser notifications require consent and avoid duplicate alerts", as
     await page.getByRole("button", { name: "닫기" }).click();
 
     routeState.includeNew = true;
-    await page.getByRole("button", { name: "검색" }).click();
+    await page.getByRole("button", { name: "검색", exact: true }).click();
     await expect
         .poll(async () => (await capturedHornNotifications(page)).length)
         .toBe(1);
     expect(await capturedHornNotifications(page)).toEqual([
         { title: "울프 · 신규", options: { body: "거래 메시지" } },
     ]);
-    await page.getByRole("button", { name: "검색" }).click();
+    await page.getByRole("button", { name: "검색", exact: true }).click();
     await expect
         .poll(async () => (await capturedHornNotifications(page)).length)
         .toBe(1);

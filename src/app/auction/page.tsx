@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 
 import { AuctionControls } from "@/app/auction/auction-controls";
 import {
@@ -14,6 +14,11 @@ import {
 import type { AuctionItem, Favorite, ItemOption } from "@/app/auction/types";
 import { useAuctionSearch } from "@/app/auction/use-auction-search";
 import { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
+import {
+    type AuctionUrlFeedback,
+    type AuctionUrlSearch,
+    useAuctionUrlState,
+} from "@/app/auction/use-auction-url-state";
 import {
     type ComparisonSelection,
     useComparisonSelection,
@@ -38,11 +43,15 @@ type AuctionViewProps = {
     auction: ReturnType<typeof useAuctionSearch>;
     recentSales: ReturnType<typeof useRecentSales>;
     searchLoading: boolean;
+    canShare: boolean;
+    sharing: boolean;
+    feedback: AuctionUrlFeedback | null;
     comparison: ComparisonSelection;
     setSearchTerm: (value: string) => void;
     setSelectedCategory: (value: string) => void;
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
     onSearch: () => void;
+    onShare: () => void;
     onSelectFavorite: (favorite: Favorite) => void;
     onShowFavorites: (show: boolean) => void;
     onShowOptions: (options: ItemOption[] | null) => void;
@@ -109,10 +118,49 @@ function AuctionPageView(props: AuctionViewProps) {
     );
 }
 
+type AuctionSearchLifecycleProps = {
+    setSearchTerm: (value: string) => void;
+    setSelectedCategory: (value: string) => void;
+    setCurrentPage: (value: number) => void;
+    setShowFavorites: (value: boolean) => void;
+    setOptions: (value: ItemOption[] | null) => void;
+    clearComparison: () => void;
+};
+
+function useAuctionSearchLifecycle(props: AuctionSearchLifecycleProps) {
+    const auction = useAuctionSearch();
+    const recentSales = useRecentSales();
+    const restoreSearch = (search: AuctionUrlSearch | null) => {
+        const itemName = search?.itemName ?? "";
+        const category = search?.category ?? categories[0];
+        props.setSearchTerm(itemName);
+        props.setSelectedCategory(category);
+        props.setCurrentPage(1);
+        props.setShowFavorites(false);
+        props.setOptions(null);
+        props.clearComparison();
+        if (!search) {
+            auction.reset();
+            void recentSales.search("");
+            return;
+        }
+        void Promise.allSettled([
+            auction.search(itemName, category),
+            recentSales.search(itemName),
+        ]);
+    };
+    const urlState = useAuctionUrlState(restoreSearch);
+    const selectFavorite = (favorite: Favorite) => {
+        urlState.commit(favorite.itemName, favorite.category);
+        props.setShowFavorites(false);
+    };
+    return { auction, recentSales, selectFavorite, urlState };
+}
+
 /**
  * Renders the auction search page and manages its search, favorites, pagination, and item options state.
  */
-export default function AuctionPage() {
+function AuctionPageContent() {
     const [currentPage, setCurrentPage] = useState(1);
     const [selectedCategory, setSelectedCategory] = useState(categories[0]);
     const [searchTerm, setSearchTerm] = useState("");
@@ -123,32 +171,28 @@ export default function AuctionPage() {
     const favoritesTriggerRef = useRef<HTMLButtonElement>(null);
     const suggestions = useAuctionSuggestions(searchTerm);
     const favorites = useFavorites();
-    const auction = useAuctionSearch();
-    const recentSales = useRecentSales();
-
-    const search = (itemName = searchTerm, category = selectedCategory) => {
-        setCurrentPage(1);
-        clearComparison();
-        return Promise.allSettled([
-            auction.search(itemName, category),
-            recentSales.search(itemName),
-        ]);
-    };
-    const selectFavorite = (favorite: Favorite) => {
-        setSearchTerm(favorite.itemName);
-        setSelectedCategory(favorite.category);
-        void search(favorite.itemName, favorite.category);
-        setShowFavorites(false);
-    };
+    const { auction, recentSales, selectFavorite, urlState } =
+        useAuctionSearchLifecycle({
+            setSearchTerm,
+            setSelectedCategory,
+            setCurrentPage,
+            setShowFavorites,
+            setOptions,
+            clearComparison,
+        });
     return (
         <AuctionPageView
             {...{ searchTerm, selectedCategory, showFavorites, options }}
             {...{ currentPage, suggestions, favorites, auction, recentSales }}
             comparison={comparison}
             searchLoading={auction.loading || recentSales.loading}
+            canShare={urlState.canShare}
+            sharing={urlState.sharing}
+            feedback={urlState.feedback}
             favoritesTriggerRef={favoritesTriggerRef}
             {...{ setSearchTerm, setSelectedCategory, setCurrentPage }}
-            onSearch={() => void search()}
+            onSearch={() => urlState.commit(searchTerm, selectedCategory)}
+            onShare={() => void urlState.share()}
             onSelectFavorite={selectFavorite}
             onShowFavorites={setShowFavorites}
             onShowOptions={setOptions}
@@ -156,5 +200,19 @@ export default function AuctionPage() {
             onRemoveComparison={removeComparison}
             onClearComparison={clearComparison}
         />
+    );
+}
+
+export default function AuctionPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="p-6 text-center" role="status">
+                    경매장 검색을 준비하고 있습니다.
+                </div>
+            }
+        >
+            <AuctionPageContent />
+        </Suspense>
     );
 }
