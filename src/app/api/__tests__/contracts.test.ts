@@ -26,6 +26,24 @@ function historySale(id = "sale-1") {
     };
 }
 
+function auctionItem(
+    id: string,
+    item_option: Array<{
+        option_type: string;
+        option_value: string | null;
+        option_sub_type?: string | null;
+    }>
+) {
+    return {
+        item_name: id,
+        item_display_name: id,
+        item_count: 1,
+        auction_price_per_unit: 100,
+        date_auction_expire: "2026-08-24T00:00:00Z",
+        item_option,
+    };
+}
+
 describe("API query contracts", () => {
     beforeEach(() => {
         global.fetch = jest.fn();
@@ -87,6 +105,71 @@ describe("API query contracts", () => {
             "검+창"
         );
     });
+
+    it.each([
+        [getAuction, "/api/auction?item_name=sword"],
+        [getKeyword, "/api/auction/keyword-search?keyword=sword"],
+    ])(
+        "filters supported options without forwarding them",
+        async (handler, path) => {
+            const matching = auctionItem("matching", [
+                {
+                    option_type: "세공 옵션",
+                    option_value: "볼트 대미지(10레벨:효과)",
+                },
+            ]);
+            jest.mocked(fetch).mockResolvedValue(
+                new Response(
+                    JSON.stringify({
+                        auction_item: [
+                            matching,
+                            auctionItem("malformed", [
+                                {
+                                    option_type: "세공 옵션",
+                                    option_value: "깨진 값",
+                                },
+                            ]),
+                            auctionItem("missing", []),
+                        ],
+                        next_cursor: null,
+                    })
+                )
+            );
+
+            const response = await handler(
+                request(
+                    `${path}&option_reforge=${encodeURIComponent("볼트 대미지")}&option_reforge_min_level=10`
+                )
+            );
+            const upstreamUrl = jest.mocked(fetch).mock.calls[0][0] as URL;
+
+            expect(upstreamUrl.searchParams.has("option_reforge")).toBe(false);
+            expect(await response.json()).toEqual({
+                items: [matching],
+                hasMore: false,
+                nextCursor: null,
+                evaluation: { scannedCount: 3, unevaluableCount: 1 },
+            });
+        }
+    );
+
+    it.each([
+        [getAuction, "/api/auction?item_name=sword"],
+        [getKeyword, "/api/auction/keyword-search?keyword=sword"],
+    ])(
+        "rejects invalid option filters before fetching",
+        async (handler, path) => {
+            const response = await handler(
+                request(`${path}&option_erg_grade=C`)
+            );
+
+            expect(response.status).toBe(400);
+            expect(await response.json()).toEqual({
+                error: "에르그 등급은 B, A, S만 지원합니다.",
+            });
+            expect(fetch).not.toHaveBeenCalled();
+        }
+    );
 
     it.each([
         [getAuction, `/api/auction?item_name=${"a".repeat(101)}`],

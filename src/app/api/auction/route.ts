@@ -10,7 +10,14 @@ import {
     throwIfDeadlineExpired,
     upstreamErrorResponse,
 } from "@/lib/api/upstream";
-import { AuctionListResponseSchema } from "@/lib/schemas/nexon";
+import {
+    evaluateAuctionItemOptions,
+    parseAuctionOptionFilterQuery,
+} from "@/lib/auction-options";
+import {
+    type AuctionListResponse,
+    AuctionListResponseSchema,
+} from "@/lib/schemas/nexon";
 import { checkOrigin } from "@/lib/utils/check-origin";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
@@ -40,9 +47,15 @@ export async function GET(request: Request) {
 
     const query = parseQuery(request, querySchema);
     if (!query.success) return query.response;
+    const filterQuery = parseAuctionOptionFilterQuery(
+        new URL(request.url).searchParams
+    );
+    if (!filterQuery.success) {
+        return NextResponse.json({ error: filterQuery.error }, { status: 400 });
+    }
 
     const deadline = createRequestDeadline(request.signal, 15_000);
-    const allItems: Record<string, unknown>[] = [];
+    const allItems: AuctionListResponse["auction_item"] = [];
     let nextCursor: string | null = query.data.cursor ?? "";
     let pageCount = 0;
 
@@ -85,10 +98,19 @@ export async function GET(request: Request) {
         } while (nextCursor && pageCount < MAX_PAGES);
 
         throwIfDeadlineExpired(deadline);
+        const evaluation = filterQuery.filters
+            ? evaluateAuctionItemOptions(allItems, filterQuery.filters)
+            : null;
         return NextResponse.json({
-            items: allItems,
+            items: evaluation?.items ?? allItems,
             hasMore: !!nextCursor,
             nextCursor,
+            ...(evaluation && {
+                evaluation: {
+                    scannedCount: evaluation.scannedCount,
+                    unevaluableCount: evaluation.unevaluableCount,
+                },
+            }),
         });
     } catch (error) {
         return upstreamErrorResponse("/api/auction", error);
