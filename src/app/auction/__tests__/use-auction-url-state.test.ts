@@ -12,9 +12,14 @@ describe("auction URL state", () => {
         const result = setAuctionSearchUrl(current, {
             itemName: "  한글 검  ",
             category: "검",
+            optionFilters: {},
         });
 
-        expect(result.search).toEqual({ itemName: "한글 검", category: "검" });
+        expect(result.search).toEqual({
+            itemName: "한글 검",
+            category: "검",
+            optionFilters: {},
+        });
         expect(result.url.searchParams.get("q")).toBe("한글 검");
         expect(result.url.searchParams.get("category")).toBe("검");
         expect(result.url.searchParams.get("view")).toBe("compact");
@@ -36,6 +41,7 @@ describe("auction URL state", () => {
         const result = setAuctionSearchUrl(current, {
             itemName: "검",
             category: categories[0],
+            optionFilters: {},
         });
 
         expect(result.url.searchParams.get("q")).toBe("검");
@@ -50,10 +56,13 @@ describe("auction URL state", () => {
         ["q=", null],
         [`q=${"가".repeat(101)}`, null],
         ["category=폐기된카테고리", null],
-        ["q=검&q=활", { itemName: "검", category: categories[0] }],
+        [
+            "q=검&q=활",
+            { itemName: "검", category: categories[0], optionFilters: {} },
+        ],
         [
             "q=검&category=폐기된카테고리",
-            { itemName: "검", category: categories[0] },
+            { itemName: "검", category: categories[0], optionFilters: {} },
         ],
     ])("normalizes invalid params: %s", (query, search) => {
         const result = parseAuctionSearchParams(new URLSearchParams(query));
@@ -71,8 +80,82 @@ describe("auction URL state", () => {
         const result = setAuctionSearchUrl(current, {
             itemName: "검",
             category: categories[0],
+            optionFilters: {},
         });
 
         expect(result.url.href).toBe(current.href);
+    });
+
+    it("round-trips canonical option filters", () => {
+        const result = setAuctionSearchUrl(
+            new URL("https://erinn.me/auction?view=compact&option_unknown=x"),
+            {
+                itemName: "검",
+                category: categories[0],
+                optionFilters: {
+                    enchantName: "  여명  ",
+                    reforge: { optionName: "볼트  대미지", minLevel: 10 },
+                    erg: { grade: "S", minLevel: 40 },
+                },
+            }
+        );
+
+        expect(result.search).toEqual({
+            itemName: "검",
+            category: categories[0],
+            optionFilters: {
+                enchantName: "여명",
+                reforge: { optionName: "볼트 대미지", minLevel: 10 },
+                erg: { grade: "S", minLevel: 40 },
+            },
+        });
+        expect(result.url.searchParams.get("option_enchant")).toBe("여명");
+        expect(result.url.searchParams.get("option_reforge")).toBe(
+            "볼트 대미지"
+        );
+        expect(result.url.searchParams.get("option_erg")).toBe("present");
+        expect(result.url.searchParams.get("option_erg_grade")).toBe("S");
+        expect(result.url.searchParams.has("option_unknown")).toBe(false);
+        expect(result.url.searchParams.get("view")).toBe("compact");
+    });
+
+    it.each([
+        [
+            "q=검&option_reforge=볼트",
+            "세공 옵션 이름과 최소 레벨을 함께 입력해주세요.",
+        ],
+        [
+            "q=검&option_unknown=x",
+            "지원하지 않는 장비 옵션 필터입니다: option_unknown",
+        ],
+        [
+            "q=검&option_enchant=a&option_enchant=b",
+            "장비 옵션 필터는 같은 항목을 한 번만 지정할 수 있습니다: option_enchant",
+        ],
+    ])("removes invalid option params: %s", (query, filterError) => {
+        const result = parseAuctionSearchParams(new URLSearchParams(query));
+
+        expect(result.invalid).toBe(true);
+        expect(result.filterError).toBe(filterError);
+        expect(result.search).toEqual({
+            itemName: "검",
+            category: categories[0],
+            optionFilters: {},
+        });
+        expect(
+            Array.from(result.normalized.keys()).some(key =>
+                key.startsWith("option_")
+            )
+        ).toBe(false);
+    });
+
+    it("removes option filters without a base search", () => {
+        const result = parseAuctionSearchParams(
+            new URLSearchParams("view=compact&option_erg=present")
+        );
+
+        expect(result.search).toBeNull();
+        expect(result.invalid).toBe(true);
+        expect(result.normalized.toString()).toBe("view=compact");
     });
 });
