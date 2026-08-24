@@ -156,6 +156,19 @@ export function useAuctionSearch() {
         []
     );
 
+    const reset = () => {
+        sequenceRef.current += 1;
+        activeControllerRef.current?.abort();
+        activeControllerRef.current = null;
+        setItems([]);
+        setSummary(null);
+        setHasMore(false);
+        setRefreshedAt(null);
+        setErrorMessage(null);
+        setLoading(false);
+        setSortDirection(null);
+    };
+
     const search = async (itemName: string, category: string) => {
         const sequence = ++sequenceRef.current;
         activeControllerRef.current?.abort();
@@ -202,6 +215,7 @@ export function useAuctionSearch() {
         errorMessage,
         loading,
         sortDirection,
+        reset,
         search,
         sortByPrice,
     };

@@ -153,6 +153,10 @@ describe("AuctionControls", () => {
                 setSelectedCategory={jest.fn()}
                 loading={false}
                 onSearch={jest.fn()}
+                canShare={false}
+                sharing={false}
+                feedback={null}
+                onShare={jest.fn()}
             />
         );
         return { setSearchTerm, setActiveIndex, setIsVisible };
@@ -194,12 +198,65 @@ describe("AuctionControls", () => {
                 setSelectedCategory={setSelectedCategory}
                 loading={false}
                 onSearch={jest.fn()}
+                canShare={false}
+                sharing={false}
+                feedback={null}
+                onShare={jest.fn()}
             />
         );
         await user.click(
             screen.getByRole("button", { name: categories[1], exact: true })
         );
         expect(setSelectedCategory).toHaveBeenCalledWith(categories[1]);
+    });
+
+    it("enables sharing only for an active search", async () => {
+        const user = userEvent.setup();
+        const onShare = jest.fn();
+        const suggestions = {
+            suggestions: [],
+            activeIndex: 0,
+            setActiveIndex: jest.fn(),
+            isVisible: false,
+            setIsVisible: jest.fn(),
+            activeSuggestionRef: createRef<HTMLButtonElement>(),
+        };
+        const { rerender } = render(
+            <AuctionControls
+                searchTerm="검"
+                setSearchTerm={jest.fn()}
+                suggestions={suggestions}
+                selectedCategory={categories[0]}
+                setSelectedCategory={jest.fn()}
+                loading={false}
+                onSearch={jest.fn()}
+                canShare={false}
+                sharing={false}
+                feedback={null}
+                onShare={onShare}
+            />
+        );
+        expect(
+            screen.getByRole("button", { name: "검색 공유" })
+        ).toBeDisabled();
+
+        rerender(
+            <AuctionControls
+                searchTerm="검"
+                setSearchTerm={jest.fn()}
+                suggestions={suggestions}
+                selectedCategory={categories[0]}
+                setSelectedCategory={jest.fn()}
+                loading={false}
+                onSearch={jest.fn()}
+                canShare
+                sharing={false}
+                feedback={null}
+                onShare={onShare}
+            />
+        );
+        await user.click(screen.getByRole("button", { name: "검색 공유" }));
+        expect(onShare).toHaveBeenCalledTimes(1);
     });
 });
 
@@ -290,6 +347,36 @@ describe("useAuctionSearch", () => {
         );
         await act(async () => result.current.search("", categories[1]));
         expect(fetchMock.mock.calls[1][0]).toContain("auction_item_category=");
+    });
+
+    it("resets errors and aborts the active request", async () => {
+        global.fetch = jest.fn();
+        const { result } = renderHook(() => useAuctionSearch());
+        await act(async () => result.current.search("", categories[0]));
+        expect(result.current.errorMessage).not.toBeNull();
+
+        let signal: AbortSignal | undefined;
+        global.fetch = jest.fn((_input, init) => {
+            signal = init?.signal ?? undefined;
+            return new Promise<Response>((_resolve, reject) =>
+                signal?.addEventListener("abort", () =>
+                    reject(new DOMException("Aborted", "AbortError"))
+                )
+            );
+        });
+        let pendingSearch!: Promise<void>;
+        act(() => {
+            pendingSearch = result.current.search("검", categories[0]);
+        });
+        expect(result.current.loading).toBe(true);
+        act(() => result.current.reset());
+        expect(signal?.aborted).toBe(true);
+        expect(result.current.items).toEqual([]);
+        expect(result.current.summary).toBeNull();
+        expect(result.current.errorMessage).toBeNull();
+        expect(result.current.loading).toBe(false);
+        expect(result.current.sortDirection).toBeNull();
+        await act(async () => pendingSearch);
     });
 
     it("sorts loaded prices in both directions", async () => {
