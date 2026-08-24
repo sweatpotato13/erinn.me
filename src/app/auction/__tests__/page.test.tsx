@@ -352,7 +352,7 @@ describe("useAuctionSearch", () => {
     it("resets errors and aborts the active request", async () => {
         global.fetch = jest.fn();
         const { result } = renderHook(() => useAuctionSearch());
-        await act(async () => result.current.search("", categories[0]));
+        await act(() => result.current.search("", categories[0]));
         expect(result.current.errorMessage).not.toBeNull();
 
         let signal: AbortSignal | undefined;

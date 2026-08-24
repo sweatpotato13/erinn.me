@@ -156,6 +156,29 @@ type AuctionControlsProps = InputProps & {
     onShare: () => void;
 };
 
+function AuctionFeedback({
+    feedback,
+}: {
+    feedback: AuctionUrlFeedback | null;
+}) {
+    if (!feedback) return null;
+    const kindClass =
+        feedback.kind === "error"
+            ? "alert-error"
+            : feedback.kind === "success"
+              ? "alert-success"
+              : "alert-info";
+    return (
+        <div
+            className={`alert mt-2 ${kindClass}`}
+            role={feedback.kind === "error" ? "alert" : "status"}
+            aria-live={feedback.kind === "error" ? undefined : "polite"}
+        >
+            <span>{feedback.message}</span>
+        </div>
+    );
+}
+
 /**
  * Renders auction search controls with autocomplete, search submission, category selection, and loading feedback.
  *
@@ -192,23 +215,7 @@ export function AuctionControls(props: AuctionControlsProps) {
                 </button>
                 <CategoryDropdown {...props} />
             </div>
-            {props.feedback && (
-                <div
-                    className={`alert mt-2 ${
-                        props.feedback.kind === "error"
-                            ? "alert-error"
-                            : props.feedback.kind === "success"
-                              ? "alert-success"
-                              : "alert-info"
-                    }`}
-                    role={props.feedback.kind === "error" ? "alert" : "status"}
-                    aria-live={
-                        props.feedback.kind === "error" ? undefined : "polite"
-                    }
-                >
-                    <span>{props.feedback.message}</span>
-                </div>
-            )}
+            <AuctionFeedback feedback={props.feedback} />
         </div>
     );
 }
