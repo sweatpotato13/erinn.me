@@ -4,6 +4,10 @@ import { Suspense, useRef, useState } from "react";
 
 import { AuctionControls } from "@/app/auction/auction-controls";
 import {
+    AuctionPresetsDialog,
+    AuctionPresetToolbar,
+} from "@/app/auction/auction-presets-dialog";
+import {
     AuctionResults,
     ItemOptionsDialog,
 } from "@/app/auction/auction-results";
@@ -12,6 +16,7 @@ import {
     FavoriteToolbar,
 } from "@/app/auction/favorites-dialog";
 import type { AuctionItem, Favorite, ItemOption } from "@/app/auction/types";
+import { useAuctionPresets } from "@/app/auction/use-auction-presets";
 import { useAuctionSearch } from "@/app/auction/use-auction-search";
 import { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
 import {
@@ -37,10 +42,12 @@ type AuctionViewProps = {
     searchTerm: string;
     selectedCategory: string;
     showFavorites: boolean;
+    showPresets: boolean;
     options: ItemOption[] | null;
     currentPage: number;
     suggestions: ReturnType<typeof useAuctionSuggestions>;
     favorites: ReturnType<typeof useFavorites>;
+    presets: ReturnType<typeof useAuctionPresets>;
     auction: ReturnType<typeof useAuctionSearch>;
     recentSales: ReturnType<typeof useRecentSales>;
     searchLoading: boolean;
@@ -48,6 +55,7 @@ type AuctionViewProps = {
     sharing: boolean;
     feedback: AuctionUrlFeedback | null;
     optionFilters: AuctionOptionFilters;
+    activeSearch: AuctionUrlSearch | null;
     comparison: ComparisonSelection;
     setSearchTerm: (value: string) => void;
     setSelectedCategory: (value: string) => void;
@@ -56,13 +64,16 @@ type AuctionViewProps = {
     onApplyOptionFilters: (filters: AuctionOptionFilters) => void;
     onChangeOptionFilters: (filters: AuctionOptionFilters) => void;
     onShare: () => void;
+    onLoadPreset: (search: AuctionUrlSearch) => void;
     onSelectFavorite: (favorite: Favorite) => void;
     onShowFavorites: (show: boolean) => void;
+    onShowPresets: (show: boolean) => void;
     onShowOptions: (options: ItemOption[] | null) => void;
     onToggleComparison: (item: AuctionItem) => void;
     onRemoveComparison: (item: AuctionItem) => void;
     onClearComparison: () => void;
     favoritesTriggerRef: React.RefObject<HTMLButtonElement | null>;
+    presetsTriggerRef: React.RefObject<HTMLButtonElement | null>;
 };
 
 /**
@@ -86,6 +97,10 @@ function AuctionPageView(props: AuctionViewProps) {
                     onShow={() => props.onShowFavorites(true)}
                     showButtonRef={props.favoritesTriggerRef}
                 />
+                <AuctionPresetToolbar
+                    onShow={() => props.onShowPresets(true)}
+                    triggerRef={props.presetsTriggerRef}
+                />
                 <AuctionControls {...props} loading={props.searchLoading} />
                 {props.showFavorites && (
                     <FavoritesDialog
@@ -94,6 +109,15 @@ function AuctionPageView(props: AuctionViewProps) {
                         onRemove={props.favorites.remove}
                         onClose={() => props.onShowFavorites(false)}
                         triggerRef={props.favoritesTriggerRef}
+                    />
+                )}
+                {props.showPresets && (
+                    <AuctionPresetsDialog
+                        activeSearch={props.activeSearch}
+                        presets={props.presets}
+                        onLoad={props.onLoadPreset}
+                        onClose={() => props.onShowPresets(false)}
+                        triggerRef={props.presetsTriggerRef}
                     />
                 )}
                 <AuctionResults
@@ -127,6 +151,7 @@ type AuctionSearchLifecycleProps = {
     setSelectedCategory: (value: string) => void;
     setCurrentPage: (value: number) => void;
     setShowFavorites: (value: boolean) => void;
+    setShowPresets: (value: boolean) => void;
     setOptions: (value: ItemOption[] | null) => void;
     clearComparison: () => void;
 };
@@ -141,6 +166,7 @@ function useAuctionSearchLifecycle(props: AuctionSearchLifecycleProps) {
         props.setSelectedCategory(category);
         props.setCurrentPage(1);
         props.setShowFavorites(false);
+        props.setShowPresets(false);
         props.setOptions(null);
         props.clearComparison();
         if (!search) {
@@ -185,12 +211,15 @@ function AuctionPageContent() {
     const [selectedCategory, setSelectedCategory] = useState(categories[0]);
     const [searchTerm, setSearchTerm] = useState("");
     const [showFavorites, setShowFavorites] = useState(false);
+    const [showPresets, setShowPresets] = useState(false);
     const [options, setOptions] = useState<ItemOption[] | null>(null);
     const { comparison, toggleComparison, removeComparison, clearComparison } =
         useComparisonSelection();
     const favoritesTriggerRef = useRef<HTMLButtonElement>(null);
+    const presetsTriggerRef = useRef<HTMLButtonElement>(null);
     const suggestions = useAuctionSuggestions(searchTerm);
     const favorites = useFavorites();
+    const presets = useAuctionPresets();
     const {
         auction,
         changeOptionFilters,
@@ -203,20 +232,36 @@ function AuctionPageContent() {
         setSelectedCategory,
         setCurrentPage,
         setShowFavorites,
+        setShowPresets,
         setOptions,
         clearComparison,
     });
     return (
         <AuctionPageView
-            {...{ searchTerm, selectedCategory, showFavorites, options }}
-            {...{ currentPage, suggestions, favorites, auction, recentSales }}
+            {...{
+                searchTerm,
+                selectedCategory,
+                showFavorites,
+                showPresets,
+                options,
+            }}
+            {...{
+                currentPage,
+                suggestions,
+                favorites,
+                presets,
+                auction,
+                recentSales,
+            }}
             comparison={comparison}
             searchLoading={auction.loading || recentSales.loading}
             canShare={urlState.canShare}
             sharing={urlState.sharing}
             feedback={urlState.feedback}
             optionFilters={optionFilters}
+            activeSearch={urlState.canShare ? urlState.search : null}
             favoritesTriggerRef={favoritesTriggerRef}
+            presetsTriggerRef={presetsTriggerRef}
             {...{ setSearchTerm, setSelectedCategory, setCurrentPage }}
             onSearch={() =>
                 urlState.commit(searchTerm, selectedCategory, optionFilters)
@@ -226,8 +271,22 @@ function AuctionPageContent() {
             }
             onChangeOptionFilters={changeOptionFilters}
             onShare={() => void urlState.share()}
+            onLoadPreset={search =>
+                urlState.commit(
+                    search.itemName,
+                    search.category,
+                    search.optionFilters
+                )
+            }
             onSelectFavorite={selectFavorite}
-            onShowFavorites={setShowFavorites}
+            onShowFavorites={show => {
+                setShowFavorites(show);
+                if (show) setShowPresets(false);
+            }}
+            onShowPresets={show => {
+                setShowPresets(show);
+                if (show) setShowFavorites(false);
+            }}
             onShowOptions={setOptions}
             onToggleComparison={toggleComparison}
             onRemoveComparison={removeComparison}
