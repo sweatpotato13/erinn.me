@@ -175,7 +175,7 @@ function OptionFilterForm({
     );
 }
 
-function activeFilters(filters: AuctionOptionFilters) {
+export function describeAuctionOptionFilters(filters: AuctionOptionFilters) {
     const values: Array<{
         key: keyof AuctionOptionFilters;
         label: string;
@@ -207,7 +207,7 @@ function ActiveOptionFilters({
     filters,
     onChange,
 }: Pick<AuctionOptionControlsProps, "filters" | "onChange">) {
-    const values = activeFilters(filters);
+    const values = describeAuctionOptionFilters(filters);
     if (values.length === 0) return null;
     return (
         <section
@@ -259,7 +259,7 @@ export function AuctionOptionControls({
     const filterKey = JSON.stringify(filters);
     const [error, setError] = useState<string | null>(null);
     useEffect(() => setError(null), [filterKey]);
-    const values = activeFilters(filters);
+    const values = describeAuctionOptionFilters(filters);
     return (
         <div className="mt-2">
             <details className="rounded-md border bg-base-100">
