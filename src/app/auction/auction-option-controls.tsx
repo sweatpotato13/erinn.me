@@ -35,6 +35,112 @@ function parseFilterForm(form: HTMLFormElement) {
     return parseAuctionOptionFilterQuery(params);
 }
 
+function EnchantFilterFields({ filters }: { filters: AuctionOptionFilters }) {
+    return (
+        <fieldset className="space-y-2">
+            <legend className="font-semibold">인챈트</legend>
+            <label className="form-control">
+                <span className="label-text mb-1">인챈트 이름</span>
+                <input
+                    type="text"
+                    name="option_enchant"
+                    className="input input-bordered w-full"
+                    defaultValue={filters.enchantName ?? ""}
+                    maxLength={100}
+                    placeholder="예: 여명"
+                />
+            </label>
+        </fieldset>
+    );
+}
+
+function ReforgeFilterFields({ filters }: { filters: AuctionOptionFilters }) {
+    return (
+        <fieldset className="space-y-2">
+            <legend className="font-semibold">세공</legend>
+            <label className="form-control">
+                <span className="label-text mb-1">세공 옵션 이름</span>
+                <input
+                    type="text"
+                    name="option_reforge"
+                    className="input input-bordered w-full"
+                    defaultValue={filters.reforge?.optionName ?? ""}
+                    maxLength={100}
+                    placeholder="예: 볼트 대미지"
+                />
+            </label>
+            <label className="form-control">
+                <span className="label-text mb-1">세공 최소 레벨</span>
+                <input
+                    type="number"
+                    name="option_reforge_min_level"
+                    className="input input-bordered w-full"
+                    defaultValue={filters.reforge?.minLevel ?? ""}
+                    min={1}
+                    step={1}
+                    inputMode="numeric"
+                />
+            </label>
+        </fieldset>
+    );
+}
+
+function ErgFilterFields({
+    filters,
+    enabled,
+    onEnabledChange,
+}: {
+    filters: AuctionOptionFilters;
+    enabled: boolean;
+    onEnabledChange: (enabled: boolean) => void;
+}) {
+    return (
+        <fieldset className="space-y-2 sm:col-span-2">
+            <legend className="font-semibold">에르그</legend>
+            <label className="label w-fit cursor-pointer gap-2">
+                <input
+                    type="checkbox"
+                    name="option_erg"
+                    value="present"
+                    className="checkbox"
+                    checked={enabled}
+                    onChange={event => onEnabledChange(event.target.checked)}
+                />
+                <span className="label-text">에르그 있음</span>
+            </label>
+            <div className="grid gap-2 sm:grid-cols-2">
+                <label className="form-control">
+                    <span className="label-text mb-1">에르그 등급</span>
+                    <select
+                        name="option_erg_grade"
+                        className="select select-bordered w-full"
+                        defaultValue={filters.erg?.grade ?? ""}
+                        disabled={!enabled}
+                    >
+                        <option value="">등급 무관</option>
+                        <option value="B">B</option>
+                        <option value="A">A</option>
+                        <option value="S">S</option>
+                    </select>
+                </label>
+                <label className="form-control">
+                    <span className="label-text mb-1">에르그 최소 레벨</span>
+                    <input
+                        type="number"
+                        name="option_erg_min_level"
+                        className="input input-bordered w-full"
+                        defaultValue={filters.erg?.minLevel ?? ""}
+                        disabled={!enabled}
+                        min={1}
+                        step={1}
+                        inputMode="numeric"
+                    />
+                </label>
+            </div>
+        </fieldset>
+    );
+}
+
 function OptionFilterForm({
     filters,
     onSubmit,
@@ -52,91 +158,13 @@ function OptionFilterForm({
                 onSubmit(event.currentTarget);
             }}
         >
-            <fieldset className="space-y-2">
-                <legend className="font-semibold">인챈트</legend>
-                <label className="form-control">
-                    <span className="label-text mb-1">인챈트 이름</span>
-                    <input
-                        type="text"
-                        name="option_enchant"
-                        className="input input-bordered w-full"
-                        defaultValue={filters.enchantName ?? ""}
-                        maxLength={100}
-                        placeholder="예: 여명"
-                    />
-                </label>
-            </fieldset>
-            <fieldset className="space-y-2">
-                <legend className="font-semibold">세공</legend>
-                <label className="form-control">
-                    <span className="label-text mb-1">세공 옵션 이름</span>
-                    <input
-                        type="text"
-                        name="option_reforge"
-                        className="input input-bordered w-full"
-                        defaultValue={filters.reforge?.optionName ?? ""}
-                        maxLength={100}
-                        placeholder="예: 볼트 대미지"
-                    />
-                </label>
-                <label className="form-control">
-                    <span className="label-text mb-1">세공 최소 레벨</span>
-                    <input
-                        type="number"
-                        name="option_reforge_min_level"
-                        className="input input-bordered w-full"
-                        defaultValue={filters.reforge?.minLevel ?? ""}
-                        min={1}
-                        step={1}
-                        inputMode="numeric"
-                    />
-                </label>
-            </fieldset>
-            <fieldset className="space-y-2 sm:col-span-2">
-                <legend className="font-semibold">에르그</legend>
-                <label className="label w-fit cursor-pointer gap-2">
-                    <input
-                        type="checkbox"
-                        name="option_erg"
-                        value="present"
-                        className="checkbox"
-                        checked={ergEnabled}
-                        onChange={event => setErgEnabled(event.target.checked)}
-                    />
-                    <span className="label-text">에르그 있음</span>
-                </label>
-                <div className="grid gap-2 sm:grid-cols-2">
-                    <label className="form-control">
-                        <span className="label-text mb-1">에르그 등급</span>
-                        <select
-                            name="option_erg_grade"
-                            className="select select-bordered w-full"
-                            defaultValue={filters.erg?.grade ?? ""}
-                            disabled={!ergEnabled}
-                        >
-                            <option value="">등급 무관</option>
-                            <option value="B">B</option>
-                            <option value="A">A</option>
-                            <option value="S">S</option>
-                        </select>
-                    </label>
-                    <label className="form-control">
-                        <span className="label-text mb-1">
-                            에르그 최소 레벨
-                        </span>
-                        <input
-                            type="number"
-                            name="option_erg_min_level"
-                            className="input input-bordered w-full"
-                            defaultValue={filters.erg?.minLevel ?? ""}
-                            disabled={!ergEnabled}
-                            min={1}
-                            step={1}
-                            inputMode="numeric"
-                        />
-                    </label>
-                </div>
-            </fieldset>
+            <EnchantFilterFields filters={filters} />
+            <ReforgeFilterFields filters={filters} />
+            <ErgFilterFields
+                filters={filters}
+                enabled={ergEnabled}
+                onEnabledChange={setErgEnabled}
+            />
             <button
                 type="submit"
                 className="btn btn-outline w-full sm:col-span-2"

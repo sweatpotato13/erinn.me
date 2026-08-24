@@ -37,6 +37,7 @@ import {
     useRecentSales,
 } from "@/app/auction/use-recent-sales";
 import { categories } from "@/constant/categories";
+import type { AuctionOptionFilters } from "@/lib/auction-options";
 
 function deferred<T>() {
     let resolve!: (value: T) => void;
@@ -151,7 +152,15 @@ describe("parseStoredFavorites", () => {
 });
 
 describe("AuctionControls", () => {
-    function controls() {
+    function controls({
+        optionFilters = {},
+        onApplyOptionFilters = jest.fn(),
+        onChangeOptionFilters = jest.fn(),
+    }: {
+        optionFilters?: AuctionOptionFilters;
+        onApplyOptionFilters?: (filters: AuctionOptionFilters) => void;
+        onChangeOptionFilters?: (filters: AuctionOptionFilters) => void;
+    } = {}) {
         const setSearchTerm = jest.fn();
         const setActiveIndex = jest.fn();
         const setIsVisible = jest.fn();
@@ -176,9 +185,9 @@ describe("AuctionControls", () => {
                 sharing={false}
                 feedback={null}
                 onShare={jest.fn()}
-                optionFilters={{}}
-                onApplyOptionFilters={jest.fn()}
-                onChangeOptionFilters={jest.fn()}
+                optionFilters={optionFilters}
+                onApplyOptionFilters={onApplyOptionFilters}
+                onChangeOptionFilters={onChangeOptionFilters}
             />
         );
         return { setSearchTerm, setActiveIndex, setIsVisible };
@@ -293,31 +302,7 @@ describe("AuctionControls", () => {
     it("applies normalized enchantment, reforge, and Erg conditions", async () => {
         const user = userEvent.setup();
         const onApplyOptionFilters = jest.fn();
-        render(
-            <AuctionControls
-                searchTerm="검"
-                setSearchTerm={jest.fn()}
-                suggestions={{
-                    suggestions: [],
-                    activeIndex: 0,
-                    setActiveIndex: jest.fn(),
-                    isVisible: false,
-                    setIsVisible: jest.fn(),
-                    activeSuggestionRef: createRef<HTMLButtonElement>(),
-                }}
-                selectedCategory={categories[0]}
-                setSelectedCategory={jest.fn()}
-                loading={false}
-                onSearch={jest.fn()}
-                canShare={false}
-                sharing={false}
-                feedback={null}
-                onShare={jest.fn()}
-                optionFilters={{}}
-                onApplyOptionFilters={onApplyOptionFilters}
-                onChangeOptionFilters={jest.fn()}
-            />
-        );
+        controls({ onApplyOptionFilters });
 
         await user.click(
             screen.getByText("장비 옵션 필터", { selector: "summary" })
@@ -343,31 +328,7 @@ describe("AuctionControls", () => {
     it("explains incomplete filters without applying them", async () => {
         const user = userEvent.setup();
         const onApplyOptionFilters = jest.fn();
-        render(
-            <AuctionControls
-                searchTerm="검"
-                setSearchTerm={jest.fn()}
-                suggestions={{
-                    suggestions: [],
-                    activeIndex: 0,
-                    setActiveIndex: jest.fn(),
-                    isVisible: false,
-                    setIsVisible: jest.fn(),
-                    activeSuggestionRef: createRef<HTMLButtonElement>(),
-                }}
-                selectedCategory={categories[0]}
-                setSelectedCategory={jest.fn()}
-                loading={false}
-                onSearch={jest.fn()}
-                canShare={false}
-                sharing={false}
-                feedback={null}
-                onShare={jest.fn()}
-                optionFilters={{}}
-                onApplyOptionFilters={onApplyOptionFilters}
-                onChangeOptionFilters={jest.fn()}
-            />
-        );
+        controls({ onApplyOptionFilters });
 
         await user.click(
             screen.getByText("장비 옵션 필터", { selector: "summary" })
@@ -384,35 +345,14 @@ describe("AuctionControls", () => {
     it("keeps active filters visible and removes them independently", async () => {
         const user = userEvent.setup();
         const onChangeOptionFilters = jest.fn();
-        render(
-            <AuctionControls
-                searchTerm="검"
-                setSearchTerm={jest.fn()}
-                suggestions={{
-                    suggestions: [],
-                    activeIndex: 0,
-                    setActiveIndex: jest.fn(),
-                    isVisible: false,
-                    setIsVisible: jest.fn(),
-                    activeSuggestionRef: createRef<HTMLButtonElement>(),
-                }}
-                selectedCategory={categories[0]}
-                setSelectedCategory={jest.fn()}
-                loading={false}
-                onSearch={jest.fn()}
-                canShare
-                sharing={false}
-                feedback={null}
-                onShare={jest.fn()}
-                optionFilters={{
-                    enchantName: "여명",
-                    reforge: { optionName: "볼트 대미지", minLevel: 10 },
-                    erg: { grade: "S", minLevel: 40 },
-                }}
-                onApplyOptionFilters={jest.fn()}
-                onChangeOptionFilters={onChangeOptionFilters}
-            />
-        );
+        controls({
+            optionFilters: {
+                enchantName: "여명",
+                reforge: { optionName: "볼트 대미지", minLevel: 10 },
+                erg: { grade: "S", minLevel: 40 },
+            },
+            onChangeOptionFilters,
+        });
 
         expect(screen.getByText(/모든 활성 조건을 만족/)).toHaveTextContent(
             "최근 완료 거래에는 적용되지 않습니다."
@@ -1275,17 +1215,19 @@ describe("AuctionResults", () => {
                 }}
                 refreshedAt="2026-08-20T04:00:00Z"
                 optionEvaluation={{
-                    scannedCount: 12,
-                    unevaluableCount: 2,
+                    scannedCount: 1234,
+                    unevaluableCount: 1000,
                     sourceComplete: true,
                 }}
             />
         );
 
         expect(
-            screen.getByText(/장비 옵션 조건으로 전체 12개 매물을 확인했습니다/)
+            screen.getByText(
+                /장비 옵션 조건으로 전체 1,234개 매물을 확인했습니다/
+            )
         ).toHaveTextContent(
-            "옵션 값을 판정할 수 없는 2개 매물은 결과에서 제외했습니다."
+            "옵션 값을 판정할 수 없는 1,000개 매물은 결과에서 제외했습니다."
         );
     });
 

@@ -367,12 +367,14 @@ function OptionEvaluationNotice({
         <p
             className={`alert mt-3 text-sm ${optionEvaluation.unevaluableCount > 0 ? "alert-warning" : "alert-info"}`}
         >
-            장비 옵션 조건으로 전체 {optionEvaluation.scannedCount}개 매물을
+            장비 옵션 조건으로 전체{" "}
+            {numberFormatter.format(optionEvaluation.scannedCount)}개 매물을
             확인했습니다.
             {optionEvaluation.unevaluableCount > 0 && (
                 <>
                     {" "}
-                    옵션 값을 판정할 수 없는 {optionEvaluation.unevaluableCount}
+                    옵션 값을 판정할 수 없는{" "}
+                    {numberFormatter.format(optionEvaluation.unevaluableCount)}
                     개 매물은 결과에서 제외했습니다.
                 </>
             )}
