@@ -29,6 +29,7 @@ import {
 } from "@/app/auction/use-favorites";
 import { useRecentSales } from "@/app/auction/use-recent-sales";
 import { categories } from "@/constant/categories";
+import type { AuctionOptionFilters } from "@/lib/auction-options";
 
 export { parseStoredFavorites };
 
@@ -46,11 +47,14 @@ type AuctionViewProps = {
     canShare: boolean;
     sharing: boolean;
     feedback: AuctionUrlFeedback | null;
+    optionFilters: AuctionOptionFilters;
     comparison: ComparisonSelection;
     setSearchTerm: (value: string) => void;
     setSelectedCategory: (value: string) => void;
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
     onSearch: () => void;
+    onApplyOptionFilters: (filters: AuctionOptionFilters) => void;
+    onChangeOptionFilters: (filters: AuctionOptionFilters) => void;
     onShare: () => void;
     onSelectFavorite: (favorite: Favorite) => void;
     onShowFavorites: (show: boolean) => void;
@@ -145,16 +149,32 @@ function useAuctionSearchLifecycle(props: AuctionSearchLifecycleProps) {
             return;
         }
         void Promise.allSettled([
-            auction.search(itemName, category),
+            auction.search(itemName, category, search.optionFilters),
             recentSales.search(itemName),
         ]);
     };
     const urlState = useAuctionUrlState(restoreSearch);
+    const optionFilters = urlState.search?.optionFilters ?? {};
     const selectFavorite = (favorite: Favorite) => {
-        urlState.commit(favorite.itemName, favorite.category);
+        urlState.commit(favorite.itemName, favorite.category, optionFilters);
         props.setShowFavorites(false);
     };
-    return { auction, recentSales, selectFavorite, urlState };
+    const changeOptionFilters = (filters: AuctionOptionFilters) => {
+        if (!urlState.search) return;
+        urlState.commit(
+            urlState.search.itemName,
+            urlState.search.category,
+            filters
+        );
+    };
+    return {
+        auction,
+        changeOptionFilters,
+        optionFilters,
+        recentSales,
+        selectFavorite,
+        urlState,
+    };
 }
 
 /**
@@ -171,15 +191,21 @@ function AuctionPageContent() {
     const favoritesTriggerRef = useRef<HTMLButtonElement>(null);
     const suggestions = useAuctionSuggestions(searchTerm);
     const favorites = useFavorites();
-    const { auction, recentSales, selectFavorite, urlState } =
-        useAuctionSearchLifecycle({
-            setSearchTerm,
-            setSelectedCategory,
-            setCurrentPage,
-            setShowFavorites,
-            setOptions,
-            clearComparison,
-        });
+    const {
+        auction,
+        changeOptionFilters,
+        optionFilters,
+        recentSales,
+        selectFavorite,
+        urlState,
+    } = useAuctionSearchLifecycle({
+        setSearchTerm,
+        setSelectedCategory,
+        setCurrentPage,
+        setShowFavorites,
+        setOptions,
+        clearComparison,
+    });
     return (
         <AuctionPageView
             {...{ searchTerm, selectedCategory, showFavorites, options }}
@@ -189,9 +215,16 @@ function AuctionPageContent() {
             canShare={urlState.canShare}
             sharing={urlState.sharing}
             feedback={urlState.feedback}
+            optionFilters={optionFilters}
             favoritesTriggerRef={favoritesTriggerRef}
             {...{ setSearchTerm, setSelectedCategory, setCurrentPage }}
-            onSearch={() => urlState.commit(searchTerm, selectedCategory)}
+            onSearch={() =>
+                urlState.commit(searchTerm, selectedCategory, optionFilters)
+            }
+            onApplyOptionFilters={filters =>
+                urlState.commit(searchTerm, selectedCategory, filters)
+            }
+            onChangeOptionFilters={changeOptionFilters}
             onShare={() => void urlState.share()}
             onSelectFavorite={selectFavorite}
             onShowFavorites={setShowFavorites}

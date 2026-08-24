@@ -4,6 +4,11 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { categories } from "@/constant/categories";
+import {
+    appendAuctionOptionFilterQuery,
+    type AuctionOptionFilters,
+    parseAuctionOptionFilterQuery,
+} from "@/lib/auction-options";
 
 const ITEM_QUERY_PARAM = "q";
 const CATEGORY_QUERY_PARAM = "category";
@@ -21,6 +26,7 @@ const PROHIBITED_AUCTION_PARAMS = [
 export type AuctionUrlSearch = {
     itemName: string;
     category: string;
+    optionFilters: AuctionOptionFilters;
 };
 
 export type AuctionUrlFeedback = {
@@ -28,8 +34,18 @@ export type AuctionUrlFeedback = {
     kind: "success" | "info" | "error";
 };
 
+function deleteAuctionOptionParams(params: URLSearchParams) {
+    for (const key of Array.from(params.keys())) {
+        if (key.startsWith("option_")) params.delete(key);
+    }
+}
+
 export function parseAuctionSearchParams(params: URLSearchParams) {
     const normalized = new URLSearchParams(params);
+    const hasOptionParams = Array.from(params.keys()).some(key =>
+        key.startsWith("option_")
+    );
+    const parsedFilters = parseAuctionOptionFilterQuery(params);
     const itemValues = params.getAll(ITEM_QUERY_PARAM);
     const itemName = (itemValues[0] ?? "").trim();
     const usableItemName =
@@ -53,15 +69,31 @@ export function parseAuctionSearchParams(params: URLSearchParams) {
         normalized.delete(CATEGORY_QUERY_PARAM);
     }
     PROHIBITED_AUCTION_PARAMS.forEach(param => normalized.delete(param));
+    deleteAuctionOptionParams(normalized);
 
-    const search =
-        usableItemName || category !== DEFAULT_CATEGORY
-            ? { itemName: usableItemName ? itemName : "", category }
-            : null;
+    const hasBaseSearch = usableItemName || category !== DEFAULT_CATEGORY;
+    const optionFilters = parsedFilters.success
+        ? (parsedFilters.filters ?? {})
+        : {};
+    if (hasBaseSearch && parsedFilters.success) {
+        appendAuctionOptionFilterQuery(normalized, optionFilters);
+    }
+    const search = hasBaseSearch
+        ? {
+              itemName: usableItemName ? itemName : "",
+              category,
+              optionFilters,
+          }
+        : null;
     return {
         search,
         normalized,
-        invalid: invalidItemName || invalidCategory,
+        invalid:
+            invalidItemName ||
+            invalidCategory ||
+            !parsedFilters.success ||
+            (!hasBaseSearch && hasOptionParams),
+        filterError: parsedFilters.success ? null : parsedFilters.error,
     };
 }
 
@@ -75,6 +107,8 @@ export function setAuctionSearchUrl(currentUrl: URL, search: AuctionUrlSearch) {
     } else {
         url.searchParams.delete(CATEGORY_QUERY_PARAM);
     }
+    deleteAuctionOptionParams(url.searchParams);
+    appendAuctionOptionFilterQuery(url.searchParams, search.optionFilters);
     const parsed = parseAuctionSearchParams(url.searchParams);
     url.search = parsed.normalized.toString();
     return { ...parsed, url };
@@ -110,6 +144,7 @@ function useUrlRestoration(
         if (parsed.invalid) {
             setFeedback({
                 message:
+                    parsed.filterError ??
                     "유효하지 않은 검색 링크의 일부 조건을 기본값으로 복원했습니다.",
                 kind: "error",
             });
@@ -152,19 +187,26 @@ export function useAuctionUrlState(
     const { feedback, setFeedback } = useTransientFeedback();
     const [sharing, setSharing] = useState(false);
     const restoreRef = useUrlRestoration(paramsKey, onRestore, setFeedback);
-    const commit = (itemName: string, category: string) => {
+    const commit = (
+        itemName: string,
+        category: string,
+        optionFilters: AuctionOptionFilters
+    ) => {
         const next = setAuctionSearchUrl(new URL(window.location.href), {
             itemName,
             category,
+            optionFilters,
         });
-        if (next.invalid) {
-            setFeedback({
-                message: "유효하지 않은 검색 조건을 기본값으로 복원했습니다.",
-                kind: "error",
-            });
-        } else if (!next.search) {
+        if (!next.search) {
             setFeedback({
                 message: "아이템명 또는 카테고리를 선택해주세요.",
+                kind: "error",
+            });
+        } else if (next.invalid) {
+            setFeedback({
+                message:
+                    next.filterError ??
+                    "유효하지 않은 검색 조건을 기본값으로 복원했습니다.",
                 kind: "error",
             });
         }
@@ -193,5 +235,12 @@ export function useAuctionUrlState(
         }
     };
 
-    return { canShare, commit, feedback, share, sharing };
+    return {
+        canShare,
+        commit,
+        feedback,
+        search: parsed.search,
+        share,
+        sharing,
+    };
 }

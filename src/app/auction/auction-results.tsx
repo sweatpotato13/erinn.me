@@ -13,6 +13,7 @@ import type {
     RecentSalesSummary,
     SortDirection,
 } from "@/app/auction/types";
+import type { AuctionOptionEvaluation } from "@/app/auction/use-auction-search";
 import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
 import { getItemImageUrl } from "@/lib/utils";
@@ -276,6 +277,7 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     refreshedAt: string | null;
     errorMessage: string | null;
     loading: boolean;
+    optionEvaluation: AuctionOptionEvaluation | null;
     recentSales: RecentSalesState;
     comparisonNotice: string | null;
     onRemoveComparison: (item: AuctionItem) => void;
@@ -357,6 +359,27 @@ function CurrentListingsHeader(props: AuctionResultsProps) {
     );
 }
 
+function OptionEvaluationNotice({
+    optionEvaluation,
+}: Pick<AuctionResultsProps, "optionEvaluation">) {
+    if (!optionEvaluation) return null;
+    return (
+        <p
+            className={`alert mt-3 text-sm ${optionEvaluation.unevaluableCount > 0 ? "alert-warning" : "alert-info"}`}
+        >
+            장비 옵션 조건으로 전체 {optionEvaluation.scannedCount}개 매물을
+            확인했습니다.
+            {optionEvaluation.unevaluableCount > 0 && (
+                <>
+                    {" "}
+                    옵션 값을 판정할 수 없는 {optionEvaluation.unevaluableCount}
+                    개 매물은 결과에서 제외했습니다.
+                </>
+            )}
+        </p>
+    );
+}
+
 function CurrentListingsBody(props: AuctionResultsProps) {
     if (props.loading)
         return <p role="status">현재 등록 매물을 불러오는 중입니다.</p>;
@@ -366,7 +389,12 @@ function CurrentListingsBody(props: AuctionResultsProps) {
                 {props.errorMessage}
             </p>
         );
-    return <CurrentListingsMetrics {...props} />;
+    return (
+        <>
+            <CurrentListingsMetrics {...props} />
+            <OptionEvaluationNotice {...props} />
+        </>
+    );
 }
 
 function CurrentListingsResults(props: AuctionResultsProps) {
