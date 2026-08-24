@@ -22,22 +22,26 @@ describe("auction URL state", () => {
         expect(current.searchParams.has("q")).toBe(false);
     });
 
-    it("omits default state and never adds listing data", () => {
-        const result = setAuctionSearchUrl(
-            new URL("https://erinn.me/auction?view=compact"),
-            { itemName: "검", category: categories[0] }
-        );
-
-        expect(result.url.searchParams.get("q")).toBe("검");
-        expect(result.url.searchParams.has("category")).toBe(false);
-        for (const key of [
+    it("omits default state and removes listing data", () => {
+        const prohibitedParams = [
             "cursor",
             "listingId",
             "price",
             "item_count",
             "item_option",
             "date_auction_expire",
-        ]) {
+        ];
+        const current = new URL("https://erinn.me/auction?view=compact");
+        prohibitedParams.forEach(key => current.searchParams.set(key, "stale"));
+        const result = setAuctionSearchUrl(current, {
+            itemName: "검",
+            category: categories[0],
+        });
+
+        expect(result.url.searchParams.get("q")).toBe("검");
+        expect(result.url.searchParams.has("category")).toBe(false);
+        expect(result.url.searchParams.get("view")).toBe("compact");
+        for (const key of prohibitedParams) {
             expect(result.url.searchParams.has(key)).toBe(false);
         }
     });

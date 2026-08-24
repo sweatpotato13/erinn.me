@@ -279,6 +279,14 @@ test("auction URL replaces obsolete values with visible feedback", async ({
 test("auction search uses native sharing without listing data", async ({
     page,
 }) => {
+    const prohibitedParams = [
+        "cursor",
+        "listingId",
+        "price",
+        "item_count",
+        "item_option",
+        "date_auction_expire",
+    ];
     await page.addInitScript(() => {
         Object.defineProperty(navigator, "share", {
             configurable: true,
@@ -289,9 +297,16 @@ test("auction search uses native sharing without listing data", async ({
         });
     });
     await setupMarketRoutes(page);
-    await page.goto("/auction?view=compact&q=한글+검", {
+    const query = new URLSearchParams({ view: "compact", q: "한글 검" });
+    prohibitedParams.forEach(key => query.set(key, "stale"));
+    await page.goto(`/auction?${query}`, {
         waitUntil: "networkidle",
     });
+    for (const key of prohibitedParams) {
+        await expect
+            .poll(() => new URL(page.url()).searchParams.has(key))
+            .toBe(false);
+    }
     await page.getByRole("button", { name: "검색 공유" }).click();
 
     await expect(page.getByText("검색 링크를 공유했습니다.")).toBeVisible();
@@ -307,14 +322,7 @@ test("auction search uses native sharing without listing data", async ({
     const sharedUrl = new URL(shared.url ?? "");
     expect(sharedUrl.searchParams.get("q")).toBe("한글 검");
     expect(sharedUrl.searchParams.get("view")).toBe("compact");
-    for (const key of [
-        "cursor",
-        "listingId",
-        "price",
-        "item_count",
-        "item_option",
-        "date_auction_expire",
-    ]) {
+    for (const key of prohibitedParams) {
         expect(sharedUrl.searchParams.has(key)).toBe(false);
     }
 });

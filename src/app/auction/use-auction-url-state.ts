@@ -9,6 +9,14 @@ const ITEM_QUERY_PARAM = "q";
 const CATEGORY_QUERY_PARAM = "category";
 const MAX_ITEM_QUERY_LENGTH = 100;
 const DEFAULT_CATEGORY = categories[0];
+const PROHIBITED_AUCTION_PARAMS = [
+    "cursor",
+    "listingId",
+    "price",
+    "item_count",
+    "item_option",
+    "date_auction_expire",
+];
 
 export type AuctionUrlSearch = {
     itemName: string;
@@ -44,6 +52,7 @@ export function parseAuctionSearchParams(params: URLSearchParams) {
     } else {
         normalized.delete(CATEGORY_QUERY_PARAM);
     }
+    PROHIBITED_AUCTION_PARAMS.forEach(param => normalized.delete(param));
 
     const search =
         usableItemName || category !== DEFAULT_CATEGORY
@@ -93,7 +102,9 @@ function useUrlRestoration(
 ) {
     const restoreRef = useRef(onRestore);
     const restoredKeyRef = useRef<string | null>(null);
-    restoreRef.current = onRestore;
+    useEffect(() => {
+        restoreRef.current = onRestore;
+    }, [onRestore]);
     useEffect(() => {
         const parsed = parseAuctionSearchParams(new URLSearchParams(paramsKey));
         if (parsed.invalid) {
