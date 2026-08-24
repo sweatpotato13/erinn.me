@@ -184,10 +184,14 @@ function auctionPresetRow(dialog: Locator, name: string) {
     return dialog.getByRole("heading", { name }).locator("..");
 }
 
-async function storedAuctionPresets(page: Page) {
-    return page.evaluate(() =>
+async function storedAuctionPresets(page: Page): Promise<unknown[]> {
+    const presets: unknown = await page.evaluate(() =>
         JSON.parse(localStorage.getItem("auctionOptionPresets")!)
     );
+    if (!Array.isArray(presets)) {
+        throw new Error("Stored auction presets must be an array");
+    }
+    return presets;
 }
 
 async function seedAuctionPreset(page: Page) {
