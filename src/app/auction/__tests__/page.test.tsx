@@ -65,6 +65,25 @@ function response(items: AuctionItem[], hasMore = false) {
     } as Response;
 }
 
+function filteredResponse(
+    items: AuctionItem[],
+    hasMore: boolean,
+    nextCursor: string | null,
+    scannedCount: number,
+    unevaluableCount: number
+) {
+    return {
+        ok: true,
+        json: () =>
+            Promise.resolve({
+                items,
+                hasMore,
+                nextCursor,
+                evaluation: { scannedCount, unevaluableCount },
+            }),
+    } as Response;
+}
+
 function sale(
     id: string,
     price: number,
@@ -445,6 +464,134 @@ describe("useAuctionSearch", () => {
         });
         expect(result.current.hasMore).toBe(false);
         expect(result.current.refreshedAt).toBe("2026-08-19T02:00:00.000Z");
+    });
+
+    it("follows every filtered cursor before committing results", async () => {
+        const fetchMock = jest
+            .fn()
+            .mockResolvedValueOnce(
+                filteredResponse(
+                    [item("첫 결과", 200)],
+                    true,
+                    "next cursor",
+                    2,
+                    1
+                )
+            )
+            .mockResolvedValueOnce(
+                filteredResponse([item("둘째 결과", 100)], false, null, 1, 0)
+            );
+        global.fetch = fetchMock;
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () =>
+            result.current.search("검", categories[0], {
+                enchantName: "여명",
+            })
+        );
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[0][0]).toContain(
+            "option_enchant=%EC%97%AC%EB%AA%85"
+        );
+        expect(fetchMock.mock.calls[1][0]).toContain("cursor=next+cursor");
+        expect(result.current.items.map(value => value.item_name)).toEqual([
+            "둘째 결과",
+            "첫 결과",
+        ]);
+        expect(result.current.items.map(value => value.listingId)).toEqual([
+            "1-1",
+            "1-0",
+        ]);
+        expect(result.current.hasMore).toBe(false);
+        expect(result.current.optionEvaluation).toEqual({
+            scannedCount: 3,
+            unevaluableCount: 1,
+            sourceComplete: true,
+        });
+        act(() => result.current.reset());
+        expect(result.current.optionEvaluation).toBeNull();
+    });
+
+    it("discards filtered batches when a later request fails", async () => {
+        global.fetch = jest
+            .fn()
+            .mockResolvedValueOnce(
+                filteredResponse([item("부분 결과", 100)], true, "next", 1, 0)
+            )
+            .mockResolvedValueOnce({ ok: false } as Response);
+        jest.spyOn(console, "error").mockImplementation(() => undefined);
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () =>
+            result.current.search("검", categories[0], {
+                erg: { minLevel: 40 },
+            })
+        );
+
+        expect(result.current.items).toEqual([]);
+        expect(result.current.summary).toBeNull();
+        expect(result.current.optionEvaluation).toBeNull();
+        expect(result.current.errorMessage).not.toBeNull();
+    });
+
+    it("rejects repeated filtered cursors instead of looping", async () => {
+        global.fetch = jest
+            .fn()
+            .mockResolvedValue(filteredResponse([], true, "same", 0, 0));
+        jest.spyOn(console, "error").mockImplementation(() => undefined);
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () =>
+            result.current.search("검", categories[0], {
+                erg: {},
+            })
+        );
+
+        expect(fetch).toHaveBeenCalledTimes(2);
+        expect(result.current.items).toEqual([]);
+        expect(result.current.optionEvaluation).toBeNull();
+        expect(result.current.errorMessage).not.toBeNull();
+    });
+
+    it("fails closed when filtered pagination exceeds its safety bound", async () => {
+        let cursor = 0;
+        global.fetch = jest
+            .fn()
+            .mockImplementation(() =>
+                Promise.resolve(
+                    filteredResponse([], true, String(++cursor), 0, 0)
+                )
+            );
+        jest.spyOn(console, "error").mockImplementation(() => undefined);
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () =>
+            result.current.search("검", categories[0], {
+                enchantName: "여명",
+            })
+        );
+
+        expect(fetch).toHaveBeenCalledTimes(100);
+        expect(result.current.items).toEqual([]);
+        expect(result.current.optionEvaluation).toBeNull();
+        expect(result.current.errorMessage).not.toBeNull();
+    });
+
+    it("rejects invalid filters without fetching", async () => {
+        global.fetch = jest.fn();
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () =>
+            result.current.search("검", categories[0], {
+                erg: { grade: "C" },
+            } as never)
+        );
+
+        expect(fetch).not.toHaveBeenCalled();
+        expect(result.current.errorMessage).toBe(
+            "에르그 등급은 B, A, S만 지원합니다."
+        );
     });
 
     it("clears prior summary metadata while a failing search is pending", async () => {
