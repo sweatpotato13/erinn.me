@@ -4,6 +4,10 @@ import type { AuctionItem, ItemOption } from "@/app/auction/types";
 import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
 import OptionRenderer from "@/components/option-renderer";
+import {
+    normalizeOptionText as normalize,
+    parseReforgeOptionValue,
+} from "@/lib/auction-options";
 
 const EMPTY_VALUE = "정보 없음";
 const BASIC_STATS = new Set([
@@ -40,10 +44,6 @@ interface ComparisonEntry {
     key: string;
     label: string;
     value: ComparisonValue;
-}
-
-function normalize(value: string | null | undefined): string {
-    return (value ?? "").trim().replace(/\s+/g, " ");
 }
 
 function joinValues(...values: Array<string | null | undefined>): string {
@@ -150,16 +150,16 @@ function parseStructuredNumbers(value: string) {
 
 function reforgeEntry(option: ItemOption): ComparisonEntry {
     const value = normalize(option.option_value);
-    const match = value.match(/^(.+?)\((\d+)레벨:(.+)\)$/);
-    if (!match) {
+    const parsed = parseReforgeOptionValue(option.option_value);
+    if (!parsed) {
         return {
             key: `reforge:fallback:${value}`,
             label: "세공 옵션",
             value: { text: value || EMPTY_VALUE },
         };
     }
-    const name = normalize(match[1]);
-    const effect = normalize(match[3]);
+    const { name, level } = parsed;
+    const effect = normalize(parsed.effect);
     const effectNumbers = parseStructuredNumbers(effect);
     const context = `reforge:${name}:${effectNumbers?.context ?? effect}`;
     return {
@@ -169,7 +169,7 @@ function reforgeEntry(option: ItemOption): ComparisonEntry {
             text: value,
             numeric: {
                 context,
-                values: [Number(match[2]), ...(effectNumbers?.values ?? [])],
+                values: [level, ...(effectNumbers?.values ?? [])],
             },
         },
     };
