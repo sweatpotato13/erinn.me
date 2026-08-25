@@ -83,6 +83,7 @@ function SuggestionInput(props: InputProps) {
     return (
         <div className="relative w-full">
             <input
+                ref={model.inputRef}
                 className="input input-bordered w-full"
                 placeholder="아이템명"
                 value={searchTerm || ""}

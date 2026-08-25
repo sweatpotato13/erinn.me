@@ -170,6 +170,7 @@ describe("AuctionControls", () => {
             setActiveIndex,
             isVisible: true,
             setIsVisible,
+            inputRef: createRef<HTMLInputElement>(),
             activeSuggestionRef: createRef<HTMLButtonElement>(),
         };
         render(
@@ -218,6 +219,7 @@ describe("AuctionControls", () => {
             setActiveIndex: jest.fn(),
             isVisible: false,
             setIsVisible: jest.fn(),
+            inputRef: createRef<HTMLInputElement>(),
             activeSuggestionRef: createRef<HTMLButtonElement>(),
         };
         render(
@@ -253,6 +255,7 @@ describe("AuctionControls", () => {
             setActiveIndex: jest.fn(),
             isVisible: false,
             setIsVisible: jest.fn(),
+            inputRef: createRef<HTMLInputElement>(),
             activeSuggestionRef: createRef<HTMLButtonElement>(),
         };
         const { rerender } = render(
@@ -1026,6 +1029,28 @@ describe("useAuctionSuggestions", () => {
         expect(fetch).not.toHaveBeenCalled();
         expect(result.current.suggestions).toEqual([]);
         expect(result.current.isVisible).toBe(false);
+    });
+
+    it("keeps delayed suggestions hidden after the input loses focus", async () => {
+        const request = deferred<Response>();
+        global.fetch = jest.fn(() => request.promise);
+        const input = document.createElement("input");
+        document.body.append(input);
+        const { result } = renderHook(() => useAuctionSuggestions("검색"));
+        result.current.inputRef.current = input;
+        input.focus();
+
+        act(() => jest.advanceTimersByTime(300));
+        input.blur();
+        await act(async () => {
+            request.resolve(suggestionResponse(["늦은 결과"]));
+            await Promise.resolve();
+            await Promise.resolve();
+        });
+
+        expect(result.current.suggestions).toEqual(["늦은 결과"]);
+        expect(result.current.isVisible).toBe(false);
+        input.remove();
     });
 
     it("scrolls the active suggestion through its React ref", () => {
