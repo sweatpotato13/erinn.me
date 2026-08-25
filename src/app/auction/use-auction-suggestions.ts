@@ -45,6 +45,7 @@ export function useAuctionSuggestions(searchTerm: string) {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [activeIndex, setActiveIndex] = useState(0);
     const [isVisible, setIsVisible] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
     const activeSuggestionRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
@@ -60,7 +61,10 @@ export function useAuctionSuggestions(searchTerm: string) {
                     if (controller.signal.aborted) return;
                     setSuggestions(names);
                     setActiveIndex(0);
-                    setIsVisible(names.length > 0);
+                    setIsVisible(
+                        inputRef.current === document.activeElement &&
+                            names.length > 0
+                    );
                 })
                 .catch(() => {
                     if (controller.signal.aborted) return;
@@ -81,6 +85,7 @@ export function useAuctionSuggestions(searchTerm: string) {
         setActiveIndex,
         isVisible,
         setIsVisible,
+        inputRef,
         activeSuggestionRef,
     };
 }
