@@ -37,6 +37,7 @@ import {
     useRecentSales,
 } from "@/app/auction/use-recent-sales";
 import { categories } from "@/constant/categories";
+import type { AuctionOptionFilters } from "@/lib/auction-options";
 
 function deferred<T>() {
     let resolve!: (value: T) => void;
@@ -151,7 +152,15 @@ describe("parseStoredFavorites", () => {
 });
 
 describe("AuctionControls", () => {
-    function controls() {
+    function controls({
+        optionFilters = {},
+        onApplyOptionFilters = jest.fn(),
+        onChangeOptionFilters = jest.fn(),
+    }: {
+        optionFilters?: AuctionOptionFilters;
+        onApplyOptionFilters?: (filters: AuctionOptionFilters) => void;
+        onChangeOptionFilters?: (filters: AuctionOptionFilters) => void;
+    } = {}) {
         const setSearchTerm = jest.fn();
         const setActiveIndex = jest.fn();
         const setIsVisible = jest.fn();
@@ -176,6 +185,9 @@ describe("AuctionControls", () => {
                 sharing={false}
                 feedback={null}
                 onShare={jest.fn()}
+                optionFilters={optionFilters}
+                onApplyOptionFilters={onApplyOptionFilters}
+                onChangeOptionFilters={onChangeOptionFilters}
             />
         );
         return { setSearchTerm, setActiveIndex, setIsVisible };
@@ -221,6 +233,9 @@ describe("AuctionControls", () => {
                 sharing={false}
                 feedback={null}
                 onShare={jest.fn()}
+                optionFilters={{}}
+                onApplyOptionFilters={jest.fn()}
+                onChangeOptionFilters={jest.fn()}
             />
         );
         await user.click(
@@ -253,6 +268,9 @@ describe("AuctionControls", () => {
                 sharing={false}
                 feedback={null}
                 onShare={onShare}
+                optionFilters={{}}
+                onApplyOptionFilters={jest.fn()}
+                onChangeOptionFilters={jest.fn()}
             />
         );
         expect(
@@ -272,10 +290,93 @@ describe("AuctionControls", () => {
                 sharing={false}
                 feedback={null}
                 onShare={onShare}
+                optionFilters={{}}
+                onApplyOptionFilters={jest.fn()}
+                onChangeOptionFilters={jest.fn()}
             />
         );
         await user.click(screen.getByRole("button", { name: "검색 공유" }));
         expect(onShare).toHaveBeenCalledTimes(1);
+    });
+
+    it("applies normalized enchantment, reforge, and Erg conditions", async () => {
+        const user = userEvent.setup();
+        const onApplyOptionFilters = jest.fn();
+        controls({ onApplyOptionFilters });
+
+        await user.click(
+            screen.getByText("장비 옵션 필터", { selector: "summary" })
+        );
+        await user.type(screen.getByLabelText("인챈트 이름"), "  여명  ");
+        await user.type(
+            screen.getByLabelText("세공 옵션 이름"),
+            "볼트  대미지"
+        );
+        await user.type(screen.getByLabelText("세공 최소 레벨"), "10");
+        await user.click(screen.getByRole("checkbox", { name: "에르그 있음" }));
+        await user.selectOptions(screen.getByLabelText("에르그 등급"), "S");
+        await user.type(screen.getByLabelText("에르그 최소 레벨"), "40");
+        await user.click(screen.getByRole("button", { name: "조건 적용" }));
+
+        expect(onApplyOptionFilters).toHaveBeenCalledWith({
+            enchantName: "여명",
+            reforge: { optionName: "볼트 대미지", minLevel: 10 },
+            erg: { grade: "S", minLevel: 40 },
+        });
+    });
+
+    it("explains incomplete filters without applying them", async () => {
+        const user = userEvent.setup();
+        const onApplyOptionFilters = jest.fn();
+        controls({ onApplyOptionFilters });
+
+        await user.click(
+            screen.getByText("장비 옵션 필터", { selector: "summary" })
+        );
+        await user.type(screen.getByLabelText("세공 옵션 이름"), "볼트");
+        await user.click(screen.getByRole("button", { name: "조건 적용" }));
+
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "세공 옵션 이름과 최소 레벨을 함께 입력해주세요."
+        );
+        expect(onApplyOptionFilters).not.toHaveBeenCalled();
+    });
+
+    it("keeps active filters visible and removes them independently", async () => {
+        const user = userEvent.setup();
+        const onChangeOptionFilters = jest.fn();
+        controls({
+            optionFilters: {
+                enchantName: "여명",
+                reforge: { optionName: "볼트 대미지", minLevel: 10 },
+                erg: { grade: "S", minLevel: 40 },
+            },
+            onChangeOptionFilters,
+        });
+
+        expect(screen.getByText(/모든 활성 조건을 만족/)).toHaveTextContent(
+            "최근 완료 거래에는 적용되지 않습니다."
+        );
+        expect(screen.getByText("인챈트: 여명")).toBeVisible();
+        expect(screen.getByText("세공: 볼트 대미지 10레벨 이상")).toBeVisible();
+        expect(
+            screen.getByText("에르그: 있음, S등급, 40레벨 이상")
+        ).toBeVisible();
+
+        await user.click(
+            screen.getByRole("button", {
+                name: "세공: 볼트 대미지 10레벨 이상 조건 제거",
+            })
+        );
+        expect(onChangeOptionFilters).toHaveBeenCalledWith({
+            enchantName: "여명",
+            erg: { grade: "S", minLevel: 40 },
+        });
+
+        await user.click(
+            screen.getByRole("button", { name: "장비 옵션 조건 전체 해제" })
+        );
+        expect(onChangeOptionFilters).toHaveBeenLastCalledWith({});
     });
 });
 
@@ -979,6 +1080,7 @@ describe("AuctionResults", () => {
         refreshedAt: null,
         errorMessage: null,
         loading: false,
+        optionEvaluation: null,
         onSort: jest.fn(),
         onItemClick: jest.fn(),
         comparisonItems: [],
@@ -1098,6 +1200,35 @@ describe("AuctionResults", () => {
             summary.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
         ).toBeInTheDocument();
         expect(summary.queryByText(/0 Gold/)).not.toBeInTheDocument();
+    });
+
+    it("explains complete option-filter evaluation", () => {
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("필터 결과", 100)]}
+                summary={{
+                    lowestUnitPrice: 100,
+                    medianUnitPrice: 100,
+                    listingCount: 1,
+                    totalQuantity: 1,
+                }}
+                refreshedAt="2026-08-20T04:00:00Z"
+                optionEvaluation={{
+                    scannedCount: 1234,
+                    unevaluableCount: 1000,
+                    sourceComplete: true,
+                }}
+            />
+        );
+
+        expect(
+            screen.getByText(
+                /장비 옵션 조건으로 전체 1,234개 매물을 확인했습니다/
+            )
+        ).toHaveTextContent(
+            "옵션 값을 판정할 수 없는 1,000개 매물은 결과에서 제외했습니다."
+        );
     });
 
     it("uses buttons for sorting, item options, and non-empty pagination", async () => {

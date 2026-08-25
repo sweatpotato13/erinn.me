@@ -1,4 +1,4 @@
-import { expect, type Page, test } from "@playwright/test";
+import { expect, type Locator, type Page, test } from "@playwright/test";
 
 const marketOptions = [
     [
@@ -66,20 +66,32 @@ const marketSales = [
 
 async function setupMarketRoutes(page: Page) {
     const counts = { auction: 0, history: 0 };
+    const auctionResponse = (url: string) => {
+        const filtered = Array.from(new URL(url).searchParams.keys()).some(
+            key => key.startsWith("option_")
+        );
+        return filtered
+            ? {
+                  items: marketItems,
+                  hasMore: false,
+                  nextCursor: null,
+                  evaluation: {
+                      scannedCount: marketItems.length,
+                      unevaluableCount: 1,
+                  },
+              }
+            : { items: marketItems, hasMore: true, nextCursor: "next" };
+    };
     await page.route("**/api/suggest?**", route =>
         route.fulfill({ json: { suggestions: [] } })
     );
     await page.route("**/api/auction/keyword-search?**", route => {
         counts.auction += 1;
-        return route.fulfill({
-            json: { items: marketItems, hasMore: true, nextCursor: "next" },
-        });
+        return route.fulfill({ json: auctionResponse(route.request().url()) });
     });
     await page.route("**/api/auction?**", route => {
         counts.auction += 1;
-        return route.fulfill({
-            json: { items: marketItems, hasMore: true, nextCursor: "next" },
-        });
+        return route.fulfill({ json: auctionResponse(route.request().url()) });
     });
     await page.route("**/api/auction/history?**", route => {
         counts.history += 1;
@@ -153,6 +165,70 @@ async function verifyMobileComparisonScroll(page: Page) {
     ).toBeInViewport();
 }
 
+const filteredAuctionPreset = {
+    name: "주력 장비",
+    itemName: "아이템",
+    category: "검",
+    optionFilters: {
+        enchantName: "여명",
+        reforge: { optionName: "볼트 대미지", minLevel: 10 },
+        erg: { grade: "S", minLevel: 40 },
+    },
+};
+
+function auctionPresetDialog(page: Page) {
+    return page.getByRole("dialog", { name: "검색 프리셋" });
+}
+
+function auctionPresetRow(dialog: Locator, name: string) {
+    return dialog.getByRole("heading", { name }).locator("..");
+}
+
+async function storedAuctionPresets(page: Page): Promise<unknown[]> {
+    const presets: unknown = await page.evaluate(() =>
+        JSON.parse(localStorage.getItem("auctionOptionPresets")!)
+    );
+    if (!Array.isArray(presets)) {
+        throw new Error("Stored auction presets must be an array");
+    }
+    return presets;
+}
+
+async function seedAuctionPreset(page: Page) {
+    await page.addInitScript(preset => {
+        localStorage.setItem("auctionOptionPresets", JSON.stringify([preset]));
+    }, filteredAuctionPreset);
+}
+
+async function saveFilteredAuctionPreset(page: Page) {
+    const counts = await setupMarketRoutes(page);
+    await page.goto("/auction", { waitUntil: "networkidle" });
+    await page.getByPlaceholder("아이템명").fill("아이템");
+    await page.getByRole("button", { name: "모든 카테고리" }).click();
+    await page.getByRole("button", { name: "검", exact: true }).click();
+    await page.locator("summary").filter({ hasText: "장비 옵션 필터" }).click();
+    await page.getByLabel("인챈트 이름").fill("여명");
+    await page.getByLabel("세공 옵션 이름").fill("볼트 대미지");
+    await page.getByLabel("세공 최소 레벨").fill("10");
+    await page.getByRole("checkbox", { name: "에르그 있음" }).check();
+    await page.getByLabel("에르그 등급").selectOption("S");
+    await page.getByLabel("에르그 최소 레벨").fill("40");
+    await page.getByRole("button", { name: "조건 적용" }).click();
+    await expect.poll(() => counts.auction).toBe(1);
+    await page.getByPlaceholder("아이템명").fill("저장하면 안 되는 초안");
+    await page.getByRole("button", { name: "검색 프리셋" }).click();
+    const dialog = auctionPresetDialog(page);
+    await expect(
+        dialog.getByText(/다른 기기와 동기화되지 않습니다/)
+    ).toBeVisible();
+    await dialog.getByLabel("프리셋 이름").fill(filteredAuctionPreset.name);
+    await dialog.getByRole("button", { name: "저장" }).click();
+    await expect(dialog.getByRole("status")).toHaveText(
+        "프리셋을 저장했습니다."
+    );
+    return { counts, dialog };
+}
+
 async function installHornNotificationFake(page: Page) {
     await page.addInitScript(() => {
         const notifications: Array<{
@@ -209,19 +285,283 @@ async function capturedHornNotifications(page: Page) {
 
 test("auction URL restores on open and refresh", async ({ page }) => {
     const counts = await setupMarketRoutes(page);
-    await page.goto("/auction?q=한글+검&category=검", {
-        waitUntil: "networkidle",
-    });
+    await page.goto(
+        "/auction?q=한글+검&category=검&option_enchant=여명&option_erg=present&option_erg_grade=S",
+        { waitUntil: "networkidle" }
+    );
 
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("한글 검");
     await expect(
         page.getByRole("button", { name: "검", exact: true })
     ).toBeVisible();
+    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    await expect(page.getByText("에르그: 있음, S등급")).toBeVisible();
     expect(counts).toEqual({ auction: 1, history: 1 });
 
     await page.reload({ waitUntil: "networkidle" });
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("한글 검");
+    await expect(page.getByText("인챈트: 여명")).toBeVisible();
     expect(counts).toEqual({ auction: 2, history: 2 });
+});
+
+test("auction option filters validate, apply, remove, clear, and follow history", async ({
+    page,
+}) => {
+    const counts = await setupMarketRoutes(page);
+    await page.goto("/auction", { waitUntil: "networkidle" });
+    await page.getByPlaceholder("아이템명").fill("아이템");
+    await page.locator("summary").filter({ hasText: "장비 옵션 필터" }).click();
+    await page.getByLabel("세공 옵션 이름").fill("볼트 대미지");
+    await page.getByRole("button", { name: "조건 적용" }).click();
+    await expect(
+        page.getByRole("alert").filter({
+            hasText: "세공 옵션 이름과 최소 레벨을 함께 입력해주세요.",
+        })
+    ).toBeVisible();
+    expect(counts).toEqual({ auction: 0, history: 0 });
+    expect(new URL(page.url()).searchParams.has("q")).toBe(false);
+
+    await page.getByLabel("인챈트 이름").fill("여명");
+    await page.getByLabel("세공 최소 레벨").fill("10");
+    await page.getByRole("checkbox", { name: "에르그 있음" }).check();
+    await page.getByLabel("에르그 등급").selectOption("S");
+    await page.getByLabel("에르그 최소 레벨").fill("40");
+    await page.getByRole("button", { name: "조건 적용" }).click();
+
+    await expect.poll(() => counts.auction).toBe(1);
+    await expect.poll(() => counts.history).toBe(1);
+    const appliedUrl = new URL(page.url());
+    expect(appliedUrl.searchParams.get("q")).toBe("아이템");
+    expect(appliedUrl.searchParams.get("option_enchant")).toBe("여명");
+    expect(appliedUrl.searchParams.get("option_reforge")).toBe("볼트 대미지");
+    expect(appliedUrl.searchParams.get("option_reforge_min_level")).toBe("10");
+    expect(appliedUrl.searchParams.get("option_erg_grade")).toBe("S");
+    expect(appliedUrl.searchParams.get("option_erg_min_level")).toBe("40");
+
+    const active = page.getByRole("region", {
+        name: "활성 장비 옵션 조건",
+    });
+    await expect(active.getByText("인챈트: 여명")).toBeVisible();
+    await expect(active.getByText(/모든 활성 조건을 만족/)).toContainText(
+        "최근 완료 거래에는 적용되지 않습니다."
+    );
+    await expect(
+        page.getByText(/장비 옵션 조건으로 전체 11개 매물을 확인했습니다/)
+    ).toContainText("판정할 수 없는 1개 매물은 결과에서 제외했습니다.");
+
+    const details = page.locator("details").filter({
+        hasText: "장비 옵션 필터",
+    });
+    await details.locator("summary").click();
+    await expect(details).not.toHaveAttribute("open", "");
+    await expect(active.getByText("인챈트: 여명")).toBeVisible();
+
+    await page.getByPlaceholder("아이템명").fill("미제출 검색어");
+    await active
+        .getByRole("button", {
+            name: "세공: 볼트 대미지 10레벨 이상 조건 제거",
+        })
+        .click();
+    await expect.poll(() => counts.auction).toBe(2);
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("아이템");
+    expect(new URL(page.url()).searchParams.get("q")).toBe("아이템");
+    expect(new URL(page.url()).searchParams.has("option_reforge")).toBe(false);
+
+    await active
+        .getByRole("button", { name: "장비 옵션 조건 전체 해제" })
+        .click();
+    await expect.poll(() => counts.auction).toBe(3);
+    expect(
+        Array.from(new URL(page.url()).searchParams.keys()).some(key =>
+            key.startsWith("option_")
+        )
+    ).toBe(false);
+    await expect(active).not.toBeVisible();
+
+    await page.goBack();
+    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    await expect.poll(() => counts.auction).toBe(4);
+    await page.goForward();
+    await expect(page.getByText("인챈트: 여명")).not.toBeVisible();
+    await expect.poll(() => counts.auction).toBe(5);
+
+    if ((page.viewportSize()?.width ?? 1000) < 640) {
+        await expect
+            .poll(() =>
+                page.evaluate(
+                    () =>
+                        document.documentElement.scrollWidth <=
+                        document.documentElement.clientWidth
+                )
+            )
+            .toBe(true);
+    }
+});
+
+test("auction presets persist and restore the committed search", async ({
+    page,
+}) => {
+    const { counts, dialog } = await saveFilteredAuctionPreset(page);
+    expect(await storedAuctionPresets(page)).toEqual([filteredAuctionPreset]);
+    await dialog.getByRole("button", { name: "닫기" }).click();
+    await page.reload({ waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "검색 프리셋" }).click();
+    const beforeLoad = counts.auction;
+    await auctionPresetRow(auctionPresetDialog(page), "주력 장비")
+        .getByRole("button", { name: "불러오기" })
+        .click();
+    await expect.poll(() => counts.auction).toBe(beforeLoad + 1);
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("아이템");
+    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    await expect(page.getByText("세공: 볼트 대미지 10레벨 이상")).toBeVisible();
+    await expect(
+        page.getByText("에르그: 있음, S등급, 40레벨 이상")
+    ).toBeVisible();
+});
+
+test("auction presets can be renamed", async ({ page }) => {
+    await seedAuctionPreset(page);
+    await openMarket(page);
+    await page.getByRole("button", { name: "검색 프리셋" }).click();
+    const dialog = auctionPresetDialog(page);
+    const row = auctionPresetRow(dialog, "주력 장비");
+    await row.getByRole("button", { name: "이름 변경" }).click();
+    await row.getByLabel("주력 장비 새 이름").fill("에르그 장비");
+    await row.getByRole("button", { name: "확인" }).click();
+    await expect(
+        dialog.getByRole("heading", { name: "에르그 장비" })
+    ).toBeVisible();
+    expect(await storedAuctionPresets(page)).toEqual([
+        { ...filteredAuctionPreset, name: "에르그 장비" },
+    ]);
+});
+
+test("auction presets can be deleted", async ({ page }) => {
+    await seedAuctionPreset(page);
+    await openMarket(page);
+    await page.getByRole("button", { name: "검색 프리셋" }).click();
+    const dialog = auctionPresetDialog(page);
+    const row = auctionPresetRow(dialog, "주력 장비");
+    await row.getByRole("button", { name: "삭제" }).click();
+    await expect(
+        dialog.getByText("저장된 검색 프리셋이 없습니다.")
+    ).toBeVisible();
+    expect(await storedAuctionPresets(page)).toEqual([]);
+});
+
+test("auction preset duplicate names and the 20-item limit show feedback", async ({
+    page,
+}) => {
+    await page.addInitScript(() => {
+        localStorage.setItem(
+            "auctionOptionPresets",
+            JSON.stringify(
+                Array.from({ length: 20 }, (_, index) => ({
+                    name: `프리셋 ${index}`,
+                    itemName: "아이템",
+                    category: "모든 카테고리",
+                    optionFilters: {},
+                }))
+            )
+        );
+    });
+    await openMarket(page);
+    await searchMarket(page);
+    await page.getByRole("button", { name: "검색 프리셋" }).click();
+    const dialog = page.getByRole("dialog", { name: "검색 프리셋" });
+    const name = dialog.getByLabel("프리셋 이름");
+
+    await name.fill(" 프리셋   0 ");
+    await dialog.getByRole("button", { name: "저장" }).click();
+    await expect(dialog.getByRole("alert")).toHaveText(
+        "같은 이름의 프리셋이 이미 있습니다."
+    );
+    await name.fill("추가 프리셋");
+    await dialog.getByRole("button", { name: "저장" }).click();
+    await expect(dialog.getByRole("alert")).toHaveText(
+        "프리셋은 최대 20개까지 저장할 수 있습니다."
+    );
+    await expect(dialog.getByText("저장된 프리셋 (20/20)")).toBeVisible();
+});
+
+test("auction presets recover from corrupt storage and preview obsolete filters", async ({
+    page,
+}) => {
+    const counts = await setupMarketRoutes(page);
+    await page.addInitScript(() => {
+        if (sessionStorage.getItem("auctionPresetSeeded")) return;
+        sessionStorage.setItem("auctionPresetSeeded", "true");
+        localStorage.setItem("auctionOptionPresets", "{broken");
+    });
+    await page.goto("/auction", { waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "검색 프리셋" }).click();
+    let dialog = page.getByRole("dialog", { name: "검색 프리셋" });
+    await expect(dialog.getByRole("status")).toHaveText(
+        "읽을 수 없는 저장 프리셋 1개를 제외했습니다."
+    );
+    await expect(
+        dialog.getByText("저장된 검색 프리셋이 없습니다.")
+    ).toBeVisible();
+    await dialog.getByRole("button", { name: "닫기" }).click();
+    await searchMarket(page);
+
+    await page.evaluate(() => {
+        localStorage.setItem(
+            "auctionOptionPresets",
+            JSON.stringify([
+                {
+                    name: "구형 프리셋",
+                    itemName: "복구 검",
+                    category: "모든 카테고리",
+                    optionFilters: {
+                        enchantName: "여명",
+                        removedFilter: true,
+                    },
+                },
+            ])
+        );
+    });
+    await page.reload({ waitUntil: "networkidle" });
+    await page.getByRole("button", { name: "검색 프리셋" }).click();
+    dialog = page.getByRole("dialog", { name: "검색 프리셋" });
+    const row = dialog
+        .getByRole("heading", { name: "구형 프리셋" })
+        .locator("..");
+    const beforeLoad = counts.auction;
+    await row.getByRole("button", { name: "불러오기" }).click();
+    const warning = dialog.getByRole("alert");
+    await expect(warning.getByText(/removedFilter/)).toBeVisible();
+    await expect(warning.getByText(/인챈트: 여명/)).toBeVisible();
+    expect(counts.auction).toBe(beforeLoad);
+
+    await warning
+        .getByRole("button", { name: "지원되는 조건으로 검색" })
+        .click();
+    await expect.poll(() => counts.auction).toBe(beforeLoad + 1);
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("복구 검");
+    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    expect(new URL(page.url()).searchParams.get("option_enchant")).toBe("여명");
+    expect(new URL(page.url()).searchParams.has("option_removedFilter")).toBe(
+        false
+    );
+});
+
+test("auction URL removes invalid option filters with visible feedback", async ({
+    page,
+}) => {
+    const counts = await setupMarketRoutes(page);
+    await page.goto("/auction?q=한글+검&option_reforge=볼트", {
+        waitUntil: "networkidle",
+    });
+
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("한글 검");
+    await expect(
+        page.getByRole("alert").filter({
+            hasText: "세공 옵션 이름과 최소 레벨을 함께 입력해주세요.",
+        })
+    ).toBeVisible();
+    expect(new URL(page.url()).searchParams.has("option_reforge")).toBe(false);
+    expect(counts).toEqual({ auction: 1, history: 1 });
 });
 
 test("auction history follows committed searches without duplicate entries", async ({
@@ -267,7 +607,8 @@ test("auction URL replaces obsolete values with visible feedback", async ({
     expect(url.searchParams.has("category")).toBe(false);
     await expect(
         page.getByRole("alert").filter({
-            hasText: "유효하지 않은 검색 링크의 일부 조건을 기본값으로 복원했습니다.",
+            hasText:
+                "유효하지 않은 검색 링크의 일부 조건을 기본값으로 복원했습니다.",
         })
     ).toBeVisible();
     await expect(
@@ -298,6 +639,7 @@ test("auction search uses native sharing without listing data", async ({
     });
     await setupMarketRoutes(page);
     const query = new URLSearchParams({ view: "compact", q: "한글 검" });
+    query.set("option_enchant", "여명");
     prohibitedParams.forEach(key => query.set(key, "stale"));
     await page.goto(`/auction?${query}`, {
         waitUntil: "networkidle",
@@ -321,6 +663,7 @@ test("auction search uses native sharing without listing data", async ({
     expect(shared.title).toBe("Erinn.me 경매장 검색");
     const sharedUrl = new URL(shared.url ?? "");
     expect(sharedUrl.searchParams.get("q")).toBe("한글 검");
+    expect(sharedUrl.searchParams.get("option_enchant")).toBe("여명");
     expect(sharedUrl.searchParams.get("view")).toBe("compact");
     for (const key of prohibitedParams) {
         expect(sharedUrl.searchParams.has(key)).toBe(false);

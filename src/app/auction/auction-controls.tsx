@@ -1,9 +1,11 @@
 import { Loader, Share2 } from "lucide-react";
 import type { KeyboardEvent } from "react";
 
+import { AuctionOptionControls } from "@/app/auction/auction-option-controls";
 import type { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
 import type { AuctionUrlFeedback } from "@/app/auction/use-auction-url-state";
 import { categories } from "@/constant/categories";
+import type { AuctionOptionFilters } from "@/lib/auction-options";
 
 type Suggestions = ReturnType<typeof useAuctionSuggestions>;
 type InputProps = {
@@ -154,6 +156,9 @@ type AuctionControlsProps = InputProps & {
     sharing: boolean;
     feedback: AuctionUrlFeedback | null;
     onShare: () => void;
+    optionFilters: AuctionOptionFilters;
+    onApplyOptionFilters: (filters: AuctionOptionFilters) => void;
+    onChangeOptionFilters: (filters: AuctionOptionFilters) => void;
 };
 
 function AuctionFeedback({
@@ -215,6 +220,11 @@ export function AuctionControls(props: AuctionControlsProps) {
                 </button>
                 <CategoryDropdown {...props} />
             </div>
+            <AuctionOptionControls
+                filters={props.optionFilters}
+                onApply={props.onApplyOptionFilters}
+                onChange={props.onChangeOptionFilters}
+            />
             <AuctionFeedback feedback={props.feedback} />
         </div>
     );
