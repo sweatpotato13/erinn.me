@@ -209,8 +209,7 @@ function parseFilteredSearchResponse(value: unknown): AuctionSearchResponse {
         throw new Error("잘못된 경매장 검색 응답입니다.");
     const response = value as Record<string, unknown>;
     const evaluation = response.evaluation as
-        | Record<string, unknown>
-        | undefined;
+        Record<string, unknown> | undefined;
     if (
         !Array.isArray(response.items) ||
         typeof response.hasMore !== "boolean" ||

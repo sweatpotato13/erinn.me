@@ -90,15 +90,18 @@ describe("rate limiter", () => {
     });
 
     it("bypasses WAF checks in Vercel preview deployments", async () => {
-        const originalNodeEnv = process.env.NODE_ENV;
         const originalVercelEnv = process.env.VERCEL_ENV;
-        process.env.NODE_ENV = "production";
+        const nodeEnv = jest.replaceProperty(
+            process.env,
+            "NODE_ENV",
+            "production"
+        );
         process.env.VERCEL_ENV = "preview";
 
         try {
             expect((await proxy(request("/api/contact"))).status).toBe(200);
         } finally {
-            process.env.NODE_ENV = originalNodeEnv;
+            nodeEnv.restore();
             if (originalVercelEnv === undefined) {
                 delete process.env.VERCEL_ENV;
             } else {

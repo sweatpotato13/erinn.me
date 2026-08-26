@@ -240,9 +240,7 @@ describe("AuctionControls", () => {
                 onChangeOptionFilters={jest.fn()}
             />
         );
-        await user.click(
-            screen.getByRole("button", { name: categories[1], exact: true })
-        );
+        await user.click(screen.getByRole("button", { name: /^개조석$/ }));
         expect(setSelectedCategory).toHaveBeenCalledWith(categories[1]);
     });
 
@@ -623,7 +621,7 @@ describe("useAuctionSearch", () => {
             .mockResolvedValueOnce(
                 filteredResponse([item("부분 결과", 100)], true, "next", 1, 0)
             )
-            .mockResolvedValueOnce({ ok: false } as Response);
+            .mockResolvedValueOnce({ ok: false });
         jest.spyOn(console, "error").mockImplementation(() => undefined);
         const { result } = renderHook(() => useAuctionSearch());
 
@@ -930,7 +928,7 @@ describe("useRecentSales", () => {
         const log = jest
             .spyOn(console, "error")
             .mockImplementation(() => undefined);
-        global.fetch = jest.fn().mockResolvedValue({ ok: false } as Response);
+        global.fetch = jest.fn().mockResolvedValue({ ok: false });
         const { result } = renderHook(() => useRecentSales());
         await act(async () => result.current.search("failed"));
         expect(result.current.errorMessage).toBe(
@@ -941,9 +939,7 @@ describe("useRecentSales", () => {
     });
 
     it("treats an inexact item name as guidance instead of an error", async () => {
-        global.fetch = jest
-            .fn()
-            .mockResolvedValue({ ok: false, status: 422 } as Response);
+        global.fetch = jest.fn().mockResolvedValue({ ok: false, status: 422 });
         const { result } = renderHook(() => useRecentSales());
 
         await act(async () => result.current.search("부분 이름"));
@@ -961,7 +957,7 @@ describe("useRecentSales", () => {
         global.fetch = jest.fn().mockResolvedValue({
             ok: true,
             json: () => Promise.resolve({ sales: null, hasMore: false }),
-        } as Response);
+        });
         const { result } = renderHook(() => useRecentSales());
 
         await act(async () => result.current.search("malformed"));
@@ -1115,7 +1111,7 @@ describe("AuctionResults", () => {
         onClearComparison: jest.fn(),
         setCurrentPage: jest.fn(),
         recentSales: emptyRecentSales,
-    } as const;
+    };
     const refreshedAt = "2026-08-19T01:00:00.000Z";
 
     function renderCurrentMarketSnapshot() {

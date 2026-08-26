@@ -8,8 +8,7 @@ import type { HornResponse } from "@/lib/schemas/nexon";
 
 type HornMessage = HornResponse["horn_bugle_world_history"][number];
 export type BrowserNotificationPermission =
-    | NotificationPermission
-    | "unsupported";
+    NotificationPermission | "unsupported";
 
 interface UseHornAlertsOptions {
     alertKeywords: string[];
