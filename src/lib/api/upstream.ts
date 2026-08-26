@@ -2,10 +2,7 @@ import { NextResponse } from "next/server";
 import type * as z from "zod";
 
 export type UpstreamFailureClass =
-    | "upstream_config"
-    | "timeout"
-    | "upstream_http"
-    | "upstream_schema";
+    "upstream_config" | "timeout" | "upstream_http" | "upstream_schema";
 
 export class UpstreamFailure extends Error {
     constructor(

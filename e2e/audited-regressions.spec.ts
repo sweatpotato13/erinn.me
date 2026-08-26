@@ -296,12 +296,12 @@ test("auction URL restores on open and refresh", async ({ page }) => {
     ).toBeVisible();
     await expect(page.getByText("인챈트: 여명")).toBeVisible();
     await expect(page.getByText("에르그: 있음, S등급")).toBeVisible();
-    expect(counts).toEqual({ auction: 1, history: 1 });
+    await expect.poll(() => counts).toEqual({ auction: 1, history: 1 });
 
     await page.reload({ waitUntil: "networkidle" });
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("한글 검");
     await expect(page.getByText("인챈트: 여명")).toBeVisible();
-    expect(counts).toEqual({ auction: 2, history: 2 });
+    await expect.poll(() => counts).toEqual({ auction: 2, history: 2 });
 });
 
 test("auction option filters validate, apply, remove, clear, and follow history", async ({
@@ -847,8 +847,11 @@ test("auction comparison survives pagination and resets on search", async ({
 }) => {
     const counts = await openMarket(page);
     await searchMarket(page);
-    await comparisonCheckbox(page, 1).click();
+    const firstItem = comparisonCheckbox(page, 1);
+    await firstItem.click();
+    await expect(firstItem).toBeChecked();
     await page.getByLabel("다음 페이지").click();
+    await expect(page.getByText("2 / 2", { exact: true })).toBeVisible();
     await comparisonCheckbox(page, 11).click();
     await expect(
         page

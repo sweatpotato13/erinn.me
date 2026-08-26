@@ -157,8 +157,17 @@ function useUrlRestoration(
             return;
         }
         if (restoredKeyRef.current === paramsKey) return;
-        restoredKeyRef.current = paramsKey;
-        restoreRef.current(parsed.search);
+        const timer = window.setTimeout(() => {
+            if (
+                new URLSearchParams(window.location.search).toString() !==
+                paramsKey
+            ) {
+                return;
+            }
+            restoredKeyRef.current = paramsKey;
+            restoreRef.current(parsed.search);
+        });
+        return () => window.clearTimeout(timer);
     }, [paramsKey, setFeedback]);
     return restoreRef;
 }

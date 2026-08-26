@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import * as z from "zod";
 
 type ParsedQuery<T> =
-    | { success: true; data: T }
-    | { success: false; response: NextResponse };
+    { success: true; data: T } | { success: false; response: NextResponse };
 
 /**
  * Parses and validates query parameters from a request.

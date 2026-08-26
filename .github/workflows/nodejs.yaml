@@ -24,8 +24,6 @@ jobs:
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6
-        with:
-          version: 10
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v6
@@ -38,6 +36,12 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      - name: Generate Next.js types
+        run: pnpm exec next typegen
+
+      - name: Typecheck
+        run: pnpm typecheck
 
       - name: Build
         run: pnpm build
