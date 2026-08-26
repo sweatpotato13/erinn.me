@@ -1,6 +1,9 @@
+import { act, renderHook } from "@testing-library/react";
+
 import {
     parseAuctionSearchParams,
     setAuctionSearchUrl,
+    useAuctionUrlState,
 } from "@/app/auction/use-auction-url-state";
 import { categories } from "@/constant/categories";
 
@@ -157,5 +160,20 @@ describe("auction URL state", () => {
         expect(result.search).toBeNull();
         expect(result.invalid).toBe(true);
         expect(result.normalized.toString()).toBe("view=compact");
+    });
+
+    it("skips a deferred restore after commit changes the URL", () => {
+        jest.useFakeTimers();
+        window.history.replaceState(null, "", "/auction");
+        const onRestore = jest.fn();
+        const pushState = jest.spyOn(window.history, "pushState");
+        const { result } = renderHook(() => useAuctionUrlState(onRestore));
+
+        act(() => result.current.commit("검", categories[0], {}));
+        expect(pushState).toHaveBeenCalledTimes(1);
+        act(() => jest.runOnlyPendingTimers());
+
+        expect(onRestore).not.toHaveBeenCalled();
+        jest.useRealTimers();
     });
 });

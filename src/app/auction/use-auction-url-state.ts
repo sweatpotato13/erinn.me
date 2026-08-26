@@ -158,6 +158,12 @@ function useUrlRestoration(
         }
         if (restoredKeyRef.current === paramsKey) return;
         const timer = window.setTimeout(() => {
+            if (
+                new URLSearchParams(window.location.search).toString() !==
+                paramsKey
+            ) {
+                return;
+            }
             restoredKeyRef.current = paramsKey;
             restoreRef.current(parsed.search);
         });
