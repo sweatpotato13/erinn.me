@@ -11,6 +11,212 @@ export interface EnchantInfo {
 }
 
 export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
+    잔허의: {
+        name: "잔허의",
+        stats: [
+            {
+                type: "최대대미지",
+                value: 15,
+            },
+            {
+                type: "마법 공격력",
+                value: 15,
+            },
+            {
+                type: "4대 속성 연금술 대미지",
+                value: 15,
+            },
+            {
+                type: "음악버프 스킬 효과",
+                value: 2,
+            },
+            {
+                type: "음악버프 스킬 지속시간",
+                value: 5,
+            },
+        ],
+    },
+    관리자: {
+        name: "관리자",
+        stats: [
+            {
+                type: "최대대미지",
+                value: 16,
+            },
+            {
+                type: "마법 보호",
+                value: 2,
+            },
+        ],
+    },
+    후회: {
+        name: "후회",
+        stats: [
+            {
+                type: "최대대미지",
+                value: 16,
+            },
+            {
+                type: "최대생명력",
+                value: 20,
+            },
+        ],
+    },
+    편린: {
+        name: "편린",
+        stats: [
+            {
+                type: "마법 공격력",
+                value: 15,
+            },
+            {
+                type: "최대마나",
+                value: 20,
+            },
+        ],
+    },
+    자아: {
+        name: "자아",
+        stats: [
+            {
+                type: "모든 속성 연금술 대미지",
+                value: 16,
+            },
+            {
+                type: "최대스태미나",
+                value: 20,
+            },
+        ],
+    },
+    선물: {
+        name: "선물",
+        stats: [
+            {
+                type: "최대마나",
+                value: 20,
+            },
+        ],
+    },
+    소복한: {
+        name: "소복한",
+        stats: [
+            {
+                type: "음악버프 스킬 효과",
+                value: 1,
+            },
+        ],
+    },
+    눈덩이의: {
+        name: "눈덩이의",
+        stats: [
+            {
+                type: "4대 속성 연금술 대미지",
+                min: 13,
+                max: 14,
+            },
+        ],
+    },
+    비상하는: {
+        name: "비상하는",
+        stats: [
+            {
+                type: "마법 공격력",
+                min: 8,
+                max: 9,
+            },
+        ],
+    },
+    도약하는: {
+        name: "도약하는",
+        stats: [
+            {
+                type: "최대대미지",
+                min: 6,
+                max: 7,
+            },
+        ],
+    },
+    순수한: {
+        name: "순수한",
+        stats: [
+            {
+                type: "음악버프 스킬 효과",
+                value: 1,
+            },
+            {
+                type: "음악버프 스킬 지속시간",
+                value: 10,
+            },
+        ],
+    },
+    잠식된: {
+        name: "잠식된",
+        stats: [
+            {
+                type: "모든 속성 연금술 대미지",
+                value: 16,
+            },
+            {
+                type: "최대생명력",
+                value: 30,
+            },
+            {
+                type: "최대마나",
+                value: 30,
+            },
+        ],
+    },
+    기억의: {
+        name: "기억의",
+        stats: [
+            {
+                type: "마법 공격력",
+                value: 15,
+            },
+            {
+                type: "마나 소비 감소",
+                value: 2,
+            },
+            {
+                type: "최대마나",
+                value: 30,
+            },
+        ],
+    },
+    쌓여가는: {
+        name: "쌓여가는",
+        stats: [
+            {
+                type: "최대대미지",
+                value: 16,
+            },
+            {
+                type: "최대생명력",
+                value: 30,
+            },
+            {
+                type: "최대스태미나",
+                value: 30,
+            },
+        ],
+    },
+    신뢰하는: {
+        name: "신뢰하는",
+        stats: [
+            {
+                type: "최대대미지",
+                value: 16,
+            },
+            {
+                type: "보호",
+                value: 3,
+            },
+            {
+                type: "방어",
+                value: 10,
+            },
+        ],
+    },
     파동: {
         name: "파동",
         stats: [
@@ -196,7 +402,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             {
                 type: "스타 데토네이션 랭크 3단 이상일 때 마법 공격력",
                 min: 45,
-                max: 65,
+                max: 60,
             },
             {
                 type: "최대마나",
@@ -387,9 +593,17 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "전설의",
         stats: [
             {
+                type: "최대대미지",
+                value: 18,
+            },
+            {
                 type: "실드 마스터리 랭크 1 이상일 때 방어",
                 min: 30,
                 max: 70,
+            },
+            {
+                type: "실드 마스터리 랭크 1 이상일 때 마법 방어",
+                value: 50,
             },
             {
                 type: "최대생명력",
@@ -416,8 +630,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "앵콜 랭크 1 이상일 때 음악버프 스킬 효과",
-                min: 4,
-                max: 7,
+                min: 6,
+                max: 9,
             },
             {
                 type: "지력",
@@ -438,8 +652,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
             {
                 type: "파이어볼 랭크 3단 이상일 때 마법 공격력",
-                min: 50,
-                max: 60,
+                min: 100,
+                max: 110,
             },
             {
                 type: "마나 소비 감소",
@@ -677,6 +891,10 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         name: "디펜더",
         stats: [
             {
+                type: "최대대미지",
+                value: 7,
+            },
+            {
                 type: "디펜스 랭크 1 이상일 때 보호",
                 min: 3,
                 max: 5,
@@ -688,7 +906,7 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
             {
                 type: "최대생명력",
-                value: 150,
+                value: 250,
             },
         ],
     },
@@ -707,8 +925,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
         stats: [
             {
                 type: "자장가 랭크 1 이상일 때 음악버프 스킬 효과",
-                min: 2,
-                max: 3,
+                min: 4,
+                max: 5,
             },
             {
                 type: "최대생명력",
@@ -2411,6 +2629,33 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
         ],
     },
+    시나스트리: {
+        name: "시나스트리",
+        stats: [
+            {
+                type: "플레이머 랭크 1 이상일 때 불 속성 연금술 대미지",
+                min: 10,
+                max: 20,
+            },
+            {
+                type: "레인 캐스팅 랭크 1 이상일 때 물 속성 연금술 대미지",
+                min: 10,
+                max: 20,
+            },
+            {
+                type: "최대생명력",
+                value: 30,
+            },
+            {
+                type: "최대마나",
+                value: 30,
+            },
+            {
+                type: "솜씨",
+                value: 20,
+            },
+        ],
+    },
     레플리카: {
         name: "레플리카",
         stats: [
@@ -3420,8 +3665,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
         ],
     },
-    살림꾼의: {
-        name: "살림꾼의",
+    살림하는: {
+        name: "살림하는",
         stats: [
             {
                 type: "상점 판매가",
@@ -3429,8 +3674,8 @@ export const ENCHANT_OPTIONS: { [key: string]: EnchantInfo } = {
             },
         ],
     },
-    살림하는: {
-        name: "살림하는",
+    살림꾼의: {
+        name: "살림꾼의",
         stats: [
             {
                 type: "상점 판매가",
