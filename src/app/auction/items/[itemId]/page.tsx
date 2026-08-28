@@ -12,18 +12,14 @@ import {
     getAuctionCatalogItemById,
     getAuctionItemPath,
 } from "@/lib/auction-item-catalog";
-import { prepareRecentSales } from "@/lib/auction-market";
+import {
+    formatAuctionDateTime,
+    formatAuctionNumber,
+    prepareRecentSales,
+} from "@/lib/auction-market";
 import { getAuctionSearchPath } from "@/lib/auction-url";
 
 type Props = { params: Promise<{ itemId: string }> };
-const numberFormatter = new Intl.NumberFormat("ko-KR", {
-    maximumFractionDigits: 1,
-});
-const dateTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "medium",
-    timeZone: "Asia/Seoul",
-});
 type CurrentMarketSnapshot = Awaited<
     ReturnType<typeof getCachedCurrentItemMarket>
 >;
@@ -40,9 +36,7 @@ function FetchedAt({ value }: { value: string }) {
     return (
         <p className="mt-3 text-sm text-base-content/70">
             조회 완료:{" "}
-            <time dateTime={value}>
-                {dateTimeFormatter.format(new Date(value))}
-            </time>
+            <time dateTime={value}>{formatAuctionDateTime(value)}</time>
         </p>
     );
 }
@@ -106,13 +100,13 @@ function CurrentMarketContent({
                 <dl className="mt-4 grid grid-cols-2 gap-3">
                     <Metric
                         label="최저 단가"
-                        value={`${numberFormatter.format(market.minPrice)} Gold`}
+                        value={`${formatAuctionNumber(market.minPrice)} Gold`}
                     />
                     <Metric
                         label={
                             market.isComplete ? "전체 가용 수량" : "불러온 수량"
                         }
-                        value={`${numberFormatter.format(market.availableQuantity)}개`}
+                        value={`${formatAuctionNumber(market.availableQuantity)}개`}
                     />
                 </dl>
             )}
@@ -157,11 +151,11 @@ function RecentSalesSummary({
             <dl className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
                 <Metric
                     label={hasMore ? "불러온 거래 수" : "거래 수"}
-                    value={`${numberFormatter.format(summary.transactionCount)}건`}
+                    value={`${formatAuctionNumber(summary.transactionCount)}건`}
                 />
                 <Metric
                     label={hasMore ? "불러온 총 수량" : "총 수량"}
-                    value={`${numberFormatter.format(summary.totalQuantity)}개`}
+                    value={`${formatAuctionNumber(summary.totalQuantity)}개`}
                 />
                 {summary.medianUnitPrice !== null && (
                     <Metric
@@ -170,7 +164,7 @@ function RecentSalesSummary({
                                 ? "불러온 거래 단가 중앙값"
                                 : "거래 단가 중앙값"
                         }
-                        value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
+                        value={`${formatAuctionNumber(summary.medianUnitPrice)} Gold`}
                     />
                 )}
             </dl>
@@ -204,19 +198,19 @@ function RecentSalesTable({
                             <tr key={sale.auction_buy_id}>
                                 <td>
                                     <time dateTime={sale.date_auction_buy}>
-                                        {dateTimeFormatter.format(
-                                            new Date(sale.date_auction_buy)
+                                        {formatAuctionDateTime(
+                                            sale.date_auction_buy
                                         )}
                                     </time>
                                 </td>
                                 <td>
-                                    {numberFormatter.format(
+                                    {formatAuctionNumber(
                                         sale.auction_price_per_unit
                                     )}{" "}
                                     Gold
                                 </td>
                                 <td>
-                                    {numberFormatter.format(sale.item_count)}개
+                                    {formatAuctionNumber(sale.item_count)}개
                                 </td>
                             </tr>
                         ))}
@@ -297,11 +291,32 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const title = `${item.name} 경매장 시세`;
     const description = `${item.name}의 현재 등록 매물과 최근 1시간 완료 거래를 확인하세요.`;
     const canonical = getAuctionItemPath(item);
+    const previewPath = `${canonical}/preview`;
+    const imageAlt = `${item.name} 경매장 현재 매물 및 최근 1시간 완료 거래 요약`;
     return {
         title,
         description,
         alternates: { canonical },
-        openGraph: { title, description, url: canonical },
+        openGraph: {
+            title,
+            description,
+            url: canonical,
+            images: [
+                {
+                    url: previewPath,
+                    width: 1200,
+                    height: 630,
+                    type: "image/png",
+                    alt: imageAlt,
+                },
+            ],
+        },
+        twitter: {
+            card: "summary_large_image",
+            title,
+            description,
+            images: [{ url: previewPath, alt: imageAlt }],
+        },
     };
 }
 

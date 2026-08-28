@@ -46,12 +46,29 @@ describe("auction item pages", () => {
     });
 
     it("builds stable metadata without fetching live market data", async () => {
+        const previewPath = `/auction/items/${item.id}/preview`;
+        const imageAlt = `${item.name} 경매장 현재 매물 및 최근 1시간 완료 거래 요약`;
         await expect(
             generateMetadata({ params: Promise.resolve({ itemId: item.id }) })
         ).resolves.toMatchObject({
             title: `${item.name} 경매장 시세`,
             alternates: { canonical: `/auction/items/${item.id}` },
-            openGraph: { url: `/auction/items/${item.id}` },
+            openGraph: {
+                url: `/auction/items/${item.id}`,
+                images: [
+                    {
+                        url: previewPath,
+                        width: 1200,
+                        height: 630,
+                        type: "image/png",
+                        alt: imageAlt,
+                    },
+                ],
+            },
+            twitter: {
+                card: "summary_large_image",
+                images: [{ url: previewPath, alt: imageAlt }],
+            },
         });
         expect(getCachedCurrentItemMarket).not.toHaveBeenCalled();
         expect(getCachedRecentItemSales).not.toHaveBeenCalled();
@@ -77,6 +94,9 @@ describe("auction item pages", () => {
             fetchedAt,
         });
         render(await CurrentMarketPanel({ item }));
+        expect(screen.getByText("100 Gold")).toBeInTheDocument();
+        expect(screen.getByText("4개")).toBeInTheDocument();
+        expect(screen.getByText(/2026\. 8\. 28\./)).toBeInTheDocument();
         expect(screen.getByText("불러온 수량")).toBeInTheDocument();
         expect(screen.getByText(/전체 cursor가 남아/)).toBeInTheDocument();
     });

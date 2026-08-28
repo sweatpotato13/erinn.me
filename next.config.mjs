@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    htmlLimitedBots: /.*/,
     async rewrites() {
         return [];
     },
