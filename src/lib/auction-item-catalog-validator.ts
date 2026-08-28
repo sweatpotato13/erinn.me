@@ -6,28 +6,46 @@ const trimmedText = z
     .min(1)
     .refine(value => value === value.trim(), "must be trimmed");
 const utcDateTime = z.iso.datetime().regex(isoUtc);
+const rankedEvidence = z.enum(["trading-volume-rank", "traded-value-rank"]);
+
+const catalogItemSchema = z
+    .object({
+        id: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/),
+        name: trimmedText,
+        evidence: z.enum([
+            "current-listing",
+            "recent-sale",
+            ...rankedEvidence.options,
+        ]),
+        sourceRank: z.number().int().min(1).max(300).optional(),
+        verifiedAt: utcDateTime,
+    })
+    .superRefine((item, context) => {
+        const needsRank = rankedEvidence.safeParse(item.evidence).success;
+        if (needsRank !== (item.sourceRank !== undefined)) {
+            context.addIssue({
+                code: "custom",
+                message: "ranked evidence must include sourceRank",
+                path: ["sourceRank"],
+            });
+        }
+    });
 
 const catalogSchema = z.object({
     version: z.literal(1),
     updatedAt: z.iso.date(),
     selection: z.object({
-        method: z.enum(["search-demand", "reviewed-auction-activity-seed"]),
+        method: z.enum([
+            "search-demand",
+            "trading-demand",
+            "reviewed-auction-activity-seed",
+        ]),
         source: trimmedText,
         observedFrom: utcDateTime,
         observedTo: utcDateTime,
         limitations: trimmedText,
     }),
-    items: z
-        .array(
-            z.object({
-                id: z.string().regex(/^[A-Za-z0-9_-]{1,64}$/),
-                name: trimmedText,
-                evidence: z.enum(["current-listing", "recent-sale"]),
-                verifiedAt: utcDateTime,
-            })
-        )
-        .min(500)
-        .max(1000),
+    items: z.array(catalogItemSchema).min(500).max(1000),
 });
 
 type LocalItem = { id: string; name: string };

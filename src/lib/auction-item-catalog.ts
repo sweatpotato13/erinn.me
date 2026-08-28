@@ -3,7 +3,12 @@ import catalog from "@/data/auction-item-catalog.json";
 export type AuctionCatalogItem = {
     id: string;
     name: string;
-    evidence: "current-listing" | "recent-sale";
+    evidence:
+        | "current-listing"
+        | "recent-sale"
+        | "trading-volume-rank"
+        | "traded-value-rank";
+    sourceRank?: number;
     verifiedAt: string;
 };
 

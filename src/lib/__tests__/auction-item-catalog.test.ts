@@ -14,9 +14,14 @@ const cloneCatalog = () => structuredClone(catalog);
 
 describe("auction item catalog", () => {
     it("validates the checked-in catalog and exposes exact lookups", () => {
+        const validated = validateAuctionItemCatalog(catalog, localItems);
+        expect(validated.items).toHaveLength(500);
+        expect(validated.selection.method).toBe("trading-demand");
         expect(
-            validateAuctionItemCatalog(catalog, localItems).items
-        ).toHaveLength(500);
+            validated.items.every(
+                item => item.sourceRank && item.sourceRank <= 300
+            )
+        ).toBe(true);
         const item = getAuctionCatalogItems()[0];
         expect(getAuctionCatalogItemById(item.id)).toEqual(item);
         expect(getAuctionCatalogItemByExactName(item.name)).toEqual(item);
@@ -64,13 +69,13 @@ describe("auction item catalog", () => {
             },
         ],
         [
-            "stale API evidence",
+            "stale evidence",
             (value: ReturnType<typeof cloneCatalog>) => {
                 value.items[0].verifiedAt = "2026-01-01T00:00:00Z";
             },
         ],
         [
-            "future API evidence",
+            "future evidence",
             (value: ReturnType<typeof cloneCatalog>) => {
                 value.items[0].verifiedAt = "2027-01-01T00:00:00Z";
             },
