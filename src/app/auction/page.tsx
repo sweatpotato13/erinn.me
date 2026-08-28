@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Suspense, useRef, useState } from "react";
 
 import { AuctionControls } from "@/app/auction/auction-controls";
@@ -94,13 +93,6 @@ function AuctionPageView(props: AuctionViewProps) {
                     아이템명·카테고리·세부 옵션으로 현재 매물을 검색하고 최근
                     거래가와 비교하세요.
                 </p>
-                <Link
-                    href="/auction/items"
-                    prefetch={false}
-                    className="link link-primary mb-4 inline-block"
-                >
-                    공개 아이템 시세 목록
-                </Link>
                 <FavoriteToolbar
                     addButtonText={props.favorites.addButtonText}
                     onAdd={() =>
