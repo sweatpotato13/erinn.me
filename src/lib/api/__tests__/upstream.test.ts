@@ -26,6 +26,9 @@ describe("upstream boundary", () => {
         expect(() => createUpstreamUrl("/v1", "not-a-url")).toThrow(
             expect.objectContaining({ failureClass: "upstream_config" })
         );
+        expect(() => createUpstreamUrl("/v1", "http://example.com")).toThrow(
+            expect.objectContaining({ failureClass: "upstream_config" })
+        );
     });
 
     it("fetches and validates JSON within one deadline", async () => {
@@ -37,6 +40,10 @@ describe("upstream boundary", () => {
             "https://example.com",
             {},
             deadline
+        );
+        expect(fetch).toHaveBeenCalledWith(
+            "https://example.com",
+            expect.objectContaining({ redirect: "error" })
         );
         await expect(
             parseUpstreamJson(
