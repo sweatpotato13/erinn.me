@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import Link from "next/link";
 import { type RefObject, useRef, useState } from "react";
 
 import { AuctionComparison } from "@/app/auction/auction-comparison";
@@ -16,6 +17,10 @@ import type {
 import type { AuctionOptionEvaluation } from "@/app/auction/use-auction-search";
 import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
+import {
+    getAuctionCatalogItemByExactName,
+    getAuctionItemPath,
+} from "@/lib/auction-item-catalog";
 import { getItemImageUrl } from "@/lib/utils";
 
 const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
@@ -48,6 +53,7 @@ function AuctionRow({
     selectedForComparison: boolean;
     onToggleComparison: () => void;
 }) {
+    const catalogItem = getAuctionCatalogItemByExactName(item.item_name);
     return (
         <tr className="hover:bg-gray-100">
             <td className="w-[50px] hidden md:table-cell">
@@ -70,6 +76,15 @@ function AuctionRow({
                 >
                     {item.item_display_name}
                 </button>
+                {catalogItem && (
+                    <Link
+                        href={getAuctionItemPath(catalogItem)}
+                        prefetch={false}
+                        className="link link-primary ml-2 text-sm"
+                    >
+                        시세 페이지
+                    </Link>
+                )}
             </td>
             <td>{item.auction_price_per_unit.toLocaleString()} Gold</td>
             <td>{item.item_count}</td>

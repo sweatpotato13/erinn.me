@@ -1,0 +1,3513 @@
+{
+    "version": 1,
+    "updatedAt": "2026-08-28",
+    "selection": {
+        "method": "trading-demand",
+        "source": "Labanyu 경매장 아이템 거래 TOP 300: seven-day trading-volume and total-traded-value rankings",
+        "observedFrom": "2025-12-13T19:00:00Z",
+        "observedTo": "2025-12-20T19:00:00Z",
+        "limitations": "The published snapshot is dated 2025-12-14 04:00 KST, samples the one-hour Nexon API by exact item name, and excludes some item types. Seven locally unmapped names were excluded; duplicate local names use the lowest numeric ID only as a stable route key."
+    },
+    "items": [
+        {
+            "id": "5100071",
+            "name": "불타래",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 1,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3600006",
+            "name": "무리아스의 유물(이데아)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 1,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3600007",
+            "name": "무리아스의 유물",
+            "evidence": "traded-value-rank",
+            "sourceRank": 2,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "65003",
+            "name": "물의 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 2,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "65002",
+            "name": "불의 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 3,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5170454",
+            "name": "브리 레흐의 잔흔석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 3,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "95285",
+            "name": "향기로운 꿀 우유",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 4,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64635",
+            "name": "붕괴된 마력의 정수",
+            "evidence": "traded-value-rank",
+            "sourceRank": 4,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63002",
+            "name": "나무장작",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 5,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100284",
+            "name": "순도 높은 힘의 결정",
+            "evidence": "traded-value-rank",
+            "sourceRank": 5,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5050005",
+            "name": "정교한 세공 도구",
+            "evidence": "traded-value-rank",
+            "sourceRank": 6,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "65005",
+            "name": "흙의 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 6,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85261",
+            "name": "경계흔",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 7,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5160409",
+            "name": "브리 레흐의 주화(물리 토템)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 7,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "45037",
+            "name": "마력탄",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 8,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100057",
+            "name": "심술 난 고양이의 구슬",
+            "evidence": "traded-value-rank",
+            "sourceRank": 8,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040566",
+            "name": "무리아스의 성수",
+            "evidence": "traded-value-rank",
+            "sourceRank": 9,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "65004",
+            "name": "바람의 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 9,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100304",
+            "name": "브리 레흐의 정수",
+            "evidence": "traded-value-rank",
+            "sourceRank": 10,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52004",
+            "name": "작은 녹색구슬",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 10,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52458",
+            "name": "동물 캐릭터 분양 메달",
+            "evidence": "traded-value-rank",
+            "sourceRank": 11,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63020",
+            "name": "빈 병",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 11,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50486",
+            "name": "낙지",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 12,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5120209",
+            "name": "균열의 편린",
+            "evidence": "traded-value-rank",
+            "sourceRank": 12,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "45038",
+            "name": "고밀도 마력탄",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 13,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3160099",
+            "name": "불완전한 공상의 왕관 헤일로",
+            "evidence": "traded-value-rank",
+            "sourceRank": 13,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53940",
+            "name": "에코스톤 각성제",
+            "evidence": "traded-value-rank",
+            "sourceRank": 14,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51102",
+            "name": "마나 허브",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 14,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "19407",
+            "name": "파멸의 로브(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 15,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100091",
+            "name": "얼어붙은 불타래",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 16,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1080048",
+            "name": "소울 리버레이트 리라",
+            "evidence": "traded-value-rank",
+            "sourceRank": 16,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51110",
+            "name": "만드레이크",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 17,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3100003",
+            "name": "이루샤 드롭 벨",
+            "evidence": "traded-value-rank",
+            "sourceRank": 17,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040787",
+            "name": "8단계 푸른 개조석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 18,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50468",
+            "name": "문어",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 18,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100306",
+            "name": "초록빛 기억의 조각",
+            "evidence": "traded-value-rank",
+            "sourceRank": 19,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63016",
+            "name": "축복의 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 19,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100273",
+            "name": "젬스톤 파우더",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 20,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4200068",
+            "name": "에린의 정기",
+            "evidence": "traded-value-rank",
+            "sourceRank": 20,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040788",
+            "name": "8단계 붉은 개조석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 21,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51101",
+            "name": "블러디 허브",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 21,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "65029",
+            "name": "아라트의 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 22,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100303",
+            "name": "브리 레흐의 코어",
+            "evidence": "traded-value-rank",
+            "sourceRank": 22,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201707",
+            "name": "스페셜 아리아 실프 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 23,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67200",
+            "name": "실리엔 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 23,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60063",
+            "name": "별미 미끼통",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 24,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53935",
+            "name": "블루 에코스톤",
+            "evidence": "traded-value-rank",
+            "sourceRank": 24,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64674",
+            "name": "깨어난 힘의 정수",
+            "evidence": "traded-value-rank",
+            "sourceRank": 25,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63051",
+            "name": "거대한 외침의 뿔피리",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 25,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "19406",
+            "name": "파멸의 로브(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 26,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100265",
+            "name": "폴룩스",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 26,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53938",
+            "name": "블랙 에코스톤",
+            "evidence": "traded-value-rank",
+            "sourceRank": 27,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67100",
+            "name": "힐웬 광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 27,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53942",
+            "name": "최고급 에코스톤 각성제",
+            "evidence": "traded-value-rank",
+            "sourceRank": 28,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52003",
+            "name": "대못",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 28,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64302",
+            "name": "고급 양털",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 29,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3100020",
+            "name": "삼색 보석 반지",
+            "evidence": "traded-value-rank",
+            "sourceRank": 29,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64114",
+            "name": "티어드롭 젬스톤",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 30,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1040054",
+            "name": "소울 리버레이트 보우",
+            "evidence": "traded-value-rank",
+            "sourceRank": 30,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67257",
+            "name": "고대의 뿔 반지",
+            "evidence": "traded-value-rank",
+            "sourceRank": 31,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51104",
+            "name": "베이스 허브",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 31,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51031",
+            "name": "완전 회복의 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 32,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1230010",
+            "name": "나이트브링어 인퀴지터",
+            "evidence": "traded-value-rank",
+            "sourceRank": 32,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60058",
+            "name": "라바 고치",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 33,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1010070",
+            "name": "소울 리버레이트 해머",
+            "evidence": "traded-value-rank",
+            "sourceRank": 33,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51028",
+            "name": "생명력과 스태미나 50 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 34,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1650001",
+            "name": "소울 리버레이트 힐링 원드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 34,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85250",
+            "name": "전이의 카탈리스트",
+            "evidence": "traded-value-rank",
+            "sourceRank": 35,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2310007",
+            "name": "블리안 엔더스 인텐스 글러브",
+            "evidence": "traded-value-rank",
+            "sourceRank": 36,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63219",
+            "name": "중급 나무장작",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 36,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5550001",
+            "name": "세트 효과 최대 대미지 증가 +1 주문서",
+            "evidence": "traded-value-rank",
+            "sourceRank": 37,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67201",
+            "name": "실리엔",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 37,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "16985",
+            "name": "얼티밋 기아스 데버스테이션 글러브",
+            "evidence": "traded-value-rank",
+            "sourceRank": 38,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60030",
+            "name": "최고급 가죽끈",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 38,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63220",
+            "name": "고급 나무장작",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 39,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3500894",
+            "name": "찬란한 이시리얼 실크 윙",
+            "evidence": "traded-value-rank",
+            "sourceRank": 39,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4200038",
+            "name": "마기그래프 회복 주문서(10)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 40,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2210006",
+            "name": "블리안 엔더스 인텐스 써클릿(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 40,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60028",
+            "name": "일반 가죽끈",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 41,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85552",
+            "name": "전용 해제 포션",
+            "evidence": "traded-value-rank",
+            "sourceRank": 41,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1270029",
+            "name": "소울 리버레이트 듀얼건",
+            "evidence": "traded-value-rank",
+            "sourceRank": 42,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51179",
+            "name": "온전한 회복의 2000 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 42,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "40779",
+            "name": "데모닉 글루미 선데이",
+            "evidence": "traded-value-rank",
+            "sourceRank": 43,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51178",
+            "name": "온전한 회복의 1500 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 43,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60054",
+            "name": "나무판",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 44,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2400245",
+            "name": "블리안 엔더스 인텐스 부츠",
+            "evidence": "traded-value-rank",
+            "sourceRank": 44,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50118",
+            "name": "물이 든 병",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 45,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50664",
+            "name": "새우 조련 미끼",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 46,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1020004",
+            "name": "소울 리버레이트 액스",
+            "evidence": "traded-value-rank",
+            "sourceRank": 46,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53564",
+            "name": "고대 마력탄",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 47,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5030526",
+            "name": "낭만 농장 칼리아흐의 결계 미니어처",
+            "evidence": "traded-value-rank",
+            "sourceRank": 47,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1230039",
+            "name": "소울 리버레이트 스태프",
+            "evidence": "traded-value-rank",
+            "sourceRank": 48,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67209",
+            "name": "온전한 실리엔",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 48,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67207",
+            "name": "신비한 허브 가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 49,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5050020",
+            "name": "찬란한 세공 도구",
+            "evidence": "traded-value-rank",
+            "sourceRank": 49,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5160412",
+            "name": "브리 레흐의 주화(지원 토템)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 50,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60022",
+            "name": "최고급 옷감",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 50,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85262",
+            "name": "경계석",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 51,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "62004",
+            "name": "마법가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 52,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50889",
+            "name": "학교 양동이",
+            "evidence": "traded-value-rank",
+            "sourceRank": 52,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "86306",
+            "name": "경매장 수수료 100% 할인 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 53,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100330",
+            "name": "마력석",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 53,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64009",
+            "name": "미스릴괴",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 54,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "13164",
+            "name": "버넘 플레이트 아머",
+            "evidence": "traded-value-rank",
+            "sourceRank": 54,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1040010",
+            "name": "나이트브링어 프레데터",
+            "evidence": "traded-value-rank",
+            "sourceRank": 55,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64001",
+            "name": "철괴",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 55,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60029",
+            "name": "고급 가죽끈",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 56,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5550003",
+            "name": "세트 효과 크리티컬 대미지 증가 +1 주문서",
+            "evidence": "traded-value-rank",
+            "sourceRank": 56,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100039",
+            "name": "글라스 기브넨의 심장",
+            "evidence": "traded-value-rank",
+            "sourceRank": 57,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50007",
+            "name": "나무열매",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 57,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64639",
+            "name": "순도 높은 강화제",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 58,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1070014",
+            "name": "소울 리버레이트 핸들",
+            "evidence": "traded-value-rank",
+            "sourceRank": 58,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100040",
+            "name": "손상된 글라스 기브넨의 깃털",
+            "evidence": "traded-value-rank",
+            "sourceRank": 59,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85258",
+            "name": "찬란한 교감의 브리 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 59,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64656",
+            "name": "정화된 백색 가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 60,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100038",
+            "name": "아다만티움",
+            "evidence": "traded-value-rank",
+            "sourceRank": 60,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5160318",
+            "name": "두근두근 엄마 인형(최대 대미지 토템)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 61,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60050",
+            "name": "질긴 실",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 61,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1200007",
+            "name": "나이트브링어 워로드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 62,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64029",
+            "name": "미스릴판",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 62,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1440006",
+            "name": "소울 리버레이트 가드실린더",
+            "evidence": "traded-value-rank",
+            "sourceRank": 63,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64680",
+            "name": "신성한 광물 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 63,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100074",
+            "name": "결정화된 겨울의 잔해",
+            "evidence": "traded-value-rank",
+            "sourceRank": 64,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63221",
+            "name": "최고급 나무장작",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 64,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51103",
+            "name": "선라이트 허브",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 65,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1390055",
+            "name": "캐주얼 백팩",
+            "evidence": "traded-value-rank",
+            "sourceRank": 65,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "18688",
+            "name": "랑그히리스 체이서 써클릿",
+            "evidence": "traded-value-rank",
+            "sourceRank": 66,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51109",
+            "name": "포이즌 허브",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 66,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201488",
+            "name": "스페셜 오블리비언 카이저 시크 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 67,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "76253",
+            "name": "승단 배지",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 67,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5050013",
+            "name": "영롱한 세공 도구",
+            "evidence": "traded-value-rank",
+            "sourceRank": 68,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60049",
+            "name": "최고급 수제 붕대",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 68,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52001",
+            "name": "나뭇가지",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 69,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1650002",
+            "name": "나이트브링어 세이비어",
+            "evidence": "traded-value-rank",
+            "sourceRank": 69,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12011",
+            "name": "리본",
+            "evidence": "traded-value-rank",
+            "sourceRank": 70,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100005",
+            "name": "부드러운 양피지",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 70,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85254",
+            "name": "도전의 브리 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 71,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100308",
+            "name": "브리 레흐의 기운이 깃든 문장",
+            "evidence": "traded-value-rank",
+            "sourceRank": 71,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100083",
+            "name": "잘려 나간 겨울의 꿈 결정",
+            "evidence": "traded-value-rank",
+            "sourceRank": 72,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64036",
+            "name": "철광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 72,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85256",
+            "name": "고결한 수행의 브리 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 73,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501196",
+            "name": "찬란한 아리아 실프 스카프 윙",
+            "evidence": "traded-value-rank",
+            "sourceRank": 73,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "16152",
+            "name": "보헤미안 플라워 밴드(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 74,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64002",
+            "name": "철광석",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 74,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12000",
+            "name": "링 토크",
+            "evidence": "traded-value-rank",
+            "sourceRank": 75,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63286",
+            "name": "악마의 광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 75,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50022",
+            "name": "밀가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 76,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2200183",
+            "name": "프레젠트 어반 프로 웨어(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 76,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53934",
+            "name": "레드 에코스톤",
+            "evidence": "traded-value-rank",
+            "sourceRank": 77,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85257",
+            "name": "숭고한 도전의 브리 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 77,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5120166",
+            "name": "브리 레흐 던전 통행증",
+            "evidence": "traded-value-rank",
+            "sourceRank": 78,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64306",
+            "name": "포근한 털가죽",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 78,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64301",
+            "name": "미스릴 대못",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 79,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201486",
+            "name": "스페셜 오블리비언 카이저 엘레강트 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 79,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "18317",
+            "name": "헤보나 서클릿",
+            "evidence": "traded-value-rank",
+            "sourceRank": 80,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67101",
+            "name": "힐웬",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 80,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85255",
+            "name": "교감의 브리 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 81,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040665",
+            "name": "안락의 파편 스타더스트의 형상",
+            "evidence": "traded-value-rank",
+            "sourceRank": 81,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64003",
+            "name": "동괴",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 82,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53937",
+            "name": "실버 에코스톤",
+            "evidence": "traded-value-rank",
+            "sourceRank": 82,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1000059",
+            "name": "소울 리버레이트 소드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 83,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85253",
+            "name": "수행의 브리 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 83,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64046",
+            "name": "가넷",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 84,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1020011",
+            "name": "나이트브링어 바이킹",
+            "evidence": "traded-value-rank",
+            "sourceRank": 84,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100075",
+            "name": "공상을 담은 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 85,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100289",
+            "name": "퓨어 젬스톤",
+            "evidence": "traded-value-rank",
+            "sourceRank": 85,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040386",
+            "name": "중형 미끼통",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 86,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5050025",
+            "name": "트렌드 아틀리에 옷감",
+            "evidence": "traded-value-rank",
+            "sourceRank": 86,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64644",
+            "name": "각성된 힘의 결정",
+            "evidence": "traded-value-rank",
+            "sourceRank": 87,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52039",
+            "name": "종이학",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 87,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5120168",
+            "name": "빛나는 구슬",
+            "evidence": "traded-value-rank",
+            "sourceRank": 88,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5600081",
+            "name": "별을 낚는 미끼통",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 88,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60021",
+            "name": "고급 옷감",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 89,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1270006",
+            "name": "나이트브링어 뱅퀴셔",
+            "evidence": "traded-value-rank",
+            "sourceRank": 89,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51105",
+            "name": "골드 허브",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 90,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201706",
+            "name": "스페셜 아리아 실프 웨어(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 90,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64007",
+            "name": "금괴",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 91,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5550004",
+            "name": "세트 효과 매그넘 샷 강화 +1 주문서",
+            "evidence": "traded-value-rank",
+            "sourceRank": 91,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51010",
+            "name": "마나 300 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 92,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2220004",
+            "name": "블리안 엔더스 듀러블 가드(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 92,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "143022",
+            "name": "데모닉 글루미 선데이 S",
+            "evidence": "traded-value-rank",
+            "sourceRank": 93,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64641",
+            "name": "정제된 촉매제",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 93,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "153022",
+            "name": "데모닉 글루미 선데이 R",
+            "evidence": "traded-value-rank",
+            "sourceRank": 94,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64041",
+            "name": "알 수 없는 광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 94,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63709",
+            "name": "인챈트 보호 포션",
+            "evidence": "traded-value-rank",
+            "sourceRank": 95,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100244",
+            "name": "프로키온 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 95,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60013",
+            "name": "고급 실크",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 96,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12524",
+            "name": "보호의 7단계 붉은 개조석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 96,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1420006",
+            "name": "소울 리버레이트 이터널 애로우",
+            "evidence": "traded-value-rank",
+            "sourceRank": 97,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60064",
+            "name": "대어 낚시용 미끼통",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 98,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12002",
+            "name": "켈트 십자가",
+            "evidence": "traded-value-rank",
+            "sourceRank": 98,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64028",
+            "name": "금판",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 99,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "40090",
+            "name": "힐링 원드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 99,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100276",
+            "name": "강렬한 기억의 결정",
+            "evidence": "traded-value-rank",
+            "sourceRank": 100,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100002",
+            "name": "마법의 깃털펜",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 100,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "86075",
+            "name": "눈이 새겨진 석판(거래 가능)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 101,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5550019",
+            "name": "세트 효과 힐링 강화 +1 주문서",
+            "evidence": "traded-value-rank",
+            "sourceRank": 101,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64005",
+            "name": "은괴",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 102,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67202",
+            "name": "돌연변이 토끼의 발",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 103,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5160410",
+            "name": "브리 레흐의 주화(마법 토템)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 103,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2200614",
+            "name": "블리안 엔더스 클래시 수트(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 104,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64051",
+            "name": "빤짝이 종이",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 104,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51005",
+            "name": "생명력 300 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 105,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4200041",
+            "name": "마기그래프 회복 주문서(100)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 106,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53936",
+            "name": "옐로 에코스톤",
+            "evidence": "traded-value-rank",
+            "sourceRank": 106,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50474",
+            "name": "닭고기",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 107,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5030255",
+            "name": "사이브 엑스트라 미니어처",
+            "evidence": "traded-value-rank",
+            "sourceRank": 107,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100328",
+            "name": "녹음이 깃든 마법사의 보석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 108,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67110",
+            "name": "힐웬 합금",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 108,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51172",
+            "name": "스태미나 500 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 109,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040929",
+            "name": "파에아의 재봉 키트",
+            "evidence": "traded-value-rank",
+            "sourceRank": 109,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "86074",
+            "name": "작은 하마 조각상(거래 가능)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 110,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63384",
+            "name": "조화의 나무판",
+            "evidence": "traded-value-rank",
+            "sourceRank": 110,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2300229",
+            "name": "블리안 엔더스 클래시 글러브",
+            "evidence": "traded-value-rank",
+            "sourceRank": 111,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60026",
+            "name": "최고급 가죽",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 111,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2210005",
+            "name": "블리안 엔더스 인텐스 써클릿(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 112,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64054",
+            "name": "주석광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 112,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50023",
+            "name": "보릿가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 113,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12523",
+            "name": "보호의 7단계 푸른 개조석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 113,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4300990",
+            "name": "기억의 보석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 114,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64048",
+            "name": "루비",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 114,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4200624",
+            "name": "샛바람 용병단 프리미엄 세트 인형 가방 상자",
+            "evidence": "traded-value-rank",
+            "sourceRank": 115,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50473",
+            "name": "칠면조 고기",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 115,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60025",
+            "name": "고급 가죽",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 116,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201139",
+            "name": "스페셜 나이트쉐이드 레이스 의상(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 116,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1400011",
+            "name": "소울 리버레이트 실드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 117,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64304",
+            "name": "싱싱한 풀",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 117,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100250",
+            "name": "알타이르 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 118,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60004",
+            "name": "매듭끈",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 119,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501033",
+            "name": "찬란하게 수려한 천사의 날개(별빛 우주)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 119,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64105",
+            "name": "단단하게 결정화된 광물 조각",
+            "evidence": "traded-value-rank",
+            "sourceRank": 120,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5170414",
+            "name": "에르그 경험치 조각(5000)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 120,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "41421",
+            "name": "렘의 모닝스타",
+            "evidence": "traded-value-rank",
+            "sourceRank": 121,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51107",
+            "name": "화이트 허브",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 121,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100249",
+            "name": "카노푸스 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 122,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "40379",
+            "name": "트리니티 스태프",
+            "evidence": "traded-value-rank",
+            "sourceRank": 122,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64642",
+            "name": "각성된 힘의 가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 123,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2200613",
+            "name": "블리안 엔더스 클래시 수트(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 123,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100274",
+            "name": "마력이 깃든 융합제",
+            "evidence": "traded-value-rank",
+            "sourceRank": 124,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "86073",
+            "name": "손잡이가 달린 그릇(거래 가능)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 124,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67203",
+            "name": "돌연변이 식물의 점액질",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 125,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1200043",
+            "name": "소울 리버레이트 블레이드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 125,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1050017",
+            "name": "소울 리버레이트 원드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 126,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51034",
+            "name": "해독 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 126,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2400246",
+            "name": "블리안 엔더스 클래시 슈즈",
+            "evidence": "traded-value-rank",
+            "sourceRank": 127,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "40832",
+            "name": "세피로트의 화살",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 127,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50010",
+            "name": "감자",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 128,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1280018",
+            "name": "소울 리버레이트 스로잉 스타",
+            "evidence": "traded-value-rank",
+            "sourceRank": 128,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1250026",
+            "name": "소울 리버레이트 랜스",
+            "evidence": "traded-value-rank",
+            "sourceRank": 129,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60051",
+            "name": "질긴 끈",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 129,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64037",
+            "name": "동광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 130,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2110362",
+            "name": "아리아 실프 가발(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 130,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2230003",
+            "name": "스페셜 포레스트 레인저 머플러 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 131,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50276",
+            "name": "개암버섯",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 132,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1260020",
+            "name": "소울 리버레이트 너클",
+            "evidence": "traded-value-rank",
+            "sourceRank": 132,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040986",
+            "name": "무리아스의 성수 효과 기억의 스크롤",
+            "evidence": "traded-value-rank",
+            "sourceRank": 133,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67115",
+            "name": "에메랄드 코어",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 133,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "90600",
+            "name": "밀랍",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 134,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "17769",
+            "name": "슈팅 스타 롤러 스케이트",
+            "evidence": "traded-value-rank",
+            "sourceRank": 134,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64026",
+            "name": "동판",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 135,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5041027",
+            "name": "오블리비언 카이저 사이드 외형 주문서",
+            "evidence": "traded-value-rank",
+            "sourceRank": 135,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5120207",
+            "name": "글렌 베르나 추가 입장권",
+            "evidence": "traded-value-rank",
+            "sourceRank": 136,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100248",
+            "name": "리겔 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 136,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5000342",
+            "name": "간편한 망각의 비약",
+            "evidence": "traded-value-rank",
+            "sourceRank": 137,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60014",
+            "name": "최고급 실크",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 137,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "77420",
+            "name": "펫 놀이세트",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 138,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100003",
+            "name": "마법의 양피지",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 139,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4400423",
+            "name": "메인스트림 스킵권 선택 상자",
+            "evidence": "traded-value-rank",
+            "sourceRank": 139,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64004",
+            "name": "동광석",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 140,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100282",
+            "name": "순도 높은 융합의 실리엔",
+            "evidence": "traded-value-rank",
+            "sourceRank": 140,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51205",
+            "name": "마리오네트 500 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 141,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "17248",
+            "name": "보헤미안 슈즈(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 141,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50009",
+            "name": "달걀",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 142,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100312",
+            "name": "텅 빈 마력석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 143,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "95316",
+            "name": "향기로운 꿀물",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 143,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64308",
+            "name": "못쓰게 된 밀 이파리",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 144,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5550009",
+            "name": "세트 효과 스매시 강화 +1 주문서",
+            "evidence": "traded-value-rank",
+            "sourceRank": 144,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64043",
+            "name": "스타 사파이어",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 145,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2400626",
+            "name": "파이널 데스티니 슈즈(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 145,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64155",
+            "name": "조화의 코스모스 퍼퓸",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 146,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5170177",
+            "name": "에르그 경험치 조각(15000)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 147,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "18024",
+            "name": "머리띠",
+            "evidence": "traded-value-rank",
+            "sourceRank": 147,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2220003",
+            "name": "블리안 엔더스 듀러블 가드(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 148,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64044",
+            "name": "에메랄드",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 148,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64159",
+            "name": "유대의 바이올렛 퍼퓸",
+            "evidence": "traded-value-rank",
+            "sourceRank": 149,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64056",
+            "name": "니켈광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 149,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1260003",
+            "name": "나이트브링어 베가본드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 150,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60043",
+            "name": "물안개 비단",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 150,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1050002",
+            "name": "나이트브링어 엘리멘토",
+            "evidence": "traded-value-rank",
+            "sourceRank": 151,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52027",
+            "name": "밀",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 151,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "54456",
+            "name": "베인 미니어처",
+            "evidence": "traded-value-rank",
+            "sourceRank": 152,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51015",
+            "name": "스태미나 300 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 152,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51171",
+            "name": "마나 500 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 153,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2110361",
+            "name": "아리아 실프 가발(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 153,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64045",
+            "name": "아쿠아마린",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 154,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100443",
+            "name": "빛바랜 영광의 파편",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 155,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201511",
+            "name": "스페셜 파이널 다크로드 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 155,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "95310",
+            "name": "무른 힐웬 광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 156,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64055",
+            "name": "아연광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 157,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "41233",
+            "name": "태양과 달의 검",
+            "evidence": "traded-value-rank",
+            "sourceRank": 157,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64113",
+            "name": "기아스 코어",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 158,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67206",
+            "name": "끈끈이 풀",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 159,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85841",
+            "name": "환생의 비약",
+            "evidence": "traded-value-rank",
+            "sourceRank": 159,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4300916",
+            "name": "간편한 특별 개조 복구의 정수",
+            "evidence": "traded-value-rank",
+            "sourceRank": 160,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5041002",
+            "name": "탈틴 농장 일반 석영",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 160,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1460003",
+            "name": "소울 리버레이트 오브",
+            "evidence": "traded-value-rank",
+            "sourceRank": 161,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64025",
+            "name": "철판",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 161,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12001",
+            "name": "반지",
+            "evidence": "traded-value-rank",
+            "sourceRank": 162,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67208",
+            "name": "마력이 깃든 나무장작",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 163,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100305",
+            "name": "주황빛 기억의 조각",
+            "evidence": "traded-value-rank",
+            "sourceRank": 163,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100283",
+            "name": "순도 높은 융합의 나무판",
+            "evidence": "traded-value-rank",
+            "sourceRank": 164,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "62012",
+            "name": "엘레멘탈 리무버",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 164,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "80316",
+            "name": "스페셜 체인 슬래셔 에아렌 의상(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 165,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64640",
+            "name": "재생의 가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 165,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4301263",
+            "name": "배쉬 이펙트 변경 카드(폭주) 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 166,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50277",
+            "name": "황금버섯",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 166,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "62000",
+            "name": "고대의 마법가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 167,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1070002",
+            "name": "나이트브링어 트릭스터",
+            "evidence": "traded-value-rank",
+            "sourceRank": 167,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "76853",
+            "name": "스페셜 백색의 힐러 2차 타이틀 획득 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 168,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040991",
+            "name": "탈틴 농장 재스민 씨앗",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 168,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "18705",
+            "name": "얼티밋 기아스 데버스테이션 써클릿",
+            "evidence": "traded-value-rank",
+            "sourceRank": 169,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64657",
+            "name": "왜곡의 가루",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 169,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60007",
+            "name": "가는 실뭉치",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 170,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040536",
+            "name": "운명의 지팡이 카드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 170,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64027",
+            "name": "은판",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 171,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51170",
+            "name": "생명력 500 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 172,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201485",
+            "name": "스페셜 오블리비언 카이저 그레이스 웨어(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 172,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51108",
+            "name": "해독초",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 173,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4301495",
+            "name": "행진곡 이펙트 변경 카드(오로라 프림로즈) 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 173,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100288",
+            "name": "마력이 담긴 마력석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 174,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63348",
+            "name": "특급 나무장작",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 174,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5010044",
+            "name": "로나의 특제 도시락",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 175,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "40007",
+            "name": "한손도끼",
+            "evidence": "traded-value-rank",
+            "sourceRank": 175,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501013",
+            "name": "찬란한 크림슨 녹턴 윙",
+            "evidence": "traded-value-rank",
+            "sourceRank": 176,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040997",
+            "name": "탈틴 농장 일반 오크라",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 176,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100317",
+            "name": "오묘한 마력석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 177,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60027",
+            "name": "저가형 가죽끈",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 177,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4200622",
+            "name": "샛바람 용병단 세트 인형 가방 상자",
+            "evidence": "traded-value-rank",
+            "sourceRank": 178,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64053",
+            "name": "유황",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 178,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52048",
+            "name": "네잎 클로버",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 179,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60047",
+            "name": "수제 붕대",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 180,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "41217",
+            "name": "포르티시모 2차 타이틀 획득 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 180,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64303",
+            "name": "쿠션용 솜",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 181,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1400003",
+            "name": "나이트브링어 뱅가드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 182,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040998",
+            "name": "탈틴 농장 일반 재스민",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 182,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100035",
+            "name": "환상의 괴",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 183,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501224",
+            "name": "찬란하게 수려한 천사의 날개(몽환의 꿈)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 184,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5041001",
+            "name": "탈틴 농장 일반 마법 거미줄",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 184,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "95309",
+            "name": "얼룩진 실리엔 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 185,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "18327",
+            "name": "트리니티 서클릿",
+            "evidence": "traded-value-rank",
+            "sourceRank": 185,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64643",
+            "name": "각성된 힘의 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 186,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1250005",
+            "name": "나이트브링어 스피어헤드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 186,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201449",
+            "name": "스페셜 아쥬르 템페스타 시니컬 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 187,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52005",
+            "name": "작은 파란구슬",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 187,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51106",
+            "name": "못쓰게 된 허브",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 188,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4300972",
+            "name": "특별 개조 상승의 스크롤",
+            "evidence": "traded-value-rank",
+            "sourceRank": 188,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040995",
+            "name": "탈틴 농장 석영 영양제",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 189,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2400668",
+            "name": "파이널 다크로드 힐(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 189,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64309",
+            "name": "건초 더미",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 190,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100298",
+            "name": "마력이 깃든 마법사의 보석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 190,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2300610",
+            "name": "파이널 다크로드 글러브(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 191,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100247",
+            "name": "하다르 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 191,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040994",
+            "name": "탈틴 농장 거미 영양제",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 192,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100082",
+            "name": "얼음과 융화된 금속 파편",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 193,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3500713",
+            "name": "찬란한 밤의 서약 망토",
+            "evidence": "traded-value-rank",
+            "sourceRank": 193,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60006",
+            "name": "굵은 실뭉치",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 194,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4300073",
+            "name": "프리미엄 콤비네이션 멤버십(30일)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 194,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040534",
+            "name": "허름한 지팡이 카드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 195,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040990",
+            "name": "탈틴 농장 오크라 씨앗",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 195,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63290",
+            "name": "로드 미션 통행증",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 196,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040999",
+            "name": "탈틴 농장 일반 붉은 배",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 197,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4130449",
+            "name": "프리렌/장송의 프리렌 2차 타이틀 획득 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 197,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "53941",
+            "name": "고급 에코스톤 각성제",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 198,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "14160",
+            "name": "얼티밋 기아스 데버스테이션 아머(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 198,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60052",
+            "name": "아이템 일루전 T46",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 199,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2110092",
+            "name": "클래식 메이드 머리장식",
+            "evidence": "traded-value-rank",
+            "sourceRank": 199,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "17384",
+            "name": "날개 신발(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 200,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64305",
+            "name": "인조 잔디",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 200,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "40798",
+            "name": "제더 II",
+            "evidence": "traded-value-rank",
+            "sourceRank": 201,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4301262",
+            "name": "레이지 임팩트 이펙트 변경 카드(잠식) 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 202,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040996",
+            "name": "탈틴 농장 일반 블랙베리",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 202,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501016",
+            "name": "찬란한 오블리비언 카이저 망토",
+            "evidence": "traded-value-rank",
+            "sourceRank": 203,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5041000",
+            "name": "탈틴 농장 일반 고무",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 203,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201406",
+            "name": "스페셜 파이널 데스티니 웨어(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 204,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "61500",
+            "name": "종이",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 204,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "17501",
+            "name": "실러릿 슈즈",
+            "evidence": "traded-value-rank",
+            "sourceRank": 205,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100080",
+            "name": "해묵은 베일의 올",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 205,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67108",
+            "name": "에너지 컨버터",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 206,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64307",
+            "name": "포근한 털가죽 원단",
+            "evidence": "traded-value-rank",
+            "sourceRank": 206,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2230015",
+            "name": "리파인드 마제스틱 나이트 아머(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 207,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51033",
+            "name": "정령의 리큐르",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 207,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100058",
+            "name": "튼튼한 고리",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 208,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2230014",
+            "name": "리파인드 마제스틱 나이트 아머(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 208,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "77453",
+            "name": "스페셜 죽음의 손 2차 타이틀 획득 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 209,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50021",
+            "name": "우유",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 210,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100126",
+            "name": "크롬 바스 추가 입장권",
+            "evidence": "traded-value-rank",
+            "sourceRank": 210,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60009",
+            "name": "양털",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 211,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4301498",
+            "name": "행진곡 이펙트 변경 카드(루미너스 프림로즈) 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 211,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51009",
+            "name": "마나 100 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 212,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "14159",
+            "name": "얼티밋 기아스 데버스테이션 아머(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 212,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2230001",
+            "name": "스페셜 포레스트 레인저 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 213,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501233",
+            "name": "찬란하게 수려한 천사의 날개(꽃잎)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 214,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040993",
+            "name": "탈틴 농장 고무나무 영양제",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 214,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "74857",
+            "name": "가벼운 물리 공격력 증가 포션(2시간)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 215,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52006",
+            "name": "작은 빨간구슬",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 215,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "90603",
+            "name": "최고급 바닐라 향초",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 216,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100081",
+            "name": "깨진 묵빛 금속 파편",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 217,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501015",
+            "name": "찬란한 오블리비언 카이저 윙",
+            "evidence": "traded-value-rank",
+            "sourceRank": 217,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64052",
+            "name": "발화석",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 218,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5250194",
+            "name": "스피릿 젬(1200)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 219,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5041028",
+            "name": "오블리비언 카이저 랜스 외형 주문서",
+            "evidence": "traded-value-rank",
+            "sourceRank": 219,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63577",
+            "name": "드래곤의 비늘 조각",
+            "evidence": "traded-value-rank",
+            "sourceRank": 220,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5250195",
+            "name": "스피릿 젬(1500)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 220,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2410006",
+            "name": "블리안 엔더스 듀러블 그리브",
+            "evidence": "traded-value-rank",
+            "sourceRank": 221,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51046",
+            "name": "호감도 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 221,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3400036",
+            "name": "공허의 로브(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 222,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52007",
+            "name": "작은 은색구슬",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 222,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64688",
+            "name": "부패한 사도의 가죽",
+            "evidence": "traded-value-rank",
+            "sourceRank": 223,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040992",
+            "name": "탈틴 농장 붉은 배나무 영양제",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 223,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52031",
+            "name": "꽃뭉치",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 224,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100281",
+            "name": "순도 높은 융합의 힐웬 합금",
+            "evidence": "traded-value-rank",
+            "sourceRank": 224,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12283",
+            "name": "6단계 푸른 개조석",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 225,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1090000",
+            "name": "디스포지터 사이드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 225,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64039",
+            "name": "금광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 226,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4301497",
+            "name": "행진곡 이펙트 변경 카드(아쿠아 프림로즈) 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 226,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2230000",
+            "name": "스페셜 포레스트 레인저 웨어(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 227,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100079",
+            "name": "얇은 금속선의 파편",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 227,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "45036",
+            "name": "실습용 마력탄",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 228,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4301496",
+            "name": "행진곡 이펙트 변경 카드(블라썸 프림로즈) 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 228,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "62066",
+            "name": "신성한 마법가루",
+            "evidence": "traded-value-rank",
+            "sourceRank": 229,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5040528",
+            "name": "허름한 동전 카드",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 229,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5160381",
+            "name": "삼하인의 기록이 담긴 애뮬릿",
+            "evidence": "traded-value-rank",
+            "sourceRank": 230,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67111",
+            "name": "스핀 기어",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 230,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201487",
+            "name": "스페셜 오블리비언 카이저 시니컬 웨어(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 231,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64049",
+            "name": "스피넬",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 231,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63354",
+            "name": "불완전한 알비 던전 통행증",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 232,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1060011",
+            "name": "소울 리버레이트 실린더",
+            "evidence": "traded-value-rank",
+            "sourceRank": 232,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60024",
+            "name": "일반 가죽",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 233,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63492",
+            "name": "하드모드 알비 상급 마족 통행증",
+            "evidence": "traded-value-rank",
+            "sourceRank": 233,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "14045",
+            "name": "소라 갑옷(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 234,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67205",
+            "name": "정화된 토끼의 발",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 234,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51004",
+            "name": "생명력 100 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 235,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51008",
+            "name": "마나 50 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 236,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201616",
+            "name": "스페셜 미드나잇 파빌리온 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 237,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100077",
+            "name": "얼어붙은 백철 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 237,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50475",
+            "name": "송로버섯",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 238,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "94145",
+            "name": "추가 장비 슬롯 확장권",
+            "evidence": "traded-value-rank",
+            "sourceRank": 238,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "45004",
+            "name": "고급 수제 화살",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 239,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501223",
+            "name": "찬란한 샤이닝 레이븐 윙(은은한 별빛)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 239,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12284",
+            "name": "6단계 붉은 개조석",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 240,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5170212",
+            "name": "파메스 유적 금화",
+            "evidence": "traded-value-rank",
+            "sourceRank": 240,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501199",
+            "name": "고귀한 아리아 실프 스카프 윙",
+            "evidence": "traded-value-rank",
+            "sourceRank": 241,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64050",
+            "name": "다이아몬드",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 241,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60048",
+            "name": "고급 수제 붕대",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 242,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "17385",
+            "name": "날개 신발(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 242,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51035",
+            "name": "포이즌 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 243,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64040",
+            "name": "미스릴광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 244,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "80314",
+            "name": "스페셜 체인 슬래셔 에아렌 의상(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 244,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2201503",
+            "name": "스페셜 아르텔 로드 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 245,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "50158",
+            "name": "은붕어",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 245,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "72669",
+            "name": "베어울프 피니 펫 호루라기",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 246,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63346",
+            "name": "DIY 반짝이 염색틀",
+            "evidence": "traded-value-rank",
+            "sourceRank": 246,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100447",
+            "name": "단련된 쇠사슬",
+            "evidence": "traded-value-rank",
+            "sourceRank": 247,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "72693",
+            "name": "스파이더고블린 피니 펫 호루라기",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 247,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100379",
+            "name": "신비한 깃털",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 248,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501229",
+            "name": "찬란한 셀레스티얼 에코 윙(첫눈)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 248,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "52029",
+            "name": "옥수수",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 249,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "18513",
+            "name": "스파이크 캡",
+            "evidence": "traded-value-rank",
+            "sourceRank": 250,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100254",
+            "name": "하다르 결정",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 250,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "1000",
+            "name": "여행자 가이드",
+            "evidence": "traded-value-rank",
+            "sourceRank": 251,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "77421",
+            "name": "펫이 좋아하는 잡동사니",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 251,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51037",
+            "name": "베이스 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 252,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100078",
+            "name": "얼어붙은 직물 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 253,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501192",
+            "name": "찬란한 아리아 실프 윙",
+            "evidence": "traded-value-rank",
+            "sourceRank": 253,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4200623",
+            "name": "신들의 도시 주민들 세트 인형 가방 상자",
+            "evidence": "traded-value-rank",
+            "sourceRank": 254,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100045",
+            "name": "응축된 힘의 조각 : 스태프",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 254,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4400219",
+            "name": "AP 포션 상자",
+            "evidence": "traded-value-rank",
+            "sourceRank": 255,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "85234",
+            "name": "벨테인 미션 크리스탈(3배)(거래 가능)",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 256,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "3501078",
+            "name": "순수한 달빛 날개",
+            "evidence": "traded-value-rank",
+            "sourceRank": 256,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2110252",
+            "name": "리파인드 보헤미안 모자(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 257,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "64038",
+            "name": "은광석 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 257,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "51017",
+            "name": "부상 30 치료 포션",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 258,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2230002",
+            "name": "스페셜 포레스트 레인저 머플러 웨어(남성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 259,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63288",
+            "name": "악마의 나무 장작",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 259,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "12441",
+            "name": "보호의 6단계 푸른 개조석",
+            "evidence": "traded-value-rank",
+            "sourceRank": 260,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100314",
+            "name": "바리사이트",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 261,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2110105",
+            "name": "블리안 엔더스 클래시 써클릿(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 261,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5000347",
+            "name": "20살의 키가 되는 포션",
+            "evidence": "traded-value-rank",
+            "sourceRank": 262,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60008",
+            "name": "거미줄",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 262,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "76854",
+            "name": "스페셜 자색의 음유시인 2차 타이틀 획득 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 263,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "60012",
+            "name": "일반 실크",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 265,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4300201",
+            "name": "증폭된 스킬 수련 인장(50)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 265,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2110347",
+            "name": "아리아 실프 베일",
+            "evidence": "traded-value-rank",
+            "sourceRank": 266,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "2200308",
+            "name": "스페셜 엘라스틱 차밍 웨어(여성용)",
+            "evidence": "traded-value-rank",
+            "sourceRank": 267,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5100286",
+            "name": "단단한 금속",
+            "evidence": "traded-value-rank",
+            "sourceRank": 268,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "45021",
+            "name": "발리스타용 독 묻은 와이번 볼트",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 268,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "63284",
+            "name": "악마의 비늘 조각",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 269,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "5041084",
+            "name": "아르텔 로드 사이드 외형 주문서",
+            "evidence": "traded-value-rank",
+            "sourceRank": 270,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "67107",
+            "name": "에메랄드 퓨즈",
+            "evidence": "trading-volume-rank",
+            "sourceRank": 270,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        },
+        {
+            "id": "4130658",
+            "name": "마누스 2차 타이틀 획득 쿠폰",
+            "evidence": "traded-value-rank",
+            "sourceRank": 271,
+            "verifiedAt": "2026-08-28T11:03:14Z"
+        }
+    ]
+}

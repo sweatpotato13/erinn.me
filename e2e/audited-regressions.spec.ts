@@ -34,6 +34,7 @@ const marketItems = Array.from({ length: 11 }, (_, index) => ({
     date_auction_expire: "2026-08-20T00:00:00Z",
     item_option: marketOptions[index] ?? [],
 }));
+const marketFetchedAt = "2026-08-20T04:00:00.000Z";
 const marketSales = [
     {
         item_name: "아이템",
@@ -96,7 +97,11 @@ async function setupMarketRoutes(page: Page) {
     await page.route("**/api/auction/history?**", route => {
         counts.history += 1;
         return route.fulfill({
-            json: { sales: marketSales, hasMore: false },
+            json: {
+                sales: marketSales,
+                hasMore: false,
+                fetchedAt: marketFetchedAt,
+            },
         });
     });
     return counts;
@@ -943,7 +948,9 @@ test("favorite click uses the selected favorite in its first request", async ({
     });
     await page.route("**/api/auction/history?**", route => {
         historyRequests.push(new URL(route.request().url()));
-        return route.fulfill({ json: { sales: [], hasMore: false } });
+        return route.fulfill({
+            json: { sales: [], hasMore: false, fetchedAt: marketFetchedAt },
+        });
     });
 
     await page.goto("/auction", { waitUntil: "networkidle" });

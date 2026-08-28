@@ -21,7 +21,7 @@ export type RequestDeadline = {
 };
 
 /**
- * Builds an HTTP or HTTPS URL from an upstream path and base URL.
+ * Builds an HTTPS URL from an upstream path and base URL.
  *
  * @param path - The path to resolve against the base URL
  * @param baseUrl - The configured upstream base URL
@@ -32,7 +32,7 @@ export function createUpstreamUrl(path: string, baseUrl?: string): URL {
     try {
         if (!baseUrl) throw new TypeError("Missing upstream URL");
         const url = new URL(path, baseUrl);
-        if (url.protocol !== "http:" && url.protocol !== "https:") {
+        if (url.protocol !== "https:") {
             throw new TypeError("Unsupported upstream URL protocol");
         }
         return url;
@@ -133,6 +133,7 @@ export async function fetchUpstream(
     try {
         const response = await fetch(url, {
             ...init,
+            redirect: "error",
             signal: deadlineSignal(deadline),
         });
         throwIfDeadlineExpired(deadline);
