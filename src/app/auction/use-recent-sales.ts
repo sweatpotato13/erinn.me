@@ -2,12 +2,8 @@ import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
 import * as z from "zod";
 
-import type {
-    AuctionSale,
-    RecentSalesModel,
-    RecentSalesState,
-    RecentSalesSummary,
-} from "@/app/auction/types";
+import type { RecentSalesModel, RecentSalesState } from "@/app/auction/types";
+import { prepareRecentSales } from "@/lib/auction-market";
 import { AuctionHistoryResponseSchema } from "@/lib/schemas/nexon";
 
 const REQUEST_ERROR = "최근 완료 거래를 불러오는 중 오류가 발생했습니다.";
@@ -16,6 +12,7 @@ const EXACT_ITEM_NAME_NOTICE =
 const RecentSalesResponseSchema = z.object({
     sales: AuctionHistoryResponseSchema.shape.auction_history,
     hasMore: z.boolean(),
+    fetchedAt: z.iso.datetime(),
 });
 const INITIAL_RECENT_SALES_STATE: RecentSalesState = {
     sales: [],
@@ -28,56 +25,12 @@ const INITIAL_RECENT_SALES_STATE: RecentSalesState = {
     loading: false,
 };
 
-interface PreparedRecentSales {
-    sales: AuctionSale[];
-    summary: RecentSalesSummary;
-}
-
 interface RecentSalesRequest {
     sequence: number;
     controller: AbortController | null;
 }
 
-export function prepareRecentSales(sales: AuctionSale[]): PreparedRecentSales {
-    const validSales = sales
-        .filter(
-            sale =>
-                Number.isFinite(sale.auction_price_per_unit) &&
-                sale.auction_price_per_unit > 0 &&
-                Number.isFinite(sale.item_count) &&
-                sale.item_count > 0 &&
-                Number.isFinite(Date.parse(sale.date_auction_buy)) &&
-                sale.auction_buy_id.trim().length > 0
-        )
-        .sort(
-            (a, b) =>
-                Date.parse(b.date_auction_buy) -
-                    Date.parse(a.date_auction_buy) ||
-                a.auction_buy_id.localeCompare(b.auction_buy_id)
-        );
-    const prices = validSales
-        .map(sale => sale.auction_price_per_unit)
-        .sort((a, b) => a - b);
-    const middle = Math.floor(prices.length / 2);
-    const medianUnitPrice =
-        prices.length < 3
-            ? null
-            : prices.length % 2 === 1
-              ? prices[middle]
-              : (prices[middle - 1] + prices[middle]) / 2;
-
-    return {
-        sales: validSales,
-        summary: {
-            transactionCount: validSales.length,
-            totalQuantity: validSales.reduce(
-                (sum, sale) => sum + sale.item_count,
-                0
-            ),
-            medianUnitPrice,
-        },
-    };
-}
+export { prepareRecentSales } from "@/lib/auction-market";
 
 async function fetchRecentSales(itemName: string, signal: AbortSignal) {
     const params = new URLSearchParams({ item_name: itemName });
@@ -122,7 +75,7 @@ async function searchRecentSales(
             ...current,
             ...prepareRecentSales(data.sales),
             hasMore: data.hasMore,
-            refreshedAt: new Date().toISOString(),
+            refreshedAt: data.fetchedAt,
         }));
     } catch (error) {
         if (controller.signal.aborted || sequence !== request.sequence) return;

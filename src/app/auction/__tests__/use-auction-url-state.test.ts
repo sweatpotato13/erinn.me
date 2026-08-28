@@ -3,11 +3,16 @@ import { act, renderHook } from "@testing-library/react";
 import {
     parseAuctionSearchParams,
     setAuctionSearchUrl,
+    shareUrl,
     useAuctionUrlState,
 } from "@/app/auction/use-auction-url-state";
 import { categories } from "@/constant/categories";
+import { getAuctionCatalogItems } from "@/lib/auction-item-catalog";
+import { getAuctionSearchPath, getAuctionShareTarget } from "@/lib/auction-url";
 
 describe("auction URL state", () => {
+    const catalogItem = getAuctionCatalogItems()[0];
+
     it("round-trips Korean search state while preserving unrelated URL data", () => {
         const current = new URL(
             "https://erinn.me/auction?view=compact#current-listings"
@@ -175,5 +180,102 @@ describe("auction URL state", () => {
 
         expect(onRestore).not.toHaveBeenCalled();
         jest.useRealTimers();
+    });
+
+    it.each([
+        [
+            "partial keyword",
+            {
+                itemName: catalogItem.name.slice(0, 1),
+                category: categories[0],
+                optionFilters: {},
+            },
+            "/auction?view=compact&q=",
+        ],
+        [
+            "non-catalog exact name",
+            {
+                itemName: "한글 + & (雪)",
+                category: categories[0],
+                optionFilters: {},
+            },
+            "/auction?view=compact&q=",
+        ],
+        [
+            "category only",
+            { itemName: "", category: "검", optionFilters: {} },
+            "/auction?view=compact&category=",
+        ],
+        [
+            "non-default category",
+            { itemName: catalogItem.name, category: "기타", optionFilters: {} },
+            "/auction?view=compact&q=",
+        ],
+        [
+            "option filter",
+            {
+                itemName: catalogItem.name,
+                category: categories[0],
+                optionFilters: { enchantName: "여명" },
+            },
+            "/auction?view=compact&q=",
+        ],
+    ])(
+        "keeps %s shares on the normalized query URL",
+        (_label, search, prefix) => {
+            const target = getAuctionShareTarget(
+                new URL("https://erinn.me/auction?view=compact"),
+                search
+            );
+            expect(
+                `${target.pathname}${target.search}`.startsWith(prefix)
+            ).toBe(true);
+        }
+    );
+
+    it("uses the stable item URL for exact unfiltered catalog searches", () => {
+        const target = getAuctionShareTarget(
+            new URL("https://erinn.me/auction?view=compact#results"),
+            {
+                itemName: catalogItem.name,
+                category: categories[0],
+                optionFilters: {},
+            }
+        );
+        expect(target.href).toBe(
+            `https://erinn.me/auction/items/${catalogItem.id}`
+        );
+    });
+
+    it("preserves special characters in the item-page auction CTA", () => {
+        const name = "한글 + & (雪)";
+        const target = new URL(getAuctionSearchPath(name), "https://erinn.me");
+        expect(target.pathname).toBe("/auction");
+        expect(target.searchParams.get("q")).toBe(name);
+    });
+
+    it("passes the same stable target to native share and clipboard fallback", async () => {
+        const expected = `http://localhost/auction/items/${catalogItem.id}`;
+        const nativeShare = jest.fn().mockResolvedValue(undefined);
+        const clipboard = { writeText: jest.fn().mockResolvedValue(undefined) };
+        Object.defineProperty(navigator, "share", {
+            configurable: true,
+            value: nativeShare,
+        });
+        Object.defineProperty(navigator, "clipboard", {
+            configurable: true,
+            value: clipboard,
+        });
+        await shareUrl(expected);
+        expect(nativeShare).toHaveBeenCalledWith({
+            title: "Erinn.me 경매장 검색",
+            url: expected,
+        });
+        Object.defineProperty(navigator, "share", {
+            configurable: true,
+            value: undefined,
+        });
+        await shareUrl(expected);
+        expect(clipboard.writeText).toHaveBeenCalledWith(expected);
     });
 });

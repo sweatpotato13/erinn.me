@@ -6,6 +6,7 @@ import type {
     SortDirection,
 } from "@/app/auction/types";
 import { categories } from "@/constant/categories";
+import { prepareAuctionResults } from "@/lib/auction-market";
 import {
     appendAuctionOptionFilterQuery,
     type AuctionOptionFilters,
@@ -42,47 +43,12 @@ export type AuctionOptionEvaluation = {
     sourceComplete: true;
 };
 
+export { prepareAuctionResults } from "@/lib/auction-market";
+
 type PreparedAuctionResults = {
     items: AuctionItem[];
     summary: AuctionSummary | null;
 };
-
-export function prepareAuctionResults(
-    items: AuctionItem[]
-): PreparedAuctionResults {
-    const validItems = items
-        .filter(
-            item =>
-                Number.isFinite(item.auction_price_per_unit) &&
-                item.auction_price_per_unit > 0 &&
-                Number.isFinite(item.item_count) &&
-                item.item_count > 0
-        )
-        .sort((a, b) => a.auction_price_per_unit - b.auction_price_per_unit);
-
-    if (validItems.length === 0) return { items: [], summary: null };
-
-    const middle = Math.floor(validItems.length / 2);
-    const medianUnitPrice =
-        validItems.length % 2 === 1
-            ? validItems[middle].auction_price_per_unit
-            : (validItems[middle - 1].auction_price_per_unit +
-                  validItems[middle].auction_price_per_unit) /
-              2;
-
-    return {
-        items: validItems,
-        summary: {
-            lowestUnitPrice: validItems[0].auction_price_per_unit,
-            medianUnitPrice,
-            listingCount: validItems.length,
-            totalQuantity: validItems.reduce(
-                (sum, item) => sum + item.item_count,
-                0
-            ),
-        },
-    };
-}
 
 async function requestItems(
     itemName: string,

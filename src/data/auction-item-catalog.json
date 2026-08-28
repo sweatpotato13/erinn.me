@@ -1,0 +1,3013 @@
+{
+    "version": 1,
+    "updatedAt": "2026-08-28",
+    "selection": {
+        "method": "reviewed-auction-activity-seed",
+        "source": "Erinn.me production /api/auction backed by Nexon Open API; category=기타; first five cursor pages",
+        "observedFrom": "2026-08-28T10:17:29Z",
+        "observedTo": "2026-08-28T10:17:29Z",
+        "limitations": "API response order from a category-only current-listing snapshot; not a popularity or search-demand ranking. Duplicate and locally unmapped names were excluded."
+    },
+    "items": [
+        {
+            "id": "70076",
+            "name": "빈 보물상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100314",
+            "name": "바리사이트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64658",
+            "name": "빛나는 결정 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "51033",
+            "name": "정령의 리큐르",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100385",
+            "name": "힐웬 광정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63221",
+            "name": "최고급 나무장작",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "53940",
+            "name": "에코스톤 각성제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100330",
+            "name": "마력석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63281",
+            "name": "악마의 눈",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64102",
+            "name": "빛 바랜 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63220",
+            "name": "고급 나무장작",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100101",
+            "name": "[전사] 스킬 블랙 콤보 카드 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100311",
+            "name": "빛바랜 자수실",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63219",
+            "name": "중급 나무장작",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100048",
+            "name": "응축된 힘의 조각 : 활",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100447",
+            "name": "단련된 쇠사슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64644",
+            "name": "각성된 힘의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64655",
+            "name": "증폭된 연금술 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100305",
+            "name": "주황빛 기억의 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "85250",
+            "name": "전이의 카탈리스트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "75055",
+            "name": "영혼의 소리를 듣는 물",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64674",
+            "name": "깨어난 힘의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64647",
+            "name": "단호한 칼날의 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041005",
+            "name": "탈틴 농장 붉은 배 잼",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100265",
+            "name": "폴룩스",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100323",
+            "name": "녹음이 감도는 나무 장작",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "95301",
+            "name": "바이올렛 추출액",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100053",
+            "name": "응축된 힘의 조각 : 양손도끼",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86073",
+            "name": "손잡이가 달린 그릇(거래 가능)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100039",
+            "name": "글라스 기브넨의 심장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100074",
+            "name": "결정화된 겨울의 잔해",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86075",
+            "name": "눈이 새겨진 석판(거래 가능)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64638",
+            "name": "마력의 황금 실",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "95285",
+            "name": "향기로운 꿀 우유",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041008",
+            "name": "탈틴 농장 자색 원단",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64648",
+            "name": "파괴된 봉인의 사슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040998",
+            "name": "탈틴 농장 일반 재스민",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100038",
+            "name": "아다만티움",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040999",
+            "name": "탈틴 농장 일반 붉은 배",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100056",
+            "name": "응축된 힘의 조각 : 석궁",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041001",
+            "name": "탈틴 농장 일반 마법 거미줄",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64127",
+            "name": "안개 서린 붉은 보석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64619",
+            "name": "부서진 수호자의 건틀렛",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5170414",
+            "name": "에르그 경험치 조각(5000)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64646",
+            "name": "산산조각난 검은 금속",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100416",
+            "name": "정제 실리엔 코어",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041000",
+            "name": "탈틴 농장 일반 고무",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64637",
+            "name": "응축된 혼돈의 룬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64651",
+            "name": "불완전한 봉인의 엠블럼",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64105",
+            "name": "단단하게 결정화된 광물 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200435",
+            "name": "원 컬러 패키지 B버전 블랙",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400548",
+            "name": "스페셜 윈터 캐주얼 웨어 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100308",
+            "name": "브리 레흐의 기운이 깃든 문장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100426",
+            "name": "응축된 힘의 조각 : 미니어처",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "66007",
+            "name": "건축용 석재",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5600083",
+            "name": "DIY 고급 염색틀",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64302",
+            "name": "고급 양털",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100368",
+            "name": "응축된 힘의 조각 : 한손도끼",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "65029",
+            "name": "아라트의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64641",
+            "name": "정제된 촉매제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100326",
+            "name": "순백의 깃털",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550016",
+            "name": "세트 효과 야금술 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "53364",
+            "name": "백화점 개조 상품권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100443",
+            "name": "빛바랜 영광의 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200436",
+            "name": "원 컬러 패키지 B버전 화이트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "57539",
+            "name": "새끼 검은 아르마딜로의 발톱",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "73272",
+            "name": "노란빛 프리즘 박스",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64657",
+            "name": "왜곡의 가루",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64634",
+            "name": "마력의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64301",
+            "name": "미스릴 대못",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64308",
+            "name": "못쓰게 된 밀 이파리",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100449",
+            "name": "명예가 깃든 흉갑의 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52004",
+            "name": "작은 녹색구슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100042",
+            "name": "응축된 힘의 조각 : 양손검",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041002",
+            "name": "탈틴 농장 일반 석영",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550012",
+            "name": "세트 효과 반신화 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100274",
+            "name": "마력이 깃든 융합제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100083",
+            "name": "잘려 나간 겨울의 꿈 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100238",
+            "name": "게아타의 마력 회로",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63331",
+            "name": "날카롭게 깨진 괴물의 핵",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100040",
+            "name": "손상된 글라스 기브넨의 깃털",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100162",
+            "name": "[점성술사] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "66004",
+            "name": "호박의 농장 씨앗",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5822004",
+            "name": "페르 일기장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100452",
+            "name": "결정화된 영광의 잔영",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5821001",
+            "name": "머반위 일기장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100273",
+            "name": "젬스톤 파우더",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041009",
+            "name": "탈틴 농장 꽃무늬 원피스",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041017",
+            "name": "탈틴 농장 장식용 크리스탈 검",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63773",
+            "name": "어배던 의상 염색 앰플 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64639",
+            "name": "순도 높은 강화제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100453",
+            "name": "정련된 광택의 실",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100319",
+            "name": "순도 높은 마력의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100037",
+            "name": "어둠의 에르그 잔재",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64086",
+            "name": "사도의 단단한 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100398",
+            "name": "남동괴",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100084",
+            "name": "서늘한 매듭끈",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64676",
+            "name": "고대 짐승의 가죽",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64672",
+            "name": "투혼의 금속 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550000",
+            "name": "세트 효과 공격 속도 증가 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64110",
+            "name": "지축을 가르는 발굽 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64635",
+            "name": "붕괴된 마력의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "75051",
+            "name": "미스릴 선",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100049",
+            "name": "응축된 힘의 조각 : 듀얼건",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64052",
+            "name": "발화석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63752",
+            "name": "에아렌 코스튬 염색 앰플 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64034",
+            "name": "미스릴봉",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63324",
+            "name": "프로페서 J 지정 염색 앰플 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5170415",
+            "name": "에르그 경험치 조각(10000)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100046",
+            "name": "응축된 힘의 조각 : 너클",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64642",
+            "name": "각성된 힘의 가루",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64610",
+            "name": "고대 황금 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100111",
+            "name": "[전사] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100369",
+            "name": "응축된 힘의 조각 : 힐링 원드",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550003",
+            "name": "세트 효과 크리티컬 대미지 증가 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200068",
+            "name": "에린의 정기",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63749",
+            "name": "톨비쉬 지정 염색 앰플 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "92701",
+            "name": "트릭스터 미니돌",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "81113",
+            "name": "문구 테이블",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "53943",
+            "name": "에코스톤 보석 가루",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63384",
+            "name": "조화의 나무판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100240",
+            "name": "허상의 잔재",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86470",
+            "name": "세트 효과 파이어 볼트 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63383",
+            "name": "기교의 현",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400415",
+            "name": "켈틱 여행자 가발 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64305",
+            "name": "인조 잔디",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64685",
+            "name": "마력이 서린 석판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301018",
+            "name": "마가목 나무 아래에서 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64684",
+            "name": "푸른 가시 족쇄",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200497",
+            "name": "레이르 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301325",
+            "name": "딸기 빙수 모자 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64109",
+            "name": "날카롭게 결정화된 광물 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100045",
+            "name": "응축된 힘의 조각 : 스태프",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550011",
+            "name": "세트 효과 돌진 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100103",
+            "name": "[마법사] 스킬 블랙 콤보 카드 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040997",
+            "name": "탈틴 농장 일반 오크라",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200622",
+            "name": "샛바람 용병단 세트 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5170288",
+            "name": "기원석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200623",
+            "name": "신들의 도시 주민들 세트 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550015",
+            "name": "세트 효과 블랙 스미스 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200611",
+            "name": "페타크 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100303",
+            "name": "브리 레흐의 코어",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301265",
+            "name": "원 컬러 패키지 잔망루피 블루",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100307",
+            "name": "금빛 기억의 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301264",
+            "name": "원 컬러 패키지 잔망루피 핑크",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100451",
+            "name": "명예가 깃든 신발의 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040211",
+            "name": "밀항 티켓",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100327",
+            "name": "투명한 연금술 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64099",
+            "name": "침식된 광물 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100317",
+            "name": "오묘한 마력석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100448",
+            "name": "명예가 깃든 투구의 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100078",
+            "name": "얼어붙은 직물 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100316",
+            "name": "오묘한 금속 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64654",
+            "name": "정화된 마법사의 보석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64124",
+            "name": "원혼이 깃든 연금술 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "62068",
+            "name": "기억의 정령 리큐르",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100036",
+            "name": "다듬어진 플레이트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64678",
+            "name": "의지가 잠든 룬스톤",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64012",
+            "name": "고스트의 체액",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100306",
+            "name": "초록빛 기억의 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100322",
+            "name": "녹음이 감도는 광석 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4100641",
+            "name": "새내기 회복의 포션 선물 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200579",
+            "name": "아르카나 불꽃의 프리미엄 세트 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301328",
+            "name": "우아한 눈꽃 귀걸이 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4100539",
+            "name": "7777 커피바 바리스타 모자 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041014",
+            "name": "탈틴 농장 퓨어 블러썸 머리핀",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100310",
+            "name": "무른 금속 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100289",
+            "name": "퓨어 젬스톤",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100321",
+            "name": "녹음이 감도는 금속 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63288",
+            "name": "악마의 나무 장작",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041007",
+            "name": "탈틴 농장 재스민 향수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100315",
+            "name": "오피먼트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100442",
+            "name": "정련된 명예의 의장 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64126",
+            "name": "원혼이 깃든 고목 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041015",
+            "name": "탈틴 농장 석영 파우더",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64681",
+            "name": "고대 괴물의 핵",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64053",
+            "name": "유황",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52001",
+            "name": "나뭇가지",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041020",
+            "name": "탈틴 농장 누름꽃 공예 함",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041010",
+            "name": "탈틴 농장 방수 원단",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52005",
+            "name": "작은 파란구슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64675",
+            "name": "용맹한 전사의 보석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5821003",
+            "name": "게린트 일기장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64114",
+            "name": "티어드롭 젬스톤",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5822000",
+            "name": "로나나 일기장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64640",
+            "name": "재생의 가루",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100114",
+            "name": "[연금술사] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100118",
+            "name": "[슈터] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100112",
+            "name": "[궁수] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "53151",
+            "name": "로열 젤리",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4100292",
+            "name": "DIY 염색틀 세트 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63334",
+            "name": "녹슨 봉인의 사슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64303",
+            "name": "쿠션용 솜",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64677",
+            "name": "절대영도 냉각제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "95320",
+            "name": "향내 나는 실크",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100079",
+            "name": "얇은 금속선의 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5250194",
+            "name": "스피릿 젬(1200)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100051",
+            "name": "응축된 힘의 조각 : 핸들",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63336",
+            "name": "잊혀진 마법사의 보석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63333",
+            "name": "매우 거대한 갑옷의 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100243",
+            "name": "응축된 힘의 조각 : 오브",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100041",
+            "name": "응축된 힘의 조각 : 한손검",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301487",
+            "name": "뷰티 쿠폰 전환서(헤어) 2026",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64117",
+            "name": "돌줄기 광석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301488",
+            "name": "뷰티 쿠폰 전환서(얼굴) 2026",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64659",
+            "name": "냉혹함의 징표",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100313",
+            "name": "아라고나이트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301489",
+            "name": "뷰티 쿠폰 전환서(입) 2026",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63385",
+            "name": "선율의 금속판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041036",
+            "name": "탈틴 농장 최고급 블랙베리",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301490",
+            "name": "뷰티 쿠폰 전환서(눈) 2026",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301119",
+            "name": "신비의 레이스 날개 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100241",
+            "name": "응축된 힘의 조각 : 한손둔기",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400430",
+            "name": "스페셜 사색에 잠긴 독서가의 의상 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100054",
+            "name": "응축된 힘의 조각 : 마도서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100113",
+            "name": "[마법사] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "76953",
+            "name": "정령 형상변환 리큐르(플레어) 교환권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041037",
+            "name": "탈틴 농장 최고급 오크라",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100325",
+            "name": "순백의 가죽 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "75312",
+            "name": "별 문양 큐빅",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200578",
+            "name": "아르카나 불꽃의 세트 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041022",
+            "name": "탈틴 농장 새벽의 활",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "96127",
+            "name": "키 높이 깔창(7일) 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86471",
+            "name": "세트 효과 플레이머 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100077",
+            "name": "얼어붙은 백철 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041011",
+            "name": "탈틴 농장 강화 섬유",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4300072",
+            "name": "프리미엄 라이프 멤버십(30일)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64709",
+            "name": "구름 방석(3단계) 설계도",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041004",
+            "name": "탈틴 농장 달콤 케이크",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64707",
+            "name": "구름 방석(1단계) 설계도",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4300828",
+            "name": "마비노기 켈틱 의상 세트 상자(여성용)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "65018",
+            "name": "일반 퀼린 스톤",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "57503",
+            "name": "줄무늬 하이에나의 발톱",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63287",
+            "name": "악마의 괴",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "57542",
+            "name": "흰 아르마딜로의 발톱",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64616",
+            "name": "용기의 메달",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100409",
+            "name": "희귀 버섯 볶음 박스",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86074",
+            "name": "작은 하마 조각상(거래 가능)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "75669",
+            "name": "빛나면서 보석인 그것",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100254",
+            "name": "하다르 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100252",
+            "name": "폴라리스 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64652",
+            "name": "변형된 고리형 구조체",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100284",
+            "name": "순도 높은 힘의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63329",
+            "name": "빛을 잃어버린 금속 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550019",
+            "name": "세트 효과 힐링 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100255",
+            "name": "리겔 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100379",
+            "name": "신비한 깃털",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100381",
+            "name": "빛나는 양털",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64087",
+            "name": "사도의 고리",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64636",
+            "name": "혼돈의 룬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64650",
+            "name": "벼린 무기 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5830009",
+            "name": "생산 시설 수리 도구",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "95302",
+            "name": "농축된 바이올렛 추출액",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64112",
+            "name": "오묘한 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64125",
+            "name": "원혼이 깃든 칼날",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100309",
+            "name": "무딘 칼날 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550013",
+            "name": "세트 효과 낚시 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550006",
+            "name": "세트 효과 서포트 샷 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100324",
+            "name": "단단한 힐웬 광석 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200247",
+            "name": "대청소와 러브레터 미스터리 지정 염색 앰플 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5830003",
+            "name": "하얀 실뭉치",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100064",
+            "name": "복원의 가루",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5830000",
+            "name": "푸른 수정 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100294",
+            "name": "마력이 깃든 힐웬 광석 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5830004",
+            "name": "반짝이는 비단",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86306",
+            "name": "경매장 수수료 100% 할인 쿠폰",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100320",
+            "name": "녹음이 감도는 칼날 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200548",
+            "name": "프리렌 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040994",
+            "name": "탈틴 농장 거미 영양제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040993",
+            "name": "탈틴 농장 고무나무 영양제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52006",
+            "name": "작은 빨간구슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "95199",
+            "name": "이상한 무늬가 새겨진 유물 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64653",
+            "name": "악몽 파수꾼의 유물",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100050",
+            "name": "응축된 힘의 조각 : 실린더",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100386",
+            "name": "실리엔 응축핵",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100384",
+            "name": "산딸기",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041033",
+            "name": "탈틴 농장 고급 고무",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "82131",
+            "name": "록호퍼 펭귄 등신대",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100055",
+            "name": "응축된 힘의 조각 : 실드",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64309",
+            "name": "건초 더미",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64085",
+            "name": "사도의 날카로운 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "50664",
+            "name": "새우 조련 미끼",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100249",
+            "name": "카노푸스 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100248",
+            "name": "리겔 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100082",
+            "name": "얼음과 융화된 금속 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100247",
+            "name": "하다르 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041032",
+            "name": "탈틴 농장 고급 붉은 배",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100245",
+            "name": "폴라리스 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041030",
+            "name": "탈틴 농장 고급 오크라",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100246",
+            "name": "아크투루스 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5600039",
+            "name": "DIY 헤어 염색틀",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550020",
+            "name": "세트 효과 다운 어택 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5600036",
+            "name": "DIY 염색틀",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100250",
+            "name": "알타이르 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52048",
+            "name": "네잎 클로버",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64101",
+            "name": "마름질 된 가죽의 일부",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64683",
+            "name": "조각난 거대 등딱지",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4300388",
+            "name": "원 컬러 패키지 B버전 레드",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100116",
+            "name": "[격투가] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100257",
+            "name": "알타이르 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100117",
+            "name": "[인형사] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64688",
+            "name": "부패한 사도의 가죽",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100422",
+            "name": "설련화 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100423",
+            "name": "루멘 플랜트 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "70285",
+            "name": "오언 제독이 부탁한 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040996",
+            "name": "탈틴 농장 일반 블랙베리",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041016",
+            "name": "탈틴 농장 미드나잇 펄 페인트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041042",
+            "name": "탈틴 농장 최고급 석영",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "62075",
+            "name": "마법의 힘이 담긴 정령석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "82093",
+            "name": "할로윈 SNS 스타일 프레임",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100106",
+            "name": "[격투가] 스킬 블랙 콤보 카드 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63282",
+            "name": "악마의 발톱",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "93339",
+            "name": "파트너 스트레스 해소 사탕(100)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100105",
+            "name": "[상인] 스킬 블랙 콤보 카드 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100242",
+            "name": "응축된 힘의 조각 : 대형 낫",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100110",
+            "name": "[체인 슬래셔] 스킬 블랙 콤보 카드 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "66005",
+            "name": "양배추의 농장 씨앗",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63337",
+            "name": "봉인의 검은 금속",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64649",
+            "name": "균열된 검은 금속",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64103",
+            "name": "기아스 크러스티가 깃든 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4100594",
+            "name": "달콤 쌉싸름 판 초콜릿 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "2057",
+            "name": "로나의 금화상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "93882",
+            "name": "집사 파트너 캐릭터 카드",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5030047",
+            "name": "낭만 농장 칼리스테 집 건축 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100395",
+            "name": "설련화",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "92857",
+            "name": "나오의 생일 선물 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301267",
+            "name": "원 컬러 패키지 잔망루피 옐로우",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100378",
+            "name": "마력 심재핵",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100044",
+            "name": "응축된 힘의 조각 : 원드",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200496",
+            "name": "에레원 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86023",
+            "name": "과자 바구니",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100293",
+            "name": "마력이 깃든 나무판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100107",
+            "name": "[인형사] 스킬 블랙 콤보 카드 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041040",
+            "name": "탈틴 농장 최고급 고무",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041039",
+            "name": "탈틴 농장 최고급 붉은 배",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4300011",
+            "name": "여신의 가호",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100256",
+            "name": "카노푸스 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64690",
+            "name": "정화된 사도의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100276",
+            "name": "강렬한 기억의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64662",
+            "name": "태양석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64032",
+            "name": "은봉",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "95218",
+            "name": "힘이 깃든 속임수의 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200625",
+            "name": "신들의 도시 주민들 프리미엄 세트 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400515",
+            "name": "삼하인 변신 메달 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5821002",
+            "name": "수러카 일기장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63322",
+            "name": "멀린 지정 염색 앰플 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63348",
+            "name": "특급 나무장작",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100304",
+            "name": "브리 레흐의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "60064",
+            "name": "대어 낚시용 미끼통",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550005",
+            "name": "세트 효과 배쉬 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100288",
+            "name": "마력이 담긴 마력석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100446",
+            "name": "특별한 가호를 받은 금속",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041019",
+            "name": "탈틴 농장 천연 고무",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041018",
+            "name": "탈틴 농장 강력 접착제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200607",
+            "name": "델가 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100312",
+            "name": "텅 빈 마력석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "53941",
+            "name": "고급 에코스톤 각성제",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "65007",
+            "name": "아이스 스피어의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100057",
+            "name": "심술 난 고양이의 구슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "77420",
+            "name": "펫 놀이세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64715",
+            "name": "대형펫 잔디밭(1단계) 설계도",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100388",
+            "name": "백연석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63061",
+            "name": "콘누스 배틀 아레나 코인",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64661",
+            "name": "만월석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5821004",
+            "name": "아타간 일기장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "92661",
+            "name": "좀비 미니돌",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5450023",
+            "name": "은하고래 미니돌",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64719",
+            "name": "캣타워(3단계) 설계도",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64716",
+            "name": "대형펫 잔디밭(2단계) 설계도",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "91574",
+            "name": "나오의 옷 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52031",
+            "name": "꽃뭉치",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "60063",
+            "name": "별미 미끼통",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "57532",
+            "name": "큰 귀 땅돼지의 발톱",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64713",
+            "name": "중형펫 잔디밭(3단계) 설계도",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041038",
+            "name": "탈틴 농장 최고급 재스민",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64680",
+            "name": "신성한 광물 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100389",
+            "name": "적철석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5600081",
+            "name": "별을 낚는 미끼통",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4300864",
+            "name": "뷰티 쿠폰 전환서(눈) 2024",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100397",
+            "name": "응축된 힘의 조각 : 가드실린더",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100405",
+            "name": "적철판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100406",
+            "name": "백연판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041041",
+            "name": "탈틴 농장 최고급 마법 거미줄",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040989",
+            "name": "탈틴 농장 블랙베리 씨앗",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5830001",
+            "name": "푸른 수정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100399",
+            "name": "적철괴",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64115",
+            "name": "검은빛 사슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64108",
+            "name": "미지의 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64622",
+            "name": "부서진 수호자의 원드",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "57569",
+            "name": "와이번의 발톱",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100387",
+            "name": "남동석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100075",
+            "name": "공상을 담은 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041003",
+            "name": "탈틴 농장 블랙베리 주스",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041031",
+            "name": "탈틴 농장 고급 재스민",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64699",
+            "name": "부서진 수호자의 마도서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041035",
+            "name": "탈틴 농장 고급 석영",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64682",
+            "name": "훼손된 성물 잔해",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "91122",
+            "name": "푸른 여신의 날개 (탈틴 스톤헨지)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100400",
+            "name": "백연괴",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "60061",
+            "name": "투파이 조련 미끼",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5450020",
+            "name": "파괴자 미니돌",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4300389",
+            "name": "원 컬러 패키지 B버전 체리 블러썸 핑크",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64104",
+            "name": "기아스 데버스테이션이 깃든 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100119",
+            "name": "[닌자] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400378",
+            "name": "로완의 가발 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5830010",
+            "name": "생산 시설 초급 수리 도구",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "65090",
+            "name": "견습 기사 의복 상자(아이르리스-무도회복)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "65094",
+            "name": "견습 기사 의복 상자(엘시-무도회복)",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64119",
+            "name": "물결무늬 광석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301246",
+            "name": "불길한 피부 침식 마스크 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100080",
+            "name": "해묵은 베일의 올",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64656",
+            "name": "정화된 백색 가루",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64686",
+            "name": "찢어진 양피지",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4301326",
+            "name": "눈사람 비눗방울 도구 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "56063",
+            "name": "캐피바라의 털",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100411",
+            "name": "마력 심재핵의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "75518",
+            "name": "실로폰의 5번 음판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400423",
+            "name": "메인스트림 스킵권 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "94055",
+            "name": "파트너의 조각배",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "96451",
+            "name": "알반 기사단 조장 세트 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "97752",
+            "name": "럭키비스트-형식번호불명-커맨드 미니돌",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200438",
+            "name": "원 컬러 패키지 B버전 그레이",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4300225",
+            "name": "에탄 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100108",
+            "name": "[슈터] 스킬 블랙 콤보 카드 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52109",
+            "name": "왕실 요리 납품서 3",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100120",
+            "name": "[체인 슬래셔] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100275",
+            "name": "찬란한 기억의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100115",
+            "name": "[상인] 스킬 블랙 콤보 카드 교체권",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040991",
+            "name": "탈틴 농장 재스민 씨앗",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "60052",
+            "name": "아이템 일루전 T46",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200518",
+            "name": "피에릭 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041021",
+            "name": "탈틴 농장 황혼의 류트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64698",
+            "name": "부서진 수호자의 총",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100318",
+            "name": "오묘한 가죽 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "95308",
+            "name": "요정의 날개 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5041012",
+            "name": "탈틴 농장 이브닝 드레스",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5040386",
+            "name": "중형 미끼통",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64121",
+            "name": "크라켄의 다리 가시",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100237",
+            "name": "보호의 힘이 깃든 보석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64611",
+            "name": "고대 마력 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200546",
+            "name": "렛츠 썸머 바캉스 세트 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550007",
+            "name": "세트 효과 충격 흡수 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100239",
+            "name": "사안이 깃든 바위",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64300",
+            "name": "펫 에센셜 오일",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64100",
+            "name": "전장의 기운이 깃든 덮개",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100295",
+            "name": "마력이 깃든 가죽 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4300916",
+            "name": "간편한 특별 개조 복구의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86472",
+            "name": "세트 효과 워터 캐논 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "2058",
+            "name": "판의 금화상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400458",
+            "name": "스포티 캐주얼 밴드 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64694",
+            "name": "모쿠르칼피의 데스마스크",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86208",
+            "name": "견습 기사 추가 영입권 PLUS",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "65006",
+            "name": "파이어볼의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64689",
+            "name": "사도의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400514",
+            "name": "삼하인 뿔 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64671",
+            "name": "극광의 결정",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100081",
+            "name": "깨진 묵빛 금속 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200608",
+            "name": "셰프라 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200606",
+            "name": "아이네 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64604",
+            "name": "골드 희곡 페이지",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200609",
+            "name": "데클룬 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "2106",
+            "name": "로나의 스페셜 금화상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "81112",
+            "name": "스탠딩 램프",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64033",
+            "name": "금봉",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100296",
+            "name": "마력이 깃든 깃털",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "66006",
+            "name": "토마토의 농장 씨앗",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "86473",
+            "name": "세트 효과 라이프 드레인 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64107",
+            "name": "견고한 가죽 조각",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4200591",
+            "name": "퍼거스 잔망루피 인형 가방 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "96069",
+            "name": "인형 가방 보관함",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5030048",
+            "name": "낭만 농장 칼리스테 2층 집 건축 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100280",
+            "name": "마력이 충만한 고리",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63328",
+            "name": "끊어진 봉인의 사슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100264",
+            "name": "알타이르",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100065",
+            "name": "복원의 스크롤",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52007",
+            "name": "작은 은색구슬",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52108",
+            "name": "왕실 요리 납품서 2",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400450",
+            "name": "21주년 낭만 농장 아이템 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "63769",
+            "name": "베인 지정 염색 앰플 세트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400489",
+            "name": "스페셜 썸머 워터 웨어 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400576",
+            "name": "마테우스의 의상 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5550010",
+            "name": "세트 효과 윈드밀 강화 +1 주문서",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "52025",
+            "name": "선물용 반지",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64645",
+            "name": "불길한 운명의 파편",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "75514",
+            "name": "실로폰의 1번 음판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "53038",
+            "name": "거대 샌드웜의 비늘",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "85238",
+            "name": "증폭의 카탈리스트",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100328",
+            "name": "녹음이 깃든 마법사의 보석",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64620",
+            "name": "부서진 수호자의 부츠",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "64120",
+            "name": "크라켄의 흡판",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "62054",
+            "name": "여자 원드의 정령",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5100377",
+            "name": "명장의 정수",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "62055",
+            "name": "남자 원드의 정령",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "4400615",
+            "name": "만우절 기념 위기 탈출 변경 카드 선택 상자",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "62056",
+            "name": "여자 둔기의 정령",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "95288",
+            "name": "생기 도는 송화",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "5823001",
+            "name": "카럭스 일기장",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "50617",
+            "name": "블라고 누아",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "66003",
+            "name": "딸기의 농장 씨앗",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        },
+        {
+            "id": "50621",
+            "name": "에란스 소비뇽",
+            "evidence": "current-listing",
+            "verifiedAt": "2026-08-28T10:17:29Z"
+        }
+    ]
+}

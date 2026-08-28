@@ -1,0 +1,135 @@
+import { categories } from "@/constant/categories";
+import {
+    getAuctionCatalogItemByExactName,
+    getAuctionItemPath,
+} from "@/lib/auction-item-catalog";
+import {
+    appendAuctionOptionFilterQuery,
+    type AuctionOptionFilters,
+    hasAuctionOptionFilters,
+    parseAuctionOptionFilterQuery,
+} from "@/lib/auction-options";
+
+const ITEM_QUERY_PARAM = "q";
+const CATEGORY_QUERY_PARAM = "category";
+const MAX_ITEM_QUERY_LENGTH = 100;
+export const DEFAULT_AUCTION_CATEGORY = categories[0];
+const PROHIBITED_AUCTION_PARAMS = [
+    "cursor",
+    "listingId",
+    "price",
+    "item_count",
+    "item_option",
+    "date_auction_expire",
+];
+
+export type AuctionUrlSearch = {
+    itemName: string;
+    category: string;
+    optionFilters: AuctionOptionFilters;
+};
+
+function deleteAuctionOptionParams(params: URLSearchParams) {
+    for (const key of Array.from(params.keys())) {
+        if (key.startsWith("option_")) params.delete(key);
+    }
+}
+
+export function parseAuctionSearchParams(params: URLSearchParams) {
+    const normalized = new URLSearchParams(params);
+    const hasOptionParams = Array.from(params.keys()).some(key =>
+        key.startsWith("option_")
+    );
+    const parsedFilters = parseAuctionOptionFilterQuery(params);
+    const itemValues = params.getAll(ITEM_QUERY_PARAM);
+    const itemName = (itemValues[0] ?? "").trim();
+    const usableItemName =
+        itemName.length > 0 && itemName.length <= MAX_ITEM_QUERY_LENGTH;
+    const invalidItemName =
+        params.has(ITEM_QUERY_PARAM) &&
+        (itemValues.length !== 1 || !usableItemName);
+    const categoryValues = params.getAll(CATEGORY_QUERY_PARAM);
+    const categoryValue = categoryValues[0] ?? DEFAULT_AUCTION_CATEGORY;
+    const usableCategory = categories.includes(categoryValue);
+    const invalidCategory =
+        params.has(CATEGORY_QUERY_PARAM) &&
+        (categoryValues.length !== 1 || !usableCategory);
+    const category = usableCategory ? categoryValue : DEFAULT_AUCTION_CATEGORY;
+
+    if (usableItemName) normalized.set(ITEM_QUERY_PARAM, itemName);
+    else normalized.delete(ITEM_QUERY_PARAM);
+    if (category !== DEFAULT_AUCTION_CATEGORY) {
+        normalized.set(CATEGORY_QUERY_PARAM, category);
+    } else {
+        normalized.delete(CATEGORY_QUERY_PARAM);
+    }
+    PROHIBITED_AUCTION_PARAMS.forEach(param => normalized.delete(param));
+    deleteAuctionOptionParams(normalized);
+
+    const hasBaseSearch =
+        usableItemName || category !== DEFAULT_AUCTION_CATEGORY;
+    const optionFilters = parsedFilters.success
+        ? (parsedFilters.filters ?? {})
+        : {};
+    if (hasBaseSearch && parsedFilters.success) {
+        appendAuctionOptionFilterQuery(normalized, optionFilters);
+    }
+    const search = hasBaseSearch
+        ? {
+              itemName: usableItemName ? itemName : "",
+              category,
+              optionFilters,
+          }
+        : null;
+    return {
+        search,
+        normalized,
+        invalid:
+            invalidItemName ||
+            invalidCategory ||
+            !parsedFilters.success ||
+            (!hasBaseSearch && hasOptionParams),
+        filterError: parsedFilters.success ? null : parsedFilters.error,
+    };
+}
+
+export function setAuctionSearchUrl(currentUrl: URL, search: AuctionUrlSearch) {
+    const url = new URL(currentUrl);
+    const itemName = search.itemName.trim();
+    if (itemName) url.searchParams.set(ITEM_QUERY_PARAM, itemName);
+    else url.searchParams.delete(ITEM_QUERY_PARAM);
+    if (search.category !== DEFAULT_AUCTION_CATEGORY) {
+        url.searchParams.set(CATEGORY_QUERY_PARAM, search.category);
+    } else {
+        url.searchParams.delete(CATEGORY_QUERY_PARAM);
+    }
+    deleteAuctionOptionParams(url.searchParams);
+    appendAuctionOptionFilterQuery(url.searchParams, search.optionFilters);
+    const parsed = parseAuctionSearchParams(url.searchParams);
+    url.search = parsed.normalized.toString();
+    return { ...parsed, url };
+}
+
+export function getAuctionShareTarget(
+    currentUrl: URL,
+    search: AuctionUrlSearch
+) {
+    const item = getAuctionCatalogItemByExactName(search.itemName);
+    if (
+        item &&
+        search.category === DEFAULT_AUCTION_CATEGORY &&
+        !hasAuctionOptionFilters(search.optionFilters)
+    ) {
+        return new URL(getAuctionItemPath(item), currentUrl.origin);
+    }
+    return setAuctionSearchUrl(currentUrl, search).url;
+}
+
+export function getAuctionSearchPath(itemName: string) {
+    const url = setAuctionSearchUrl(new URL("/auction", "https://erinn.me"), {
+        itemName,
+        category: DEFAULT_AUCTION_CATEGORY,
+        optionFilters: {},
+    }).url;
+    return `${url.pathname}${url.search}`;
+}

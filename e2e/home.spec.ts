@@ -1,5 +1,7 @@
 import { expect, test } from "@playwright/test";
 
+import auctionCatalog from "../src/data/auction-item-catalog.json";
+
 const publicPages = [
     {
         path: "/",
@@ -113,7 +115,7 @@ test.describe("Homepage Tests", () => {
             expect(body).toContain(directive);
     });
 
-    test("sitemap.xml contains only the five public pages", async ({
+    test("sitemap.xml contains the public pages and reviewed auction items", async ({
         request,
     }) => {
         const response = await request.get("/sitemap.xml");
@@ -123,11 +125,15 @@ test.describe("Homepage Tests", () => {
         );
 
         expect(response.status()).toBe(200);
-        expect(locations).toEqual(
-            publicPages.map(route =>
+        expect(locations).toEqual([
+            ...publicPages.map(route =>
                 new URL(route.path, "https://erinn.me").toString()
-            )
-        );
+            ),
+            "https://erinn.me/auction/items",
+            ...auctionCatalog.items.map(
+                item => `https://erinn.me/auction/items/${item.id}`
+            ),
+        ]);
         for (const excluded of [
             "/api/",
             "/_offline",
@@ -137,6 +143,40 @@ test.describe("Homepage Tests", () => {
         ])
             expect(body).not.toContain(`https://erinn.me${excluded}`);
         expect(body).not.toContain("<lastmod>");
+    });
+
+    test("reviewed auction item pages stay discoverable without live API data", async ({
+        page,
+        request,
+    }) => {
+        const item = auctionCatalog.items[0];
+        const response = await page.goto(`/auction/items/${item.id}`);
+
+        expect(response?.status()).toBe(200);
+        await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+            `${item.name} 경매장 시세`
+        );
+        await expect(page).toHaveTitle(`${item.name} 경매장 시세 | Erinn.me`);
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+            "href",
+            `https://erinn.me/auction/items/${item.id}`
+        );
+        await expect(
+            page.getByRole("link", {
+                name: "경매장에서 상세 매물·옵션 보기",
+            })
+        ).toHaveAttribute(
+            "href",
+            `/auction?${new URLSearchParams({ q: item.name })}`
+        );
+
+        const indexResponse = await request.get("/auction/items");
+        const indexBody = await indexResponse.text();
+        expect(indexResponse.status()).toBe(200);
+        expect(indexBody).toContain(`/auction/items/${item.id}`);
+        expect(
+            (await request.get("/auction/items/UNKNOWN_SAFE_ID")).status()
+        ).toBe(404);
     });
 
     test("Navigation works correctly", async ({ page }) => {
