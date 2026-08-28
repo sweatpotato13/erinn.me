@@ -1,10 +1,15 @@
 import { ArrowLeftRightIcon } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import AuctionIcon from "@/components/icons/auction-icon";
 import DocumentIcon from "@/components/icons/document-icon";
 import HornIcon from "@/components/icons/horn-icon";
 import ShopIcon from "@/components/icons/shop-icon";
+
+export const metadata: Metadata = {
+    alternates: { canonical: "/" },
+};
 
 interface NavigationCardProps {
     href: string;
@@ -29,7 +34,7 @@ function NavigationCard({
                     {icon}
                 </div>
                 <div>
-                    <h3 className="font-semibold text-slate-900">{title}</h3>
+                    <h2 className="font-semibold text-slate-900">{title}</h2>
                     <p className="mt-1 text-sm text-slate-500">{description}</p>
                 </div>
             </div>
@@ -40,6 +45,13 @@ function NavigationCard({
 export default function Page() {
     return (
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+            <h1 className="text-3xl font-bold text-slate-900">
+                에린 생활 정보, 한곳에서
+            </h1>
+            <p className="mt-2 mb-8 text-slate-600">
+                경매장 시세, 거대한 외침의 뿔피리 내역, NPC 상점 재고를 한곳에서
+                조회하세요.
+            </p>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 <NavigationCard
                     href="/auction"

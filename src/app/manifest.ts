@@ -2,10 +2,10 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: "Erinn.me - 마비노기 경매장",
+        name: "Erinn.me - 마비노기 한국 서버 유틸리티",
         short_name: "Erinn",
         description:
-            "마비노기 경매장의 실시간 아이템 시세를 검색하고 가격을 비교해보세요.",
+            "마비노기 한국 서버의 경매장 시세, 거대한 외침의 뿔피리 내역, NPC 상점 재고를 한곳에서 조회하세요.",
         start_url: "/",
         display: "standalone",
         orientation: "portrait",

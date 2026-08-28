@@ -65,6 +65,10 @@ export default function NPCShopPage() {
     return (
         <div className="container mx-auto p-7">
             <h1 className="text-2xl mb-4">NPC 상점 조회</h1>
+            <p className="mb-6 text-base-content/70">
+                서버·채널·NPC를 선택해 상점 탭별 판매 아이템과 가격 정보를
+                확인하세요.
+            </p>
 
             <div className="mb-8 flex flex-wrap gap-4">
                 <div className="flex-1 mb-4 min-w-[250px]">
