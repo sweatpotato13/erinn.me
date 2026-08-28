@@ -946,7 +946,7 @@ test("favorite click uses the selected favorite in its first request", async ({
         return route.fulfill({ json: { sales: [], hasMore: false } });
     });
 
-    await page.goto("/auction");
+    await page.goto("/auction", { waitUntil: "networkidle" });
     await page.getByRole("button", { name: "즐겨찾기 보기" }).click();
     await page.getByRole("button", { name: "테스트+검 (검)" }).click();
     await expect.poll(() => auctionRequests.length).toBe(1);
@@ -964,7 +964,7 @@ test("corrupt favorite storage does not crash auction", async ({ page }) => {
     await page.addInitScript(() =>
         localStorage.setItem("favorites", "{broken")
     );
-    await page.goto("/auction");
+    await page.goto("/auction", { waitUntil: "networkidle" });
     await page.getByRole("button", { name: "즐겨찾기 보기" }).click();
     await expect(page.getByText("저장된 즐겨찾기가 없습니다.")).toBeVisible();
     expect(errors).toEqual([]);
