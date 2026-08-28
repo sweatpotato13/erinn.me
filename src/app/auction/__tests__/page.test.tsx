@@ -37,7 +37,6 @@ import {
     useRecentSales,
 } from "@/app/auction/use-recent-sales";
 import { categories } from "@/constant/categories";
-import { getAuctionCatalogItems } from "@/lib/auction-item-catalog";
 import type { AuctionOptionFilters } from "@/lib/auction-options";
 
 function deferred<T>() {
@@ -1120,26 +1119,8 @@ describe("AuctionResults", () => {
     };
     const refreshedAt = "2026-08-19T01:00:00.000Z";
 
-    it("links exact catalog results to their stable page", () => {
-        const catalogItem = getAuctionCatalogItems()[0];
-        render(
-            <AuctionResults
-                {...baseProps}
-                items={[item(catalogItem.name, 100)]}
-            />
-        );
-        expect(
-            screen.getByRole("link", { name: "시세 페이지" })
-        ).toHaveAttribute("href", `/auction/items/${catalogItem.id}`);
-    });
-
-    it("does not link non-catalog results to a price page", () => {
-        render(
-            <AuctionResults
-                {...baseProps}
-                items={[item("카탈로그 외 아이템", 100)]}
-            />
-        );
+    it("does not link results to a price page", () => {
+        render(<AuctionResults {...baseProps} items={[item("불타래", 100)]} />);
         expect(
             screen.queryByRole("link", { name: "시세 페이지" })
         ).not.toBeInTheDocument();
