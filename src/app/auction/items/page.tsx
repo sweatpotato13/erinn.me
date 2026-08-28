@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     alternates: { canonical: "/auction/items" },
 };
 
-export default function AuctionItemsPage() {
+export default function AuctionItemsPage(): React.JSX.Element {
     const items = getAuctionCatalogItems();
     return (
         <div className="mx-auto min-h-screen w-full max-w-5xl p-6">

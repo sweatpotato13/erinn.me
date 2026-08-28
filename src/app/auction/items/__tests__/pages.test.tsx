@@ -101,7 +101,9 @@ describe("auction item pages", () => {
             </>
         );
         expect(
-            screen.getByText("현재 매물을 불러오지 못했습니다.")
+            screen.getByText(
+                "현재 매물을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요."
+            )
         ).toBeInTheDocument();
         expect(screen.getAllByText("200 Gold")).not.toHaveLength(0);
     });
@@ -132,7 +134,9 @@ describe("auction item pages", () => {
             screen.getByText("현재 등록된 매물이 없습니다.")
         ).toBeInTheDocument();
         expect(
-            screen.getByText("최근 완료 거래를 불러오지 못했습니다.")
+            screen.getByText(
+                "최근 완료 거래를 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요."
+            )
         ).toBeInTheDocument();
     });
 });

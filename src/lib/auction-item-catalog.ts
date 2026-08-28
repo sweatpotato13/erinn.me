@@ -20,14 +20,20 @@ export function getAuctionCatalogItems(): readonly AuctionCatalogItem[] {
     return items;
 }
 
-export function getAuctionCatalogItemById(id: string) {
+export function getAuctionCatalogItemById(
+    id: string
+): AuctionCatalogItem | undefined {
     return itemsById.get(id);
 }
 
-export function getAuctionCatalogItemByExactName(name: string) {
+export function getAuctionCatalogItemByExactName(
+    name: string
+): AuctionCatalogItem | undefined {
     return itemsByName.get(name);
 }
 
-export function getAuctionItemPath(item: Pick<AuctionCatalogItem, "id">) {
+export function getAuctionItemPath(
+    item: Pick<AuctionCatalogItem, "id">
+): string {
     return `/auction/items/${encodeURIComponent(item.id)}`;
 }

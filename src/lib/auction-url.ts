@@ -35,12 +35,7 @@ function deleteAuctionOptionParams(params: URLSearchParams) {
     }
 }
 
-export function parseAuctionSearchParams(params: URLSearchParams) {
-    const normalized = new URLSearchParams(params);
-    const hasOptionParams = Array.from(params.keys()).some(key =>
-        key.startsWith("option_")
-    );
-    const parsedFilters = parseAuctionOptionFilterQuery(params);
+function parseBaseAuctionParams(params: URLSearchParams) {
     const itemValues = params.getAll(ITEM_QUERY_PARAM);
     const itemName = (itemValues[0] ?? "").trim();
     const usableItemName =
@@ -51,15 +46,29 @@ export function parseAuctionSearchParams(params: URLSearchParams) {
     const categoryValues = params.getAll(CATEGORY_QUERY_PARAM);
     const categoryValue = categoryValues[0] ?? DEFAULT_AUCTION_CATEGORY;
     const usableCategory = categories.includes(categoryValue);
-    const invalidCategory =
-        params.has(CATEGORY_QUERY_PARAM) &&
-        (categoryValues.length !== 1 || !usableCategory);
-    const category = usableCategory ? categoryValue : DEFAULT_AUCTION_CATEGORY;
+    return {
+        itemName,
+        usableItemName,
+        invalidItemName,
+        category: usableCategory ? categoryValue : DEFAULT_AUCTION_CATEGORY,
+        invalidCategory:
+            params.has(CATEGORY_QUERY_PARAM) &&
+            (categoryValues.length !== 1 || !usableCategory),
+    };
+}
 
-    if (usableItemName) normalized.set(ITEM_QUERY_PARAM, itemName);
+export function parseAuctionSearchParams(params: URLSearchParams) {
+    const normalized = new URLSearchParams(params);
+    const hasOptionParams = Array.from(params.keys()).some(key =>
+        key.startsWith("option_")
+    );
+    const parsedFilters = parseAuctionOptionFilterQuery(params);
+    const base = parseBaseAuctionParams(params);
+
+    if (base.usableItemName) normalized.set(ITEM_QUERY_PARAM, base.itemName);
     else normalized.delete(ITEM_QUERY_PARAM);
-    if (category !== DEFAULT_AUCTION_CATEGORY) {
-        normalized.set(CATEGORY_QUERY_PARAM, category);
+    if (base.category !== DEFAULT_AUCTION_CATEGORY) {
+        normalized.set(CATEGORY_QUERY_PARAM, base.category);
     } else {
         normalized.delete(CATEGORY_QUERY_PARAM);
     }
@@ -67,7 +76,7 @@ export function parseAuctionSearchParams(params: URLSearchParams) {
     deleteAuctionOptionParams(normalized);
 
     const hasBaseSearch =
-        usableItemName || category !== DEFAULT_AUCTION_CATEGORY;
+        base.usableItemName || base.category !== DEFAULT_AUCTION_CATEGORY;
     const optionFilters = parsedFilters.success
         ? (parsedFilters.filters ?? {})
         : {};
@@ -76,8 +85,8 @@ export function parseAuctionSearchParams(params: URLSearchParams) {
     }
     const search = hasBaseSearch
         ? {
-              itemName: usableItemName ? itemName : "",
-              category,
+              itemName: base.usableItemName ? base.itemName : "",
+              category: base.category,
               optionFilters,
           }
         : null;
@@ -85,8 +94,8 @@ export function parseAuctionSearchParams(params: URLSearchParams) {
         search,
         normalized,
         invalid:
-            invalidItemName ||
-            invalidCategory ||
+            base.invalidItemName ||
+            base.invalidCategory ||
             !parsedFilters.success ||
             (!hasBaseSearch && hasOptionParams),
         filterError: parsedFilters.success ? null : parsedFilters.error,

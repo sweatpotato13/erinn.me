@@ -24,6 +24,11 @@ const dateTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
     timeStyle: "medium",
     timeZone: "Asia/Seoul",
 });
+type CurrentMarketSnapshot = Awaited<
+    ReturnType<typeof getCachedCurrentItemMarket>
+>;
+type RecentSalesSnapshot = Awaited<ReturnType<typeof getCachedRecentItemSales>>;
+type PreparedRecentSales = ReturnType<typeof prepareRecentSales>;
 
 function getItem(itemId: string) {
     const item = getAuctionCatalogItemById(itemId);
@@ -51,192 +56,237 @@ function Metric({ label, value }: { label: string; value: string }) {
     );
 }
 
+function PanelEmpty({ message }: { message: string }): React.JSX.Element {
+    return <p className="mt-4">{message}</p>;
+}
+
+function PanelFailure({
+    titleId,
+    title,
+    message,
+}: {
+    titleId: string;
+    title: string;
+    message: string;
+}): React.JSX.Element {
+    return (
+        <section
+            aria-labelledby={titleId}
+            className="rounded-lg border bg-base-100 p-4"
+        >
+            <h2 id={titleId} className="text-xl font-bold">
+                {title}
+            </h2>
+            <p role="alert" className="alert alert-error mt-4">
+                {message}
+            </p>
+        </section>
+    );
+}
+
+function CurrentMarketContent({
+    market,
+}: {
+    market: CurrentMarketSnapshot;
+}): React.JSX.Element {
+    return (
+        <section
+            aria-labelledby="current-market-title"
+            className="rounded-lg border bg-base-100 p-4"
+        >
+            <h2 id="current-market-title" className="text-xl font-bold">
+                현재 등록 매물
+            </h2>
+            <p className="text-sm text-base-content/70">
+                판매자가 현재 제시한 가격과 수량입니다.
+            </p>
+            {market.listingCount === 0 ? (
+                <PanelEmpty message="현재 등록된 매물이 없습니다." />
+            ) : (
+                <dl className="mt-4 grid grid-cols-2 gap-3">
+                    <Metric
+                        label="최저 단가"
+                        value={`${numberFormatter.format(market.minPrice)} Gold`}
+                    />
+                    <Metric
+                        label={
+                            market.isComplete ? "전체 가용 수량" : "불러온 수량"
+                        }
+                        value={`${numberFormatter.format(market.availableQuantity)}개`}
+                    />
+                </dl>
+            )}
+            {!market.isComplete && (
+                <p className="alert alert-warning mt-4 text-sm">
+                    전체 cursor가 남아 있어 불러온 매물만 반영했습니다.
+                </p>
+            )}
+            <FetchedAt value={market.fetchedAt} />
+        </section>
+    );
+}
+
 export async function CurrentMarketPanel({
     item,
 }: {
     item: AuctionCatalogItem;
-}) {
+}): Promise<React.JSX.Element> {
     try {
         const market = await getCachedCurrentItemMarket(item.name);
-        return (
-            <section
-                aria-labelledby="current-market-title"
-                className="rounded-lg border bg-base-100 p-4"
-            >
-                <h2 id="current-market-title" className="text-xl font-bold">
-                    현재 등록 매물
-                </h2>
-                <p className="text-sm text-base-content/70">
-                    판매자가 현재 제시한 가격과 수량입니다.
-                </p>
-                {market.listingCount === 0 ? (
-                    <p className="mt-4">현재 등록된 매물이 없습니다.</p>
-                ) : (
-                    <dl className="mt-4 grid grid-cols-2 gap-3">
-                        <Metric
-                            label="최저 단가"
-                            value={`${numberFormatter.format(market.minPrice)} Gold`}
-                        />
-                        <Metric
-                            label={
-                                market.isComplete
-                                    ? "전체 가용 수량"
-                                    : "불러온 수량"
-                            }
-                            value={`${numberFormatter.format(market.availableQuantity)}개`}
-                        />
-                    </dl>
-                )}
-                {!market.isComplete && (
-                    <p className="alert alert-warning mt-4 text-sm">
-                        전체 cursor가 남아 있어 불러온 매물만 반영했습니다.
-                    </p>
-                )}
-                <FetchedAt value={market.fetchedAt} />
-            </section>
-        );
+        return <CurrentMarketContent market={market} />;
     } catch {
         return (
-            <section
-                aria-labelledby="current-market-title"
-                className="rounded-lg border bg-base-100 p-4"
-            >
-                <h2 id="current-market-title" className="text-xl font-bold">
-                    현재 등록 매물
-                </h2>
-                <p role="alert" className="alert alert-error mt-4">
-                    현재 매물을 불러오지 못했습니다.
-                </p>
-            </section>
+            <PanelFailure
+                titleId="current-market-title"
+                title="현재 등록 매물"
+                message="현재 매물을 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요."
+            />
         );
     }
 }
 
-export async function RecentSalesPanel({ item }: { item: AuctionCatalogItem }) {
+function RecentSalesSummary({
+    summary,
+    hasMore,
+}: {
+    summary: PreparedRecentSales["summary"];
+    hasMore: boolean;
+}): React.JSX.Element {
+    return (
+        <>
+            <dl className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
+                <Metric
+                    label={hasMore ? "불러온 거래 수" : "거래 수"}
+                    value={`${numberFormatter.format(summary.transactionCount)}건`}
+                />
+                <Metric
+                    label={hasMore ? "불러온 총 수량" : "총 수량"}
+                    value={`${numberFormatter.format(summary.totalQuantity)}개`}
+                />
+                {summary.medianUnitPrice !== null && (
+                    <Metric
+                        label={
+                            hasMore
+                                ? "불러온 거래 단가 중앙값"
+                                : "거래 단가 중앙값"
+                        }
+                        value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
+                    />
+                )}
+            </dl>
+            {summary.transactionCount < 3 && (
+                <p className="mt-3 text-sm text-base-content/70">
+                    최근 거래가 3건 미만이므로 중앙값을 표시하지 않습니다.
+                </p>
+            )}
+        </>
+    );
+}
+
+function RecentSalesTable({
+    sales,
+}: {
+    sales: PreparedRecentSales["sales"];
+}): React.JSX.Element {
+    return (
+        <>
+            <div className="mt-4 overflow-x-auto rounded-md border">
+                <table className="table w-full">
+                    <thead>
+                        <tr>
+                            <th>거래 시각</th>
+                            <th>완료 단가</th>
+                            <th>수량</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {sales.slice(0, 10).map(sale => (
+                            <tr key={sale.auction_buy_id}>
+                                <td>
+                                    <time dateTime={sale.date_auction_buy}>
+                                        {dateTimeFormatter.format(
+                                            new Date(sale.date_auction_buy)
+                                        )}
+                                    </time>
+                                </td>
+                                <td>
+                                    {numberFormatter.format(
+                                        sale.auction_price_per_unit
+                                    )}{" "}
+                                    Gold
+                                </td>
+                                <td>
+                                    {numberFormatter.format(sale.item_count)}개
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+            {sales.length > 10 && (
+                <p className="mt-2 text-sm text-base-content/70">
+                    가장 최근 10건을 표시합니다.
+                </p>
+            )}
+        </>
+    );
+}
+
+function RecentSalesContent({
+    snapshot,
+    prepared,
+}: {
+    snapshot: RecentSalesSnapshot;
+    prepared: PreparedRecentSales;
+}): React.JSX.Element {
+    return (
+        <section
+            aria-labelledby="recent-sales-title"
+            className="rounded-lg border bg-base-100 p-4"
+        >
+            <h2 id="recent-sales-title" className="text-xl font-bold">
+                최근 1시간 완료 거래
+            </h2>
+            <p className="text-sm text-base-content/70">
+                실제로 완료된 거래 내역입니다.
+            </p>
+            {prepared.summary.transactionCount === 0 ? (
+                <PanelEmpty message="최근 1시간 내 완료 거래가 없습니다." />
+            ) : (
+                <>
+                    <RecentSalesSummary
+                        summary={prepared.summary}
+                        hasMore={snapshot.hasMore}
+                    />
+                    <RecentSalesTable sales={prepared.sales} />
+                </>
+            )}
+            {snapshot.hasMore && (
+                <p className="alert alert-warning mt-4 text-sm">
+                    최근 1시간 전체가 아닌 불러온 일부 완료 거래만 반영했습니다.
+                </p>
+            )}
+            <FetchedAt value={snapshot.fetchedAt} />
+        </section>
+    );
+}
+
+export async function RecentSalesPanel({
+    item,
+}: {
+    item: AuctionCatalogItem;
+}): Promise<React.JSX.Element> {
     try {
         const snapshot = await getCachedRecentItemSales(item.name);
         const prepared = prepareRecentSales(snapshot.sales);
-        const { summary } = prepared;
-        return (
-            <section
-                aria-labelledby="recent-sales-title"
-                className="rounded-lg border bg-base-100 p-4"
-            >
-                <h2 id="recent-sales-title" className="text-xl font-bold">
-                    최근 1시간 완료 거래
-                </h2>
-                <p className="text-sm text-base-content/70">
-                    실제로 완료된 거래 내역입니다.
-                </p>
-                {summary.transactionCount === 0 ? (
-                    <p className="mt-4">최근 1시간 내 완료 거래가 없습니다.</p>
-                ) : (
-                    <>
-                        <dl className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
-                            <Metric
-                                label={
-                                    snapshot.hasMore
-                                        ? "불러온 거래 수"
-                                        : "거래 수"
-                                }
-                                value={`${numberFormatter.format(summary.transactionCount)}건`}
-                            />
-                            <Metric
-                                label={
-                                    snapshot.hasMore
-                                        ? "불러온 총 수량"
-                                        : "총 수량"
-                                }
-                                value={`${numberFormatter.format(summary.totalQuantity)}개`}
-                            />
-                            {summary.medianUnitPrice !== null && (
-                                <Metric
-                                    label={
-                                        snapshot.hasMore
-                                            ? "불러온 거래 단가 중앙값"
-                                            : "거래 단가 중앙값"
-                                    }
-                                    value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
-                                />
-                            )}
-                        </dl>
-                        {summary.transactionCount < 3 && (
-                            <p className="mt-3 text-sm text-base-content/70">
-                                최근 거래가 3건 미만이므로 중앙값을 표시하지
-                                않습니다.
-                            </p>
-                        )}
-                        <div className="mt-4 overflow-x-auto rounded-md border">
-                            <table className="table w-full">
-                                <thead>
-                                    <tr>
-                                        <th>거래 시각</th>
-                                        <th>완료 단가</th>
-                                        <th>수량</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {prepared.sales.slice(0, 10).map(sale => (
-                                        <tr key={sale.auction_buy_id}>
-                                            <td>
-                                                <time
-                                                    dateTime={
-                                                        sale.date_auction_buy
-                                                    }
-                                                >
-                                                    {dateTimeFormatter.format(
-                                                        new Date(
-                                                            sale.date_auction_buy
-                                                        )
-                                                    )}
-                                                </time>
-                                            </td>
-                                            <td>
-                                                {numberFormatter.format(
-                                                    sale.auction_price_per_unit
-                                                )}{" "}
-                                                Gold
-                                            </td>
-                                            <td>
-                                                {numberFormatter.format(
-                                                    sale.item_count
-                                                )}
-                                                개
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                        {prepared.sales.length > 10 && (
-                            <p className="mt-2 text-sm text-base-content/70">
-                                가장 최근 10건을 표시합니다.
-                            </p>
-                        )}
-                    </>
-                )}
-                {snapshot.hasMore && (
-                    <p className="alert alert-warning mt-4 text-sm">
-                        최근 1시간 전체가 아닌 불러온 일부 완료 거래만
-                        반영했습니다.
-                    </p>
-                )}
-                <FetchedAt value={snapshot.fetchedAt} />
-            </section>
-        );
+        return <RecentSalesContent snapshot={snapshot} prepared={prepared} />;
     } catch {
         return (
-            <section
-                aria-labelledby="recent-sales-title"
-                className="rounded-lg border bg-base-100 p-4"
-            >
-                <h2 id="recent-sales-title" className="text-xl font-bold">
-                    최근 1시간 완료 거래
-                </h2>
-                <p role="alert" className="alert alert-error mt-4">
-                    최근 완료 거래를 불러오지 못했습니다.
-                </p>
-            </section>
+            <PanelFailure
+                titleId="recent-sales-title"
+                title="최근 1시간 완료 거래"
+                message="최근 완료 거래를 불러오지 못했습니다. 페이지를 새로고침한 뒤 다시 시도해주세요."
+            />
         );
     }
 }
@@ -255,7 +305,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     };
 }
 
-export default async function AuctionItemPage({ params }: Props) {
+export default async function AuctionItemPage({
+    params,
+}: Props): Promise<React.JSX.Element> {
     const { itemId } = await params;
     const item = getItem(itemId);
     return (

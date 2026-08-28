@@ -77,7 +77,9 @@ describe("auction item catalog", () => {
         [
             "future evidence",
             (value: ReturnType<typeof cloneCatalog>) => {
-                value.items[0].verifiedAt = "2027-01-01T00:00:00Z";
+                value.items[0].verifiedAt = new Date(
+                    Date.now() + 24 * 60 * 60 * 1000
+                ).toISOString();
             },
         ],
         [

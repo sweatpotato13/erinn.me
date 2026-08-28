@@ -190,7 +190,7 @@ describe("auction URL state", () => {
                 category: categories[0],
                 optionFilters: {},
             },
-            "/auction?view=compact&q=",
+            { view: "compact", q: catalogItem.name.slice(0, 1) },
         ],
         [
             "non-catalog exact name",
@@ -199,17 +199,17 @@ describe("auction URL state", () => {
                 category: categories[0],
                 optionFilters: {},
             },
-            "/auction?view=compact&q=",
+            { view: "compact", q: "한글 + & (雪)" },
         ],
         [
             "category only",
             { itemName: "", category: "검", optionFilters: {} },
-            "/auction?view=compact&category=",
+            { view: "compact", category: "검" },
         ],
         [
             "non-default category",
             { itemName: catalogItem.name, category: "기타", optionFilters: {} },
-            "/auction?view=compact&q=",
+            { view: "compact", q: catalogItem.name, category: "기타" },
         ],
         [
             "option filter",
@@ -218,18 +218,23 @@ describe("auction URL state", () => {
                 category: categories[0],
                 optionFilters: { enchantName: "여명" },
             },
-            "/auction?view=compact&q=",
+            {
+                view: "compact",
+                q: catalogItem.name,
+                option_enchant: "여명",
+            },
         ],
     ])(
         "keeps %s shares on the normalized query URL",
-        (_label, search, prefix) => {
+        (_label, search, expectedParams) => {
             const target = getAuctionShareTarget(
                 new URL("https://erinn.me/auction?view=compact"),
                 search
             );
-            expect(
-                `${target.pathname}${target.search}`.startsWith(prefix)
-            ).toBe(true);
+            expect(target.pathname).toBe("/auction");
+            expect(Object.fromEntries(target.searchParams)).toEqual(
+                expectedParams
+            );
         }
     );
 

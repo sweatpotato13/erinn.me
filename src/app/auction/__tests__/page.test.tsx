@@ -1133,6 +1133,18 @@ describe("AuctionResults", () => {
         ).toHaveAttribute("href", `/auction/items/${catalogItem.id}`);
     });
 
+    it("does not link non-catalog results to a price page", () => {
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("카탈로그 외 아이템", 100)]}
+            />
+        );
+        expect(
+            screen.queryByRole("link", { name: "시세 페이지" })
+        ).not.toBeInTheDocument();
+    });
+
     function renderCurrentMarketSnapshot() {
         render(
             <AuctionResults

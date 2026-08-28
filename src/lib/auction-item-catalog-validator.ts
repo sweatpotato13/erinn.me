@@ -49,12 +49,13 @@ const catalogSchema = z.object({
 });
 
 type LocalItem = { id: string; name: string };
+export type AuctionItemCatalog = z.infer<typeof catalogSchema>;
 
 export function validateAuctionItemCatalog(
     input: unknown,
     localItems: unknown,
     now = new Date()
-) {
+): AuctionItemCatalog {
     const catalog = catalogSchema.parse(input);
     const source = z
         .array(z.object({ id: z.string(), name: z.string() }))
