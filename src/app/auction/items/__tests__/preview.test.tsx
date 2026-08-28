@@ -1,5 +1,7 @@
 /** @jest-environment node */
 
+import { act } from "@testing-library/react";
+
 jest.mock("next/og", () => ({
     ImageResponse: class MockImageResponse extends Response {
         constructor(
@@ -14,7 +16,9 @@ jest.mock("next/og", () => ({
                 jest.requireActual<typeof import("react-dom/server")>(
                     "react-dom/server"
                 );
-            renderToStaticMarkup(element);
+            act(() => {
+                renderToStaticMarkup(element);
+            });
             const bytes = new Uint8Array(24);
             bytes.set([137, 80, 78, 71, 13, 10, 26, 10]);
             const view = new DataView(bytes.buffer);
