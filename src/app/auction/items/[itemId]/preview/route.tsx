@@ -33,26 +33,23 @@ type RecentSales = Awaited<ReturnType<typeof getCachedRecentItemSales>> & {
 type SourceState<T> =
     { status: "success"; value: T } | { status: "failed" | "timeout" };
 
-export type PreviewData = {
+export interface PreviewData {
     current: SourceState<CurrentMarket>;
     recent: SourceState<RecentSales>;
-};
+}
 
-export type PreviewCopy = {
-    current: {
-        badge?: string;
-        primary: string;
-        secondary?: string;
-        fetchedAt?: string;
-    };
-    recent: {
-        badge?: string;
-        primary: string;
-        secondary?: string;
-        fetchedAt?: string;
-    };
+interface PreviewSourceCopy {
+    badge?: string;
+    primary: string;
+    secondary?: string;
+    fetchedAt?: string;
+}
+
+export interface PreviewCopy {
+    current: PreviewSourceCopy;
+    recent: PreviewSourceCopy;
     failure?: string;
-};
+}
 
 function settleBeforeDeadline<T>(promise: Promise<T>): Promise<SourceState<T>> {
     return new Promise(resolve => {
@@ -93,106 +90,112 @@ export async function loadPreviewData(itemName: string): Promise<PreviewData> {
     return { current, recent };
 }
 
+function createCurrentCopy(current: PreviewData["current"]): PreviewSourceCopy {
+    if (current.status !== "success") {
+        return { primary: "현재 매물 조회 불가" };
+    }
+    const market = current.value;
+    const hasListings = market.listingCount > 0;
+    return {
+        badge: market.isComplete ? undefined : "일부 데이터",
+        primary: hasListings
+            ? `최저 등록 단가 ${formatAuctionNumber(market.minPrice)} Gold`
+            : market.isComplete
+              ? "현재 매물 없음"
+              : "확인된 매물 없음",
+        secondary: hasListings
+            ? `${market.isComplete ? "가용 수량" : "확인된 수량"} ${formatAuctionNumber(market.availableQuantity)}개`
+            : undefined,
+        fetchedAt: `조회 시각 ${formatAuctionDateTime(market.fetchedAt)}`,
+    };
+}
+
+function createRecentCopy(recent: PreviewData["recent"]): PreviewSourceCopy {
+    if (recent.status !== "success") {
+        return { primary: "완료 거래 조회 불가" };
+    }
+    const { hasMore, fetchedAt, prepared } = recent.value;
+    const { transactionCount, totalQuantity, medianUnitPrice } =
+        prepared.summary;
+    const hasSales = transactionCount > 0;
+    return {
+        badge: hasMore ? "일부 데이터" : undefined,
+        primary: hasSales
+            ? `최근 1시간 ${formatAuctionNumber(transactionCount)}건 · ${formatAuctionNumber(totalQuantity)}개`
+            : hasMore
+              ? "확인된 완료 거래 없음"
+              : "최근 1시간 거래 없음",
+        secondary: hasSales
+            ? medianUnitPrice === null
+                ? "거래 3건 미만"
+                : `완료 단가 중앙값 ${formatAuctionNumber(medianUnitPrice)} Gold`
+            : undefined,
+        fetchedAt: `조회 시각 ${formatAuctionDateTime(fetchedAt)}`,
+    };
+}
+
 export function createPreviewCopy(
     itemName: string,
     data: PreviewData
 ): PreviewCopy {
-    const current: PreviewCopy["current"] =
-        data.current.status !== "success"
-            ? { primary: "현재 매물 조회 불가" }
-            : {
-                  badge: data.current.value.isComplete
-                      ? undefined
-                      : "일부 데이터",
-                  primary:
-                      data.current.value.listingCount === 0
-                          ? data.current.value.isComplete
-                              ? "현재 매물 없음"
-                              : "확인된 매물 없음"
-                          : `최저 등록 단가 ${formatAuctionNumber(data.current.value.minPrice)} Gold`,
-                  secondary:
-                      data.current.value.listingCount === 0
-                          ? undefined
-                          : `${data.current.value.isComplete ? "가용 수량" : "확인된 수량"} ${formatAuctionNumber(data.current.value.availableQuantity)}개`,
-                  fetchedAt: `조회 시각 ${formatAuctionDateTime(data.current.value.fetchedAt)}`,
-              };
-    const recent: PreviewCopy["recent"] =
-        data.recent.status !== "success"
-            ? { primary: "완료 거래 조회 불가" }
-            : {
-                  badge: data.recent.value.hasMore ? "일부 데이터" : undefined,
-                  primary:
-                      data.recent.value.prepared.summary.transactionCount === 0
-                          ? data.recent.value.hasMore
-                              ? "확인된 완료 거래 없음"
-                              : "최근 1시간 거래 없음"
-                          : `최근 1시간 ${formatAuctionNumber(data.recent.value.prepared.summary.transactionCount)}건 · ${formatAuctionNumber(data.recent.value.prepared.summary.totalQuantity)}개`,
-                  secondary:
-                      data.recent.value.prepared.summary.transactionCount === 0
-                          ? undefined
-                          : data.recent.value.prepared.summary
-                                  .medianUnitPrice === null
-                            ? "거래 3건 미만"
-                            : `완료 단가 중앙값 ${formatAuctionNumber(data.recent.value.prepared.summary.medianUnitPrice)} Gold`,
-                  fetchedAt: `조회 시각 ${formatAuctionDateTime(data.recent.value.fetchedAt)}`,
-              };
+    const bothUnavailable =
+        data.current.status !== "success" && data.recent.status !== "success";
 
     return {
-        current,
-        recent,
-        failure:
-            data.current.status !== "success" &&
-            data.recent.status !== "success"
-                ? `${itemName} 시세 정보를 불러오지 못했습니다`
-                : undefined,
+        current: createCurrentCopy(data.current),
+        recent: createRecentCopy(data.recent),
+        failure: bothUnavailable
+            ? `${itemName} 시세 정보를 불러오지 못했습니다`
+            : undefined,
     };
 }
 
-function PreviewCard({
-    title,
-    accent,
-    copy,
-}: {
+interface PreviewCardProps {
     title: string;
     accent: string;
-    copy: PreviewCopy["current"];
-}) {
+    copy: PreviewSourceCopy;
+}
+
+interface PreviewCardHeaderProps {
+    title: string;
+    accent: string;
+    badge?: string;
+}
+
+// ImageResponse renderers below intentionally use inline styles because
+// next/og cannot apply Tailwind classes or external stylesheets in Satori.
+function PreviewCardHeader({ title, accent, badge }: PreviewCardHeaderProps) {
     return (
         <div
             style={{
                 display: "flex",
-                flex: 1,
-                flexDirection: "column",
-                padding: "26px 28px",
-                border: `2px solid ${accent}`,
-                borderRadius: 22,
-                backgroundColor: "#111827",
+                alignItems: "center",
+                justifyContent: "space-between",
+                color: accent,
+                fontSize: 24,
             }}
         >
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    color: accent,
-                    fontSize: 24,
-                }}
-            >
-                <span>{title}</span>
-                {copy.badge && (
-                    <span
-                        style={{
-                            padding: "5px 10px",
-                            borderRadius: 999,
-                            backgroundColor: accent,
-                            color: "#07111f",
-                            fontSize: 18,
-                        }}
-                    >
-                        {copy.badge}
-                    </span>
-                )}
-            </div>
+            <span>{title}</span>
+            {badge && (
+                <span
+                    style={{
+                        padding: "5px 10px",
+                        borderRadius: 999,
+                        backgroundColor: accent,
+                        color: "#07111f",
+                        fontSize: 18,
+                    }}
+                >
+                    {badge}
+                </span>
+            )}
+        </div>
+    );
+}
+
+function PreviewCardContent({ copy }: { copy: PreviewSourceCopy }) {
+    return (
+        <>
             <div
                 style={{
                     display: "flex",
@@ -221,30 +224,41 @@ function PreviewCard({
                     {copy.fetchedAt}
                 </span>
             )}
-        </div>
+        </>
     );
 }
 
-function AuctionPreview({
-    itemName,
-    copy,
-}: {
-    itemName: string;
-    copy: PreviewCopy;
-}) {
+function PreviewCard({ title, accent, copy }: PreviewCardProps) {
     return (
         <div
             style={{
                 display: "flex",
-                width: "100%",
-                height: "100%",
+                flex: 1,
                 flexDirection: "column",
-                padding: "40px 46px 34px",
-                backgroundColor: "#07111f",
-                color: "#f8fafc",
-                fontFamily: "AuctionPreview",
+                padding: "26px 28px",
+                border: `2px solid ${accent}`,
+                borderRadius: 22,
+                backgroundColor: "#111827",
             }}
         >
+            <PreviewCardHeader
+                title={title}
+                accent={accent}
+                badge={copy.badge}
+            />
+            <PreviewCardContent copy={copy} />
+        </div>
+    );
+}
+
+interface AuctionPreviewProps {
+    itemName: string;
+    copy: PreviewCopy;
+}
+
+function PreviewHeading({ itemName }: { itemName: string }) {
+    return (
+        <>
             <div
                 style={{
                     display: "flex",
@@ -268,52 +282,83 @@ function AuctionPreview({
             >
                 {itemName}
             </div>
+        </>
+    );
+}
+
+function PreviewFailure({ message }: { message: string }) {
+    return (
+        <div
+            style={{
+                display: "flex",
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                border: "2px solid #475569",
+                borderRadius: 22,
+                backgroundColor: "#111827",
+                color: "#e2e8f0",
+                fontSize: 34,
+            }}
+        >
+            {message}
+        </div>
+    );
+}
+
+function PreviewCards({ copy }: { copy: PreviewCopy }) {
+    return (
+        <div style={{ display: "flex", flex: 1, gap: 22 }}>
+            <PreviewCard
+                title="현재 등록 매물"
+                accent="#67e8f9"
+                copy={copy.current}
+            />
+            <PreviewCard
+                title="최근 1시간 완료 거래"
+                accent="#fbbf24"
+                copy={copy.recent}
+            />
+        </div>
+    );
+}
+
+function PreviewFooter() {
+    return (
+        <div
+            style={{
+                display: "flex",
+                marginTop: 18,
+                color: "#94a3b8",
+                fontSize: 19,
+            }}
+        >
+            Nexon Open API · 실시간/적정가 보장 아님
+        </div>
+    );
+}
+
+function AuctionPreview({ itemName, copy }: AuctionPreviewProps) {
+    return (
+        <div
+            style={{
+                display: "flex",
+                width: "100%",
+                height: "100%",
+                flexDirection: "column",
+                padding: "40px 46px 34px",
+                backgroundColor: "#07111f",
+                color: "#f8fafc",
+                fontFamily: "AuctionPreview",
+            }}
+        >
+            <PreviewHeading itemName={itemName} />
             {copy.failure ? (
-                <div
-                    style={{
-                        display: "flex",
-                        flex: 1,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        border: "2px solid #475569",
-                        borderRadius: 22,
-                        backgroundColor: "#111827",
-                        color: "#e2e8f0",
-                        fontSize: 34,
-                    }}
-                >
-                    {copy.failure}
-                </div>
+                <PreviewFailure message={copy.failure} />
             ) : (
-                <div
-                    style={{
-                        display: "flex",
-                        flex: 1,
-                        gap: 22,
-                    }}
-                >
-                    <PreviewCard
-                        title="현재 등록 매물"
-                        accent="#67e8f9"
-                        copy={copy.current}
-                    />
-                    <PreviewCard
-                        title="최근 1시간 완료 거래"
-                        accent="#fbbf24"
-                        copy={copy.recent}
-                    />
-                </div>
+                <PreviewCards copy={copy} />
             )}
-            <div
-                style={{
-                    display: "flex",
-                    marginTop: 18,
-                    color: "#94a3b8",
-                    fontSize: 19,
-                }}
-            >
-                Nexon Open API · 실시간/적정가 보장 아님
-            </div>
+            <PreviewFooter />
         </div>
     );
 }

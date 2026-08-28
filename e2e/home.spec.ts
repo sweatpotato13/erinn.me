@@ -217,6 +217,7 @@ test.describe("Homepage Tests", () => {
             "kakaotalk-scrap/1.0",
             "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
             "Discordbot/2.0",
+            "Twitterbot/1.0",
         ]) {
             const response = await request.get(`/auction/items/${item.id}`, {
                 headers: { "user-agent": userAgent },
