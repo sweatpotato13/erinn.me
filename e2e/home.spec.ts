@@ -150,6 +150,8 @@ test.describe("Homepage Tests", () => {
         request,
     }) => {
         const item = auctionCatalog.items[0];
+        const previewUrl = `https://erinn.me/auction/items/${item.id}/preview`;
+        const imageAlt = `${item.name} 경매장 현재 매물 및 최근 1시간 완료 거래 요약`;
         const response = await page.goto(`/auction/items/${item.id}`);
 
         expect(response?.status()).toBe(200);
@@ -161,6 +163,32 @@ test.describe("Homepage Tests", () => {
             "href",
             `https://erinn.me/auction/items/${item.id}`
         );
+        await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+            "content",
+            previewUrl
+        );
+        await expect(
+            page.locator('meta[property="og:image:width"]')
+        ).toHaveAttribute("content", "1200");
+        await expect(
+            page.locator('meta[property="og:image:height"]')
+        ).toHaveAttribute("content", "630");
+        await expect(
+            page.locator('meta[property="og:image:type"]')
+        ).toHaveAttribute("content", "image/png");
+        await expect(
+            page.locator('meta[property="og:image:alt"]')
+        ).toHaveAttribute("content", imageAlt);
+        await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+            "content",
+            "summary_large_image"
+        );
+        await expect(
+            page.locator('meta[name="twitter:image"]')
+        ).toHaveAttribute("content", previewUrl);
+        await expect(
+            page.locator('meta[name="twitter:image:alt"]')
+        ).toHaveAttribute("content", imageAlt);
         await expect(
             page.getByRole("link", {
                 name: "경매장에서 상세 매물·옵션 보기",
@@ -177,6 +205,87 @@ test.describe("Homepage Tests", () => {
         expect(
             (await request.get("/auction/items/UNKNOWN_SAFE_ID")).status()
         ).toBe(404);
+    });
+
+    test("link crawlers receive complete auction item metadata in the initial head", async ({
+        request,
+    }) => {
+        const item = auctionCatalog.items[0];
+        const previewUrl = `https://erinn.me/auction/items/${item.id}/preview`;
+
+        for (const userAgent of [
+            "kakaotalk-scrap/1.0",
+            "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
+            "Discordbot/2.0",
+            "Twitterbot/1.0",
+        ]) {
+            const response = await request.get(`/auction/items/${item.id}`, {
+                headers: { "user-agent": userAgent },
+            });
+            const body = await response.text();
+            const head = body.slice(0, body.indexOf("</head>"));
+
+            expect(response.status()).toBe(200);
+            expect(head).toContain('property="og:image"');
+            expect(head).toContain('name="twitter:card"');
+            expect(head).toContain(previewUrl);
+        }
+    });
+
+    test("auction item preview routes return public PNG responses", async ({
+        request,
+    }) => {
+        const item = auctionCatalog.items[0];
+        const longestItem = auctionCatalog.items.reduce((longest, candidate) =>
+            [...candidate.name].length > [...longest.name].length
+                ? candidate
+                : longest
+        );
+        const plusItem = auctionCatalog.items.find(candidate =>
+            candidate.name.includes("+")
+        )!;
+        for (const itemId of [
+            item.id,
+            longestItem.id,
+            plusItem.id,
+            "UNKNOWN_SAFE_ID",
+        ]) {
+            const response = await request.get(
+                `/auction/items/${itemId}/preview`
+            );
+
+            expect(response.status()).toBe(200);
+            expect(response.headers()["content-type"]).toContain("image/png");
+            expect(response.headers()["cache-control"]).toBe(
+                "public, max-age=600, s-maxage=600, stale-while-revalidate=60"
+            );
+            expect([
+                ...new Uint8Array(await response.body()).slice(0, 8),
+            ]).toEqual([137, 80, 78, 71, 13, 10, 26, 10]);
+        }
+    });
+
+    test("auction searches keep generic social metadata", async ({
+        request,
+    }) => {
+        const item = auctionCatalog.items[0];
+        const paths = [
+            `/auction?q=${encodeURIComponent(item.name)}`,
+            `/auction?q=${encodeURIComponent(item.name.slice(0, 2))}`,
+            `/auction?category=${encodeURIComponent("검")}`,
+            `/auction?q=${encodeURIComponent(item.name)}&option_erg=present`,
+            `/auction?q=${encodeURIComponent("카탈로그에 없는 아이템")}`,
+        ];
+
+        for (const path of paths) {
+            const response = await request.get(path);
+            const body = await response.text();
+            const head = body.slice(0, body.indexOf("</head>"));
+
+            expect(response.status()).toBe(200);
+            expect(head).not.toContain("/auction/items/");
+            expect(head).not.toContain("/preview");
+        }
     });
 
     test("Navigation works correctly", async ({ page }) => {

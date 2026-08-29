@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    htmlLimitedBots: /(Twitterbot|Slackbot|Discordbot|kakaotalk-scrap)/i,
     async rewrites() {
         return [];
     },

@@ -9,6 +9,23 @@ type AuctionListing = {
     item_count: number;
 };
 
+const AUCTION_NUMBER_FORMATTER = new Intl.NumberFormat("ko-KR", {
+    maximumFractionDigits: 1,
+});
+const AUCTION_DATE_TIME_FORMATTER = new Intl.DateTimeFormat("ko-KR", {
+    dateStyle: "medium",
+    timeStyle: "medium",
+    timeZone: "Asia/Seoul",
+});
+
+export function formatAuctionNumber(value: number): string {
+    return AUCTION_NUMBER_FORMATTER.format(value);
+}
+
+export function formatAuctionDateTime(value: string | Date): string {
+    return AUCTION_DATE_TIME_FORMATTER.format(new Date(value));
+}
+
 export function prepareAuctionResults<T extends AuctionListing>(items: T[]) {
     const validItems = items
         .filter(
