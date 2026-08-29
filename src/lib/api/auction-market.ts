@@ -26,6 +26,29 @@ function upstreamHeaders() {
     };
 }
 
+function summarizeCurrentMarket(
+    listings: AuctionListResponse["auction_item"],
+    nextCursor: string | null
+) {
+    const prepared = prepareAuctionResults(listings);
+    return {
+        minPrice: prepared.summary?.lowestUnitPrice ?? 0,
+        averagePrice:
+            prepared.items.length === 0
+                ? 0
+                : Math.round(
+                      prepared.items.reduce(
+                          (sum, item) => sum + item.auction_price_per_unit,
+                          0
+                      ) / prepared.items.length
+                  ),
+        availableQuantity: prepared.summary?.totalQuantity ?? 0,
+        listingCount: prepared.summary?.listingCount ?? 0,
+        isComplete: !nextCursor,
+        fetchedAt: new Date().toISOString(),
+    };
+}
+
 export async function fetchCurrentItemMarket(
     itemName: string,
     signal?: AbortSignal
@@ -59,23 +82,7 @@ export async function fetchCurrentItemMarket(
     } while (nextCursor && pageCount < CURRENT_MAX_PAGES);
 
     throwIfDeadlineExpired(deadline);
-    const prepared = prepareAuctionResults(listings);
-    return {
-        minPrice: prepared.summary?.lowestUnitPrice ?? 0,
-        averagePrice:
-            prepared.items.length === 0
-                ? 0
-                : Math.round(
-                      prepared.items.reduce(
-                          (sum, item) => sum + item.auction_price_per_unit,
-                          0
-                      ) / prepared.items.length
-                  ),
-        availableQuantity: prepared.summary?.totalQuantity ?? 0,
-        listingCount: prepared.summary?.listingCount ?? 0,
-        isComplete: !nextCursor,
-        fetchedAt: new Date().toISOString(),
-    };
+    return summarizeCurrentMarket(listings, nextCursor);
 }
 
 export async function fetchRecentItemSales(

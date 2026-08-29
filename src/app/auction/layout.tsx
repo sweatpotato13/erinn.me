@@ -10,10 +10,12 @@ export const metadata: Metadata = {
     alternates: { canonical: "/auction" },
 };
 
+export interface AuctionLayoutProps {
+    children: React.ReactNode;
+}
+
 export default function AuctionLayout({
     children,
-}: {
-    children: React.ReactNode;
-}) {
+}: AuctionLayoutProps): React.ReactNode {
     return children;
 }

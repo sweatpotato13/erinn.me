@@ -23,11 +23,11 @@ const PROHIBITED_AUCTION_PARAMS = [
     "date_auction_expire",
 ];
 
-export type AuctionUrlSearch = {
+export interface AuctionUrlSearch {
     itemName: string;
     category: string;
     optionFilters: AuctionOptionFilters;
-};
+}
 
 function deleteAuctionOptionParams(params: URLSearchParams) {
     for (const key of Array.from(params.keys())) {
@@ -57,7 +57,12 @@ function parseBaseAuctionParams(params: URLSearchParams) {
     };
 }
 
-export function parseAuctionSearchParams(params: URLSearchParams) {
+export function parseAuctionSearchParams(params: URLSearchParams): {
+    search: AuctionUrlSearch | null;
+    normalized: URLSearchParams;
+    invalid: boolean;
+    filterError: string | null;
+} {
     const normalized = new URLSearchParams(params);
     const hasOptionParams = Array.from(params.keys()).some(key =>
         key.startsWith("option_")
@@ -102,7 +107,10 @@ export function parseAuctionSearchParams(params: URLSearchParams) {
     };
 }
 
-export function setAuctionSearchUrl(currentUrl: URL, search: AuctionUrlSearch) {
+export function setAuctionSearchUrl(
+    currentUrl: URL,
+    search: AuctionUrlSearch
+): ReturnType<typeof parseAuctionSearchParams> & { url: URL } {
     const url = new URL(currentUrl);
     const itemName = search.itemName.trim();
     if (itemName) url.searchParams.set(ITEM_QUERY_PARAM, itemName);
@@ -122,7 +130,7 @@ export function setAuctionSearchUrl(currentUrl: URL, search: AuctionUrlSearch) {
 export function getAuctionShareTarget(
     currentUrl: URL,
     search: AuctionUrlSearch
-) {
+): URL {
     const item = getAuctionCatalogItemByExactName(search.itemName);
     if (
         item &&
@@ -134,7 +142,7 @@ export function getAuctionShareTarget(
     return setAuctionSearchUrl(currentUrl, search).url;
 }
 
-export function getAuctionSearchPath(itemName: string) {
+export function getAuctionSearchPath(itemName: string): string {
     const url = setAuctionSearchUrl(new URL("/auction", "https://erinn.me"), {
         itemName,
         category: DEFAULT_AUCTION_CATEGORY,

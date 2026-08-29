@@ -19,12 +19,60 @@ import {
 } from "@/lib/auction-market";
 import { getAuctionSearchPath } from "@/lib/auction-url";
 
-type Props = { params: Promise<{ itemId: string }> };
+interface AuctionItemPageProps {
+    params: Promise<{ itemId: string }>;
+}
+
 type CurrentMarketSnapshot = Awaited<
     ReturnType<typeof getCachedCurrentItemMarket>
 >;
 type RecentSalesSnapshot = Awaited<ReturnType<typeof getCachedRecentItemSales>>;
 type PreparedRecentSales = ReturnType<typeof prepareRecentSales>;
+
+interface FetchedAtProps {
+    value: string;
+}
+
+interface MetricProps {
+    label: string;
+    value: string;
+}
+
+interface PanelEmptyProps {
+    message: string;
+}
+
+interface PanelFailureProps {
+    titleId: string;
+    title: string;
+    message: string;
+}
+
+interface CurrentMarketContentProps {
+    market: CurrentMarketSnapshot;
+}
+
+interface CurrentMarketPanelProps {
+    item: AuctionCatalogItem;
+}
+
+interface RecentSalesSummaryProps {
+    summary: PreparedRecentSales["summary"];
+    hasMore: boolean;
+}
+
+interface RecentSalesTableProps {
+    sales: PreparedRecentSales["sales"];
+}
+
+interface RecentSalesContentProps {
+    snapshot: RecentSalesSnapshot;
+    prepared: PreparedRecentSales;
+}
+
+interface RecentSalesPanelProps {
+    item: AuctionCatalogItem;
+}
 
 function getItem(itemId: string) {
     const item = getAuctionCatalogItemById(itemId);
@@ -32,7 +80,7 @@ function getItem(itemId: string) {
     return item;
 }
 
-function FetchedAt({ value }: { value: string }) {
+function FetchedAt({ value }: FetchedAtProps) {
     return (
         <p className="mt-3 text-sm text-base-content/70">
             조회 완료:{" "}
@@ -41,7 +89,7 @@ function FetchedAt({ value }: { value: string }) {
     );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ label, value }: MetricProps) {
     return (
         <div>
             <dt className="text-sm text-base-content/70">{label}</dt>
@@ -50,7 +98,7 @@ function Metric({ label, value }: { label: string; value: string }) {
     );
 }
 
-function PanelEmpty({ message }: { message: string }): React.JSX.Element {
+function PanelEmpty({ message }: PanelEmptyProps): React.JSX.Element {
     return <p className="mt-4">{message}</p>;
 }
 
@@ -58,11 +106,7 @@ function PanelFailure({
     titleId,
     title,
     message,
-}: {
-    titleId: string;
-    title: string;
-    message: string;
-}): React.JSX.Element {
+}: PanelFailureProps): React.JSX.Element {
     return (
         <section
             aria-labelledby={titleId}
@@ -80,9 +124,7 @@ function PanelFailure({
 
 function CurrentMarketContent({
     market,
-}: {
-    market: CurrentMarketSnapshot;
-}): React.JSX.Element {
+}: CurrentMarketContentProps): React.JSX.Element {
     return (
         <section
             aria-labelledby="current-market-title"
@@ -122,9 +164,7 @@ function CurrentMarketContent({
 
 export async function CurrentMarketPanel({
     item,
-}: {
-    item: AuctionCatalogItem;
-}): Promise<React.JSX.Element> {
+}: CurrentMarketPanelProps): Promise<React.JSX.Element> {
     try {
         const market = await getCachedCurrentItemMarket(item.name);
         return <CurrentMarketContent market={market} />;
@@ -142,10 +182,7 @@ export async function CurrentMarketPanel({
 function RecentSalesSummary({
     summary,
     hasMore,
-}: {
-    summary: PreparedRecentSales["summary"];
-    hasMore: boolean;
-}): React.JSX.Element {
+}: RecentSalesSummaryProps): React.JSX.Element {
     return (
         <>
             <dl className="mt-4 grid grid-cols-2 gap-3 md:grid-cols-3">
@@ -177,11 +214,7 @@ function RecentSalesSummary({
     );
 }
 
-function RecentSalesTable({
-    sales,
-}: {
-    sales: PreparedRecentSales["sales"];
-}): React.JSX.Element {
+function RecentSalesTable({ sales }: RecentSalesTableProps): React.JSX.Element {
     return (
         <>
             <div className="mt-4 overflow-x-auto rounded-md border">
@@ -229,10 +262,7 @@ function RecentSalesTable({
 function RecentSalesContent({
     snapshot,
     prepared,
-}: {
-    snapshot: RecentSalesSnapshot;
-    prepared: PreparedRecentSales;
-}): React.JSX.Element {
+}: RecentSalesContentProps): React.JSX.Element {
     return (
         <section
             aria-labelledby="recent-sales-title"
@@ -267,9 +297,7 @@ function RecentSalesContent({
 
 export async function RecentSalesPanel({
     item,
-}: {
-    item: AuctionCatalogItem;
-}): Promise<React.JSX.Element> {
+}: RecentSalesPanelProps): Promise<React.JSX.Element> {
     try {
         const snapshot = await getCachedRecentItemSales(item.name);
         const prepared = prepareRecentSales(snapshot.sales);
@@ -285,7 +313,9 @@ export async function RecentSalesPanel({
     }
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generateMetadata({
+    params,
+}: AuctionItemPageProps): Promise<Metadata> {
     const { itemId } = await params;
     const item = getItem(itemId);
     const title = `${item.name} 경매장 시세`;
@@ -322,7 +352,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AuctionItemPage({
     params,
-}: Props): Promise<React.JSX.Element> {
+}: AuctionItemPageProps): Promise<React.JSX.Element> {
     const { itemId } = await params;
     const item = getItem(itemId);
     return (

@@ -35,16 +35,18 @@ const sale = (id: string, price: number) => ({
     item_option: [],
 });
 
-describe("auction item pages", () => {
-    beforeEach(() => jest.clearAllMocks());
+beforeEach(() => jest.clearAllMocks());
 
+describe("auction item discovery", () => {
     it("renders a crawlable link for every catalog item", () => {
         render(<AuctionItemsPage />);
         const links = screen.getAllByRole("link");
         expect(links).toHaveLength(500);
         expect(links[0]).toHaveAttribute("href", `/auction/items/${item.id}`);
     });
+});
 
+describe("auction item metadata", () => {
     it("builds stable metadata without fetching live market data", async () => {
         const previewPath = `/auction/items/${item.id}/preview`;
         const imageAlt = `${item.name} 경매장 현재 매물 및 최근 1시간 완료 거래 요약`;
@@ -73,7 +75,9 @@ describe("auction item pages", () => {
         expect(getCachedCurrentItemMarket).not.toHaveBeenCalled();
         expect(getCachedRecentItemSales).not.toHaveBeenCalled();
     });
+});
 
+describe("auction item routing", () => {
     it("rejects non-catalog IDs before any live fetch", async () => {
         await expect(
             AuctionItemPage({
@@ -83,7 +87,9 @@ describe("auction item pages", () => {
         expect(getCachedCurrentItemMarket).not.toHaveBeenCalled();
         expect(getCachedRecentItemSales).not.toHaveBeenCalled();
     });
+});
 
+describe("current market panel", () => {
     it("labels an incomplete current snapshot as partial", async () => {
         jest.mocked(getCachedCurrentItemMarket).mockResolvedValue({
             minPrice: 100,
@@ -127,7 +133,9 @@ describe("auction item pages", () => {
         ).toBeInTheDocument();
         expect(screen.getAllByText("200 Gold")).not.toHaveLength(0);
     });
+});
 
+describe("recent sales panel", () => {
     it("renders independent empty and failure states", async () => {
         jest.mocked(getCachedCurrentItemMarket).mockResolvedValue({
             minPrice: 0,
