@@ -2,6 +2,7 @@ import "dotenv/config";
 
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { basename, resolve } from "node:path";
+
 import * as z from "zod";
 
 type Candidate = { name: string; canonicalId?: string };
