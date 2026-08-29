@@ -1,6 +1,11 @@
+import { HTML_LIMITED_BOT_UA_RE } from "next/dist/shared/lib/router/utils/html-bots.js";
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-    htmlLimitedBots: /(Twitterbot|Slackbot|Discordbot|kakaotalk-scrap)/i,
+    htmlLimitedBots: new RegExp(
+        `${HTML_LIMITED_BOT_UA_RE.source}|kakaotalk-scrap`,
+        HTML_LIMITED_BOT_UA_RE.flags
+    ),
     async rewrites() {
         return [];
     },

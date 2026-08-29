@@ -72,20 +72,15 @@ function settleBeforeDeadline<T>(promise: Promise<T>): Promise<SourceState<T>> {
 }
 
 export async function loadPreviewData(itemName: string): Promise<PreviewData> {
-    const [current, recentSnapshot] = await Promise.all([
+    const [current, recent] = await Promise.all([
         settleBeforeDeadline(getCachedCurrentItemMarket(itemName)),
-        settleBeforeDeadline(getCachedRecentItemSales(itemName)),
+        settleBeforeDeadline(
+            getCachedRecentItemSales(itemName).then(snapshot => ({
+                ...snapshot,
+                prepared: prepareRecentSales(snapshot.sales),
+            }))
+        ),
     ]);
-    const recent: SourceState<RecentSales> =
-        recentSnapshot.status === "success"
-            ? {
-                  status: "success",
-                  value: {
-                      ...recentSnapshot.value,
-                      prepared: prepareRecentSales(recentSnapshot.value.sales),
-                  },
-              }
-            : recentSnapshot;
 
     return { current, recent };
 }
@@ -162,12 +157,11 @@ interface PreviewCardHeaderProps {
     badge?: string;
 }
 
-// ImageResponse renderers below intentionally use inline styles because
-// next/og cannot apply Tailwind classes or external stylesheets in Satori.
 function PreviewCardHeader({ title, accent, badge }: PreviewCardHeaderProps) {
     return (
         <div
             style={{
+                // next/og requires Satori-compatible inline styles instead of Tailwind CSS/DaisyUI.
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",

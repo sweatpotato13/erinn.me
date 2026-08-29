@@ -215,6 +215,8 @@ test.describe("Homepage Tests", () => {
 
         for (const userAgent of [
             "kakaotalk-scrap/1.0",
+            "AdsBot-Google (+http://www.google.com/adsbot.html)",
+            "Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)",
             "Slackbot-LinkExpanding 1.0 (+https://api.slack.com/robots)",
             "Discordbot/2.0",
             "Twitterbot/1.0",

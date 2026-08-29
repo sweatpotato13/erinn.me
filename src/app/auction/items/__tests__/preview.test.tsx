@@ -223,6 +223,27 @@ describe("auction item preview", () => {
         expect(copy.failure).toBeUndefined();
     });
 
+    it("isolates recent-sales preparation errors", async () => {
+        mockMarketSuccess();
+        jest.mocked(getCachedRecentItemSales).mockResolvedValue({
+            sales: [
+                {
+                    ...sale("1", 100),
+                    auction_buy_id: null as unknown as string,
+                },
+            ],
+            hasMore: false,
+            fetchedAt,
+        });
+
+        const data = await loadPreviewData(item.name);
+        const copy = createPreviewCopy(item.name, data);
+        expect(data.current.status).toBe("success");
+        expect(data.recent.status).toBe("failed");
+        expect(copy.failure).toBeUndefined();
+        expect(copy.current.primary).toContain("최저 등록 단가");
+    });
+
     it("returns at four seconds while preserving a successful source", async () => {
         jest.useFakeTimers();
         jest.mocked(getCachedCurrentItemMarket).mockReturnValue(
