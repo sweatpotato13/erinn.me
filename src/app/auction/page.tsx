@@ -86,6 +86,13 @@ function AuctionPageView(props: AuctionViewProps) {
     return (
         <div className="flex flex-col items-center justify-start min-h-screen p-6">
             <div className="w-full max-w-4xl p-6 backdrop-blur-sm rounded-lg flex-grow">
+                <h1 className="text-2xl font-bold">
+                    마비노기 경매장 시세 조회
+                </h1>
+                <p className="mt-2 mb-6 text-base-content/70">
+                    아이템명·카테고리·세부 옵션으로 현재 매물을 검색하고 최근
+                    거래가와 비교하세요.
+                </p>
                 <FavoriteToolbar
                     addButtonText={props.favorites.addButtonText}
                     onAdd={() =>

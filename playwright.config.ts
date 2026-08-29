@@ -32,6 +32,10 @@ export default defineConfig({
   ],
   webServer: {
     command: 'pnpm dev',
+    env: {
+      NXOPEN_API_URL: '',
+      NXOPEN_API_KEY: '',
+    },
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,
   },

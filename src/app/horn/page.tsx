@@ -325,6 +325,11 @@ function HornView({ horn }: HornControllerProps) {
     return (
         <div className="flex h-[70vh] flex-col items-center justify-start p-6">
             <div className="w-full max-w-4xl rounded-lg p-6 shadow-lg">
+                <h1 className="text-2xl font-bold">마비노기 뿔피리 조회</h1>
+                <p className="mt-2 mb-6 text-base-content/70">
+                    서버별 뿔피리 내역을 닉네임과 내용으로 검색하고, 원하면
+                    저장한 키워드의 새 메시지 알림을 설정하세요.
+                </p>
                 <h2 className="mb-4 text-xl font-bold">메시지 목록</h2>
                 <HornSearchControls horn={horn} />
                 {horn.error && <p className="text-red-500">{horn.error}</p>}

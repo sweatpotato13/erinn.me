@@ -1,0 +1,21 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: {
+        default: "마비노기 경매장 시세·옵션 검색",
+        template: "%s | Erinn.me",
+    },
+    description:
+        "마비노기 경매장 아이템의 현재 매물과 최근 거래가를 검색하고, 카테고리·세부 옵션·비교 기능으로 시세를 확인하세요.",
+    alternates: { canonical: "/auction" },
+};
+
+export interface AuctionLayoutProps {
+    children: React.ReactNode;
+}
+
+export default function AuctionLayout({
+    children,
+}: AuctionLayoutProps): React.ReactNode {
+    return children;
+}

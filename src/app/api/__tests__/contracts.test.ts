@@ -225,10 +225,12 @@ describe("API query contracts", () => {
         expect(firstUrl.searchParams.get("item_name")).toBe("한글+&雪");
         expect(firstUrl.searchParams.has("cursor")).toBe(false);
         expect(secondUrl.searchParams.get("cursor")).toBe("next");
-        expect(await response.json()).toEqual({
+        const body = await response.json();
+        expect(body).toMatchObject({
             sales: [historySale("first"), historySale("second")],
             hasMore: false,
         });
+        expect(body.fetchedAt).toMatch(/Z$/);
     });
 
     it("marks history results incomplete after five cursor pages", async () => {
@@ -247,10 +249,40 @@ describe("API query contracts", () => {
             request("/api/auction/history?item_name=sword")
         );
         expect(fetch).toHaveBeenCalledTimes(5);
-        expect(await response.json()).toEqual({
+        const body = await response.json();
+        expect(body).toMatchObject({
             sales: Array.from({ length: 5 }, () => historySale()),
             hasMore: true,
         });
+        expect(body.fetchedAt).toMatch(/Z$/);
+    });
+
+    it("keeps current totals partial while a cursor remains after ten pages", async () => {
+        jest.mocked(fetch).mockImplementation(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        auction_item: [auctionItem("stable", [])],
+                        next_cursor: "next",
+                    })
+                )
+            )
+        );
+
+        const response = await getPriceSummary(
+            request("/api/auction/price-summary?item_name=stable")
+        );
+        const body = await response.json();
+
+        expect(fetch).toHaveBeenCalledTimes(10);
+        expect(body).toMatchObject({
+            minPrice: 100,
+            averagePrice: 100,
+            availableQuantity: 10,
+            listingCount: 10,
+            isComplete: false,
+        });
+        expect(body.fetchedAt).toMatch(/Z$/);
     });
 });
 

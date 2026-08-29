@@ -105,7 +105,12 @@ function sale(
 function historyResponse(sales: AuctionSale[], hasMore = false) {
     return {
         ok: true,
-        json: () => Promise.resolve({ sales, hasMore }),
+        json: () =>
+            Promise.resolve({
+                sales,
+                hasMore,
+                fetchedAt: "2026-08-20T04:00:00.000Z",
+            }),
     } as Response;
 }
 
@@ -1113,6 +1118,13 @@ describe("AuctionResults", () => {
         recentSales: emptyRecentSales,
     };
     const refreshedAt = "2026-08-19T01:00:00.000Z";
+
+    it("does not link results to a price page", () => {
+        render(<AuctionResults {...baseProps} items={[item("불타래", 100)]} />);
+        expect(
+            screen.queryByRole("link", { name: "시세 페이지" })
+        ).not.toBeInTheDocument();
+    });
 
     function renderCurrentMarketSnapshot() {
         render(
