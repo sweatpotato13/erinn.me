@@ -31,6 +31,7 @@ type AuctionSearchResponse = {
     items: Array<Omit<AuctionItem, "listingId">>;
     hasMore: boolean;
     nextCursor?: string | null;
+    searchMode?: "fallback";
     evaluation?: {
         scannedCount: number;
         unevaluableCount: number;
@@ -55,7 +56,8 @@ async function requestItems(
     category: string,
     signal: AbortSignal,
     filters: AuctionOptionFilters,
-    cursor?: string
+    cursor?: string,
+    searchMode?: "fallback"
 ) {
     let endpoint: string;
     let params: URLSearchParams;
@@ -70,6 +72,7 @@ async function requestItems(
     }
     appendAuctionOptionFilterQuery(params, filters);
     if (cursor) params.set("cursor", cursor);
+    if (searchMode) params.set("search_mode", searchMode);
     return fetch(`${endpoint}?${params}`, { signal });
 }
 
@@ -99,6 +102,7 @@ async function executeSearch(
         const rawItems: Array<Omit<AuctionItem, "listingId">> = [];
         const seenCursors = new Set<string>();
         let cursor: string | undefined;
+        let searchMode: AuctionSearchResponse["searchMode"];
         let hasMore = false;
         let scannedCount = 0;
         let unevaluableCount = 0;
@@ -114,7 +118,8 @@ async function executeSearch(
                 category,
                 controller.signal,
                 filters,
-                cursor
+                cursor,
+                searchMode
             );
             if (!response.ok) throw new Error("네트워크 오류가 발생했습니다.");
             const value: unknown = await response.json();
@@ -124,6 +129,7 @@ async function executeSearch(
             if (!actions.isActive()) return;
             rawItems.push(...data.items);
             hasMore = data.hasMore;
+            searchMode = data.searchMode;
             if (!filtered) break;
             scannedCount += data.evaluation!.scannedCount;
             unevaluableCount += data.evaluation!.unevaluableCount;
@@ -181,6 +187,8 @@ function parseFilteredSearchResponse(value: unknown): AuctionSearchResponse {
         typeof response.hasMore !== "boolean" ||
         (response.nextCursor !== null &&
             typeof response.nextCursor !== "string") ||
+        (response.searchMode !== undefined &&
+            response.searchMode !== "fallback") ||
         !evaluation ||
         !isNonNegativeInteger(evaluation.scannedCount) ||
         !isNonNegativeInteger(evaluation.unevaluableCount)

@@ -71,7 +71,8 @@ function filteredResponse(
     hasMore: boolean,
     nextCursor: string | null,
     scannedCount: number,
-    unevaluableCount: number
+    unevaluableCount: number,
+    searchMode?: "fallback"
 ) {
     return {
         ok: true,
@@ -81,6 +82,7 @@ function filteredResponse(
                 hasMore,
                 nextCursor,
                 evaluation: { scannedCount, unevaluableCount },
+                ...(searchMode && { searchMode }),
             }),
     } as Response;
 }
@@ -618,6 +620,43 @@ describe("useAuctionSearch", () => {
         });
         act(() => result.current.reset());
         expect(result.current.optionEvaluation).toBeNull();
+    });
+
+    it("continues filtered fallback searches in fallback mode", async () => {
+        const fetchMock = jest
+            .fn()
+            .mockResolvedValueOnce(
+                filteredResponse([], true, "fallback cursor", 2, 0, "fallback")
+            )
+            .mockResolvedValueOnce(
+                filteredResponse(
+                    [item("소울 리버레이트 소드", 100)],
+                    false,
+                    null,
+                    1,
+                    0,
+                    "fallback"
+                )
+            );
+        global.fetch = fetchMock;
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () =>
+            result.current.search("소울 리버", categories[0], {
+                enchantName: "여명",
+            })
+        );
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(fetchMock.mock.calls[0][0]).not.toContain("search_mode");
+        expect(fetchMock.mock.calls[1][0]).toContain("cursor=fallback+cursor");
+        expect(fetchMock.mock.calls[1][0]).toContain("search_mode=fallback");
+        expect(result.current.items).toHaveLength(1);
+        expect(result.current.optionEvaluation).toEqual({
+            scannedCount: 3,
+            unevaluableCount: 0,
+            sourceComplete: true,
+        });
     });
 
     it("discards filtered batches when a later request fails", async () => {
