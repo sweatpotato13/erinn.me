@@ -186,6 +186,219 @@ describe("API query contracts", () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
+    it("preserves direct multiword keyword results", async () => {
+        const direct = auctionItem("소울 리버레이트 소드", []);
+        jest.mocked(fetch).mockResolvedValue(
+            new Response(
+                JSON.stringify({ auction_item: [direct], next_cursor: null })
+            )
+        );
+
+        const response = await getKeyword(
+            request(
+                `/api/auction/keyword-search?keyword=${encodeURIComponent("소울 리버레이트")}`
+            )
+        );
+        const upstreamUrl = jest.mocked(fetch).mock.calls[0][0] as URL;
+
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(upstreamUrl.searchParams.get("keyword")).toBe("소울 리버레이트");
+        expect(await response.json()).toEqual({
+            items: [direct],
+            hasMore: false,
+            nextCursor: null,
+        });
+    });
+
+    it("normalizes whitespace and filters partial final-word fallback results", async () => {
+        const matching = auctionItem("소울 리버레이트 소드", []);
+        const unrelated = auctionItem("소울 스트림", []);
+        jest.mocked(fetch)
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({ auction_item: [], next_cursor: null })
+                )
+            )
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({
+                        auction_item: [matching, unrelated],
+                        next_cursor: null,
+                    })
+                )
+            );
+
+        const response = await getKeyword(
+            request(
+                `/api/auction/keyword-search?keyword=${encodeURIComponent("  소울   리버  ")}`
+            )
+        );
+        const directUrl = jest.mocked(fetch).mock.calls[0][0] as URL;
+        const fallbackUrl = jest.mocked(fetch).mock.calls[1][0] as URL;
+
+        expect(directUrl.searchParams.get("keyword")).toBe("소울 리버");
+        expect(fallbackUrl.searchParams.get("keyword")).toBe("소울");
+        expect(await response.json()).toEqual({
+            items: [matching],
+            hasMore: false,
+            nextCursor: null,
+            searchMode: "fallback",
+        });
+    });
+
+    it("returns an empty fallback result and does not fallback for one word", async () => {
+        jest.mocked(fetch).mockImplementation(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({ auction_item: [], next_cursor: null })
+                )
+            )
+        );
+
+        const fallbackResponse = await getKeyword(
+            request(
+                `/api/auction/keyword-search?keyword=${encodeURIComponent("없는 일부")}`
+            )
+        );
+        expect(fetch).toHaveBeenCalledTimes(2);
+        expect(await fallbackResponse.json()).toEqual({
+            items: [],
+            hasMore: false,
+            nextCursor: null,
+            searchMode: "fallback",
+        });
+
+        jest.mocked(fetch).mockClear();
+        const directResponse = await getKeyword(
+            request("/api/auction/keyword-search?keyword=없는")
+        );
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(await directResponse.json()).toEqual({
+            items: [],
+            hasMore: false,
+            nextCursor: null,
+        });
+    });
+
+    it("shares the page bound and continues the fallback source", async () => {
+        let callCount = 0;
+        jest.mocked(fetch).mockImplementation(() => {
+            callCount++;
+            return Promise.resolve(
+                new Response(
+                    JSON.stringify(
+                        callCount === 1
+                            ? { auction_item: [], next_cursor: null }
+                            : {
+                                  auction_item: [
+                                      auctionItem(
+                                          `소울 리버레이트 ${callCount}`,
+                                          []
+                                      ),
+                                  ],
+                                  next_cursor: `cursor-${callCount - 1}`,
+                              }
+                    )
+                )
+            );
+        });
+
+        const firstResponse = await getKeyword(
+            request(
+                `/api/auction/keyword-search?keyword=${encodeURIComponent("소울 리버")}`
+            )
+        );
+        const firstBody = await firstResponse.json();
+
+        expect(fetch).toHaveBeenCalledTimes(5);
+        expect(firstBody).toMatchObject({
+            hasMore: true,
+            nextCursor: "cursor-4",
+            searchMode: "fallback",
+        });
+        expect(firstBody.items).toHaveLength(4);
+
+        jest.mocked(fetch).mockReset();
+        jest.mocked(fetch).mockResolvedValue(
+            new Response(
+                JSON.stringify({
+                    auction_item: [auctionItem("소울 리버레이트 완료", [])],
+                    next_cursor: null,
+                })
+            )
+        );
+        const continuation = await getKeyword(
+            request(
+                `/api/auction/keyword-search?keyword=${encodeURIComponent("소울 리버")}&cursor=cursor-4&search_mode=fallback`
+            )
+        );
+        const continuationUrl = jest.mocked(fetch).mock.calls[0][0] as URL;
+
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(continuationUrl.searchParams.get("keyword")).toBe("소울");
+        expect(continuationUrl.searchParams.get("cursor")).toBe("cursor-4");
+        expect(await continuation.json()).toMatchObject({
+            hasMore: false,
+            nextCursor: null,
+            searchMode: "fallback",
+        });
+    });
+
+    it("evaluates options after filtering fallback names", async () => {
+        const matching = auctionItem("소울 리버레이트 일치", [
+            {
+                option_type: "세공 옵션",
+                option_value: "볼트 대미지(10레벨:효과)",
+            },
+        ]);
+        const malformed = auctionItem("소울 리버레이트 판정불가", [
+            { option_type: "세공 옵션", option_value: "깨진 값" },
+        ]);
+        const missing = auctionItem("소울 리버레이트 옵션없음", []);
+        const unrelated = auctionItem("소울 스트림", [
+            {
+                option_type: "세공 옵션",
+                option_value: "볼트 대미지(10레벨:효과)",
+            },
+        ]);
+        jest.mocked(fetch)
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({ auction_item: [], next_cursor: null })
+                )
+            )
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({
+                        auction_item: [matching, malformed, missing, unrelated],
+                        next_cursor: null,
+                    })
+                )
+            );
+
+        const response = await getKeyword(
+            request(
+                `/api/auction/keyword-search?keyword=${encodeURIComponent("소울 리버")}&option_reforge=${encodeURIComponent("볼트 대미지")}&option_reforge_min_level=10`
+            )
+        );
+
+        expect(await response.json()).toEqual({
+            items: [matching],
+            hasMore: false,
+            nextCursor: null,
+            evaluation: { scannedCount: 3, unevaluableCount: 1 },
+            searchMode: "fallback",
+        });
+    });
+
+    it.each([
+        "/api/auction/keyword-search?keyword=single&cursor=next&search_mode=fallback",
+        `/api/auction/keyword-search?keyword=${encodeURIComponent("소울 리버")}&search_mode=fallback`,
+    ])("rejects invalid fallback continuation state", async path => {
+        expect((await getKeyword(request(path))).status).toBe(400);
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
     it("rejects oversized suggestions and short-circuits short queries", async () => {
         expect(
             getSuggest(request(`/api/suggest?q=${"a".repeat(101)}`) as never)
@@ -374,6 +587,64 @@ describe("API upstream failure contracts", () => {
         const response = await getAuction(
             request("/api/auction?item_name=sword")
         );
+        expect(response.status).toBe(504);
+        expect(await response.json()).toEqual({
+            error: "Upstream request timed out",
+        });
+        clock.mockRestore();
+    });
+
+    it.each([
+        new Response(JSON.stringify({ wrong: [] }), { status: 200 }),
+        new Response("", { status: 500 }),
+    ])("maps fallback upstream failures to 502", async fallbackResponse => {
+        jest.mocked(fetch)
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({ auction_item: [], next_cursor: null })
+                )
+            )
+            .mockResolvedValueOnce(fallbackResponse);
+
+        const response = await getKeyword(
+            request(
+                `/api/auction/keyword-search?keyword=${encodeURIComponent("소울 리버")}`
+            )
+        );
+
+        expect(response.status).toBe(502);
+        expect(await response.json()).toEqual({
+            error: "Failed to fetch upstream data",
+        });
+    });
+
+    it("shares the request deadline with fallback", async () => {
+        const startedAt = Date.now();
+        const clock = jest.spyOn(Date, "now").mockReturnValue(startedAt);
+        jest.mocked(fetch)
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({ auction_item: [], next_cursor: null })
+                )
+            )
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                json: () => {
+                    clock.mockReturnValue(startedAt + 5_001);
+                    return Promise.resolve({
+                        auction_item: [auctionItem("소울 리버레이트 소드", [])],
+                        next_cursor: null,
+                    });
+                },
+            } as Response);
+
+        const response = await getKeyword(
+            request(
+                `/api/auction/keyword-search?keyword=${encodeURIComponent("소울 리버")}`
+            )
+        );
+
         expect(response.status).toBe(504);
         expect(await response.json()).toEqual({
             error: "Upstream request timed out",

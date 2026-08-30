@@ -22,10 +22,96 @@ import { checkOrigin } from "@/lib/utils/check-origin";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 const MAX_PAGES = 5;
-const querySchema = z.object({
-    keyword: z.string().trim().min(1).max(100),
-    cursor: z.string().max(2048).optional(),
-});
+const querySchema = z
+    .object({
+        keyword: z.string().trim().min(1).max(100),
+        cursor: z.string().max(2048).optional(),
+        search_mode: z.literal("fallback").optional(),
+    })
+    .refine(
+        query =>
+            query.search_mode !== "fallback" ||
+            (!!query.cursor && query.keyword.split(/\s+/).length > 1),
+        { message: "Fallback mode requires a multiword keyword and cursor" }
+    );
+
+async function fetchKeywordPages(
+    keyword: string,
+    cursor: string | undefined,
+    pageLimit: number,
+    deadline: ReturnType<typeof createRequestDeadline>
+) {
+    const items: AuctionListResponse["auction_item"] = [];
+    let nextCursor: string | null = cursor ?? "";
+    let pageCount = 0;
+
+    do {
+        throwIfDeadlineExpired(deadline);
+        const url = createUpstreamUrl(
+            "/mabinogi/v1/auction/keyword-search",
+            NXOPEN_API_URL
+        );
+        url.searchParams.set("keyword", keyword);
+        if (nextCursor) url.searchParams.set("cursor", nextCursor);
+
+        const response = await fetchUpstream(
+            url,
+            {
+                headers: {
+                    "Content-Type": "application/json",
+                    "x-nxopen-api-key": NXOPEN_API_KEY || "",
+                },
+            },
+            deadline
+        );
+        const data = await parseUpstreamJson(
+            response,
+            AuctionListResponseSchema,
+            deadline
+        );
+        items.push(...data.auction_item);
+        nextCursor = data.next_cursor ?? null;
+        pageCount++;
+    } while (nextCursor && pageCount < pageLimit);
+
+    return { items, nextCursor, pageCount };
+}
+
+async function searchKeywordPages(
+    query: z.infer<typeof querySchema>,
+    deadline: ReturnType<typeof createRequestDeadline>
+) {
+    const normalizedPhrase = query.keyword.replace(/\s+/g, " ");
+    const words = normalizedPhrase.split(" ");
+    const fallbackKeyword = words.slice(0, -1).join(" ");
+    let searchMode =
+        query.search_mode === "fallback" ? ("fallback" as const) : undefined;
+    let result = await fetchKeywordPages(
+        searchMode ? fallbackKeyword : normalizedPhrase,
+        query.cursor,
+        MAX_PAGES,
+        deadline
+    );
+
+    if (
+        !searchMode &&
+        !query.cursor &&
+        words.length > 1 &&
+        result.items.length === 0 &&
+        !result.nextCursor &&
+        result.pageCount < MAX_PAGES
+    ) {
+        searchMode = "fallback";
+        result = await fetchKeywordPages(
+            fallbackKeyword,
+            undefined,
+            MAX_PAGES - result.pageCount,
+            deadline
+        );
+    }
+
+    return { normalizedPhrase, result, searchMode };
+}
 
 /**
  * Searches auction items by keyword and returns aggregated paginated results.
@@ -46,54 +132,30 @@ export async function GET(request: Request) {
     }
 
     const deadline = createRequestDeadline(request.signal);
-    const allItems: AuctionListResponse["auction_item"] = [];
-    let nextCursor: string | null = query.data.cursor ?? "";
-    let pageCount = 0;
 
     try {
-        do {
-            throwIfDeadlineExpired(deadline);
-            const url = createUpstreamUrl(
-                "/mabinogi/v1/auction/keyword-search",
-                NXOPEN_API_URL
-            );
-            url.searchParams.set("keyword", query.data.keyword);
-            if (nextCursor) url.searchParams.set("cursor", nextCursor);
-
-            const response = await fetchUpstream(
-                url,
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                        "x-nxopen-api-key": NXOPEN_API_KEY || "",
-                    },
-                },
-                deadline
-            );
-            const data = await parseUpstreamJson(
-                response,
-                AuctionListResponseSchema,
-                deadline
-            );
-            allItems.push(...data.auction_item);
-            nextCursor = data.next_cursor ?? null;
-            pageCount++;
-        } while (nextCursor && pageCount < MAX_PAGES);
-
+        const { normalizedPhrase, result, searchMode } =
+            await searchKeywordPages(query.data, deadline);
         throwIfDeadlineExpired(deadline);
+        const candidates = searchMode
+            ? result.items.filter(item =>
+                  item.item_name.includes(normalizedPhrase)
+              )
+            : result.items;
         const evaluation = filterQuery.filters
-            ? evaluateAuctionItemOptions(allItems, filterQuery.filters)
+            ? evaluateAuctionItemOptions(candidates, filterQuery.filters)
             : null;
         return NextResponse.json({
-            items: evaluation?.items ?? allItems,
-            hasMore: !!nextCursor,
-            nextCursor,
+            items: evaluation?.items ?? candidates,
+            hasMore: !!result.nextCursor,
+            nextCursor: result.nextCursor,
             ...(evaluation && {
                 evaluation: {
                     scannedCount: evaluation.scannedCount,
                     unevaluableCount: evaluation.unevaluableCount,
                 },
             }),
+            ...(searchMode && { searchMode }),
         });
     } catch (error) {
         return upstreamErrorResponse("/api/auction/keyword-search", error);
