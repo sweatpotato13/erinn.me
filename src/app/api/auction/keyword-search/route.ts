@@ -77,6 +77,42 @@ async function fetchKeywordPages(
     return { items, nextCursor, pageCount };
 }
 
+async function searchKeywordPages(
+    query: z.infer<typeof querySchema>,
+    deadline: ReturnType<typeof createRequestDeadline>
+) {
+    const normalizedPhrase = query.keyword.replace(/\s+/g, " ");
+    const words = normalizedPhrase.split(" ");
+    const fallbackKeyword = words.slice(0, -1).join(" ");
+    let searchMode =
+        query.search_mode === "fallback" ? ("fallback" as const) : undefined;
+    let result = await fetchKeywordPages(
+        searchMode ? fallbackKeyword : normalizedPhrase,
+        query.cursor,
+        MAX_PAGES,
+        deadline
+    );
+
+    if (
+        !searchMode &&
+        !query.cursor &&
+        words.length > 1 &&
+        result.items.length === 0 &&
+        !result.nextCursor &&
+        result.pageCount < MAX_PAGES
+    ) {
+        searchMode = "fallback";
+        result = await fetchKeywordPages(
+            fallbackKeyword,
+            undefined,
+            MAX_PAGES - result.pageCount,
+            deadline
+        );
+    }
+
+    return { normalizedPhrase, result, searchMode };
+}
+
 /**
  * Searches auction items by keyword and returns aggregated paginated results.
  *
@@ -95,39 +131,11 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: filterQuery.error }, { status: 400 });
     }
 
-    const normalizedPhrase = query.data.keyword.replace(/\s+/g, " ");
-    const words = normalizedPhrase.split(" ");
-    const fallbackKeyword = words.slice(0, -1).join(" ");
     const deadline = createRequestDeadline(request.signal);
 
     try {
-        let searchMode =
-            query.data.search_mode === "fallback"
-                ? ("fallback" as const)
-                : undefined;
-        let result = await fetchKeywordPages(
-            searchMode ? fallbackKeyword : normalizedPhrase,
-            query.data.cursor,
-            MAX_PAGES,
-            deadline
-        );
-        if (
-            !searchMode &&
-            !query.data.cursor &&
-            words.length > 1 &&
-            result.items.length === 0 &&
-            !result.nextCursor &&
-            result.pageCount < MAX_PAGES
-        ) {
-            searchMode = "fallback";
-            result = await fetchKeywordPages(
-                fallbackKeyword,
-                undefined,
-                MAX_PAGES - result.pageCount,
-                deadline
-            );
-        }
-
+        const { normalizedPhrase, result, searchMode } =
+            await searchKeywordPages(query.data, deadline);
         throwIfDeadlineExpired(deadline);
         const candidates = searchMode
             ? result.items.filter(item =>
