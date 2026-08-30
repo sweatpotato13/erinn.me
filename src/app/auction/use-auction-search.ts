@@ -31,6 +31,7 @@ type AuctionSearchResponse = {
     items: Array<Omit<AuctionItem, "listingId">>;
     hasMore: boolean;
     nextCursor?: string | null;
+    searchMode?: "fallback";
     evaluation?: {
         scannedCount: number;
         unevaluableCount: number;
@@ -55,7 +56,8 @@ async function requestItems(
     category: string,
     signal: AbortSignal,
     filters: AuctionOptionFilters,
-    cursor?: string
+    cursor?: string,
+    searchMode?: "fallback"
 ) {
     let endpoint: string;
     let params: URLSearchParams;
@@ -70,6 +72,7 @@ async function requestItems(
     }
     appendAuctionOptionFilterQuery(params, filters);
     if (cursor) params.set("cursor", cursor);
+    if (searchMode) params.set("search_mode", searchMode);
     return fetch(`${endpoint}?${params}`, { signal });
 }
 
@@ -86,6 +89,100 @@ type SearchActions = {
     finish: () => void;
 };
 
+type SearchRequest = {
+    itemName: string;
+    category: string;
+    filters: AuctionOptionFilters;
+    signal: AbortSignal;
+};
+
+async function requestSearchPage(
+    request: SearchRequest,
+    filtered: boolean,
+    cursor?: string,
+    searchMode?: AuctionSearchResponse["searchMode"]
+) {
+    const response = await requestItems(
+        request.itemName,
+        request.category,
+        request.signal,
+        request.filters,
+        cursor,
+        searchMode
+    );
+    if (!response.ok) throw new Error("네트워크 오류가 발생했습니다.");
+    const value: unknown = await response.json();
+    return filtered
+        ? parseFilteredSearchResponse(value)
+        : (value as AuctionSearchResponse);
+}
+
+async function collectSearchResults(
+    request: SearchRequest,
+    isActive: () => boolean
+) {
+    const filtered = hasAuctionOptionFilters(request.filters);
+    const rawItems: Array<Omit<AuctionItem, "listingId">> = [];
+    const seenCursors = new Set<string>();
+    let cursor: string | undefined;
+    let searchMode: AuctionSearchResponse["searchMode"];
+    let hasMore = false;
+    let scannedCount = 0;
+    let unevaluableCount = 0;
+    let batchCount = 0;
+
+    do {
+        if (filtered && batchCount >= MAX_FILTER_BATCHES) {
+            throw new Error("경매장 페이지가 안전 한도를 초과했습니다.");
+        }
+        batchCount++;
+        const data = await requestSearchPage(
+            request,
+            filtered,
+            cursor,
+            searchMode
+        );
+        if (!isActive()) return null;
+        rawItems.push(...data.items);
+        hasMore = data.hasMore;
+        searchMode = data.searchMode;
+        if (!filtered) break;
+        scannedCount += data.evaluation!.scannedCount;
+        unevaluableCount += data.evaluation!.unevaluableCount;
+        if (!hasMore) break;
+        const nextCursor = data.nextCursor;
+        if (!nextCursor || seenCursors.has(nextCursor)) {
+            throw new Error("잘못된 경매장 페이지 응답입니다.");
+        }
+        seenCursors.add(nextCursor);
+        cursor = nextCursor;
+    } while (hasMore);
+
+    return { filtered, rawItems, hasMore, scannedCount, unevaluableCount };
+}
+
+function prepareCollectedResults(
+    collected: NonNullable<Awaited<ReturnType<typeof collectSearchResults>>>,
+    searchId: number
+) {
+    const items = collected.rawItems.map((item, index) => ({
+        ...item,
+        listingId: `${searchId}-${index}`,
+    }));
+    return {
+        ...prepareAuctionResults(items),
+        hasMore: collected.filtered ? false : collected.hasMore,
+        refreshedAt: new Date().toISOString(),
+        optionEvaluation: collected.filtered
+            ? {
+                  scannedCount: collected.scannedCount,
+                  unevaluableCount: collected.unevaluableCount,
+                  sourceComplete: true as const,
+              }
+            : null,
+    };
+}
+
 async function executeSearch(
     itemName: string,
     category: string,
@@ -95,64 +192,17 @@ async function executeSearch(
     actions: SearchActions
 ) {
     try {
-        const filtered = hasAuctionOptionFilters(filters);
-        const rawItems: Array<Omit<AuctionItem, "listingId">> = [];
-        const seenCursors = new Set<string>();
-        let cursor: string | undefined;
-        let hasMore = false;
-        let scannedCount = 0;
-        let unevaluableCount = 0;
-        let batchCount = 0;
-
-        do {
-            if (filtered && batchCount >= MAX_FILTER_BATCHES) {
-                throw new Error("경매장 페이지가 안전 한도를 초과했습니다.");
-            }
-            batchCount++;
-            const response = await requestItems(
+        const collected = await collectSearchResults(
+            {
                 itemName,
                 category,
-                controller.signal,
                 filters,
-                cursor
-            );
-            if (!response.ok) throw new Error("네트워크 오류가 발생했습니다.");
-            const value: unknown = await response.json();
-            const data = filtered
-                ? parseFilteredSearchResponse(value)
-                : (value as AuctionSearchResponse);
-            if (!actions.isActive()) return;
-            rawItems.push(...data.items);
-            hasMore = data.hasMore;
-            if (!filtered) break;
-            scannedCount += data.evaluation!.scannedCount;
-            unevaluableCount += data.evaluation!.unevaluableCount;
-            if (!hasMore) break;
-            const nextCursor = data.nextCursor;
-            if (!nextCursor || seenCursors.has(nextCursor)) {
-                throw new Error("잘못된 경매장 페이지 응답입니다.");
-            }
-            seenCursors.add(nextCursor);
-            cursor = nextCursor;
-        } while (hasMore);
-
-        const items = rawItems.map((item, index) => ({
-            ...item,
-            listingId: `${searchId}-${index}`,
-        }));
-        if (!actions.isActive()) return;
-        actions.commit({
-            ...prepareAuctionResults(items),
-            hasMore: filtered ? false : hasMore,
-            refreshedAt: new Date().toISOString(),
-            optionEvaluation: filtered
-                ? {
-                      scannedCount,
-                      unevaluableCount,
-                      sourceComplete: true,
-                  }
-                : null,
-        });
+                signal: controller.signal,
+            },
+            actions.isActive
+        );
+        if (!collected || !actions.isActive()) return;
+        actions.commit(prepareCollectedResults(collected, searchId));
     } catch (error) {
         if (controller.signal.aborted || !actions.isActive()) return;
         const isValidationError =
@@ -181,6 +231,8 @@ function parseFilteredSearchResponse(value: unknown): AuctionSearchResponse {
         typeof response.hasMore !== "boolean" ||
         (response.nextCursor !== null &&
             typeof response.nextCursor !== "string") ||
+        (response.searchMode !== undefined &&
+            response.searchMode !== "fallback") ||
         !evaluation ||
         !isNonNegativeInteger(evaluation.scannedCount) ||
         !isNonNegativeInteger(evaluation.unevaluableCount)
