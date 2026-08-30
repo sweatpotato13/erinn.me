@@ -25,10 +25,6 @@ describe("Footer Component", () => {
         const contactLink = screen.getByText("문의하기");
         expect(contactLink).toBeInTheDocument();
 
-        // Check if changelog link exists
-        const changelogLink = screen.getByText("업데이트 내역");
-        expect(changelogLink).toBeInTheDocument();
-
         // Check if copyright text matches the fixed system date
         const copyrightText = screen.getByText(
             `Copyright © ${EXPECTED_YEAR} Erinn.me. All rights reserved.`
@@ -41,9 +37,5 @@ describe("Footer Component", () => {
         // Check contact link href attribute
         const contactLink = screen.getByText("문의하기").closest("a");
         expect(contactLink).toHaveAttribute("href", "/contact");
-
-        // Check changelog link href attribute
-        const changelogLink = screen.getByText("업데이트 내역").closest("a");
-        expect(changelogLink).toHaveAttribute("href", "/changelog");
     });
 });

@@ -11,7 +11,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
         "/auction",
         "/horn",
         "/npc-shop",
-        "/changelog",
         "/auction/items",
         ...getAuctionCatalogItems().map(getAuctionItemPath),
     ];

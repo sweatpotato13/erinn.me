@@ -10,9 +10,6 @@ function Footer() {
                 <Link href="/contact">
                     <p className="text-sm">문의하기</p>
                 </Link>
-                <Link href="/changelog">
-                    <p className="text-sm">업데이트 내역</p>
-                </Link>
             </div>
             <div>
                 <p>Copyright © {currentYear} Erinn.me. All rights reserved.</p>

@@ -22,14 +22,6 @@ jest.mock("next/link", () => {
 });
 
 // Mock icon components
-jest.mock("lucide-react", () => ({
-    ArrowLeftRightIcon: () => {
-        const MockIcon = () => <div data-testid="arrow-icon" />;
-        MockIcon.displayName = "MockArrowIcon";
-        return <MockIcon />;
-    },
-}));
-
 jest.mock("@/components/icons/auction-icon", () => {
     const MockIcon = () => <div data-testid="auction-icon" />;
     MockIcon.displayName = "MockAuctionIcon";
@@ -71,9 +63,6 @@ describe("Homepage Component", () => {
             screen.getByRole("heading", { name: "뿔피리 조회" })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("heading", { name: "변경 이력" })
-        ).toBeInTheDocument();
-        expect(
             screen.getByRole("heading", { name: "문의하기" })
         ).toBeInTheDocument();
     });
@@ -95,14 +84,6 @@ describe("Homepage Component", () => {
         });
         const hornLink = hornHeading.closest("a");
         expect(hornLink).toHaveAttribute("href", "/horn");
-
-        const changelogHeading = screen.getByRole("heading", {
-            name: "변경 이력",
-        });
-        expect(changelogHeading.closest("a")).toHaveAttribute(
-            "href",
-            "/changelog"
-        );
 
         const contactHeading = screen.getByRole("heading", {
             name: "문의하기",
