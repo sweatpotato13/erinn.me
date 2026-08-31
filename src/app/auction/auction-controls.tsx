@@ -119,14 +119,10 @@ function CategoryDropdown({
 }) {
     return (
         <div className="col-start-1 row-start-2">
-            <div className="dropdown dropdown-start w-full md:dropdown-end">
-                <div
-                    tabIndex={0}
-                    role="button"
-                    className="btn w-full md:w-auto"
-                >
+            <details className="dropdown dropdown-start w-full md:dropdown-end">
+                <summary role="button" className="btn w-full md:w-auto">
                     {selectedCategory}
-                </div>
+                </summary>
                 <ul
                     tabIndex={0}
                     className="max-h-80 overflow-y-auto dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
@@ -136,14 +132,19 @@ function CategoryDropdown({
                             <button
                                 type="button"
                                 className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                                onClick={() => setSelectedCategory(category)}
+                                onClick={event => {
+                                    setSelectedCategory(category);
+                                    event.currentTarget
+                                        .closest("details")
+                                        ?.removeAttribute("open");
+                                }}
                             >
                                 {category}
                             </button>
                         </li>
                     ))}
                 </ul>
-            </div>
+            </details>
         </div>
     );
 }
