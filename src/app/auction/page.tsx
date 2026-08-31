@@ -93,7 +93,7 @@ function AuctionPageView(props: AuctionViewProps) {
                     아이템명·카테고리·세부 옵션으로 현재 매물을 검색하고 최근
                     거래가와 비교하세요.
                 </p>
-                <div className="mb-2 flex gap-2">
+                <div className="mb-2 flex flex-wrap gap-2 md:flex-nowrap">
                     <FavoriteToolbar
                         addButtonText={props.favorites.addButtonText}
                         onAdd={() =>

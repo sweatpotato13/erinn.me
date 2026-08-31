@@ -30,7 +30,7 @@ export function FavoriteToolbar({
     showButtonRef?: RefObject<HTMLButtonElement | null>;
 }) {
     return (
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 md:flex-nowrap">
             <button
                 className="btn btn-outline w-auto min-w-[50px]"
                 onClick={onAdd}

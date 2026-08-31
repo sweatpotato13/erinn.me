@@ -119,7 +119,7 @@ function CategoryDropdown({
 }) {
     return (
         <div className="col-start-1 row-start-2">
-            <div className="dropdown dropdown-end w-full">
+            <div className="dropdown dropdown-start w-full md:dropdown-end">
                 <div
                     tabIndex={0}
                     role="button"
