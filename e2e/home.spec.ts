@@ -43,15 +43,6 @@ const publicPages = [
         summary:
             "서버·채널·NPC를 선택해 상점 탭별 판매 아이템과 가격 정보를 확인하세요.",
     },
-    {
-        path: "/changelog",
-        title: "업데이트 내역 | Erinn.me",
-        description:
-            "Erinn.me의 경매장, 뿔피리, NPC 상점 기능 변경 및 업데이트 내역을 확인하세요.",
-        canonical: "https://erinn.me/changelog",
-        heading: "업데이트 내역",
-        summary: null,
-    },
 ];
 
 test.describe("Homepage Tests", () => {
@@ -140,6 +131,7 @@ test.describe("Homepage Tests", () => {
             "/contact",
             "/dungeon",
             "/crafting",
+            "/changelog",
         ])
             expect(body).not.toContain(`https://erinn.me${excluded}`);
         expect(body).not.toContain("<lastmod>");
@@ -298,7 +290,6 @@ test.describe("Homepage Tests", () => {
             "/auction",
             "/npc-shop",
             "/horn",
-            "/changelog",
             "/contact",
         ]) {
             await expect(page.locator(`main a[href="${path}"]`)).toBeVisible();
@@ -307,7 +298,7 @@ test.describe("Homepage Tests", () => {
         await page.locator("header.navbar button").click();
         await expect(page.locator('a[href="/dungeon"]')).toHaveCount(0);
         await expect(page.locator('a[href="/crafting"]')).toHaveCount(0);
-        for (const path of ["/auction", "/npc-shop", "/horn", "/changelog"]) {
+        for (const path of ["/auction", "/npc-shop", "/horn"]) {
             await expect(
                 page.locator(`header a[href="${path}"]`)
             ).toBeVisible();
@@ -317,7 +308,7 @@ test.describe("Homepage Tests", () => {
         await expect(page).toHaveURL(/auction/);
     });
 
-    for (const path of ["/dungeon", "/crafting"]) {
+    for (const path of ["/dungeon", "/crafting", "/changelog"]) {
         test(`${path} returns the standard not-found page`, async ({
             page,
         }) => {

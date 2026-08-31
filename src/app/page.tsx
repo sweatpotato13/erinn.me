@@ -1,4 +1,3 @@
-import { ArrowLeftRightIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
@@ -70,14 +69,6 @@ export default function Page() {
                     title="NPC 상점"
                     description="NPC 상점 아이템 정보를 확인하세요"
                     icon={<ShopIcon className="h-6 w-6 text-slate-600" />}
-                />
-                <NavigationCard
-                    href="/changelog"
-                    title="변경 이력"
-                    description="사이트의 변경 사항을 확인하세요"
-                    icon={
-                        <ArrowLeftRightIcon className="h-6 w-6 text-slate-600" />
-                    }
                 />
                 <NavigationCard
                     href="/contact"

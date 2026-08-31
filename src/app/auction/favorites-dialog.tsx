@@ -30,7 +30,7 @@ export function FavoriteToolbar({
     showButtonRef?: RefObject<HTMLButtonElement | null>;
 }) {
     return (
-        <div className="flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2 w-full mb-2">
+        <div className="flex flex-wrap gap-2 md:flex-nowrap">
             <button
                 className="btn btn-outline w-auto min-w-[50px]"
                 onClick={onAdd}

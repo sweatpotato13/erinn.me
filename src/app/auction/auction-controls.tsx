@@ -81,7 +81,7 @@ function SuggestionList({ props }: { props: InputProps }) {
 function SuggestionInput(props: InputProps) {
     const { searchTerm, setSearchTerm, suggestions: model } = props;
     return (
-        <div className="relative w-full">
+        <div className="relative col-span-3 w-full">
             <input
                 ref={model.inputRef}
                 className="input input-bordered w-full"
@@ -118,15 +118,11 @@ function CategoryDropdown({
     setSelectedCategory: (category: string) => void;
 }) {
     return (
-        <div className="mt-2 md:mt-0">
-            <div className="dropdown dropdown-end">
-                <div
-                    tabIndex={0}
-                    role="button"
-                    className="btn w-full md:w-auto"
-                >
+        <div className="col-start-1 row-start-2">
+            <details className="dropdown dropdown-start w-full md:dropdown-end">
+                <summary role="button" className="btn w-full md:w-auto">
                     {selectedCategory}
-                </div>
+                </summary>
                 <ul
                     tabIndex={0}
                     className="max-h-80 overflow-y-auto dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
@@ -136,14 +132,19 @@ function CategoryDropdown({
                             <button
                                 type="button"
                                 className="w-full text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
-                                onClick={() => setSelectedCategory(category)}
+                                onClick={event => {
+                                    setSelectedCategory(category);
+                                    event.currentTarget
+                                        .closest("details")
+                                        ?.removeAttribute("open");
+                                }}
                             >
                                 {category}
                             </button>
                         </li>
                     ))}
                 </ul>
-            </div>
+            </details>
         </div>
     );
 }
@@ -193,11 +194,11 @@ function AuctionFeedback({
 export function AuctionControls(props: AuctionControlsProps) {
     return (
         <div className="mb-2">
-            <div className="flex flex-col md:flex-row md:space-x-2 space-y-2 md:space-y-0 w-full">
+            <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] gap-2 md:flex md:flex-row">
                 <SuggestionInput {...props} />
                 <button
                     type="button"
-                    className="btn btn-outline w-full md:w-auto"
+                    className="btn btn-outline col-start-2 row-start-2 w-auto"
                     onClick={props.onSearch}
                 >
                     {props.loading ? (
@@ -208,7 +209,7 @@ export function AuctionControls(props: AuctionControlsProps) {
                 </button>
                 <button
                     type="button"
-                    className="btn btn-outline w-full md:w-auto"
+                    className="btn btn-outline col-start-3 row-start-2 w-auto"
                     disabled={!props.canShare || props.sharing}
                     onClick={props.onShare}
                 >

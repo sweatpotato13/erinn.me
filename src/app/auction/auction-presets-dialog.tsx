@@ -26,7 +26,7 @@ export function AuctionPresetToolbar({
         <button
             ref={triggerRef}
             type="button"
-            className="btn btn-outline w-full mb-2"
+            className="btn btn-outline w-auto min-w-[50px]"
             onClick={onShow}
         >
             검색 프리셋
