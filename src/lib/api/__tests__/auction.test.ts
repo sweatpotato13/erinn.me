@@ -1,4 +1,8 @@
-import { fetchItemPriceSummary, getItemPrice } from "@/lib/api/auction";
+import {
+    fetchCouponPriceSummaries,
+    fetchItemPriceSummary,
+    getItemPrice,
+} from "@/lib/api/auction";
 
 const validSummary = {
     minPrice: 100,
@@ -30,6 +34,37 @@ describe("auction price client", () => {
             ),
             { signal: undefined }
         );
+    });
+
+    it("loads and validates all coupon summaries in one request", async () => {
+        const summaries = {
+            10: validSummary,
+            20: null,
+            30: validSummary,
+            50: validSummary,
+            100: validSummary,
+        };
+        jest.mocked(fetch).mockResolvedValue({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(summaries),
+        } as Response);
+
+        await expect(fetchCouponPriceSummaries()).resolves.toEqual(summaries);
+        expect(fetch).toHaveBeenCalledWith(
+            "/api/auction/coupon-price-summary",
+            { signal: undefined }
+        );
+    });
+
+    it("rejects incomplete coupon batches", async () => {
+        jest.mocked(fetch).mockResolvedValue({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ 10: validSummary }),
+        } as Response);
+
+        await expect(fetchCouponPriceSummaries()).rejects.toThrow("Malformed");
     });
 
     it.each([

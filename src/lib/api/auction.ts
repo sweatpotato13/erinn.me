@@ -1,3 +1,8 @@
+import {
+    AUCTION_COUPONS,
+    type AuctionCouponDiscount,
+} from "@/lib/auction-calculator";
+
 export interface ItemPriceResponse {
     unitPrice: number;
     averagePrice: number;
@@ -42,6 +47,11 @@ export interface PriceSummaryResponse {
     isComplete: boolean;
 }
 
+export type CouponPriceSummaries = Record<
+    AuctionCouponDiscount,
+    PriceSummaryResponse | null
+>;
+
 /**
  * Determines whether a value is a finite number greater than or equal to zero.
  *
@@ -79,6 +89,38 @@ function parsePriceSummary(value: unknown): PriceSummaryResponse {
         availableQuantity: candidate.availableQuantity,
         isComplete: candidate.isComplete,
     };
+}
+
+function parseCouponPriceSummaries(value: unknown): CouponPriceSummaries {
+    if (!value || typeof value !== "object") {
+        throw new Error("Malformed coupon price summary response");
+    }
+
+    const candidate = value as Record<string, unknown>;
+    return Object.fromEntries(
+        AUCTION_COUPONS.map(({ discount }) => [
+            discount,
+            candidate[discount] === null
+                ? null
+                : parsePriceSummary(candidate[discount]),
+        ])
+    ) as CouponPriceSummaries;
+}
+
+export async function fetchCouponPriceSummaries(
+    signal?: AbortSignal
+): Promise<CouponPriceSummaries> {
+    const response = await fetch("/api/auction/coupon-price-summary", {
+        signal,
+    });
+
+    if (!response.ok) {
+        throw new Error(
+            `Coupon price summary request failed: ${response.status}`
+        );
+    }
+
+    return parseCouponPriceSummaries(await response.json());
 }
 
 /**
