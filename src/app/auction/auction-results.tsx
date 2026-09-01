@@ -16,6 +16,10 @@ import type {
 import type { AuctionOptionEvaluation } from "@/app/auction/use-auction-search";
 import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
+import {
+    type AuctionOptionFilters,
+    hasAuctionOptionFilters,
+} from "@/lib/auction-options";
 import { getItemImageUrl } from "@/lib/utils";
 
 const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
@@ -29,6 +33,14 @@ const numberFormatter = new Intl.NumberFormat("ko-KR", {
 const dateTimeFormatter = new Intl.DateTimeFormat("ko-KR", {
     dateStyle: "short",
     timeStyle: "medium",
+});
+const timeFormatter = new Intl.DateTimeFormat("ko-KR", {
+    hour: "2-digit",
+    minute: "2-digit",
+});
+const axisNumberFormatter = new Intl.NumberFormat("ko-KR", {
+    notation: "compact",
+    maximumFractionDigits: 1,
 });
 
 /**
@@ -278,6 +290,7 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     errorMessage: string | null;
     loading: boolean;
     optionEvaluation: AuctionOptionEvaluation | null;
+    optionFilters: AuctionOptionFilters;
     recentSales: RecentSalesState;
     comparisonNotice: string | null;
     onRemoveComparison: (item: AuctionItem) => void;
@@ -299,18 +312,72 @@ function SummaryMetric({ label, value }: SummaryMetricProps) {
     );
 }
 
+function getCompleteRecentSalesMedian(recentSales: RecentSalesState) {
+    const { summary } = recentSales;
+    if (
+        recentSales.loading ||
+        recentSales.noticeMessage !== null ||
+        recentSales.errorMessage !== null ||
+        recentSales.hasMore ||
+        recentSales.refreshedAt === null ||
+        summary === null ||
+        summary.transactionCount < 3 ||
+        summary.medianUnitPrice === null ||
+        recentSales.sales.length < 3
+    ) {
+        return null;
+    }
+    return summary.medianUnitPrice;
+}
+
 function CurrentListingsMetrics({
     summary,
     hasMore,
-}: Pick<AuctionResultsProps, "summary" | "hasMore">) {
+    optionFilters,
+    recentSales,
+}: Pick<
+    AuctionResultsProps,
+    "summary" | "hasMore" | "optionFilters" | "recentSales"
+>) {
+    const recentMedian = getCompleteRecentSalesMedian(recentSales);
+    const rawDifference =
+        summary &&
+        !hasMore &&
+        !hasAuctionOptionFilters(optionFilters) &&
+        recentMedian !== null
+            ? ((summary.lowestUnitPrice - recentMedian) / recentMedian) * 100
+            : null;
+    const difference =
+        rawDifference !== null && Number.isFinite(rawDifference)
+            ? rawDifference
+            : null;
+    const comparison =
+        difference === null
+            ? null
+            : `최근 1시간 거래 중앙값 대비 ${numberFormatter.format(Math.abs(difference))}% ${difference < 0 ? "낮음" : difference > 0 ? "높음" : "같음"}`;
+
     return (
         <>
             {summary ? (
                 <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <SummaryMetric
-                        label="최저 단가"
-                        value={`${numberFormatter.format(summary.lowestUnitPrice)} Gold`}
-                    />
+                    <div>
+                        <dt className="text-sm text-base-content/70">
+                            최저 단가
+                        </dt>
+                        <dd className="flex flex-wrap items-center gap-2 font-semibold">
+                            <span>
+                                {numberFormatter.format(
+                                    summary.lowestUnitPrice
+                                )}{" "}
+                                Gold
+                            </span>
+                            {comparison && (
+                                <span className="badge badge-outline h-auto max-w-full whitespace-normal py-1 text-left text-xs leading-tight">
+                                    {comparison}
+                                </span>
+                            )}
+                        </dd>
+                    </div>
                     <SummaryMetric
                         label="매물 단가 중앙값"
                         value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
@@ -462,7 +529,7 @@ function RecentSalesTable({ sales }: { sales: AuctionSale[] }) {
                     </tr>
                 </thead>
                 <tbody>
-                    {sales.slice(0, RECENT_SALES_LIMIT).map(sale => (
+                    {sales.map(sale => (
                         <tr key={sale.auction_buy_id}>
                             <td>
                                 <time dateTime={sale.date_auction_buy}>
@@ -484,6 +551,244 @@ function RecentSalesTable({ sales }: { sales: AuctionSale[] }) {
                 </tbody>
             </table>
         </div>
+    );
+}
+
+const RECENT_SALES_CHART_BOUNDS = {
+    width: 640,
+    height: 200,
+    left: 4,
+    right: 636,
+    top: 28,
+    bottom: 162,
+} as const;
+
+function scaleRecentSalesChartValue(
+    value: number,
+    min: number,
+    max: number,
+    start: number,
+    end: number
+) {
+    return min === max
+        ? (start + end) / 2
+        : start + ((value - min) / (max - min)) * (end - start);
+}
+
+function getRecentSalesChartModel(sales: AuctionSale[]) {
+    const { left, right, top, bottom } = RECENT_SALES_CHART_BOUNDS;
+    const chronologicalSales = [...sales].sort(
+        (a, b) =>
+            Date.parse(a.date_auction_buy) - Date.parse(b.date_auction_buy) ||
+            a.auction_buy_id.localeCompare(b.auction_buy_id)
+    );
+    const timestamps = chronologicalSales.map(sale =>
+        Date.parse(sale.date_auction_buy)
+    );
+    const prices = chronologicalSales.map(sale => sale.auction_price_per_unit);
+    const minTime = Math.min(...timestamps);
+    const maxTime = Math.max(...timestamps);
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    const points = chronologicalSales.map((sale, index) => ({
+        sale,
+        x: scaleRecentSalesChartValue(
+            timestamps[index],
+            minTime,
+            maxTime,
+            left,
+            right
+        ),
+        y: scaleRecentSalesChartValue(
+            prices[index],
+            minPrice,
+            maxPrice,
+            bottom,
+            top
+        ),
+    }));
+    const tickPrices =
+        minPrice === maxPrice
+            ? [minPrice]
+            : [maxPrice, minPrice + (maxPrice - minPrice) / 2, minPrice];
+    const priceTicks = tickPrices.map(price => ({
+        price,
+        y: scaleRecentSalesChartValue(price, minPrice, maxPrice, bottom, top),
+    }));
+
+    return { minTime, maxTime, points, priceTicks };
+}
+
+type RecentSalesChartModel = ReturnType<typeof getRecentSalesChartModel>;
+
+function RecentSalesPriceTicks({
+    ticks,
+}: {
+    ticks: RecentSalesChartModel["priceTicks"];
+}) {
+    const { left, right } = RECENT_SALES_CHART_BOUNDS;
+    return (
+        <>
+            <text x={left} y="12" fill="currentColor" fontSize="11">
+                완료 단가 (Gold)
+            </text>
+            {ticks.map(({ price, y }) => (
+                <g key={price}>
+                    <line
+                        x1={left}
+                        y1={y}
+                        x2={right}
+                        y2={y}
+                        stroke="currentColor"
+                        opacity="0.15"
+                        vectorEffect="non-scaling-stroke"
+                    />
+                    <text
+                        x={left + 4}
+                        y={y - 4}
+                        fill="currentColor"
+                        fontSize="10"
+                        textAnchor="start"
+                    >
+                        {axisNumberFormatter.format(price)}
+                    </text>
+                </g>
+            ))}
+        </>
+    );
+}
+
+function RecentSalesTimeTicks({
+    minTime,
+    maxTime,
+}: Pick<RecentSalesChartModel, "minTime" | "maxTime">) {
+    const { left, right, bottom } = RECENT_SALES_CHART_BOUNDS;
+    const y = bottom + 16;
+    if (minTime === maxTime) {
+        return (
+            <text
+                x={(left + right) / 2}
+                y={y}
+                fill="currentColor"
+                fontSize="10"
+                textAnchor="middle"
+            >
+                {timeFormatter.format(new Date(minTime))}
+            </text>
+        );
+    }
+    return (
+        <>
+            <text
+                x={left}
+                y={y}
+                fill="currentColor"
+                fontSize="10"
+                textAnchor="start"
+            >
+                {timeFormatter.format(new Date(minTime))}
+            </text>
+            <text
+                x={right}
+                y={y}
+                fill="currentColor"
+                fontSize="10"
+                textAnchor="end"
+            >
+                {timeFormatter.format(new Date(maxTime))}
+            </text>
+        </>
+    );
+}
+
+function RecentSalesChartAxes({ model }: { model: RecentSalesChartModel }) {
+    const { width, height, left, right, top, bottom } =
+        RECENT_SALES_CHART_BOUNDS;
+    return (
+        <g className="text-base-content">
+            <RecentSalesPriceTicks ticks={model.priceTicks} />
+            <path
+                d={`M ${left} ${top} V ${bottom} H ${right}`}
+                fill="none"
+                stroke="currentColor"
+                opacity="0.6"
+                vectorEffect="non-scaling-stroke"
+            />
+            <RecentSalesTimeTicks
+                minTime={model.minTime}
+                maxTime={model.maxTime}
+            />
+            <text
+                x={width / 2}
+                y={height - 4}
+                fill="currentColor"
+                fontSize="11"
+                textAnchor="middle"
+            >
+                거래 시각
+            </text>
+        </g>
+    );
+}
+
+function RecentSalesChartPoints({
+    points,
+}: {
+    points: RecentSalesChartModel["points"];
+}) {
+    return (
+        <>
+            <polyline
+                points={points.map(({ x, y }) => `${x},${y}`).join(" ")}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                vectorEffect="non-scaling-stroke"
+            />
+            {points.map(({ sale, x, y }, index) => (
+                <circle
+                    key={`${sale.auction_buy_id}-${index}`}
+                    cx={x}
+                    cy={y}
+                    r="3"
+                    fill="currentColor"
+                >
+                    <title>
+                        {dateTimeFormatter.format(
+                            new Date(sale.date_auction_buy)
+                        )}{" "}
+                        · {numberFormatter.format(sale.auction_price_per_unit)}
+                        {" Gold"}
+                    </title>
+                </circle>
+            ))}
+        </>
+    );
+}
+
+function RecentSalesChart({ sales }: { sales: AuctionSale[] }) {
+    const { width, height } = RECENT_SALES_CHART_BOUNDS;
+    const model = getRecentSalesChartModel(sales);
+
+    return (
+        <figure className="mt-3">
+            <figcaption className="text-sm font-semibold">
+                최근 1시간 완료 거래 단가 추이
+            </figcaption>
+            <svg
+                role="img"
+                aria-label="최근 1시간 완료 거래 단가 추이"
+                viewBox={`0 0 ${width} ${height}`}
+                className="mt-2 block aspect-[16/5] w-full text-primary"
+            >
+                <desc>
+                    세로축은 완료 단가, 가로축은 거래 시각입니다. 점에 마우스를
+                    올리면 정확한 값을 확인할 수 있습니다.
+                </desc>
+                <RecentSalesChartAxes model={model} />
+                <RecentSalesChartPoints points={model.points} />
+            </svg>
+        </figure>
     );
 }
 
@@ -538,6 +843,7 @@ function RecentSalesResultsBody({
         );
     }
 
+    const displayedSales = sales.slice(0, RECENT_SALES_LIMIT);
     return (
         <>
             <RecentSalesSummaryMetrics summary={summary} hasMore={hasMore} />
@@ -546,7 +852,10 @@ function RecentSalesResultsBody({
                     최근 거래가 3건 미만이므로 중앙값을 표시하지 않습니다.
                 </p>
             )}
-            <RecentSalesTable sales={sales} />
+            {getCompleteRecentSalesMedian(recentSales) !== null && (
+                <RecentSalesChart sales={displayedSales} />
+            )}
+            <RecentSalesTable sales={displayedSales} />
             {sales.length > RECENT_SALES_LIMIT && (
                 <p className="mt-2 text-sm text-base-content/70">
                     가장 최근 {RECENT_SALES_LIMIT}건을 표시합니다.

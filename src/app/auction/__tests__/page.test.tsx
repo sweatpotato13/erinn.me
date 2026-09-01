@@ -1146,6 +1146,7 @@ describe("AuctionResults", () => {
         errorMessage: null,
         loading: false,
         optionEvaluation: null,
+        optionFilters: {},
         onSort: jest.fn(),
         onItemClick: jest.fn(),
         comparisonItems: [],
@@ -1157,6 +1158,79 @@ describe("AuctionResults", () => {
         recentSales: emptyRecentSales,
     };
     const refreshedAt = "2026-08-19T01:00:00.000Z";
+
+    function recentSalesState(
+        sales: AuctionSale[],
+        overrides: Partial<RecentSalesState> = {}
+    ): RecentSalesState {
+        return {
+            ...emptyRecentSales,
+            ...prepareRecentSales(sales),
+            refreshedAt: "2026-08-20T04:00:00Z",
+            queriedItemName: "비교 아이템",
+            ...overrides,
+        };
+    }
+
+    function comparisonSales(prices = [100, 200, 300]) {
+        return prices.map((price, index) =>
+            sale(`comparison-${index}`, price, 1, `2026-08-20T0${index}:00:00Z`)
+        );
+    }
+
+    function renderComparison({
+        lowest = 100,
+        recentSales = recentSalesState(comparisonSales()),
+        hasMore = false,
+        optionFilters = {},
+    }: {
+        lowest?: number;
+        recentSales?: RecentSalesState;
+        hasMore?: boolean;
+        optionFilters?: AuctionOptionFilters;
+    } = {}) {
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("비교 아이템", lowest)]}
+                summary={{
+                    lowestUnitPrice: lowest,
+                    medianUnitPrice: lowest,
+                    listingCount: 1,
+                    totalQuantity: 1,
+                }}
+                hasMore={hasMore}
+                refreshedAt={refreshedAt}
+                recentSales={recentSales}
+                optionFilters={optionFilters}
+            />
+        );
+        return within(screen.getByRole("region", { name: "현재 등록 매물" }));
+    }
+
+    async function openRecentSalesChart(sales: AuctionSale[]) {
+        const user = userEvent.setup();
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={recentSalesState(sales)}
+            />
+        );
+        expect(
+            screen.queryByRole("img", {
+                name: "최근 1시간 완료 거래 단가 추이",
+            })
+        ).not.toBeInTheDocument();
+        await user.click(
+            screen.getByRole("button", {
+                name: `최근 1시간 완료 거래 ${sales.length}건 보기`,
+            })
+        );
+        return within(
+            screen.getByRole("dialog", { name: "최근 1시간 완료 거래" })
+        );
+    }
 
     it("does not link results to a price page", () => {
         render(<AuctionResults {...baseProps} items={[item("불타래", 100)]} />);
@@ -1251,6 +1325,101 @@ describe("AuctionResults", () => {
         expect(
             panel.getByText("최저 단가").closest(".rounded-lg")
         ).not.toContainElement(panel.getByRole("table"));
+    });
+
+    it.each([
+        [100, [100, 200, 300], "50% 낮음"],
+        [300, [100, 200, 300], "50% 높음"],
+        [200, [100, 200, 300], "0% 같음"],
+        [100, [100, 300, 500], "66.7% 낮음"],
+        [40_000, [2, 3, 4], "1,333,233.3% 높음"],
+    ] as Array<[number, number[], string]>)(
+        "shows a neutral one-hour comparison for lowest %d",
+        (lowest, prices, expected) => {
+            const panel = renderComparison({
+                lowest,
+                recentSales: recentSalesState(comparisonSales(prices)),
+            });
+            const metric = panel.getByText("최저 단가").closest("div");
+            const badge = within(metric!).getByText(
+                `최근 1시간 거래 중앙값 대비 ${expected}`
+            );
+
+            expect(badge).toHaveClass("badge-outline");
+            expect(
+                within(metric!).getByText(`${lowest.toLocaleString()} Gold`)
+            ).toBeInTheDocument();
+            expect(badge).not.toHaveTextContent(/저렴|비쌈|추천|구매/);
+        }
+    );
+
+    it.each([
+        ["enchantment", { enchantName: "여명" }],
+        ["reforge", { reforge: { optionName: "볼트 대미지", minLevel: 10 } }],
+        ["Erg", { erg: { grade: "S", minLevel: 40 } }],
+    ] as Array<[string, AuctionOptionFilters]>)(
+        "hides the comparison for the %s filter",
+        (_name, optionFilters) => {
+            const panel = renderComparison({ optionFilters });
+            expect(
+                panel.queryByText(/최근 1시간 거래 중앙값 대비/)
+            ).not.toBeInTheDocument();
+        }
+    );
+
+    it.each([0, 1, 2])(
+        "hides the comparison for %i valid recent sales",
+        count => {
+            const panel = renderComparison({
+                recentSales: recentSalesState(
+                    comparisonSales().slice(0, count)
+                ),
+            });
+            expect(
+                panel.queryByText(/최근 1시간 거래 중앙값 대비/)
+            ).not.toBeInTheDocument();
+        }
+    );
+
+    it.each([
+        ["partial current listings", { hasMore: true }],
+        [
+            "partial recent sales",
+            {
+                recentSales: recentSalesState(comparisonSales(), {
+                    hasMore: true,
+                }),
+            },
+        ],
+        [
+            "loading recent sales",
+            {
+                recentSales: recentSalesState(comparisonSales(), {
+                    loading: true,
+                }),
+            },
+        ],
+        [
+            "recent-sales guidance",
+            {
+                recentSales: recentSalesState(comparisonSales(), {
+                    noticeMessage: "정확한 이름 필요",
+                }),
+            },
+        ],
+        [
+            "a recent-sales error",
+            {
+                recentSales: recentSalesState(comparisonSales(), {
+                    errorMessage: "요청 실패",
+                }),
+            },
+        ],
+    ] as const)("hides the comparison for %s", (_name, props) => {
+        const panel = renderComparison(props);
+        expect(
+            panel.queryByText(/최근 1시간 거래 중앙값 대비/)
+        ).not.toBeInTheDocument();
     });
 
     it("renders empty and incomplete states without zero-valued statistics", () => {
@@ -1406,6 +1575,149 @@ describe("AuctionResults", () => {
         expect(screen.getByRole("alert")).toHaveTextContent("요청 실패");
     });
 
+    it("plots recent prices chronologically between the summary and table", async () => {
+        const panel = await openRecentSalesChart([
+            sale("latest", 300, 1, "2026-08-20T03:00:00Z"),
+            sale("earliest", 100, 1, "2026-08-20T01:00:00Z"),
+            sale("middle", 200, 1, "2026-08-20T02:00:00Z"),
+        ]);
+        const chart = panel.getByRole("img", {
+            name: "최근 1시간 완료 거래 단가 추이",
+        });
+        const metrics = panel.getByText("거래 수").closest("dl");
+        const table = panel.getByRole("table");
+
+        expect(chart).toHaveAttribute("viewBox", "0 0 640 200");
+        expect(chart).toHaveClass("w-full");
+        expect(within(chart).getByText("완료 단가 (Gold)")).toBeInTheDocument();
+        expect(within(chart).getByText("거래 시각")).toBeInTheDocument();
+        expect(chart.querySelector("polyline")).toHaveAttribute(
+            "points",
+            "4,162 320,95 636,28"
+        );
+        expect(chart.querySelectorAll("circle")).toHaveLength(3);
+        expect(chart.querySelectorAll("circle title")).toHaveLength(3);
+        expect(
+            metrics!.compareDocumentPosition(chart) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+        expect(
+            chart.compareDocumentPosition(table) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+        ).toBeTruthy();
+        expect(panel.getAllByRole("row")).toHaveLength(4);
+    });
+
+    it.each([
+        [
+            "identical times and prices",
+            [
+                sale("a", 100, 1, "2026-08-20T01:00:00Z"),
+                sale("b", 100, 1, "2026-08-20T01:00:00Z"),
+                sale("c", 100, 1, "2026-08-20T01:00:00Z"),
+            ],
+        ],
+        [
+            "closely spaced times with an outlier",
+            [
+                sale("a", 100, 1, "2026-08-20T01:00:00.000Z"),
+                sale("b", 101, 1, "2026-08-20T01:00:00.001Z"),
+                sale("c", 1_000_000_000, 1, "2026-08-20T01:00:00.002Z"),
+            ],
+        ],
+        [
+            "extreme finite prices",
+            [
+                sale("a", Number.MAX_VALUE / 2, 1, "2026-08-20T01:00:00Z"),
+                sale("b", Number.MAX_VALUE, 1, "2026-08-20T02:00:00Z"),
+                sale("c", Number.MAX_VALUE * 0.75, 1, "2026-08-20T03:00:00Z"),
+            ],
+        ],
+    ] as Array<[string, AuctionSale[]]>)(
+        "keeps %s inside the SVG bounds",
+        async (_name, sales) => {
+            const panel = await openRecentSalesChart(sales);
+            const chart = panel.getByRole("img", {
+                name: "최근 1시간 완료 거래 단가 추이",
+            });
+            const circles = Array.from(chart.querySelectorAll("circle"));
+            const coordinates = circles.flatMap(circle => [
+                Number(circle.getAttribute("cx")),
+                Number(circle.getAttribute("cy")),
+            ]);
+            const lineCoordinates = Array.from(
+                chart.querySelectorAll("line")
+            ).flatMap(line =>
+                ["x1", "x2", "y1", "y2"].map(attribute =>
+                    Number(line.getAttribute(attribute))
+                )
+            );
+
+            expect(coordinates.every(Number.isFinite)).toBe(true);
+            expect(lineCoordinates.every(Number.isFinite)).toBe(true);
+            circles.forEach(circle => {
+                expect(
+                    Number(circle.getAttribute("cx"))
+                ).toBeGreaterThanOrEqual(4);
+                expect(Number(circle.getAttribute("cx"))).toBeLessThanOrEqual(
+                    636
+                );
+                expect(
+                    Number(circle.getAttribute("cy"))
+                ).toBeGreaterThanOrEqual(28);
+                expect(Number(circle.getAttribute("cy"))).toBeLessThanOrEqual(
+                    162
+                );
+            });
+            if (_name === "identical times and prices") {
+                expect(
+                    circles.map(circle => circle.getAttribute("cx"))
+                ).toEqual(["320", "320", "320"]);
+                expect(
+                    circles.map(circle => circle.getAttribute("cy"))
+                ).toEqual(["95", "95", "95"]);
+            }
+        }
+    );
+
+    it("plots only the same latest ten sales exposed by the table", async () => {
+        const user = userEvent.setup();
+        const sales = Array.from({ length: 11 }, (_, index) =>
+            sale(
+                `sale-${index}`,
+                (index + 1) * 100,
+                1,
+                `2026-08-20T${String(index).padStart(2, "0")}:00:00Z`
+            )
+        );
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={recentSalesState(sales)}
+            />
+        );
+        await user.click(
+            screen.getByRole("button", {
+                name: "최근 1시간 완료 거래 11건 보기",
+            })
+        );
+        const dialog = within(
+            screen.getByRole("dialog", { name: "최근 1시간 완료 거래" })
+        );
+
+        expect(
+            dialog
+                .getByRole("img", {
+                    name: "최근 1시간 완료 거래 단가 추이",
+                })
+                .querySelectorAll("circle")
+        ).toHaveLength(10);
+        expect(dialog.getAllByRole("row")).toHaveLength(11);
+        expect(dialog.queryByText("sale-0")).not.toBeInTheDocument();
+        expect(dialog.getByText("sale-10")).toBeInTheDocument();
+    });
+
     it("shows low-sample sales without a median", async () => {
         const user = userEvent.setup();
         const sales = [sale("first", 100, 2), sale("second", 300, 4)];
@@ -1438,6 +1750,11 @@ describe("AuctionResults", () => {
             )
         ).toBeInTheDocument();
         expect(panel.queryByText("거래 단가 중앙값")).not.toBeInTheDocument();
+        expect(
+            panel.queryByRole("img", {
+                name: "최근 1시간 완료 거래 단가 추이",
+            })
+        ).not.toBeInTheDocument();
         expect(panel.getByRole("table")).toBeVisible();
     });
 
@@ -1484,6 +1801,11 @@ describe("AuctionResults", () => {
             .getByText("불러온 거래 단가 중앙값")
             .closest("div");
         expect(within(median!).getByText("600 Gold")).toBeInTheDocument();
+        expect(
+            panel.queryByRole("img", {
+                name: "최근 1시간 완료 거래 단가 추이",
+            })
+        ).not.toBeInTheDocument();
         expect(
             panel.getByText("가장 최근 10건을 표시합니다.")
         ).toBeInTheDocument();
