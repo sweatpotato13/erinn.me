@@ -57,6 +57,9 @@ describe("Homepage Component", () => {
             screen.getByRole("heading", { name: "경매장" })
         ).toBeInTheDocument();
         expect(
+            screen.getByRole("heading", { name: "파티 분배 계산기" })
+        ).toBeInTheDocument();
+        expect(
             screen.getByRole("heading", { name: "NPC 상점" })
         ).toBeInTheDocument();
         expect(
@@ -72,6 +75,14 @@ describe("Homepage Component", () => {
         const auctionHeading = screen.getByRole("heading", { name: "경매장" });
         const auctionLink = auctionHeading.closest("a");
         expect(auctionLink).toHaveAttribute("href", "/auction");
+
+        const calculatorHeading = screen.getByRole("heading", {
+            name: "파티 분배 계산기",
+        });
+        expect(calculatorHeading.closest("a")).toHaveAttribute(
+            "href",
+            "/calculator"
+        );
 
         // Check shop link
         const shopHeading = screen.getByRole("heading", { name: "NPC 상점" });

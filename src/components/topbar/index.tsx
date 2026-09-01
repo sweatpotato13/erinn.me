@@ -24,6 +24,7 @@ function Topbar() {
             <div className="flex-none flex items-center space-x-2">
                 <button
                     className="btn btn-square btn-ghost"
+                    aria-label={isMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
                     onClick={toggleMenu}
                 >
                     {isMenuOpen ? (
@@ -77,6 +78,18 @@ function Topbar() {
                                 <a href="/auction" className="ml-2">
                                     경매장
                                 </a>
+                            </div>
+                        </li>
+                        <li className="flex space-x-2">
+                            <div className="flex items-center">
+                                <AuctionIcon className="h-5 w-5" />
+                                <Link
+                                    href="/calculator"
+                                    className="ml-2"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    파티 분배 계산기
+                                </Link>
                             </div>
                         </li>
                         <li className="flex space-x-2">

@@ -59,6 +59,12 @@ export default function Page() {
                     icon={<AuctionIcon className="h-6 w-6 text-slate-600" />}
                 />
                 <NavigationCard
+                    href="/calculator"
+                    title="파티 분배 계산기"
+                    description="경매 수수료와 파티 분배액을 계산하세요"
+                    icon={<AuctionIcon className="h-6 w-6 text-slate-600" />}
+                />
+                <NavigationCard
                     href="/horn"
                     title="뿔피리 조회"
                     description="뿔피리 내역을 조회하세요"
