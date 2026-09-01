@@ -16,12 +16,12 @@ import {
 describe("upstream boundary", () => {
     afterEach(() => jest.restoreAllMocks());
 
-    it("validates upstream configuration before constructing URLs", () => {
+    it("uses the official Nexon URL by default and validates overrides", () => {
         expect(createUpstreamUrl("/v1", "https://example.com").href).toBe(
             "https://example.com/v1"
         );
-        expect(() => createUpstreamUrl("/v1")).toThrow(
-            expect.objectContaining({ failureClass: "upstream_config" })
+        expect(createUpstreamUrl("/v1").href).toBe(
+            "https://open.api.nexon.com/v1"
         );
         expect(() => createUpstreamUrl("/v1", "not-a-url")).toThrow(
             expect.objectContaining({ failureClass: "upstream_config" })
