@@ -5,6 +5,7 @@ import { NextRequest } from "next/server";
 import {
     applyRateLimit,
     isApiRoute,
+    isRateLimitedRoute,
     proxy,
     resolveClientKey,
     shouldApplyRateLimit,
@@ -24,6 +25,11 @@ describe("rate limiter", () => {
         expect(isApiRoute("/api/suggest")).toBe(true);
         expect(isApiRoute("/about")).toBe(false);
         expect(isApiRoute("/")).toBe(false);
+    });
+
+    it("also rate-limits the calculator preview route", () => {
+        expect(isRateLimitedRoute("/calculator/preview")).toBe(true);
+        expect(isRateLimitedRoute("/calculator")).toBe(false);
     });
 
     it("uses the trusted edge identity and ignores client headers", () => {
@@ -83,6 +89,15 @@ describe("rate limiter", () => {
             200
         );
         expect(check).not.toHaveBeenCalled();
+    });
+
+    it("checks the preview route with the unified WAF rule", async () => {
+        const check = jest.fn().mockResolvedValue({ rateLimited: false });
+        await applyRateLimit(request("/calculator/preview"), check);
+        expect(check).toHaveBeenCalledWith("erinn-api", {
+            request: expect.any(Request),
+            rateLimitKey: "203.0.113.8",
+        });
     });
 
     it("bypasses WAF checks in development", async () => {

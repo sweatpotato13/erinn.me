@@ -10,6 +10,7 @@ type RateLimitEnvironment = {
 
 const RATE_LIMIT_ID = "erinn-api";
 const RATE_LIMIT = 120;
+const CALCULATOR_PREVIEW_PATH = "/calculator/preview";
 
 /**
  * Checks whether the request targets an API route that should be rate-limited.
@@ -19,6 +20,10 @@ const RATE_LIMIT = 120;
  */
 export function isApiRoute(pathname: string): boolean {
     return pathname.startsWith("/api/");
+}
+
+export function isRateLimitedRoute(pathname: string): boolean {
+    return isApiRoute(pathname) || pathname === CALCULATOR_PREVIEW_PATH;
 }
 
 /**
@@ -52,7 +57,7 @@ function limitedResponse() {
 }
 
 /**
- * Applies rate limiting to API routes via Vercel Firewall WAF.
+ * Applies rate limiting to configured public routes via Vercel Firewall WAF.
  * Fails open (passes through) when the WAF rule is unavailable.
  *
  * @param request - The incoming request to evaluate.
@@ -63,7 +68,9 @@ export async function applyRateLimit(
     request: NextRequest,
     check: RateLimitCheck = checkRateLimit
 ): Promise<NextResponse> {
-    if (!isApiRoute(request.nextUrl.pathname)) return NextResponse.next();
+    if (!isRateLimitedRoute(request.nextUrl.pathname)) {
+        return NextResponse.next();
+    }
 
     try {
         const result = await check(RATE_LIMIT_ID, {
@@ -91,7 +98,7 @@ export function shouldApplyRateLimit(
 }
 
 /**
- * Applies API rate limiting in production and forwards requests unchanged in other environments.
+ * Applies public-route rate limiting in production and forwards requests unchanged in other environments.
  *
  * @returns The response produced by rate-limit processing or request forwarding.
  */
@@ -101,5 +108,5 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-    matcher: "/api/:path*",
+    matcher: ["/api/:path*", "/calculator/preview"],
 };

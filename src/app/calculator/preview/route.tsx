@@ -8,7 +8,10 @@ import {
     calculateAuctionDistribution,
     formatGold,
 } from "@/lib/auction-calculator";
-import { parseAuctionCalculatorParams } from "@/lib/auction-calculator-url";
+import {
+    AUCTION_CALCULATOR_PREVIEW_PATH,
+    parseAuctionCalculatorParams,
+} from "@/lib/auction-calculator-url";
 
 const WIDTH = 1200;
 const HEIGHT = 630;
@@ -141,9 +144,26 @@ async function renderPng(
 
 export async function GET(request: Request): Promise<Response> {
     try {
-        const parsed = parseAuctionCalculatorParams(
-            new URL(request.url).searchParams
-        );
+        const url = new URL(request.url);
+        const parsed = parseAuctionCalculatorParams(url.searchParams);
+        const query = url.searchParams.toString();
+        if (
+            parsed.status === "invalid" ||
+            (parsed.status === "empty" && query)
+        ) {
+            return Response.redirect(
+                new URL(AUCTION_CALCULATOR_PREVIEW_PATH, url),
+                307
+            );
+        }
+        if (
+            parsed.status === "valid" &&
+            query !== parsed.normalized.toString()
+        ) {
+            const canonical = new URL(AUCTION_CALCULATOR_PREVIEW_PATH, url);
+            canonical.search = parsed.normalized.toString();
+            return Response.redirect(canonical, 307);
+        }
         const font = await previewFont;
         if (parsed.status !== "valid") {
             return await renderPng(<GenericPreview />, font);
