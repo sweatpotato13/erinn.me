@@ -143,6 +143,7 @@ function AuctionPageView(props: AuctionViewProps) {
                     onRemoveComparison={props.onRemoveComparison}
                     onClearComparison={props.onClearComparison}
                     recentSales={props.recentSales}
+                    optionFilters={props.optionFilters}
                 />
                 {props.options && (
                     <ItemOptionsDialog
