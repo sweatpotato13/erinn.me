@@ -14,9 +14,9 @@ import {
     searchParamsRecordToURLSearchParams,
 } from "@/lib/auction-calculator-url";
 
-type CalculatorPageProps = {
+interface CalculatorPageProps {
     searchParams: Promise<Record<string, string | string[] | undefined>>;
-};
+}
 
 const GENERIC_TITLE = "마비노기 파티 분배 계산기";
 const GENERIC_DESCRIPTION =
@@ -95,7 +95,7 @@ export async function generateMetadata({
 
 export default async function AuctionCalculatorPage({
     searchParams,
-}: CalculatorPageProps) {
+}: CalculatorPageProps): Promise<React.JSX.Element> {
     const initialQuery = searchParamsRecordToURLSearchParams(
         await searchParams
     ).toString();

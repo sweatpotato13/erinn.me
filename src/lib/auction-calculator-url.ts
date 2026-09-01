@@ -79,8 +79,69 @@ function parseIncompleteCoupons(
     return parsed as AuctionCouponDiscount[];
 }
 
+function parseCouponState(
+    params: URLSearchParams
+): Pick<
+    AuctionCalculatorSnapshot,
+    "couponPrices" | "incompleteCoupons"
+> | null {
+    const couponPrices = createEmptyCouponPrices();
+    for (const { discount } of AUCTION_COUPONS) {
+        const key = `c${discount}`;
+        if (!params.has(key)) continue;
+        const price = parseInteger(params.get(key), 0, MAX_GOLD);
+        if (price === null) return null;
+        couponPrices[discount] = price;
+    }
+    const incompleteCoupons = parseIncompleteCoupons(
+        params.get("x"),
+        couponPrices
+    );
+    return incompleteCoupons === null
+        ? null
+        : { couponPrices, incompleteCoupons };
+}
+
 function isValidSnapshotTime(value: number): boolean {
     return Number.isFinite(new Date(value * 1_000).getTime());
+}
+
+function parseSnapshot(
+    params: URLSearchParams
+): AuctionCalculatorSnapshot | null {
+    const salePrice = parseInteger(params.get("p"), 1, MAX_GOLD);
+    const memberCount = params.has("n")
+        ? parseInteger(params.get("n"), 1, MAX_MEMBER_COUNT)
+        : 1;
+    const additionalCost = params.has("a")
+        ? parseInteger(params.get("a"), 0, MAX_GOLD)
+        : 0;
+    const snapshotAt = parseInteger(
+        params.get("t"),
+        0,
+        MAX_SNAPSHOT_EPOCH_SECONDS
+    );
+    const membership = params.get("m");
+    const couponState = parseCouponState(params);
+    if (
+        salePrice === null ||
+        memberCount === null ||
+        additionalCost === null ||
+        snapshotAt === null ||
+        !isValidSnapshotTime(snapshotAt) ||
+        (membership !== null && membership !== "1") ||
+        couponState === null
+    ) {
+        return null;
+    }
+    return {
+        salePrice,
+        memberCount,
+        hasMembership: membership === "1",
+        additionalCost,
+        ...couponState,
+        snapshotAt,
+    };
 }
 
 export function serializeAuctionCalculatorSnapshot(
@@ -143,60 +204,10 @@ export function parseAuctionCalculatorParams(
     if (hasDuplicates(params) || params.get("v") !== "1") {
         return { status: "invalid", normalized: new URLSearchParams() };
     }
-
-    const salePrice = parseInteger(params.get("p"), 1, MAX_GOLD);
-    const memberCount = params.has("n")
-        ? parseInteger(params.get("n"), 1, MAX_MEMBER_COUNT)
-        : 1;
-    const additionalCost = params.has("a")
-        ? parseInteger(params.get("a"), 0, MAX_GOLD)
-        : 0;
-    const snapshotAt = parseInteger(
-        params.get("t"),
-        0,
-        MAX_SNAPSHOT_EPOCH_SECONDS
-    );
-    const membershipValues = params.getAll("m");
-    const validMembership =
-        membershipValues.length === 0 ||
-        (membershipValues.length === 1 && membershipValues[0] === "1");
-
-    const couponPrices = createEmptyCouponPrices();
-    let invalidCouponPrice = false;
-    for (const { discount } of AUCTION_COUPONS) {
-        const key = `c${discount}`;
-        if (!params.has(key)) continue;
-        const price = parseInteger(params.get(key), 0, MAX_GOLD);
-        if (price === null) invalidCouponPrice = true;
-        else couponPrices[discount] = price;
-    }
-    const incompleteCoupons = parseIncompleteCoupons(
-        params.get("x"),
-        couponPrices
-    );
-
-    if (
-        salePrice === null ||
-        memberCount === null ||
-        additionalCost === null ||
-        snapshotAt === null ||
-        !isValidSnapshotTime(snapshotAt) ||
-        !validMembership ||
-        invalidCouponPrice ||
-        incompleteCoupons === null
-    ) {
+    const snapshot = parseSnapshot(params);
+    if (snapshot === null) {
         return { status: "invalid", normalized: new URLSearchParams() };
     }
-
-    const snapshot: AuctionCalculatorSnapshot = {
-        salePrice,
-        memberCount,
-        hasMembership: membershipValues[0] === "1",
-        additionalCost,
-        couponPrices,
-        incompleteCoupons,
-        snapshotAt,
-    };
 
     try {
         return {

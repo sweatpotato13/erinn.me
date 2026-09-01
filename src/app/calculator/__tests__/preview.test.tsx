@@ -32,6 +32,10 @@ jest.mock("next/og", () => ({
     },
 }));
 
+jest.mock("node:fs/promises", () => ({
+    readFile: jest.fn().mockResolvedValue(Buffer.from("font")),
+}));
+
 import {
     createCalculatorPreviewCopy,
     GET,
@@ -90,7 +94,9 @@ describe("auction calculator preview", () => {
     });
 
     it("renders calculator content for a valid snapshot without fetch", async () => {
-        const fetchSpy = jest.spyOn(global, "fetch");
+        const fetchSpy = jest
+            .spyOn(global, "fetch")
+            .mockRejectedValue(new Error("unexpected fetch"));
         const query = serializeAuctionCalculatorSnapshot(snapshot);
         await expectPng(
             await GET(

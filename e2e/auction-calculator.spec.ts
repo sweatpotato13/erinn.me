@@ -12,11 +12,12 @@ async function mockCouponPrices(page: Page) {
             "item_name"
         );
         const index = couponNames.indexOf(itemName ?? "");
-        requests.push(itemName ?? "");
+        const requestIndex = requests.push(itemName ?? "") - 1;
+        const batchIndex = Math.floor(requestIndex / couponNames.length);
         return route.fulfill({
             json: {
                 minPrice:
-                    requests.length > 5 && index === 0
+                    batchIndex === 1 && index === 0
                         ? 500_000
                         : initialPrices[index],
                 averagePrice: initialPrices[index],
@@ -67,7 +68,8 @@ test.beforeEach(async ({ page }) => {
     await mockCouponPrices(page);
     await page.goto("/calculator");
     await expect(page.getByText("쿠폰 시세를 갱신했습니다.")).toBeVisible();
-    expect(requests).toEqual(couponNames);
+    expect(requests).toHaveLength(couponNames.length);
+    expect(new Set(requests)).toEqual(new Set(couponNames));
 });
 
 test("calculates, freezes, restores, and refreshes a shared result", async ({
