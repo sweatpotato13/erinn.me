@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import type * as z from "zod";
 
+const NEXON_OPEN_API_URL = "https://open.api.nexon.com";
+
 export type UpstreamFailureClass =
     "upstream_config" | "timeout" | "upstream_http" | "upstream_schema";
 
@@ -24,14 +26,13 @@ export type RequestDeadline = {
  * Builds an HTTPS URL from an upstream path and base URL.
  *
  * @param path - The path to resolve against the base URL
- * @param baseUrl - The configured upstream base URL
+ * @param baseUrl - An optional configured upstream base URL
  * @returns The resolved upstream URL
- * @throws `UpstreamFailure` if the base URL is missing, invalid, or uses an unsupported protocol
+ * @throws `UpstreamFailure` if the base URL is invalid or uses an unsupported protocol
  */
 export function createUpstreamUrl(path: string, baseUrl?: string): URL {
     try {
-        if (!baseUrl) throw new TypeError("Missing upstream URL");
-        const url = new URL(path, baseUrl);
+        const url = new URL(path, baseUrl || NEXON_OPEN_API_URL);
         if (url.protocol !== "https:") {
             throw new TypeError("Unsupported upstream URL protocol");
         }

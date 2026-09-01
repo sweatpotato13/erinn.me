@@ -24,6 +24,16 @@ const publicPages = [
             "아이템명·카테고리·세부 옵션으로 현재 매물을 검색하고 최근 거래가와 비교하세요.",
     },
     {
+        path: "/calculator",
+        title: "마비노기 파티 분배 계산기 | Erinn.me",
+        description:
+            "경매 수수료 할인 쿠폰 가격과 공통 비용을 비교해 파티 분배액을 계산하고 결과를 공유하세요.",
+        canonical: "https://erinn.me/calculator",
+        heading: "파티 분배 계산기",
+        summary:
+            "경매 수수료, 쿠폰 구매가와 공통 비용을 뺀 뒤 파티 분배액을 비교합니다.",
+    },
+    {
         path: "/horn",
         title: "마비노기 뿔피리 조회·키워드 알림 | Erinn.me",
         description:
@@ -288,6 +298,7 @@ test.describe("Homepage Tests", () => {
         await expect(page.locator("header.navbar")).toBeVisible();
         for (const path of [
             "/auction",
+            "/calculator",
             "/npc-shop",
             "/horn",
             "/contact",
@@ -298,7 +309,7 @@ test.describe("Homepage Tests", () => {
         await page.locator("header.navbar button").click();
         await expect(page.locator('a[href="/dungeon"]')).toHaveCount(0);
         await expect(page.locator('a[href="/crafting"]')).toHaveCount(0);
-        for (const path of ["/auction", "/npc-shop", "/horn"]) {
+        for (const path of ["/auction", "/calculator", "/npc-shop", "/horn"]) {
             await expect(
                 page.locator(`header a[href="${path}"]`)
             ).toBeVisible();
@@ -306,6 +317,7 @@ test.describe("Homepage Tests", () => {
 
         await page.locator('main a[href="/auction"]').click();
         await expect(page).toHaveURL(/auction/);
+        await expect(page.locator('main a[href="/calculator"]')).toHaveCount(0);
     });
 
     for (const path of ["/dungeon", "/crafting", "/changelog"]) {
