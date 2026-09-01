@@ -65,7 +65,15 @@ const marketSales = [
     },
 ];
 
-async function setupMarketRoutes(page: Page) {
+type MarketRouteOptions = {
+    currentHasMore?: boolean;
+    recentHasMore?: boolean;
+};
+
+async function setupMarketRoutes(
+    page: Page,
+    { currentHasMore = true, recentHasMore = false }: MarketRouteOptions = {}
+) {
     const counts = { auction: 0, history: 0 };
     const auctionResponse = (url: string) => {
         const filtered = Array.from(new URL(url).searchParams.keys()).some(
@@ -81,7 +89,11 @@ async function setupMarketRoutes(page: Page) {
                       unevaluableCount: 1,
                   },
               }
-            : { items: marketItems, hasMore: true, nextCursor: "next" };
+            : {
+                  items: marketItems,
+                  hasMore: currentHasMore,
+                  nextCursor: currentHasMore ? "next" : null,
+              };
     };
     await page.route("**/api/suggest?**", route =>
         route.fulfill({ json: { suggestions: [] } })
@@ -99,7 +111,7 @@ async function setupMarketRoutes(page: Page) {
         return route.fulfill({
             json: {
                 sales: marketSales,
-                hasMore: false,
+                hasMore: recentHasMore,
                 fetchedAt: marketFetchedAt,
             },
         });
@@ -107,8 +119,8 @@ async function setupMarketRoutes(page: Page) {
     return counts;
 }
 
-async function openMarket(page: Page) {
-    const counts = await setupMarketRoutes(page);
+async function openMarket(page: Page, options?: MarketRouteOptions) {
+    const counts = await setupMarketRoutes(page, options);
     await page.goto("/auction", { waitUntil: "networkidle" });
     return counts;
 }
@@ -353,6 +365,7 @@ test("auction option filters validate, apply, remove, clear, and follow history"
     await expect(
         page.getByText(/장비 옵션 조건으로 전체 11개 매물을 확인했습니다/)
     ).toContainText("판정할 수 없는 1개 매물은 결과에서 제외했습니다.");
+    await expect(page.getByText(/최근 1시간 거래 중앙값 대비/)).toHaveCount(0);
 
     const details = page.locator("details").filter({
         hasText: "장비 옵션 필터",
@@ -754,10 +767,69 @@ test("auction search renders the incomplete market snapshot", async ({
     await expect(
         listings.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
     ).toBeVisible();
+    await expect(listings.getByText(/최근 1시간 거래 중앙값 대비/)).toHaveCount(
+        0
+    );
     await expect(recentSalesButton(page)).toBeVisible();
     await expect(recentSalesDialog(page)).not.toBeVisible();
     await expect.poll(() => counts.auction).toBe(1);
     await expect.poll(() => counts.history).toBe(1);
+});
+
+test("compact recent-sale context stays inline and on demand", async ({
+    page,
+}) => {
+    const counts = await openMarket(page, { currentHasMore: false });
+    await searchMarket(page);
+    const listings = page.getByRole("region", { name: "현재 등록 매물" });
+    const lowestMetric = listings.getByText("최저 단가").locator("..");
+    const trigger = recentSalesButton(page);
+
+    await expect(lowestMetric.locator("dd")).toContainText("100 Gold");
+    await expect(lowestMetric.locator("dd")).toContainText(
+        "최근 1시간 거래 중앙값 대비 50% 낮음"
+    );
+    await expect(
+        page.getByRole("img", { name: "최근 1시간 완료 거래 단가 추이" })
+    ).toHaveCount(0);
+    await expect(listings.getByRole("table")).toBeVisible();
+
+    await trigger.click();
+    const dialog = recentSalesDialog(page);
+    const chart = dialog.getByRole("img", {
+        name: "최근 1시간 완료 거래 단가 추이",
+    });
+    const table = dialog.getByRole("table");
+    await expect(chart).toBeVisible();
+    await expect(
+        dialog.getByText("최근 1시간 완료 거래 단가 추이")
+    ).toBeVisible();
+    await expect(chart.getByText("완료 단가 (Gold)")).toBeVisible();
+    await expect(chart.getByText("거래 시각", { exact: true })).toBeVisible();
+    await expect(table.locator("tbody tr")).toHaveCount(3);
+    await expect(chart.locator("circle")).toHaveCount(3);
+    expect(
+        await chart.evaluate(svg => {
+            const figure = svg.closest("figure");
+            const summary = figure?.previousElementSibling;
+            const tableContainer = figure?.nextElementSibling;
+            return (
+                summary?.tagName === "DL" &&
+                tableContainer?.querySelector("table") !== null
+            );
+        })
+    ).toBe(true);
+    const chartBox = await chart.boundingBox();
+    const contentBox = await chart.locator("..").boundingBox();
+    expect(chartBox).not.toBeNull();
+    expect(contentBox).not.toBeNull();
+    expect(chartBox!.width).toBeLessThanOrEqual(contentBox!.width + 1);
+
+    await dialog.getByRole("button", { name: "닫기" }).click();
+    await expect(trigger).toBeFocused();
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("아이템");
+    await expect(listings.getByRole("table")).toBeVisible();
+    expect(counts).toEqual({ auction: 1, history: 1 });
 });
 
 test("auction comparison limits and clears selected listings", async ({
