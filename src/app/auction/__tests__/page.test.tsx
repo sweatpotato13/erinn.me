@@ -1208,6 +1208,30 @@ describe("AuctionResults", () => {
         return within(screen.getByRole("region", { name: "현재 등록 매물" }));
     }
 
+    async function openRecentSalesChart(sales: AuctionSale[]) {
+        const user = userEvent.setup();
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                recentSales={recentSalesState(sales)}
+            />
+        );
+        expect(
+            screen.queryByRole("img", {
+                name: "최근 1시간 완료 거래 단가 추이",
+            })
+        ).not.toBeInTheDocument();
+        await user.click(
+            screen.getByRole("button", {
+                name: `최근 1시간 완료 거래 ${sales.length}건 보기`,
+            })
+        );
+        return within(
+            screen.getByRole("dialog", { name: "최근 1시간 완료 거래" })
+        );
+    }
+
     it("does not link results to a price page", () => {
         render(<AuctionResults {...baseProps} items={[item("불타래", 100)]} />);
         expect(
@@ -1552,34 +1576,11 @@ describe("AuctionResults", () => {
     });
 
     it("plots recent prices chronologically between the summary and table", async () => {
-        const user = userEvent.setup();
-        const sales = [
+        const panel = await openRecentSalesChart([
             sale("latest", 300, 1, "2026-08-20T03:00:00Z"),
             sale("earliest", 100, 1, "2026-08-20T01:00:00Z"),
             sale("middle", 200, 1, "2026-08-20T02:00:00Z"),
-        ];
-        render(
-            <AuctionResults
-                {...baseProps}
-                items={[]}
-                recentSales={recentSalesState(sales)}
-            />
-        );
-
-        expect(
-            screen.queryByRole("img", {
-                name: "최근 1시간 완료 거래 단가 추이",
-            })
-        ).not.toBeInTheDocument();
-        await user.click(
-            screen.getByRole("button", {
-                name: "최근 1시간 완료 거래 3건 보기",
-            })
-        );
-        const dialog = screen.getByRole("dialog", {
-            name: "최근 1시간 완료 거래",
-        });
-        const panel = within(dialog);
+        ]);
         const chart = panel.getByRole("img", {
             name: "최근 1시간 완료 거래 단가 추이",
         });
@@ -1624,35 +1625,36 @@ describe("AuctionResults", () => {
                 sale("c", 1_000_000_000, 1, "2026-08-20T01:00:00.002Z"),
             ],
         ],
+        [
+            "extreme finite prices",
+            [
+                sale("a", Number.MAX_VALUE / 2, 1, "2026-08-20T01:00:00Z"),
+                sale("b", Number.MAX_VALUE, 1, "2026-08-20T02:00:00Z"),
+                sale("c", Number.MAX_VALUE * 0.75, 1, "2026-08-20T03:00:00Z"),
+            ],
+        ],
     ] as Array<[string, AuctionSale[]]>)(
         "keeps %s inside the SVG bounds",
         async (_name, sales) => {
-            const user = userEvent.setup();
-            render(
-                <AuctionResults
-                    {...baseProps}
-                    items={[]}
-                    recentSales={recentSalesState(sales)}
-                />
-            );
-            await user.click(
-                screen.getByRole("button", {
-                    name: "최근 1시간 완료 거래 3건 보기",
-                })
-            );
-            const circles = Array.from(
-                screen
-                    .getByRole("img", {
-                        name: "최근 1시간 완료 거래 단가 추이",
-                    })
-                    .querySelectorAll("circle")
-            );
+            const panel = await openRecentSalesChart(sales);
+            const chart = panel.getByRole("img", {
+                name: "최근 1시간 완료 거래 단가 추이",
+            });
+            const circles = Array.from(chart.querySelectorAll("circle"));
             const coordinates = circles.flatMap(circle => [
                 Number(circle.getAttribute("cx")),
                 Number(circle.getAttribute("cy")),
             ]);
+            const lineCoordinates = Array.from(
+                chart.querySelectorAll("line")
+            ).flatMap(line =>
+                ["x1", "x2", "y1", "y2"].map(attribute =>
+                    Number(line.getAttribute(attribute))
+                )
+            );
 
             expect(coordinates.every(Number.isFinite)).toBe(true);
+            expect(lineCoordinates.every(Number.isFinite)).toBe(true);
             circles.forEach(circle => {
                 expect(
                     Number(circle.getAttribute("cx"))

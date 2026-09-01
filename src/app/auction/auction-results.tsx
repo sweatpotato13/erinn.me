@@ -554,13 +554,29 @@ function RecentSalesTable({ sales }: { sales: AuctionSale[] }) {
     );
 }
 
-function RecentSalesChart({ sales }: { sales: AuctionSale[] }) {
-    const width = 640;
-    const height = 200;
-    const plotLeft = 4;
-    const plotRight = width - plotLeft;
-    const plotTop = 28;
-    const plotBottom = height - 38;
+const RECENT_SALES_CHART_BOUNDS = {
+    width: 640,
+    height: 200,
+    left: 4,
+    right: 636,
+    top: 28,
+    bottom: 162,
+} as const;
+
+function scaleRecentSalesChartValue(
+    value: number,
+    min: number,
+    max: number,
+    start: number,
+    end: number
+) {
+    return min === max
+        ? (start + end) / 2
+        : start + ((value - min) / (max - min)) * (end - start);
+}
+
+function getRecentSalesChartModel(sales: AuctionSale[]) {
+    const { left, right, top, bottom } = RECENT_SALES_CHART_BOUNDS;
     const chronologicalSales = [...sales].sort(
         (a, b) =>
             Date.parse(a.date_auction_buy) - Date.parse(b.date_auction_buy) ||
@@ -576,29 +592,183 @@ function RecentSalesChart({ sales }: { sales: AuctionSale[] }) {
     const maxPrice = Math.max(...prices);
     const points = chronologicalSales.map((sale, index) => ({
         sale,
-        x:
-            minTime === maxTime
-                ? (plotLeft + plotRight) / 2
-                : plotLeft +
-                  ((timestamps[index] - minTime) / (maxTime - minTime)) *
-                      (plotRight - plotLeft),
-        y:
-            minPrice === maxPrice
-                ? (plotTop + plotBottom) / 2
-                : plotTop +
-                  ((maxPrice - prices[index]) / (maxPrice - minPrice)) *
-                      (plotBottom - plotTop),
+        x: scaleRecentSalesChartValue(
+            timestamps[index],
+            minTime,
+            maxTime,
+            left,
+            right
+        ),
+        y: scaleRecentSalesChartValue(
+            prices[index],
+            minPrice,
+            maxPrice,
+            bottom,
+            top
+        ),
     }));
-    const yTicks =
+    const tickPrices =
         minPrice === maxPrice
             ? [minPrice]
-            : [maxPrice, (maxPrice + minPrice) / 2, minPrice];
-    const getY = (price: number) =>
-        minPrice === maxPrice
-            ? (plotTop + plotBottom) / 2
-            : plotTop +
-              ((maxPrice - price) / (maxPrice - minPrice)) *
-                  (plotBottom - plotTop);
+            : [maxPrice, minPrice + (maxPrice - minPrice) / 2, minPrice];
+    const priceTicks = tickPrices.map(price => ({
+        price,
+        y: scaleRecentSalesChartValue(price, minPrice, maxPrice, bottom, top),
+    }));
+
+    return { minTime, maxTime, points, priceTicks };
+}
+
+type RecentSalesChartModel = ReturnType<typeof getRecentSalesChartModel>;
+
+function RecentSalesPriceTicks({
+    ticks,
+}: {
+    ticks: RecentSalesChartModel["priceTicks"];
+}) {
+    const { left, right } = RECENT_SALES_CHART_BOUNDS;
+    return (
+        <>
+            <text x={left} y="12" fill="currentColor" fontSize="11">
+                완료 단가 (Gold)
+            </text>
+            {ticks.map(({ price, y }) => (
+                <g key={price}>
+                    <line
+                        x1={left}
+                        y1={y}
+                        x2={right}
+                        y2={y}
+                        stroke="currentColor"
+                        opacity="0.15"
+                        vectorEffect="non-scaling-stroke"
+                    />
+                    <text
+                        x={left + 4}
+                        y={y - 4}
+                        fill="currentColor"
+                        fontSize="10"
+                        textAnchor="start"
+                    >
+                        {axisNumberFormatter.format(price)}
+                    </text>
+                </g>
+            ))}
+        </>
+    );
+}
+
+function RecentSalesTimeTicks({
+    minTime,
+    maxTime,
+}: Pick<RecentSalesChartModel, "minTime" | "maxTime">) {
+    const { left, right, bottom } = RECENT_SALES_CHART_BOUNDS;
+    const y = bottom + 16;
+    if (minTime === maxTime) {
+        return (
+            <text
+                x={(left + right) / 2}
+                y={y}
+                fill="currentColor"
+                fontSize="10"
+                textAnchor="middle"
+            >
+                {timeFormatter.format(new Date(minTime))}
+            </text>
+        );
+    }
+    return (
+        <>
+            <text
+                x={left}
+                y={y}
+                fill="currentColor"
+                fontSize="10"
+                textAnchor="start"
+            >
+                {timeFormatter.format(new Date(minTime))}
+            </text>
+            <text
+                x={right}
+                y={y}
+                fill="currentColor"
+                fontSize="10"
+                textAnchor="end"
+            >
+                {timeFormatter.format(new Date(maxTime))}
+            </text>
+        </>
+    );
+}
+
+function RecentSalesChartAxes({ model }: { model: RecentSalesChartModel }) {
+    const { width, height, left, right, top, bottom } =
+        RECENT_SALES_CHART_BOUNDS;
+    return (
+        <g className="text-base-content">
+            <RecentSalesPriceTicks ticks={model.priceTicks} />
+            <path
+                d={`M ${left} ${top} V ${bottom} H ${right}`}
+                fill="none"
+                stroke="currentColor"
+                opacity="0.6"
+                vectorEffect="non-scaling-stroke"
+            />
+            <RecentSalesTimeTicks
+                minTime={model.minTime}
+                maxTime={model.maxTime}
+            />
+            <text
+                x={width / 2}
+                y={height - 4}
+                fill="currentColor"
+                fontSize="11"
+                textAnchor="middle"
+            >
+                거래 시각
+            </text>
+        </g>
+    );
+}
+
+function RecentSalesChartPoints({
+    points,
+}: {
+    points: RecentSalesChartModel["points"];
+}) {
+    return (
+        <>
+            <polyline
+                points={points.map(({ x, y }) => `${x},${y}`).join(" ")}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                vectorEffect="non-scaling-stroke"
+            />
+            {points.map(({ sale, x, y }, index) => (
+                <circle
+                    key={`${sale.auction_buy_id}-${index}`}
+                    cx={x}
+                    cy={y}
+                    r="3"
+                    fill="currentColor"
+                >
+                    <title>
+                        {dateTimeFormatter.format(
+                            new Date(sale.date_auction_buy)
+                        )}{" "}
+                        · {numberFormatter.format(sale.auction_price_per_unit)}
+                        {" Gold"}
+                    </title>
+                </circle>
+            ))}
+        </>
+    );
+}
+
+function RecentSalesChart({ sales }: { sales: AuctionSale[] }) {
+    const { width, height } = RECENT_SALES_CHART_BOUNDS;
+    const model = getRecentSalesChartModel(sales);
 
     return (
         <figure className="mt-3">
@@ -615,122 +785,8 @@ function RecentSalesChart({ sales }: { sales: AuctionSale[] }) {
                     세로축은 완료 단가, 가로축은 거래 시각입니다. 점에 마우스를
                     올리면 정확한 값을 확인할 수 있습니다.
                 </desc>
-                <g className="text-base-content">
-                    <text x={plotLeft} y="12" fill="currentColor" fontSize="11">
-                        완료 단가 (Gold)
-                    </text>
-                    {yTicks.map(price => {
-                        const y = getY(price);
-                        return (
-                            <g key={price}>
-                                <line
-                                    x1={plotLeft}
-                                    y1={y}
-                                    x2={plotRight}
-                                    y2={y}
-                                    stroke="currentColor"
-                                    opacity="0.15"
-                                    vectorEffect="non-scaling-stroke"
-                                />
-                                <text
-                                    x={plotLeft + 4}
-                                    y={y - 4}
-                                    fill="currentColor"
-                                    fontSize="10"
-                                    textAnchor="start"
-                                >
-                                    {axisNumberFormatter.format(price)}
-                                </text>
-                            </g>
-                        );
-                    })}
-                    <line
-                        x1={plotLeft}
-                        y1={plotTop}
-                        x2={plotLeft}
-                        y2={plotBottom}
-                        stroke="currentColor"
-                        opacity="0.6"
-                        vectorEffect="non-scaling-stroke"
-                    />
-                    <line
-                        x1={plotLeft}
-                        y1={plotBottom}
-                        x2={plotRight}
-                        y2={plotBottom}
-                        stroke="currentColor"
-                        opacity="0.6"
-                        vectorEffect="non-scaling-stroke"
-                    />
-                    {minTime === maxTime ? (
-                        <text
-                            x={(plotLeft + plotRight) / 2}
-                            y={plotBottom + 16}
-                            fill="currentColor"
-                            fontSize="10"
-                            textAnchor="middle"
-                        >
-                            {timeFormatter.format(new Date(minTime))}
-                        </text>
-                    ) : (
-                        <>
-                            <text
-                                x={plotLeft}
-                                y={plotBottom + 16}
-                                fill="currentColor"
-                                fontSize="10"
-                                textAnchor="start"
-                            >
-                                {timeFormatter.format(new Date(minTime))}
-                            </text>
-                            <text
-                                x={plotRight}
-                                y={plotBottom + 16}
-                                fill="currentColor"
-                                fontSize="10"
-                                textAnchor="end"
-                            >
-                                {timeFormatter.format(new Date(maxTime))}
-                            </text>
-                        </>
-                    )}
-                    <text
-                        x={(plotLeft + plotRight) / 2}
-                        y={height - 4}
-                        fill="currentColor"
-                        fontSize="11"
-                        textAnchor="middle"
-                    >
-                        거래 시각
-                    </text>
-                </g>
-                <polyline
-                    points={points.map(({ x, y }) => `${x},${y}`).join(" ")}
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    vectorEffect="non-scaling-stroke"
-                />
-                {points.map(({ sale, x, y }, index) => (
-                    <circle
-                        key={`${sale.auction_buy_id}-${index}`}
-                        cx={x}
-                        cy={y}
-                        r="3"
-                        fill="currentColor"
-                    >
-                        <title>
-                            {dateTimeFormatter.format(
-                                new Date(sale.date_auction_buy)
-                            )}{" "}
-                            ·{" "}
-                            {numberFormatter.format(
-                                sale.auction_price_per_unit
-                            )}
-                            {" Gold"}
-                        </title>
-                    </circle>
-                ))}
+                <RecentSalesChartAxes model={model} />
+                <RecentSalesChartPoints points={model.points} />
             </svg>
         </figure>
     );

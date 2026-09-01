@@ -152,6 +152,46 @@ function recentSalesDialog(page: Page) {
     return page.getByRole("dialog", { name: "최근 1시간 완료 거래" });
 }
 
+async function expectRecentSalesChart(dialog: Locator) {
+    const chart = dialog.getByRole("img", {
+        name: "최근 1시간 완료 거래 단가 추이",
+    });
+    await expect(chart).toBeVisible();
+    await expect(
+        dialog.getByText("최근 1시간 완료 거래 단가 추이")
+    ).toBeVisible();
+    await expect(chart.getByText("완료 단가 (Gold)")).toBeVisible();
+    await expect(chart.getByText("거래 시각", { exact: true })).toBeVisible();
+    await expect(dialog.locator("tbody tr")).toHaveCount(3);
+    await expect(chart.locator("circle")).toHaveCount(3);
+    expect(
+        await chart.evaluate(svg => {
+            const figure = svg.closest("figure");
+            return (
+                figure?.previousElementSibling?.tagName === "DL" &&
+                figure.nextElementSibling?.querySelector("table") !== null
+            );
+        })
+    ).toBe(true);
+    const chartBox = await chart.boundingBox();
+    const contentBox = await chart.locator("..").boundingBox();
+    expect(chartBox).not.toBeNull();
+    expect(contentBox).not.toBeNull();
+    expect(chartBox!.width).toBeLessThanOrEqual(contentBox!.width + 1);
+}
+
+async function closeRecentSalesChart(
+    page: Page,
+    dialog: Locator,
+    trigger: Locator,
+    listings: Locator
+) {
+    await dialog.getByRole("button", { name: "닫기" }).click();
+    await expect(trigger).toBeFocused();
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("아이템");
+    await expect(listings.getByRole("table")).toBeVisible();
+}
+
 function comparisonCheckbox(page: Page, itemNumber: number) {
     return page.getByRole("checkbox", {
         name: new RegExp(`^아이템 ${itemNumber}, .*비교 선택$`),
@@ -796,39 +836,8 @@ test("compact recent-sale context stays inline and on demand", async ({
 
     await trigger.click();
     const dialog = recentSalesDialog(page);
-    const chart = dialog.getByRole("img", {
-        name: "최근 1시간 완료 거래 단가 추이",
-    });
-    const table = dialog.getByRole("table");
-    await expect(chart).toBeVisible();
-    await expect(
-        dialog.getByText("최근 1시간 완료 거래 단가 추이")
-    ).toBeVisible();
-    await expect(chart.getByText("완료 단가 (Gold)")).toBeVisible();
-    await expect(chart.getByText("거래 시각", { exact: true })).toBeVisible();
-    await expect(table.locator("tbody tr")).toHaveCount(3);
-    await expect(chart.locator("circle")).toHaveCount(3);
-    expect(
-        await chart.evaluate(svg => {
-            const figure = svg.closest("figure");
-            const summary = figure?.previousElementSibling;
-            const tableContainer = figure?.nextElementSibling;
-            return (
-                summary?.tagName === "DL" &&
-                tableContainer?.querySelector("table") !== null
-            );
-        })
-    ).toBe(true);
-    const chartBox = await chart.boundingBox();
-    const contentBox = await chart.locator("..").boundingBox();
-    expect(chartBox).not.toBeNull();
-    expect(contentBox).not.toBeNull();
-    expect(chartBox!.width).toBeLessThanOrEqual(contentBox!.width + 1);
-
-    await dialog.getByRole("button", { name: "닫기" }).click();
-    await expect(trigger).toBeFocused();
-    await expect(page.getByPlaceholder("아이템명")).toHaveValue("아이템");
-    await expect(listings.getByRole("table")).toBeVisible();
+    await expectRecentSalesChart(dialog);
+    await closeRecentSalesChart(page, dialog, trigger, listings);
     expect(counts).toEqual({ auction: 1, history: 1 });
 });
 
