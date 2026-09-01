@@ -2,6 +2,8 @@
 
 import { act } from "@testing-library/react";
 
+const mockRenderedMarkup: string[] = [];
+
 jest.mock("next/og", () => ({
     ImageResponse: class MockImageResponse extends Response {
         constructor(
@@ -13,7 +15,7 @@ jest.mock("next/og", () => ({
                     "react-dom/server"
                 );
             act(() => {
-                renderToStaticMarkup(element);
+                mockRenderedMarkup.push(renderToStaticMarkup(element));
             });
             const bytes = new Uint8Array(24);
             bytes.set([137, 80, 78, 71, 13, 10, 26, 10]);
@@ -65,6 +67,10 @@ describe("auction calculator preview", () => {
         snapshotAt: 1_788_226_000,
     };
 
+    beforeEach(() => {
+        mockRenderedMarkup.length = 0;
+    });
+
     it("creates copy from the same calculation result", () => {
         const result = calculateAuctionDistribution(snapshot);
         expect(
@@ -83,7 +89,7 @@ describe("auction calculator preview", () => {
         });
     });
 
-    it("renders valid and generic requests as 1200x630 PNG without fetch", async () => {
+    it("renders calculator content for a valid snapshot without fetch", async () => {
         const fetchSpy = jest.spyOn(global, "fetch");
         const query = serializeAuctionCalculatorSnapshot(snapshot);
         await expectPng(
@@ -91,14 +97,28 @@ describe("auction calculator preview", () => {
                 new Request(`http://localhost/calculator/preview?${query}`)
             )
         );
-        await expectPng(
-            await GET(
-                new Request("http://localhost/calculator/preview?v=1&p=unsafe")
-            )
-        );
+
+        expect(mockRenderedMarkup[0]).toContain("파티 분배 결과");
+        expect(mockRenderedMarkup[0]).toContain("10% 할인 쿠폰");
+        expect(mockRenderedMarkup[0]).toContain("24,040,000 Gold");
         expect(fetchSpy).not.toHaveBeenCalled();
         fetchSpy.mockRestore();
     });
+
+    it.each(["?v=1&p=unsafe", ""])(
+        "renders generic content for an invalid or empty query: %s",
+        async query => {
+            await expectPng(
+                await GET(
+                    new Request(`http://localhost/calculator/preview${query}`)
+                )
+            );
+
+            expect(mockRenderedMarkup[0]).toContain("파티 분배 계산기");
+            expect(mockRenderedMarkup[0]).not.toContain("파티 분배 결과");
+            expect(mockRenderedMarkup[0]).not.toContain("추천 선택지");
+        }
+    );
 
     it("falls back to a PNG when rendering fails", async () => {
         const spy = jest

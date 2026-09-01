@@ -211,7 +211,9 @@ describe("auction calculator page", () => {
         expect(
             screen.getByRole("article", { name: "10% 할인 쿠폰 · BEST" })
         ).toBeInTheDocument();
-        expect(screen.getAllByText("사용 가능한 매물 없음")).toHaveLength(8);
+        expect(screen.getAllByText("조회 실패 · 직접 입력 가능")).toHaveLength(
+            8
+        );
 
         act(() => {
             resolvers.forEach(resolve =>
@@ -253,10 +255,11 @@ describe("auction calculator page", () => {
         ).toBeInTheDocument();
     });
 
-    it("restores a changed query instead of keeping stale form state", async () => {
+    it("restores changed queries across back and forward navigation", async () => {
         const first = snapshot({ salePrice: 100 });
         const second = snapshot({ salePrice: 200 });
         const view = renderSnapshot(first);
+        const firstQuery = serializeAuctionCalculatorSnapshot(first).toString();
         const secondQuery =
             serializeAuctionCalculatorSnapshot(second).toString();
 
@@ -271,6 +274,24 @@ describe("auction calculator page", () => {
             />
         );
 
+        await waitFor(() =>
+            expect(screen.getByLabelText("판매 금액 (Gold)")).toHaveValue(200)
+        );
+
+        act(() => window.history.back());
+        await waitFor(() =>
+            expect(window.location.search).toBe(`?${firstQuery}`)
+        );
+        view.rerender(<AuctionCalculator initialQuery={firstQuery} />);
+        await waitFor(() =>
+            expect(screen.getByLabelText("판매 금액 (Gold)")).toHaveValue(100)
+        );
+
+        act(() => window.history.forward());
+        await waitFor(() =>
+            expect(window.location.search).toBe(`?${secondQuery}`)
+        );
+        view.rerender(<AuctionCalculator initialQuery={firstQuery} />);
         await waitFor(() =>
             expect(screen.getByLabelText("판매 금액 (Gold)")).toHaveValue(200)
         );

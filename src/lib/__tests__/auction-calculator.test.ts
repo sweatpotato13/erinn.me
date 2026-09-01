@@ -2,10 +2,13 @@ import {
     type AuctionCalculatorInput,
     calculateAuctionDistribution,
     createEmptyCouponPrices,
+    formatGold,
     MAX_GOLD,
 } from "@/lib/auction-calculator";
 import {
     type AuctionCalculatorSnapshot,
+    getAuctionCalculatorPath,
+    getAuctionCalculatorPreviewPath,
     parseAuctionCalculatorParams,
     searchParamsRecordToURLSearchParams,
     serializeAuctionCalculatorSnapshot,
@@ -25,6 +28,13 @@ function input(
 }
 
 describe("auction calculator", () => {
+    it("formats safe Gold values and rejects unsafe values", () => {
+        expect(formatGold(1_234_567)).toBe("1,234,567");
+        expect(() => formatGold(Number.MAX_SAFE_INTEGER + 1)).toThrow(
+            "Unsafe Gold value"
+        );
+    });
+
     it("calculates the documented no-coupon and membership examples", () => {
         expect(calculateAuctionDistribution(input()).recommended).toMatchObject(
             {
@@ -117,6 +127,14 @@ describe("auction calculator URL", () => {
         incompleteCoupons: [20],
         snapshotAt: 1_788_226_000,
     };
+
+    it("omits the query delimiter for empty calculator paths", () => {
+        const params = new URLSearchParams();
+        expect(getAuctionCalculatorPath(params)).toBe("/calculator");
+        expect(getAuctionCalculatorPreviewPath(params)).toBe(
+            "/calculator/preview"
+        );
+    });
 
     it("round-trips all fields in canonical order", () => {
         const serialized = serializeAuctionCalculatorSnapshot(snapshot);

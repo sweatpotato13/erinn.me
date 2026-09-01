@@ -27,6 +27,12 @@ export interface CalculatorPreviewCopy {
     split: string;
 }
 
+interface MetricProps {
+    label: string;
+    value: string;
+    offset?: boolean;
+}
+
 export function createCalculatorPreviewCopy(
     memberCount: number,
     recommended: AvailableAuctionOption,
@@ -42,57 +48,21 @@ export function createCalculatorPreviewCopy(
     };
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ label, value, offset = false }: MetricProps) {
     return (
         <div
-            style={{
-                display: "flex",
-                flex: 1,
-                flexDirection: "column",
-                padding: "24px 28px",
-                border: "2px solid #334155",
-                borderRadius: 20,
-                backgroundColor: "#111827",
-            }}
+            tw={`flex flex-1 flex-col rounded-2xl border-2 border-[#334155] bg-[#111827] px-7 py-6${offset ? " ml-4" : ""}`}
         >
-            <span style={{ color: "#94a3b8", fontSize: 22 }}>{label}</span>
-            <span style={{ marginTop: 12, color: "#f8fafc", fontSize: 34 }}>
-                {value}
-            </span>
+            <span tw="text-[22px] text-[#94a3b8]">{label}</span>
+            <span tw="mt-3 text-[34px] text-[#f8fafc]">{value}</span>
         </div>
     );
 }
 
-function CalculatorPreview({ copy }: { copy: CalculatorPreviewCopy }) {
+function PreviewMetrics({ copy }: { copy: CalculatorPreviewCopy }) {
     return (
-        <div
-            style={{
-                display: "flex",
-                width: "100%",
-                height: "100%",
-                flexDirection: "column",
-                padding: "40px 46px 34px",
-                backgroundColor: "#07111f",
-                color: "#f8fafc",
-                fontFamily: "AuctionPreview",
-            }}
-        >
-            <span style={{ color: "#67e8f9", fontSize: 24 }}>
-                ERINN.ME · 파티 분배 계산기
-            </span>
-            <span
-                style={{
-                    display: "flex",
-                    height: 78,
-                    alignItems: "center",
-                    overflow: "hidden",
-                    fontSize: 44,
-                    lineHeight: 1.1,
-                }}
-            >
-                {copy.heading}
-            </span>
-            <div style={{ display: "flex", gap: 18 }}>
+        <div tw="flex w-full flex-col">
+            <div tw="flex w-full">
                 <Metric
                     label="판매가"
                     value={copy.salePrice.replace("판매가 ", "")}
@@ -100,9 +70,10 @@ function CalculatorPreview({ copy }: { copy: CalculatorPreviewCopy }) {
                 <Metric
                     label="추천 선택지"
                     value={copy.recommendation.replace("추천 ", "")}
+                    offset
                 />
             </div>
-            <div style={{ display: "flex", marginTop: 18, gap: 18 }}>
+            <div tw="mt-4 flex w-full">
                 <Metric
                     label="총비용"
                     value={copy.totalCost.replace("총비용 ", "")}
@@ -110,10 +81,25 @@ function CalculatorPreview({ copy }: { copy: CalculatorPreviewCopy }) {
                 <Metric
                     label="분배 가능 금액"
                     value={copy.distributable.replace("분배 가능 ", "")}
+                    offset
                 />
-                <Metric label="파티 분배" value={copy.split} />
+                <Metric label="파티 분배" value={copy.split} offset />
             </div>
-            <span style={{ marginTop: 18, color: "#94a3b8", fontSize: 18 }}>
+        </div>
+    );
+}
+
+function CalculatorPreview({ copy }: { copy: CalculatorPreviewCopy }) {
+    return (
+        <div tw="flex h-full w-full flex-col bg-[#07111f] px-12 pt-10 pb-8 text-[#f8fafc]">
+            <span tw="text-[24px] text-[#67e8f9]">
+                ERINN.ME · 파티 분배 계산기
+            </span>
+            <span tw="flex h-20 items-center overflow-hidden text-[44px] leading-tight">
+                {copy.heading}
+            </span>
+            <PreviewMetrics copy={copy} />
+            <span tw="mt-4 text-[18px] text-[#94a3b8]">
                 Data based on Nexon Open API · 가격 및 수익 보장 아님
             </span>
         </div>
@@ -122,41 +108,16 @@ function CalculatorPreview({ copy }: { copy: CalculatorPreviewCopy }) {
 
 function GenericPreview() {
     return (
-        <div
-            style={{
-                display: "flex",
-                width: "100%",
-                height: "100%",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#07111f",
-                color: "#f8fafc",
-                fontFamily: "AuctionPreview",
-            }}
-        >
-            <span style={{ color: "#67e8f9", fontSize: 28 }}>ERINN.ME</span>
-            <span style={{ marginTop: 24, fontSize: 50 }}>
-                파티 분배 계산기
-            </span>
+        <div tw="flex h-full w-full flex-col items-center justify-center bg-[#07111f] text-[#f8fafc]">
+            <span tw="text-[28px] text-[#67e8f9]">ERINN.ME</span>
+            <span tw="mt-6 text-[50px]">파티 분배 계산기</span>
         </div>
     );
 }
 
 function AsciiFallback() {
     return (
-        <div
-            style={{
-                display: "flex",
-                width: "100%",
-                height: "100%",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: "#07111f",
-                color: "#f8fafc",
-                fontSize: 52,
-            }}
-        >
+        <div tw="flex h-full w-full items-center justify-center bg-[#07111f] text-[52px] text-[#f8fafc]">
             ERINN.ME AUCTION CALCULATOR
         </div>
     );
