@@ -7,6 +7,7 @@ import {
     parseUpstreamJson,
     throwIfDeadlineExpired,
 } from "@/lib/api/upstream";
+import { AUCTION_COUPONS } from "@/lib/auction-calculator";
 import { prepareAuctionResults } from "@/lib/auction-market";
 import {
     type AuctionHistoryResponse,
@@ -129,6 +130,22 @@ export const getCachedCurrentItemMarket = unstable_cache(
     (itemName: string) => fetchCurrentItemMarket(itemName),
     ["auction-current-market-v1"],
     { revalidate: 600 }
+);
+
+export const getCachedCouponItemMarkets = unstable_cache(
+    async () => {
+        const results = await Promise.allSettled(
+            AUCTION_COUPONS.map(coupon => fetchCurrentItemMarket(coupon.name))
+        );
+        return Object.fromEntries(
+            results.map((result, index) => [
+                AUCTION_COUPONS[index].discount,
+                result.status === "fulfilled" ? result.value : null,
+            ])
+        );
+    },
+    ["auction-coupon-markets-v1"],
+    { revalidate: 60 }
 );
 
 export const getCachedRecentItemSales = unstable_cache(

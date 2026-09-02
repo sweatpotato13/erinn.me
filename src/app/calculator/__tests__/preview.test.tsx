@@ -111,20 +111,44 @@ describe("auction calculator preview", () => {
         fetchSpy.mockRestore();
     });
 
-    it.each(["?v=1&p=unsafe", ""])(
-        "renders generic content for an invalid or empty query: %s",
+    it("renders generic content for an empty query", async () => {
+        await expectPng(
+            await GET(new Request("http://localhost/calculator/preview"))
+        );
+
+        expect(mockRenderedMarkup[0]).toContain("파티 분배 계산기");
+        expect(mockRenderedMarkup[0]).not.toContain("파티 분배 결과");
+        expect(mockRenderedMarkup[0]).not.toContain("추천 선택지");
+    });
+
+    it.each(["?v=1&p=unsafe", "?cache-bust=1", "?&"])(
+        "redirects invalid or non-canonical queries to the generic URL: %s",
         async query => {
-            await expectPng(
-                await GET(
-                    new Request(`http://localhost/calculator/preview${query}`)
-                )
+            const response = await GET(
+                new Request(`http://localhost/calculator/preview${query}`)
             );
 
-            expect(mockRenderedMarkup[0]).toContain("파티 분배 계산기");
-            expect(mockRenderedMarkup[0]).not.toContain("파티 분배 결과");
-            expect(mockRenderedMarkup[0]).not.toContain("추천 선택지");
+            expect(response.status).toBe(307);
+            expect(response.headers.get("location")).toBe(
+                "http://localhost/calculator/preview"
+            );
+            expect(mockRenderedMarkup).toHaveLength(0);
         }
     );
+
+    it("redirects valid but non-canonical queries before rendering", async () => {
+        const query = serializeAuctionCalculatorSnapshot(snapshot);
+        query.set("unknown", "1");
+        const response = await GET(
+            new Request(`http://localhost/calculator/preview?${query}`)
+        );
+
+        expect(response.status).toBe(307);
+        expect(response.headers.get("location")).toBe(
+            `http://localhost/calculator/preview?${serializeAuctionCalculatorSnapshot(snapshot)}`
+        );
+        expect(mockRenderedMarkup).toHaveLength(0);
+    });
 
     it("falls back to a PNG when rendering fails", async () => {
         const spy = jest

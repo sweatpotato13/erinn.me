@@ -4,7 +4,8 @@ import { StrictMode } from "react";
 
 import AuctionCalculator from "@/app/calculator/auction-calculator";
 import {
-    fetchItemPriceSummary,
+    type CouponPriceSummaries,
+    fetchCouponPriceSummaries,
     type PriceSummaryResponse,
 } from "@/lib/api/auction";
 import {
@@ -21,10 +22,29 @@ jest.mock("next/navigation", () => ({
 }));
 
 jest.mock("@/lib/api/auction", () => ({
-    fetchItemPriceSummary: jest.fn(),
+    fetchCouponPriceSummaries: jest.fn(),
 }));
 
-const mockedFetch = jest.mocked(fetchItemPriceSummary);
+const mockedFetch = jest.mocked(fetchCouponPriceSummaries);
+
+function couponSummaries(
+    overrides: Partial<CouponPriceSummaries> = {}
+): CouponPriceSummaries {
+    const available = {
+        minPrice: 10_000_000,
+        averagePrice: 10_000_000,
+        availableQuantity: 1,
+        isComplete: true,
+    };
+    return {
+        10: available,
+        20: available,
+        30: available,
+        50: available,
+        100: available,
+        ...overrides,
+    };
+}
 
 function snapshot(
     overrides: Partial<AuctionCalculatorSnapshot> = {}
@@ -74,13 +94,8 @@ describe("auction calculator page", () => {
         expect(screen.getAllByText("공유 스냅샷")).toHaveLength(2);
     });
 
-    it("loads each exact coupon once and does not refetch on form edits", async () => {
-        mockedFetch.mockResolvedValue({
-            minPrice: 10_000_000,
-            averagePrice: 10_000_000,
-            availableQuantity: 1,
-            isComplete: true,
-        });
+    it("loads one coupon batch and does not refetch on form edits", async () => {
+        mockedFetch.mockResolvedValue(couponSummaries());
         const user = userEvent.setup();
         render(
             <StrictMode>
@@ -88,10 +103,7 @@ describe("auction calculator page", () => {
             </StrictMode>
         );
 
-        await waitFor(() => expect(mockedFetch).toHaveBeenCalledTimes(5));
-        expect(mockedFetch.mock.calls.map(call => call[0])).toEqual(
-            AUCTION_COUPONS.map(coupon => coupon.name)
-        );
+        await waitFor(() => expect(mockedFetch).toHaveBeenCalledTimes(1));
         await user.type(screen.getByLabelText("판매 금액 (Gold)"), "95200000");
         expect(screen.getByText("(95,200,000 | 9520만)")).toBeInTheDocument();
         expect(
@@ -106,31 +118,42 @@ describe("auction calculator page", () => {
         ).toBeInTheDocument();
         await user.clear(screen.getByLabelText("분배 인원"));
         await user.type(screen.getByLabelText("분배 인원"), "2");
-        expect(mockedFetch).toHaveBeenCalledTimes(5);
+        expect(mockedFetch).toHaveBeenCalledTimes(1);
     });
 
     it("keeps incomplete and failed lookups manual while distinguishing zero", async () => {
-        mockedFetch.mockImplementation(itemName => {
-            if (itemName.includes("10%")) {
-                return Promise.resolve({
+        mockedFetch.mockResolvedValue(
+            couponSummaries({
+                10: {
                     minPrice: 240_000,
                     averagePrice: 240_000,
                     availableQuantity: 1,
                     isComplete: false,
-                });
-            }
-            if (itemName.includes("20%"))
-                return Promise.reject(new Error("offline"));
-            return Promise.resolve({
-                minPrice: 0,
-                averagePrice: 0,
-                availableQuantity: 0,
-                isComplete: true,
-            });
-        });
+                },
+                20: null,
+                30: {
+                    minPrice: 0,
+                    averagePrice: 0,
+                    availableQuantity: 0,
+                    isComplete: true,
+                },
+                50: {
+                    minPrice: 0,
+                    averagePrice: 0,
+                    availableQuantity: 0,
+                    isComplete: true,
+                },
+                100: {
+                    minPrice: 0,
+                    averagePrice: 0,
+                    availableQuantity: 0,
+                    isComplete: true,
+                },
+            })
+        );
         const user = userEvent.setup();
         render(<AuctionCalculator initialQuery="" />);
-        await waitFor(() => expect(mockedFetch).toHaveBeenCalledTimes(5));
+        await waitFor(() => expect(mockedFetch).toHaveBeenCalledTimes(1));
         await user.type(screen.getByLabelText("판매 금액 (Gold)"), "100000000");
 
         expect(await screen.findAllByText("일부 데이터 최저가")).toHaveLength(
@@ -167,14 +190,23 @@ describe("auction calculator page", () => {
     it("aborts an older refresh and commits only the newer snapshot", async () => {
         const never = new Promise<never>(() => undefined);
         mockedFetch.mockImplementation(() =>
-            mockedFetch.mock.calls.length <= 5
+            mockedFetch.mock.calls.length <= 1
                 ? never
-                : Promise.resolve({
-                      minPrice: 0,
-                      averagePrice: 0,
-                      availableQuantity: 1,
-                      isComplete: true,
-                  })
+                : Promise.resolve(
+                      couponSummaries(
+                          Object.fromEntries(
+                              AUCTION_COUPONS.map(({ discount }) => [
+                                  discount,
+                                  {
+                                      minPrice: 0,
+                                      averagePrice: 0,
+                                      availableQuantity: 1,
+                                      isComplete: true,
+                                  },
+                              ])
+                          )
+                      )
+                  )
         );
         const user = userEvent.setup();
         renderSnapshot(snapshot());
@@ -182,11 +214,11 @@ describe("auction calculator page", () => {
         await user.click(
             screen.getByRole("button", { name: "현재 시세로 다시 계산" })
         );
-        await waitFor(() => expect(mockedFetch).toHaveBeenCalledTimes(5));
+        await waitFor(() => expect(mockedFetch).toHaveBeenCalledTimes(1));
         await user.click(
             screen.getByRole("button", { name: "조회 중 · 다시 시작" })
         );
-        await waitFor(() => expect(mockedFetch).toHaveBeenCalledTimes(10));
+        await waitFor(() => expect(mockedFetch).toHaveBeenCalledTimes(2));
         await screen.findByText("쿠폰 시세를 갱신했습니다.");
 
         expect(window.location.search).toContain("v=1");
@@ -195,7 +227,7 @@ describe("auction calculator page", () => {
     });
 
     it("keeps a manual edit when the canceled initial lookup resolves late", async () => {
-        const resolvers: Array<(value: PriceSummaryResponse) => void> = [];
+        const resolvers: Array<(value: CouponPriceSummaries) => void> = [];
         mockedFetch.mockImplementation(
             () =>
                 new Promise(resolve => {
@@ -205,7 +237,7 @@ describe("auction calculator page", () => {
         const user = userEvent.setup();
         render(<AuctionCalculator initialQuery="" />);
 
-        await waitFor(() => expect(resolvers).toHaveLength(5));
+        await waitFor(() => expect(resolvers).toHaveLength(1));
         await user.type(screen.getByLabelText("판매 금액 (Gold)"), "100000000");
         await user.type(screen.getByLabelText("10% 할인 쿠폰 (Gold)"), "0");
         expect(
@@ -217,12 +249,21 @@ describe("auction calculator page", () => {
 
         act(() => {
             resolvers.forEach(resolve =>
-                resolve({
-                    minPrice: 1,
-                    averagePrice: 1,
-                    availableQuantity: 1,
-                    isComplete: true,
-                })
+                resolve(
+                    couponSummaries(
+                        Object.fromEntries(
+                            AUCTION_COUPONS.map(({ discount }) => [
+                                discount,
+                                {
+                                    minPrice: 1,
+                                    averagePrice: 1,
+                                    availableQuantity: 1,
+                                    isComplete: true,
+                                } satisfies PriceSummaryResponse,
+                            ])
+                        )
+                    )
+                )
             );
         });
         await waitFor(() =>

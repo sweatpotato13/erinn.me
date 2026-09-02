@@ -1,29 +1,27 @@
 import { expect, type Page, test } from "@playwright/test";
 
-const couponNames = [10, 20, 30, 50, 100].map(
-    discount => `경매장 수수료 ${discount}% 할인 쿠폰`
-);
+const couponDiscounts = [10, 20, 30, 50, 100];
 const initialPrices = [240_000, 2_000_000, 2_000_000, 3_000_000, 5_000_000];
-let requests: string[];
+let requestCount: number;
 
 async function mockCouponPrices(page: Page) {
-    await page.route("**/api/auction/price-summary?**", route => {
-        const itemName = new URL(route.request().url()).searchParams.get(
-            "item_name"
-        );
-        const index = couponNames.indexOf(itemName ?? "");
-        const requestIndex = requests.push(itemName ?? "") - 1;
-        const batchIndex = Math.floor(requestIndex / couponNames.length);
+    await page.route("**/api/auction/coupon-price-summary", route => {
+        const batchIndex = requestCount++;
         return route.fulfill({
-            json: {
-                minPrice:
-                    batchIndex === 1 && index === 0
-                        ? 500_000
-                        : initialPrices[index],
-                averagePrice: initialPrices[index],
-                availableQuantity: 1,
-                isComplete: true,
-            },
+            json: Object.fromEntries(
+                couponDiscounts.map((discount, index) => [
+                    discount,
+                    {
+                        minPrice:
+                            batchIndex === 1 && index === 0
+                                ? 500_000
+                                : initialPrices[index],
+                        averagePrice: initialPrices[index],
+                        availableQuantity: 1,
+                        isComplete: true,
+                    },
+                ])
+            ),
         });
     });
 }
@@ -64,12 +62,11 @@ async function expectCompactLayout(page: Page) {
 }
 
 test.beforeEach(async ({ page }) => {
-    requests = [];
+    requestCount = 0;
     await mockCouponPrices(page);
     await page.goto("/calculator");
     await expect(page.getByText("쿠폰 시세를 갱신했습니다.")).toBeVisible();
-    expect(requests).toHaveLength(couponNames.length);
-    expect(new Set(requests)).toEqual(new Set(couponNames));
+    expect(requestCount).toBe(1);
 });
 
 test("calculates, freezes, restores, and refreshes a shared result", async ({
@@ -94,14 +91,14 @@ test("calculates, freezes, restores, and refreshes a shared result", async ({
     const firstSnapshotUrl = page.url();
 
     await page.getByRole("button", { name: "현재 시세로 다시 계산" }).click();
-    await expect.poll(() => requests.length).toBe(10);
+    await expect.poll(() => requestCount).toBe(2);
     await expect
         .poll(() => new URL(page.url()).searchParams.get("c10"))
         .toBe("500000");
     await page.goBack();
     await expect(page).toHaveURL(firstSnapshotUrl);
     await expect(page.getByLabel("10% 할인 쿠폰 (Gold)")).toHaveValue("240000");
-    expect(requests).toHaveLength(10);
+    expect(requestCount).toBe(2);
 });
 
 test("restores owned coupons and keeps the comparison prominent", async ({
@@ -122,7 +119,7 @@ test("restores owned coupons and keeps the comparison prominent", async ({
         "파티 분배 결과 · 100% 할인 쿠폰 | Erinn.me"
     );
     await expect(page.getByText("공유 스냅샷").first()).toBeVisible();
-    expect(requests).toHaveLength(5);
+    expect(requestCount).toBe(1);
     const comparison = page.getByRole("region", { name: "선택지 비교" });
     await expect(comparison.getByRole("article")).toHaveCount(6);
     await expect(
@@ -138,7 +135,7 @@ test("refreshes from the keyboard without losing focus", async ({ page }) => {
     await refresh.focus();
     await expect(refresh).toBeFocused();
     await page.keyboard.press("Enter");
-    await expect.poll(() => requests.length).toBe(10);
+    await expect.poll(() => requestCount).toBe(2);
     await expect(page.getByText("쿠폰 시세를 갱신했습니다.")).toBeVisible();
     await expect(refresh).toBeFocused();
 });

@@ -1,0 +1,56 @@
+/** @jest-environment node */
+
+import { GET } from "@/app/api/auction/coupon-price-summary/route";
+import { getCachedCouponItemMarkets } from "@/lib/api/auction-market";
+
+jest.mock("@/lib/api/auction-market", () => ({
+    getCachedCouponItemMarkets: jest.fn(),
+}));
+
+const originalVercelEnv = process.env.VERCEL_ENV;
+
+describe("coupon price summary API", () => {
+    beforeAll(() => {
+        process.env.VERCEL_ENV = "production";
+    });
+
+    afterAll(() => {
+        if (originalVercelEnv === undefined) {
+            delete process.env.VERCEL_ENV;
+        } else {
+            process.env.VERCEL_ENV = originalVercelEnv;
+        }
+    });
+
+    beforeEach(() => jest.clearAllMocks());
+
+    it("returns the cached coupon batch", async () => {
+        const summaries = { 10: null, 20: null, 30: null, 50: null, 100: null };
+        jest.mocked(getCachedCouponItemMarkets).mockResolvedValue(summaries);
+
+        const response = await GET(
+            new Request(
+                "http://localhost:3000/api/auction/coupon-price-summary",
+                {
+                    headers: { origin: "http://localhost:3000" },
+                }
+            )
+        );
+
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toEqual(summaries);
+        expect(getCachedCouponItemMarkets).toHaveBeenCalledTimes(1);
+    });
+
+    it("rejects requests without a matching origin or referer", async () => {
+        const response = await GET(
+            new Request(
+                "http://localhost:3000/api/auction/coupon-price-summary"
+            )
+        );
+
+        expect(response.status).toBe(403);
+        await expect(response.json()).resolves.toEqual({ error: "Forbidden" });
+        expect(getCachedCouponItemMarkets).not.toHaveBeenCalled();
+    });
+});

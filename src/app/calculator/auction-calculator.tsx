@@ -12,7 +12,10 @@ import {
     useState,
 } from "react";
 
-import { fetchItemPriceSummary } from "@/lib/api/auction";
+import {
+    fetchCouponPriceSummaries,
+    type PriceSummaryResponse,
+} from "@/lib/api/auction";
 import {
     AUCTION_COUPONS,
     type AuctionCalculatorOption,
@@ -342,45 +345,41 @@ function couponPriceReducer(
     }
 }
 
-async function fetchCouponPrice(
-    coupon: (typeof AUCTION_COUPONS)[number],
-    signal: AbortSignal
-): Promise<readonly [AuctionCouponDiscount, CouponState]> {
-    try {
-        const result = await fetchItemPriceSummary(coupon.name, signal);
-        if (
-            !Number.isSafeInteger(result.minPrice) ||
-            result.minPrice < 0 ||
-            result.minPrice > MAX_GOLD
-        ) {
-            throw new Error("Invalid Gold price");
-        }
-        if (result.minPrice === 0) {
-            return [
-                coupon.discount,
-                {
-                    price: "",
-                    source: result.isComplete ? "unavailable" : "incomplete",
-                },
-            ];
-        }
-        return [
-            coupon.discount,
-            {
-                price: String(result.minPrice),
-                source: result.isComplete ? "market" : "incomplete",
-            },
-        ];
-    } catch {
-        return [coupon.discount, { price: "", source: "failed" }];
+function couponStateFromSummary(
+    result: PriceSummaryResponse | null
+): CouponState {
+    if (result === null) return { price: "", source: "failed" };
+    if (
+        !Number.isSafeInteger(result.minPrice) ||
+        result.minPrice < 0 ||
+        result.minPrice > MAX_GOLD
+    ) {
+        return { price: "", source: "failed" };
     }
+    if (result.minPrice === 0) {
+        return {
+            price: "",
+            source: result.isComplete ? "unavailable" : "incomplete",
+        };
+    }
+    return {
+        price: String(result.minPrice),
+        source: result.isComplete ? "market" : "incomplete",
+    };
 }
 
 async function loadCouponPrices(signal: AbortSignal): Promise<CouponStates> {
-    const entries = await Promise.all(
-        AUCTION_COUPONS.map(coupon => fetchCouponPrice(coupon, signal))
-    );
-    return Object.fromEntries(entries) as unknown as CouponStates;
+    try {
+        const summaries = await fetchCouponPriceSummaries(signal);
+        return Object.fromEntries(
+            AUCTION_COUPONS.map(({ discount }) => [
+                discount,
+                couponStateFromSummary(summaries[discount]),
+            ])
+        ) as CouponStates;
+    } catch {
+        return couponStates("failed");
+    }
 }
 
 async function refreshCouponPrices(
