@@ -146,7 +146,7 @@ export async function GET(request: Request): Promise<Response> {
     try {
         const url = new URL(request.url);
         const parsed = parseAuctionCalculatorParams(url.searchParams);
-        const query = url.searchParams.toString();
+        const query = url.search.slice(1);
         if (
             parsed.status === "invalid" ||
             (parsed.status === "empty" && query)

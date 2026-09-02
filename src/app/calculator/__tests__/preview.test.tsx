@@ -121,8 +121,8 @@ describe("auction calculator preview", () => {
         expect(mockRenderedMarkup[0]).not.toContain("추천 선택지");
     });
 
-    it.each(["?v=1&p=unsafe", "?cache-bust=1"])(
-        "redirects invalid or unknown queries to the generic URL: %s",
+    it.each(["?v=1&p=unsafe", "?cache-bust=1", "?&"])(
+        "redirects invalid or non-canonical queries to the generic URL: %s",
         async query => {
             const response = await GET(
                 new Request(`http://localhost/calculator/preview${query}`)
