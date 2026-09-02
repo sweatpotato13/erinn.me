@@ -1,14 +1,36 @@
-import { Wifi, WifiOff } from "lucide-react";
+"use client";
 
 export default function OfflinePage() {
     return (
         <div className="flex min-h-screen flex-col items-center justify-center bg-base-100 p-8">
             <div className="text-center">
                 <div className="mb-8 flex justify-center">
-                    <div className="relative">
-                        <Wifi className="h-24 w-24 text-gray-300" />
-                        <WifiOff className="absolute inset-0 h-24 w-24 text-error" />
-                    </div>
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="h-24 w-24"
+                        aria-hidden="true"
+                    >
+                        <g className="text-gray-300" stroke="currentColor">
+                            <path d="M12 20h.01" />
+                            <path d="M2 8.82a15 15 0 0 1 20 0" />
+                            <path d="M5 12.859a10 10 0 0 1 14 0" />
+                            <path d="M8.5 16.429a5 5 0 0 1 7 0" />
+                        </g>
+                        <g className="text-error" stroke="currentColor">
+                            <path d="M12 20h.01" />
+                            <path d="M8.5 16.429a5 5 0 0 1 7 0" />
+                            <path d="M5 12.859a10 10 0 0 1 5.17-2.69" />
+                            <path d="M19 12.859a10 10 0 0 0-2.007-1.523" />
+                            <path d="M2 8.82a15 15 0 0 1 4.177-2.643" />
+                            <path d="M22 8.82a15 15 0 0 0-11.288-3.764" />
+                            <path d="m2 2 20 20" />
+                        </g>
+                    </svg>
                 </div>
 
                 <h1 className="mb-4 text-4xl font-bold text-base-content">
