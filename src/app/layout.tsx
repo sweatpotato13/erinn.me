@@ -37,6 +37,12 @@ export const metadata: Metadata = {
         index: true,
         follow: true,
     },
+    verification: {
+        other: {
+            "naver-site-verification":
+                "a2395db235b9192521ed7cab21fb5af80030b680",
+        },
+    },
     icons: [
         {
             rel: "apple-touch-icon",
