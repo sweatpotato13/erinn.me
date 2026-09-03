@@ -298,6 +298,11 @@ describe("NPCShopPage", () => {
         expect(screen.getByRole("status")).toHaveTextContent(
             "상점 정보를 불러오는 중입니다."
         );
+        expect(
+            screen
+                .getByRole("button", { name: "조회 중…" })
+                .querySelector(".loading-spinner")
+        ).toBeInTheDocument();
         expect(fetch).toHaveBeenCalledTimes(1);
         const [requestUrl, init] = jest.mocked(fetch).mock.calls[0];
         const url = new URL(requestUrl as string, "http://localhost");
@@ -355,6 +360,22 @@ describe("NPCShopPage", () => {
             "href",
             getAuctionSearchPath("광폭한 토끼 인형 (빨강)")
         );
+    });
+
+    it("rejects malformed successful responses before rendering", async () => {
+        const user = userEvent.setup();
+        jest.mocked(fetch).mockResolvedValue(response({ shop: [] }));
+        render(<NPCShopPage />);
+        await fillForm(user);
+
+        await user.click(screen.getByRole("button", { name: "조회" }));
+
+        expect(await screen.findByRole("alert")).toHaveTextContent(
+            "데이터를 가져오는 데 실패했습니다."
+        );
+        expect(
+            screen.queryByRole("heading", { name: "상점 정보" })
+        ).not.toBeInTheDocument();
     });
 
     it("shows empty and failure states and allows an explicit retry", async () => {

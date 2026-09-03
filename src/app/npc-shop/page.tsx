@@ -11,6 +11,7 @@ import {
     NpcShopChannelSchema,
     NpcShopNameSchema,
     type NpcShopResponse,
+    NpcShopResponseSchema,
     serverNameSchema,
 } from "@/lib/schemas/nexon";
 
@@ -53,6 +54,9 @@ export default function NPCShopPage() {
         sequence: 0,
         controller: null as AbortController | null,
     });
+    const npcNameRef = useRef<HTMLSelectElement>(null);
+    const serverNameRef = useRef<HTMLSelectElement>(null);
+    const channelRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         try {
@@ -110,32 +114,32 @@ export default function NPCShopPage() {
         setItemFilter("");
     };
 
-    const failValidation = (message: string, fieldId: string) => {
+    const failValidation = (message: string, field: HTMLElement | null) => {
         setError(message);
-        document.getElementById(fieldId)?.focus();
+        field?.focus();
     };
 
     const fetchShopData = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         const npc = NpcShopNameSchema.safeParse(npcName);
         if (!npc.success) {
-            failValidation("NPC를 선택해주세요.", "npc_name");
+            failValidation("NPC를 선택해주세요.", npcNameRef.current);
             return;
         }
         const server = serverNameSchema.safeParse(serverName);
         if (!server.success) {
-            failValidation("서버를 선택해주세요.", "server_name");
+            failValidation("서버를 선택해주세요.", serverNameRef.current);
             return;
         }
         if (!channel.trim()) {
-            failValidation("채널 번호를 입력해주세요.", "channel");
+            failValidation("채널 번호를 입력해주세요.", channelRef.current);
             return;
         }
         const parsedChannel = NpcShopChannelQuerySchema.safeParse(channel);
         if (!parsedChannel.success) {
             failValidation(
                 "채널은 1부터 42 사이의 정수여야 합니다.",
-                "channel"
+                channelRef.current
             );
             return;
         }
@@ -160,7 +164,7 @@ export default function NPCShopPage() {
                 signal: controller.signal,
             });
             if (!response.ok) throw new Error(LOOKUP_ERROR);
-            const data = (await response.json()) as NpcShopResponse;
+            const data = NpcShopResponseSchema.parse(await response.json());
             if (
                 controller.signal.aborted ||
                 sequence !== requestRef.current.sequence
@@ -227,6 +231,7 @@ export default function NPCShopPage() {
                         NPC 이름
                     </label>
                     <select
+                        ref={npcNameRef}
                         required
                         id="npc_name"
                         value={npcName}
@@ -255,6 +260,7 @@ export default function NPCShopPage() {
                         서버 이름
                     </label>
                     <select
+                        ref={serverNameRef}
                         required
                         id="server_name"
                         value={serverName}
@@ -283,6 +289,7 @@ export default function NPCShopPage() {
                         채널 번호
                     </label>
                     <input
+                        ref={channelRef}
                         required
                         id="channel"
                         type="number"
@@ -301,11 +308,12 @@ export default function NPCShopPage() {
                 <div className="flex-none">
                     <button
                         type="submit"
-                        className={
-                            "btn bg-base-90 mt-6 " + (loading ? "loading" : "")
-                        }
+                        className="btn btn-primary mt-6"
                         aria-busy={loading}
                     >
+                        {loading && (
+                            <span className="loading loading-spinner" />
+                        )}
                         {loading ? "조회 중…" : "조회"}
                     </button>
                 </div>
