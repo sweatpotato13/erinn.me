@@ -1264,6 +1264,7 @@ test("npc shop validates and renders upstream images without page errors", async
     await page.route("**/api/npc-shop?**", route =>
         route.fulfill({
             json: {
+                shop_tab_count: 1,
                 shop: [
                     {
                         tab_name: "일반",
@@ -1279,6 +1280,8 @@ test("npc shop validates and renders upstream images without page errors", async
                         ],
                     },
                 ],
+                date_inquire: "2026-09-02T00:00:00Z",
+                date_shop_next_update: "2026-09-02T00:36:00Z",
             },
         })
     );
