@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const shopResponse = {
     shop_tab_count: 2,
@@ -40,19 +40,19 @@ const shopResponse = {
     date_shop_next_update: "2026-09-02T00:36:00Z",
 };
 
-test("submits and filters an NPC shop from the keyboard", async ({ page }) => {
-    let requestCount = 0;
+async function mockApiRoutes(page: Page) {
+    const requests = { npc: 0, auction: [] as URL[] };
     await page.route("**/api/npc-shop?**", route => {
-        requestCount += 1;
+        requests.npc += 1;
         return route.fulfill({ json: shopResponse });
     });
     await page.route("**/api/suggest?**", route =>
         route.fulfill({ json: { suggestions: [] } })
     );
     await page.route("**/api/auction/**", route => {
-        const history = new URL(route.request().url()).pathname.endsWith(
-            "/history"
-        );
+        const url = new URL(route.request().url());
+        requests.auction.push(url);
+        const history = url.pathname.endsWith("/history");
         return route.fulfill({
             json: history
                 ? {
@@ -63,6 +63,62 @@ test("submits and filters an NPC shop from the keyboard", async ({ page }) => {
                 : { items: [], hasMore: false, nextCursor: null },
         });
     });
+    return requests;
+}
+
+async function openAuctionSearch(
+    page: Page,
+    browserName: string,
+    auctionRequests: URL[]
+) {
+    const filter = page.getByLabel("아이템 이름 필터");
+    await page.getByRole("button", { name: "필터 지우기" }).click();
+    expect(auctionRequests).toHaveLength(0);
+    await expect(
+        page.getByRole("link", { name: / 경매장 시세 보기$/ })
+    ).toHaveCount(3);
+    const auctionLink = page.getByRole("link", {
+        name: "광폭한 토끼 인형 (빨강) 경매장 시세 보기",
+    });
+    await expect(auctionLink).toHaveAttribute(
+        "href",
+        "/auction?q=%EA%B4%91%ED%8F%AD%ED%95%9C+%ED%86%A0%EB%81%BC+%EC%9D%B8%ED%98%95+%28%EB%B9%A8%EA%B0%95%29"
+    );
+    await filter.focus();
+    await expect(filter).toBeFocused();
+    await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
+    await expect(auctionLink).toBeFocused();
+    await page.keyboard.press("Enter");
+    await expect.poll(() => new URL(page.url()).pathname).toBe("/auction");
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get("q"))
+        .toBe("광폭한 토끼 인형 (빨강)");
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue(
+        "광폭한 토끼 인형 (빨강)"
+    );
+    await expect.poll(() => auctionRequests.length).toBe(2);
+    const marketRequest = auctionRequests.find(url =>
+        url.pathname.endsWith("/keyword-search")
+    );
+    const historyRequest = auctionRequests.find(url =>
+        url.pathname.endsWith("/history")
+    );
+    expect(marketRequest?.searchParams.get("keyword")).toBe(
+        "광폭한 토끼 인형 (빨강)"
+    );
+    expect(historyRequest?.searchParams.get("item_name")).toBe(
+        "광폭한 토끼 인형 (빨강)"
+    );
+    await expect(
+        page.getByText("현재 검색 조건에 유효한 매물이 없습니다.")
+    ).toBeVisible();
+}
+
+test("submits, filters, and opens an NPC shop item from the keyboard", async ({
+    browserName,
+    page,
+}) => {
+    const requests = await mockApiRoutes(page);
     await page.goto("/npc-shop");
 
     const npc = page.getByLabel("NPC 이름");
@@ -81,7 +137,7 @@ test("submits and filters an NPC shop from the keyboard", async ({ page }) => {
     await expect(
         page.getByRole("heading", { name: "상점 정보" })
     ).toBeVisible();
-    expect(requestCount).toBe(1);
+    expect(requests.npc).toBe(1);
     await expect(page.getByText("상점 탭 2개")).toBeVisible();
     await expect(page.getByText("수량: 2개")).toBeVisible();
     await expect(page.getByText("구매 제한: 주간 5개")).toBeVisible();
@@ -97,23 +153,12 @@ test("submits and filters an NPC shop from the keyboard", async ({ page }) => {
     await expect(
         page.getByRole("heading", { name: "교환 상품" })
     ).toBeVisible();
-    expect(requestCount).toBe(1);
+    expect(requests.npc).toBe(1);
     expect(
         await page.evaluate(
             () => document.documentElement.scrollWidth <= window.innerWidth + 1
         )
     ).toBe(true);
 
-    await page.getByRole("button", { name: "필터 지우기" }).click();
-    const auctionLink = page.getByRole("link", {
-        name: "광폭한 토끼 인형 (빨강) 경매장 시세 보기",
-    });
-    await expect(auctionLink).toHaveAttribute(
-        "href",
-        "/auction?q=%EA%B4%91%ED%8F%AD%ED%95%9C+%ED%86%A0%EB%81%BC+%EC%9D%B8%ED%98%95+%28%EB%B9%A8%EA%B0%95%29"
-    );
-    await auctionLink.click();
-    await expect
-        .poll(() => new URL(page.url()).searchParams.get("q"))
-        .toBe("광폭한 토끼 인형 (빨강)");
+    await openAuctionSearch(page, browserName, requests.auction);
 });
