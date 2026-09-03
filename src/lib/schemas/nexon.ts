@@ -1,6 +1,37 @@
 import * as z from "zod";
 
-const AuctionItemOptionSchema = z
+export const serverNameSchema = z.enum(["류트", "울프", "하프", "만돌린"]);
+
+export const NpcShopNameSchema = z.enum([
+    "델",
+    "델렌",
+    "상인 라누",
+    "상인 피루",
+    "모락",
+    "상인 아루",
+    "리나",
+    "상인 누누",
+    "상인 메루",
+    "켄",
+    "귀넥",
+    "얼리",
+    "데위",
+    "테일로",
+    "상인 세누",
+    "상인 베루",
+    "상인 에루",
+    "상인 네루",
+    "카디",
+    "인장 상인",
+    "피오나트",
+]);
+
+export const NpcShopChannelSchema = z.number().int().min(1).max(42);
+export const NpcShopChannelQuerySchema = z.coerce
+    .number()
+    .pipe(NpcShopChannelSchema);
+
+const NexonItemOptionSchema = z
     .object({
         option_type: z.string(),
         option_sub_type: z.string().nullish(),
@@ -17,7 +48,7 @@ const AuctionItemSchema = z
         item_count: z.number().nonnegative(),
         auction_price_per_unit: z.number().nonnegative(),
         date_auction_expire: z.string(),
-        item_option: z.array(AuctionItemOptionSchema).nullish(),
+        item_option: z.array(NexonItemOptionSchema).nullish(),
     })
     .passthrough();
 
@@ -38,7 +69,7 @@ export const AuctionHistoryItemSchema = z
         auction_price_per_unit: z.number().nonnegative(),
         date_auction_buy: z.string(),
         auction_buy_id: z.string(),
-        item_option: z.array(AuctionItemOptionSchema).nullish(),
+        item_option: z.array(NexonItemOptionSchema).nullish(),
     })
     .passthrough();
 
@@ -80,8 +111,12 @@ const NpcShopPriceSchema = z
 const NpcShopItemSchema = z
     .object({
         item_display_name: z.string(),
+        item_count: z.number().int().nonnegative().nullish(),
+        item_option: z.array(NexonItemOptionSchema).nullish(),
         image_url: z.string(),
         price: z.array(NpcShopPriceSchema),
+        limit_type: z.string().nullish(),
+        limit_value: z.number().int().nonnegative().nullish(),
     })
     .passthrough();
 
@@ -94,6 +129,11 @@ const NpcShopTabSchema = z
 
 export const NpcShopResponseSchema = z
     .object({
+        shop_tab_count: z.number().int().nonnegative(),
         shop: z.array(NpcShopTabSchema),
+        date_inquire: z.iso.datetime(),
+        date_shop_next_update: z.iso.datetime(),
     })
     .passthrough();
+
+export type NpcShopResponse = z.infer<typeof NpcShopResponseSchema>;

@@ -30,5 +30,3 @@ export function parseQuery<T>(
 
     return { success: true, data: parsed.data };
 }
-
-export const serverNameSchema = z.enum(["류트", "울프", "하프", "만돌린"]);
