@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import * as z from "zod";
 
-import { parseQuery, serverNameSchema } from "@/lib/api/request";
+import { parseQuery } from "@/lib/api/request";
 import {
     createRequestDeadline,
     createUpstreamUrl,
@@ -9,14 +9,19 @@ import {
     parseUpstreamJson,
     upstreamErrorResponse,
 } from "@/lib/api/upstream";
-import { NpcShopResponseSchema } from "@/lib/schemas/nexon";
+import {
+    NpcShopChannelQuerySchema,
+    NpcShopNameSchema,
+    NpcShopResponseSchema,
+    serverNameSchema,
+} from "@/lib/schemas/nexon";
 import { checkOrigin } from "@/lib/utils/check-origin";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 const querySchema = z.object({
-    npc_name: z.string().trim().min(1).max(50),
+    npc_name: NpcShopNameSchema,
     server_name: serverNameSchema,
-    channel: z.coerce.number().int().min(1).max(42),
+    channel: NpcShopChannelQuerySchema,
 });
 
 /**

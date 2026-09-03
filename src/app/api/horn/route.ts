@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import * as z from "zod";
 
-import { parseQuery, serverNameSchema } from "@/lib/api/request";
+import { parseQuery } from "@/lib/api/request";
 import {
     createRequestDeadline,
     createUpstreamUrl,
@@ -9,7 +9,7 @@ import {
     parseUpstreamJson,
     upstreamErrorResponse,
 } from "@/lib/api/upstream";
-import { HornResponseSchema } from "@/lib/schemas/nexon";
+import { HornResponseSchema, serverNameSchema } from "@/lib/schemas/nexon";
 import { checkOrigin } from "@/lib/utils/check-origin";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;

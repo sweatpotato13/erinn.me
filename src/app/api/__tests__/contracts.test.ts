@@ -44,6 +44,40 @@ function auctionItem(
     };
 }
 
+function npcShopResponse(itemName = "광폭한 토끼 인형") {
+    return {
+        shop_tab_count: 2,
+        shop: [
+            {
+                tab_name: "일반 상품",
+                item: [
+                    {
+                        item_display_name: itemName,
+                        item_count: 2,
+                        item_option: [
+                            {
+                                option_type: "아이템 색상",
+                                option_value: "255,255,255",
+                            },
+                        ],
+                        image_url:
+                            "https://open.api.nexon.com/static/mabinogi/img/item.png",
+                        price: [
+                            { price_type: "Gold", price_value: 1200 },
+                            { price_type: "인장", price_value: "3" },
+                        ],
+                        limit_type: "주간",
+                        limit_value: 5,
+                    },
+                ],
+            },
+            { tab_name: "교환 상품", item: [] },
+        ],
+        date_inquire: "2026-09-02T00:00:00Z",
+        date_shop_next_update: "2026-09-02T00:36:00Z",
+    };
+}
+
 describe("API query contracts", () => {
     beforeEach(() => {
         global.fetch = jest.fn();
@@ -85,6 +119,44 @@ describe("API query contracts", () => {
             hasMore: false,
             nextCursor: null,
         });
+    });
+
+    it("validates and forwards the complete NPC shop response", async () => {
+        const payload = npcShopResponse();
+        jest.mocked(fetch).mockResolvedValue(
+            new Response(JSON.stringify(payload), { status: 200 })
+        );
+        const query = new URLSearchParams({
+            npc_name: "상인 라누",
+            server_name: "만돌린",
+            channel: "12",
+        });
+
+        const response = await getNpcShop(
+            request("/api/npc-shop?" + query.toString())
+        );
+        const upstreamUrl = jest.mocked(fetch).mock.calls[0][0] as URL;
+
+        expect(fetch).toHaveBeenCalledTimes(1);
+        expect(upstreamUrl.searchParams.get("npc_name")).toBe("상인 라누");
+        expect(upstreamUrl.searchParams.get("server_name")).toBe("만돌린");
+        expect(upstreamUrl.searchParams.get("channel")).toBe("12");
+        expect(response.status).toBe(200);
+        expect(await response.json()).toEqual(payload);
+    });
+
+    it.each([
+        "npc_name=없는NPC&server_name=류트&channel=1",
+        "npc_name=델&server_name=없는서버&channel=1",
+        "npc_name=델&server_name=류트&channel=nope",
+        "npc_name=델&server_name=류트&channel=1.5",
+        "npc_name=델&server_name=류트&channel=0",
+        "npc_name=델&server_name=류트&channel=43",
+    ])("rejects invalid NPC shop queries without fetching", async query => {
+        const response = await getNpcShop(request("/api/npc-shop?" + query));
+
+        expect(response.status).toBe(400);
+        expect(fetch).not.toHaveBeenCalled();
     });
 
     it("preserves encoded auction query values", async () => {
@@ -180,7 +252,7 @@ describe("API query contracts", () => {
             `/api/auction/price-summary?item_name=${"a".repeat(101)}`,
         ],
         [getHorn, "/api/horn?server_name=invalid"],
-        [getNpcShop, "/api/npc-shop?npc_name=n&server_name=류트&channel=43"],
+        [getNpcShop, "/api/npc-shop?npc_name=델&server_name=류트&channel=43"],
     ])("rejects query bound violations", async (handler, path) => {
         expect((await handler(request(path))).status).toBe(400);
         expect(fetch).not.toHaveBeenCalled();
@@ -653,19 +725,56 @@ describe("API upstream failure contracts", () => {
     });
 
     it.each([
+        new Response("", { status: 500 }),
+        new Response(JSON.stringify({ wrong: [] }), { status: 200 }),
+    ])("maps NPC upstream failures to 502", async upstreamResponse => {
+        jest.mocked(fetch).mockResolvedValue(upstreamResponse);
+
+        const response = await getNpcShop(
+            request("/api/npc-shop?npc_name=델&server_name=류트&channel=1")
+        );
+
+        expect(response.status).toBe(502);
+    });
+
+    it("maps an aborted NPC request to 504", async () => {
+        jest.mocked(fetch).mockRejectedValue(
+            new DOMException("aborted", "AbortError")
+        );
+
+        const response = await getNpcShop(
+            request("/api/npc-shop?npc_name=델&server_name=류트&channel=1")
+        );
+
+        expect(response.status).toBe(504);
+    });
+
+    it.each([
+        { ...npcShopResponse(), shop_tab_count: -1 },
+        { ...npcShopResponse(), date_inquire: "bad-date" },
+        { ...npcShopResponse(), date_shop_next_update: "bad-date" },
         {
-            shop: [
-                { tab_name: "tab", item: [{ image_url: "url", price: [] }] },
-            ],
-        },
-        {
+            ...npcShopResponse(),
             shop: [
                 {
                     tab_name: "tab",
                     item: [
                         {
-                            item_display_name: "item",
-                            image_url: "url",
+                            ...npcShopResponse().shop[0].item[0],
+                            item_count: 1.5,
+                        },
+                    ],
+                },
+            ],
+        },
+        {
+            ...npcShopResponse(),
+            shop: [
+                {
+                    tab_name: "tab",
+                    item: [
+                        {
+                            ...npcShopResponse().shop[0].item[0],
                             price: "bad",
                         },
                     ],
@@ -673,20 +782,34 @@ describe("API upstream failure contracts", () => {
             ],
         },
         {
+            ...npcShopResponse(),
             shop: [
                 {
                     tab_name: "tab",
                     item: [
                         {
-                            item_display_name: "item",
-                            image_url: "url",
-                            price: [{ price_value: 10 }],
+                            ...npcShopResponse().shop[0].item[0],
+                            item_option: [{ option_value: "missing type" }],
                         },
                     ],
                 },
             ],
         },
-    ])("rejects malformed nested NPC payloads", async payload => {
+        {
+            ...npcShopResponse(),
+            shop: [
+                {
+                    tab_name: "tab",
+                    item: [
+                        {
+                            ...npcShopResponse().shop[0].item[0],
+                            limit_value: "5",
+                        },
+                    ],
+                },
+            ],
+        },
+    ])("rejects malformed NPC payloads", async payload => {
         jest.mocked(fetch).mockResolvedValue(
             new Response(JSON.stringify(payload), { status: 200 })
         );
