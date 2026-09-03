@@ -352,14 +352,39 @@ describe("NPCShopPage", () => {
         expect(screen.getByText(/평균 약 10분/)).toHaveTextContent(
             "36분 주기로 갱신"
         );
-        expect(
-            screen.getByRole("link", {
-                name: "광폭한 토끼 인형 (빨강) 경매장 시세 보기",
-            })
-        ).toHaveAttribute(
-            "href",
-            getAuctionSearchPath("광폭한 토끼 인형 (빨강)")
+    });
+
+    it("links every shop item to its exact auction search", async () => {
+        const user = userEvent.setup();
+        const payload = shopResponse("한글 + & (雪)!");
+        jest.mocked(fetch).mockResolvedValue(response(payload));
+        render(<NPCShopPage />);
+        await fillForm(user);
+
+        await user.click(screen.getByRole("button", { name: "조회" }));
+
+        const links = await screen.findAllByRole("link", {
+            name: / 경매장 시세 보기$/,
+        });
+        const itemNames = payload.shop.flatMap(tab =>
+            tab.item.map(item => item.item_display_name)
         );
+        expect(links).toHaveLength(itemNames.length);
+        links.forEach((link, index) => {
+            const itemName = itemNames[index];
+            expect(link).toHaveAccessibleName(`${itemName} 경매장 시세 보기`);
+            expect(link).toHaveAttribute(
+                "href",
+                getAuctionSearchPath(itemName)
+            );
+            const target = new URL(
+                link.getAttribute("href")!,
+                "https://erinn.me"
+            );
+            expect(target.pathname).toBe("/auction");
+            expect(target.searchParams.get("q")).toBe(itemName);
+        });
+        expect(fetch).toHaveBeenCalledTimes(1);
     });
 
     it("rejects malformed successful responses before rendering", async () => {
