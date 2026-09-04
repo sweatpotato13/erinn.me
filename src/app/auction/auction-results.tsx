@@ -261,31 +261,40 @@ export function ItemOptionsDialog({
 }) {
     const dialogRef = useDialogFocus(onClose);
     return (
-        <div className="fixed inset-0 flex items-start justify-center z-50">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-2 sm:items-center sm:p-4">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="item-options-dialog-title"
                 tabIndex={-1}
-                className="bg-white border p-4 rounded-lg shadow-lg outline-none"
+                className="flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-lg border bg-white shadow-lg outline-none sm:max-h-[calc(100dvh-2rem)] sm:max-w-2xl"
             >
-                <h2
-                    id="item-options-dialog-title"
-                    className="text-lg font-bold"
+                <div className="flex shrink-0 items-center justify-between gap-4 border-b p-4">
+                    <h2
+                        id="item-options-dialog-title"
+                        className="text-lg font-bold"
+                    >
+                        아이템 옵션
+                    </h2>
+                    <button
+                        type="button"
+                        className="btn btn-outline btn-sm shrink-0"
+                        onClick={onClose}
+                    >
+                        닫기
+                    </button>
+                </div>
+                <div
+                    data-testid="item-options-scroll"
+                    className="min-h-0 overflow-y-auto overscroll-contain break-words p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
                 >
-                    아이템 옵션
-                </h2>
-                <div className="mt-2">
                     {options.length > 0 ? (
                         <OptionRenderer options={options} />
                     ) : (
                         <div>옵션이 없습니다.</div>
                     )}
                 </div>
-                <button className="btn btn-outline mt-4" onClick={onClose}>
-                    닫기
-                </button>
             </div>
         </div>
     );

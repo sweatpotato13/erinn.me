@@ -1164,6 +1164,62 @@ test("recent-sales modal preserves search context without requests", async ({
     expect(counts).toEqual({ auction: 1, history: 1 });
 });
 
+test("long item options keep the dialog close control visible", async ({
+    page,
+}) => {
+    await openMarket(page);
+    await page.unroute("**/api/auction/keyword-search?**");
+    await page.route("**/api/auction/keyword-search?**", route =>
+        route.fulfill({
+            json: {
+                items: marketItems.map((item, index) =>
+                    index === 0
+                        ? {
+                              ...item,
+                              item_option: Array.from(
+                                  { length: 60 },
+                                  (_, optionIndex) => ({
+                                      option_type: "세공 옵션",
+                                      option_sub_type: `긴 옵션 ${optionIndex + 1}`,
+                                      option_value: String(optionIndex + 1),
+                                  })
+                              ),
+                          }
+                        : item
+                ),
+                hasMore: false,
+                nextCursor: null,
+            },
+        })
+    );
+    await searchMarket(page);
+    await page.getByRole("button", { name: "아이템 1", exact: true }).click();
+
+    const dialog = page.getByRole("dialog", { name: "아이템 옵션" });
+    const close = dialog.getByRole("button", { name: "닫기" });
+    const scroll = dialog.getByTestId("item-options-scroll");
+    await expect(scroll.getByText("• 60", { exact: true })).toBeVisible();
+    const viewport = page.viewportSize()!;
+    const dialogBox = (await dialog.boundingBox())!;
+    const closeBoxBefore = (await close.boundingBox())!;
+    expect(dialogBox.y).toBeGreaterThanOrEqual(0);
+    expect(dialogBox.y + dialogBox.height).toBeLessThanOrEqual(viewport.height);
+    expect(closeBoxBefore.y + closeBoxBefore.height).toBeLessThanOrEqual(
+        viewport.height
+    );
+    await expect
+        .poll(() =>
+            scroll.evaluate(node => node.scrollHeight > node.clientHeight)
+        )
+        .toBe(true);
+    await scroll.evaluate(node => {
+        node.scrollTop = node.scrollHeight;
+    });
+    expect(await close.boundingBox()).toEqual(closeBoxBefore);
+    await close.click();
+    await expect(dialog).not.toBeVisible();
+});
+
 test("auction pagination survives the recent-sales modal", async ({ page }) => {
     const counts = await openMarket(page);
     await searchMarket(page);
