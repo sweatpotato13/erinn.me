@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import {
+    type Dispatch,
+    type SetStateAction,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 
 import type {
     AuctionItem,
@@ -256,26 +262,95 @@ function parseFilteredSearchResponse(value: unknown): AuctionSearchResponse {
     return response as AuctionSearchResponse;
 }
 
-/**
- * Manages auction item searches, loading and error state, and unit-price sorting.
- *
- * @returns The current auction items, error message, loading state, sort direction, and operations for searching and sorting items.
- */
-export function useAuctionSearch() {
-    const [loadedItems, setLoadedItems] = useState<AuctionItem[]>([]);
-    const [resultFilters, setResultFilters] = useState<AuctionResultFilters>(
-        {}
+type AuctionSearchState = {
+    loadedItems: AuctionItem[];
+    hasMore: boolean;
+    refreshedAt: string | null;
+    optionEvaluation: AuctionOptionEvaluation | null;
+    errorMessage: string | null;
+    loading: boolean;
+};
+
+const EMPTY_AUCTION_SEARCH_STATE: AuctionSearchState = {
+    loadedItems: [],
+    hasMore: false,
+    refreshedAt: null,
+    optionEvaluation: null,
+    errorMessage: null,
+    loading: false,
+};
+
+type SearchControls = {
+    sequenceRef: { current: number };
+    activeControllerRef: { current: AbortController | null };
+    setState: Dispatch<SetStateAction<AuctionSearchState>>;
+};
+
+function createSearchActions(
+    sequence: number,
+    controls: SearchControls
+): SearchActions {
+    const { sequenceRef, activeControllerRef, setState } = controls;
+    return {
+        isActive: () => sequence === sequenceRef.current,
+        commit: results =>
+            setState({
+                loadedItems: results.items,
+                hasMore: results.hasMore,
+                refreshedAt: results.refreshedAt,
+                optionEvaluation: results.optionEvaluation,
+                errorMessage: null,
+                loading: true,
+            }),
+        fail: errorMessage => setState(state => ({ ...state, errorMessage })),
+        finish: () => {
+            activeControllerRef.current = null;
+            setState(state => ({ ...state, loading: false }));
+        },
+    };
+}
+
+async function runAuctionSearch(
+    itemName: string,
+    category: string,
+    filters: AuctionOptionFilters,
+    controls: SearchControls
+) {
+    const sequence = ++controls.sequenceRef.current;
+    controls.activeControllerRef.current?.abort();
+    const parsedFilters = AuctionOptionFiltersSchema.safeParse(filters);
+    if (!parsedFilters.success) {
+        controls.activeControllerRef.current = null;
+        controls.setState({
+            ...EMPTY_AUCTION_SEARCH_STATE,
+            errorMessage:
+                parsedFilters.error.issues[0]?.message ??
+                "장비 옵션 필터가 올바르지 않습니다.",
+        });
+        return;
+    }
+    const controller = new AbortController();
+    controls.activeControllerRef.current = controller;
+    controls.setState(state => ({
+        ...EMPTY_AUCTION_SEARCH_STATE,
+        errorMessage: state.errorMessage,
+        loading: true,
+    }));
+    return executeSearch(
+        itemName,
+        category,
+        parsedFilters.data,
+        sequence,
+        controller,
+        createSearchActions(sequence, controls)
     );
-    const [hasMore, setHasMore] = useState(false);
-    const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
-    const [optionEvaluation, setOptionEvaluation] =
-        useState<AuctionOptionEvaluation | null>(null);
-    const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    const [loading, setLoading] = useState(false);
-    const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+}
+
+function useAuctionSearchRequest() {
+    const [state, setState] = useState(EMPTY_AUCTION_SEARCH_STATE);
     const sequenceRef = useRef(0);
     const activeControllerRef = useRef<AbortController | null>(null);
-
+    const controls = { sequenceRef, activeControllerRef, setState };
     useEffect(
         () => () => {
             sequenceRef.current += 1;
@@ -283,88 +358,35 @@ export function useAuctionSearch() {
         },
         []
     );
-
     const reset = () => {
         sequenceRef.current += 1;
         activeControllerRef.current?.abort();
         activeControllerRef.current = null;
-        setLoadedItems([]);
-        setResultFilters({});
-        setHasMore(false);
-        setRefreshedAt(null);
-        setOptionEvaluation(null);
-        setErrorMessage(null);
-        setLoading(false);
-        setSortDirection(null);
+        setState(EMPTY_AUCTION_SEARCH_STATE);
     };
-
-    const search = async (
+    const search = (
         itemName: string,
         category: string,
         filters: AuctionOptionFilters = {}
-    ) => {
-        const sequence = ++sequenceRef.current;
-        activeControllerRef.current?.abort();
-        const parsedFilters = AuctionOptionFiltersSchema.safeParse(filters);
-        if (!parsedFilters.success) {
-            activeControllerRef.current = null;
-            setLoading(false);
-            setLoadedItems([]);
-            setResultFilters({});
-            setHasMore(false);
-            setRefreshedAt(null);
-            setOptionEvaluation(null);
-            setSortDirection(null);
-            setErrorMessage(
-                parsedFilters.error.issues[0]?.message ??
-                    "장비 옵션 필터가 올바르지 않습니다."
-            );
-            return;
-        }
-        const controller = new AbortController();
-        activeControllerRef.current = controller;
-        setLoading(true);
-        setLoadedItems([]);
-        setResultFilters({});
-        setHasMore(false);
-        setRefreshedAt(null);
-        setOptionEvaluation(null);
-        setSortDirection(null);
-        return executeSearch(
-            itemName,
-            category,
-            parsedFilters.data,
-            sequence,
-            controller,
-            {
-                isActive: () => sequence === sequenceRef.current,
-                commit: results => {
-                    setLoadedItems(results.items);
-                    setHasMore(results.hasMore);
-                    setRefreshedAt(results.refreshedAt);
-                    setOptionEvaluation(results.optionEvaluation);
-                    setErrorMessage(null);
-                },
-                fail: setErrorMessage,
-                finish: () => {
-                    activeControllerRef.current = null;
-                    setLoading(false);
-                },
-            }
-        );
-    };
-    const sortByPrice = () => {
-        const direction = sortDirection === "asc" ? "desc" : "asc";
-        setSortDirection(direction);
-    };
+    ) => runAuctionSearch(itemName, category, filters, controls);
+    return { ...state, reset, search };
+}
 
-    const exactItemNames = [
+function getExactItemNames(loadedItems: AuctionItem[]) {
+    return [
         ...new Set(
             loadedItems
                 .map(item => item.item_name)
                 .filter(itemName => itemName !== "")
         ),
     ].sort((a, b) => a.localeCompare(b, "ko-KR"));
+}
+
+function getFilteredAuctionResults(
+    loadedItems: AuctionItem[],
+    resultFilters: AuctionResultFilters,
+    sortDirection: SortDirection
+) {
     const prepared = prepareAuctionResults(
         loadedItems.filter(
             item =>
@@ -377,26 +399,62 @@ export function useAuctionSearch() {
                     item.auction_price_per_unit <= resultFilters.maxUnitPrice)
         )
     );
-    const items =
-        sortDirection === "desc"
-            ? [...prepared.items].reverse()
-            : prepared.items;
+    return {
+        ...prepared,
+        items:
+            sortDirection === "desc"
+                ? [...prepared.items].reverse()
+                : prepared.items,
+    };
+}
+
+/**
+ * Manages auction item searches, loading and error state, and unit-price sorting.
+ *
+ * @returns The current auction items, error message, loading state, sort direction, and operations for searching and sorting items.
+ */
+export function useAuctionSearch() {
+    const request = useAuctionSearchRequest();
+    const [resultFilters, setResultFilters] = useState<AuctionResultFilters>(
+        {}
+    );
+    const [sortDirection, setSortDirection] = useState<SortDirection>(null);
+    const reset = () => {
+        request.reset();
+        setResultFilters({});
+        setSortDirection(null);
+    };
+    const search = (
+        itemName: string,
+        category: string,
+        filters: AuctionOptionFilters = {}
+    ) => {
+        setResultFilters({});
+        setSortDirection(null);
+        return request.search(itemName, category, filters);
+    };
+    const prepared = getFilteredAuctionResults(
+        request.loadedItems,
+        resultFilters,
+        sortDirection
+    );
 
     return {
-        items,
+        items: prepared.items,
         summary: prepared.summary,
-        loadedItemCount: loadedItems.length,
-        exactItemNames,
+        loadedItemCount: request.loadedItems.length,
+        exactItemNames: getExactItemNames(request.loadedItems),
         resultFilters,
-        hasMore,
-        refreshedAt,
-        optionEvaluation,
-        errorMessage,
-        loading,
+        hasMore: request.hasMore,
+        refreshedAt: request.refreshedAt,
+        optionEvaluation: request.optionEvaluation,
+        errorMessage: request.errorMessage,
+        loading: request.loading,
         sortDirection,
         reset,
         search,
-        sortByPrice,
+        sortByPrice: () =>
+            setSortDirection(sortDirection === "asc" ? "desc" : "asc"),
         applyResultFilters: setResultFilters,
         clearResultFilters: () => setResultFilters({}),
     };

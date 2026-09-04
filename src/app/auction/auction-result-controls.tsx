@@ -80,6 +80,49 @@ export function AuctionResultControls({
 
     return (
         <div className="relative flex items-center gap-2">
+            <ResultFilterButtons
+                activeCount={activeCount}
+                open={open}
+                onOpen={() => setOpen(true)}
+                onClear={onClear}
+                triggerRef={triggerRef}
+            />
+            {open && (
+                <ResultFilterDialog
+                    exactItemNames={exactItemNames}
+                    filters={filters}
+                    onApply={onApply}
+                    onClose={() => setOpen(false)}
+                    triggerRef={triggerRef}
+                />
+            )}
+        </div>
+    );
+}
+
+type ResultFilterDialogProps = Pick<
+    AuctionResultControlsProps,
+    "exactItemNames" | "filters" | "onApply"
+> & {
+    onClose: () => void;
+    triggerRef: React.RefObject<HTMLButtonElement | null>;
+};
+
+function ResultFilterButtons({
+    activeCount,
+    open,
+    onOpen,
+    onClear,
+    triggerRef,
+}: {
+    activeCount: number;
+    open: boolean;
+    onOpen: () => void;
+    onClear: () => void;
+    triggerRef: React.RefObject<HTMLButtonElement | null>;
+}) {
+    return (
+        <>
             <button
                 ref={triggerRef}
                 type="button"
@@ -91,7 +134,7 @@ export function AuctionResultControls({
                         ? `결과 필터, ${activeCount}개 적용`
                         : "결과 필터"
                 }
-                onClick={() => setOpen(true)}
+                onClick={onOpen}
             >
                 결과 필터
                 {activeCount > 0 && (
@@ -110,39 +153,16 @@ export function AuctionResultControls({
                     전체 해제
                 </button>
             )}
-            {open && (
-                <ResultFilterDialog
-                    exactItemNames={exactItemNames}
-                    filters={filters}
-                    onApply={onApply}
-                    onClose={() => setOpen(false)}
-                    triggerRef={triggerRef}
-                />
-            )}
-        </div>
+        </>
     );
 }
 
-function ResultFilterDialog({
-    exactItemNames,
-    filters,
-    onApply,
-    onClose,
-    triggerRef,
-}: Pick<
-    AuctionResultControlsProps,
-    "exactItemNames" | "filters" | "onApply"
-> & {
-    onClose: () => void;
-    triggerRef: React.RefObject<HTMLButtonElement | null>;
-}) {
-    const [error, setError] = useState<string | null>(null);
+function useMobileDialogScrollLock() {
     const scrollPositionRef = useRef(
         typeof window === "undefined"
             ? null
             : { x: window.scrollX, y: window.scrollY }
     );
-    const dialogRef = useDialogFocus(onClose, triggerRef, undefined, true);
     useEffect(() => {
         if (!window.matchMedia?.("(max-width: 639px)").matches) return;
         const position = scrollPositionRef.current;
@@ -163,6 +183,18 @@ function ResultFilterDialog({
             window.scrollTo(position.x, position.y);
         };
     }, []);
+}
+
+function ResultFilterDialog({
+    exactItemNames,
+    filters,
+    onApply,
+    onClose,
+    triggerRef,
+}: ResultFilterDialogProps) {
+    const dialogRef = useDialogFocus(onClose, triggerRef, undefined, true);
+    useMobileDialogScrollLock();
+
     return (
         <>
             <button
@@ -171,129 +203,171 @@ function ResultFilterDialog({
                 className="fixed inset-0 z-40 touch-none bg-black/40 sm:bg-transparent"
                 onClick={onClose}
             />
-            <div
-                ref={dialogRef}
-                role="dialog"
-                aria-modal="true"
-                aria-labelledby="auction-result-filter-title"
-                tabIndex={-1}
-                className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto overscroll-contain rounded-t-2xl border bg-base-100 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl outline-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:max-h-[70vh] sm:w-80 sm:rounded-lg sm:pb-4"
-            >
-                <div className="flex items-start justify-between gap-4">
-                    <div>
-                        <h4
-                            id="auction-result-filter-title"
-                            className="font-bold"
-                        >
-                            결과 필터
-                        </h4>
-                        <p className="text-sm text-base-content/70">
-                            불러온 매물 안에서만 결과를 좁힙니다.
-                        </p>
-                    </div>
-                    <button
-                        type="button"
-                        className="btn btn-ghost btn-sm min-h-11"
-                        onClick={onClose}
-                    >
-                        닫기
-                    </button>
-                </div>
-                <form
-                    className="mt-4 space-y-4"
-                    noValidate
-                    onSubmit={event => {
-                        event.preventDefault();
-                        const parsed = parseFilters(
-                            event.currentTarget,
-                            exactItemNames
-                        );
-                        if ("error" in parsed) {
-                            setError(parsed.error);
-                            return;
-                        }
-                        onApply(parsed.filters);
-                        onClose();
-                    }}
-                >
-                    {exactItemNames.length > 1 && (
-                        <label className="form-control gap-1">
-                            <span className="label-text font-medium">
-                                정확한 아이템
-                            </span>
-                            <select
-                                name="exactItemName"
-                                className="select select-bordered w-full min-h-11"
-                                defaultValue={filters.exactItemName ?? ""}
-                            >
-                                <option value="">전체 아이템</option>
-                                {exactItemNames.map(itemName => (
-                                    <option key={itemName} value={itemName}>
-                                        {itemName}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                    )}
-                    <div className="grid grid-cols-2 gap-3">
-                        <label className="form-control gap-1">
-                            <span className="label-text font-medium">
-                                최소 단가
-                            </span>
-                            <input
-                                name="minUnitPrice"
-                                type="number"
-                                inputMode="numeric"
-                                min="1"
-                                step="1"
-                                className="input input-bordered w-full min-h-11"
-                                defaultValue={filters.minUnitPrice}
-                                aria-invalid={error ? true : undefined}
-                                aria-describedby={
-                                    error
-                                        ? "auction-result-filter-error"
-                                        : undefined
-                                }
-                            />
-                        </label>
-                        <label className="form-control gap-1">
-                            <span className="label-text font-medium">
-                                최대 단가
-                            </span>
-                            <input
-                                name="maxUnitPrice"
-                                type="number"
-                                inputMode="numeric"
-                                min="1"
-                                step="1"
-                                className="input input-bordered w-full min-h-11"
-                                defaultValue={filters.maxUnitPrice}
-                                aria-invalid={error ? true : undefined}
-                                aria-describedby={
-                                    error
-                                        ? "auction-result-filter-error"
-                                        : undefined
-                                }
-                            />
-                        </label>
-                    </div>
-                    {error && (
-                        <p
-                            id="auction-result-filter-error"
-                            role="alert"
-                            className="text-sm text-error"
-                        >
-                            {error}
-                        </p>
-                    )}
-                    <button
-                        type="submit"
-                        className="btn btn-primary min-h-11 w-full"
-                    >
-                        적용
-                    </button>
-                </form>
-            </div>
+            <ResultFilterDialogShell dialogRef={dialogRef} onClose={onClose}>
+                <ResultFilterForm
+                    exactItemNames={exactItemNames}
+                    filters={filters}
+                    onApply={onApply}
+                    onClose={onClose}
+                />
+            </ResultFilterDialogShell>
         </>
+    );
+}
+
+function ResultFilterDialogShell({
+    children,
+    dialogRef,
+    onClose,
+}: {
+    children: React.ReactNode;
+    dialogRef: React.RefObject<HTMLDivElement | null>;
+    onClose: () => void;
+}) {
+    return (
+        <div
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="auction-result-filter-title"
+            tabIndex={-1}
+            className="fixed inset-x-0 bottom-0 z-50 max-h-[80vh] overflow-y-auto overscroll-contain rounded-t-2xl border bg-base-100 p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-xl outline-none sm:absolute sm:inset-x-auto sm:bottom-auto sm:right-0 sm:top-[calc(100%+0.5rem)] sm:max-h-[70vh] sm:w-80 sm:rounded-lg sm:pb-4"
+        >
+            <div className="flex items-start justify-between gap-4">
+                <div>
+                    <h4 id="auction-result-filter-title" className="font-bold">
+                        결과 필터
+                    </h4>
+                    <p className="text-sm text-base-content/70">
+                        불러온 매물 안에서만 결과를 좁힙니다.
+                    </p>
+                </div>
+                <button
+                    type="button"
+                    className="btn btn-ghost btn-sm min-h-11"
+                    onClick={onClose}
+                >
+                    닫기
+                </button>
+            </div>
+            {children}
+        </div>
+    );
+}
+
+function ResultFilterForm({
+    exactItemNames,
+    filters,
+    onApply,
+    onClose,
+}: Omit<ResultFilterDialogProps, "triggerRef">) {
+    const [error, setError] = useState<string | null>(null);
+    const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const parsed = parseFilters(event.currentTarget, exactItemNames);
+        if ("error" in parsed) {
+            setError(parsed.error);
+            return;
+        }
+        onApply(parsed.filters);
+        onClose();
+    };
+    return (
+        <form className="mt-4 space-y-4" noValidate onSubmit={handleSubmit}>
+            {exactItemNames.length > 1 && (
+                <ExactItemField
+                    exactItemNames={exactItemNames}
+                    defaultValue={filters.exactItemName}
+                />
+            )}
+            <div className="grid grid-cols-2 gap-3">
+                <UnitPriceField
+                    name="minUnitPrice"
+                    label="최소 단가"
+                    defaultValue={filters.minUnitPrice}
+                    error={error}
+                />
+                <UnitPriceField
+                    name="maxUnitPrice"
+                    label="최대 단가"
+                    defaultValue={filters.maxUnitPrice}
+                    error={error}
+                />
+            </div>
+            <ResultFilterError error={error} />
+            <button type="submit" className="btn btn-primary min-h-11 w-full">
+                적용
+            </button>
+        </form>
+    );
+}
+
+function ResultFilterError({ error }: { error: string | null }) {
+    if (!error) return null;
+    return (
+        <p
+            id="auction-result-filter-error"
+            role="alert"
+            className="text-sm text-error"
+        >
+            {error}
+        </p>
+    );
+}
+
+function ExactItemField({
+    exactItemNames,
+    defaultValue,
+}: {
+    exactItemNames: string[];
+    defaultValue?: string;
+}) {
+    return (
+        <label className="form-control gap-1">
+            <span className="label-text font-medium">정확한 아이템</span>
+            <select
+                name="exactItemName"
+                className="select select-bordered w-full min-h-11"
+                defaultValue={defaultValue ?? ""}
+            >
+                <option value="">전체 아이템</option>
+                {exactItemNames.map(itemName => (
+                    <option key={itemName} value={itemName}>
+                        {itemName}
+                    </option>
+                ))}
+            </select>
+        </label>
+    );
+}
+
+function UnitPriceField({
+    name,
+    label,
+    defaultValue,
+    error,
+}: {
+    name: "minUnitPrice" | "maxUnitPrice";
+    label: string;
+    defaultValue?: number;
+    error: string | null;
+}) {
+    return (
+        <label className="form-control gap-1">
+            <span className="label-text font-medium">{label}</span>
+            <input
+                name={name}
+                type="number"
+                inputMode="numeric"
+                min="1"
+                step="1"
+                className="input input-bordered w-full min-h-11"
+                defaultValue={defaultValue}
+                aria-invalid={error ? true : undefined}
+                aria-describedby={
+                    error ? "auction-result-filter-error" : undefined
+                }
+            />
+        </label>
     );
 }

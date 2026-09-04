@@ -542,24 +542,24 @@ describe("useAuctionSearch", () => {
         ).toEqual([10, 20]);
     });
 
-    it("filters the loaded snapshot by exact name and inclusive unit price without fetching", async () => {
-        const fetchMock = jest
-            .fn()
-            .mockResolvedValue(
-                response([
-                    item("철 검", 100, 2, "철 검 +1"),
-                    item("철 검", 200, 3, "철 검 +2"),
-                    item("가죽 장갑", 200, 4),
-                    item("", 300, 5, "이름 없는 매물"),
-                ])
-            );
+    async function searchFilterableItems() {
+        const items = [
+            item("철 검", 100, 2, "철 검 +1"),
+            item("철 검", 200, 3, "철 검 +2"),
+            item("가죽 장갑", 200, 4),
+            item("", 300, 5, "이름 없는 매물"),
+        ];
+        const fetchMock = jest.fn().mockResolvedValue(response(items));
         global.fetch = fetchMock;
         const { result } = renderHook(() => useAuctionSearch());
-
         await act(async () => result.current.search("장비", categories[0]));
+        return { result, fetchMock };
+    }
+
+    it("filters the loaded snapshot by exact name and inclusive price", async () => {
+        const { result, fetchMock } = await searchFilterableItems();
         expect(result.current.loadedItemCount).toBe(4);
         expect(result.current.exactItemNames).toEqual(["가죽 장갑", "철 검"]);
-
         act(() =>
             result.current.applyResultFilters({
                 exactItemName: "철 검",
@@ -576,7 +576,11 @@ describe("useAuctionSearch", () => {
             listingCount: 2,
             totalQuantity: 5,
         });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
 
+    it("supports minimum, maximum, and equal price boundaries", async () => {
+        const { result } = await searchFilterableItems();
         act(() => result.current.applyResultFilters({ minUnitPrice: 200 }));
         expect(
             result.current.items.map(value => value.auction_price_per_unit)
@@ -592,14 +596,21 @@ describe("useAuctionSearch", () => {
             })
         );
         expect(result.current.items).toHaveLength(2);
+    });
 
+    it("keeps the selected sort when result filters are cleared", async () => {
+        const { result } = await searchFilterableItems();
+        act(() => result.current.applyResultFilters({ maxUnitPrice: 200 }));
         act(() => result.current.sortByPrice());
         act(() => result.current.sortByPrice());
         act(() => result.current.clearResultFilters());
         expect(
             result.current.items.map(value => value.auction_price_per_unit)
         ).toEqual([300, 200, 200, 100]);
+    });
 
+    it("returns an empty summary when local filters match nothing", async () => {
+        const { result, fetchMock } = await searchFilterableItems();
         act(() => result.current.applyResultFilters({ minUnitPrice: 999 }));
         expect(result.current.items).toEqual([]);
         expect(result.current.summary).toBeNull();

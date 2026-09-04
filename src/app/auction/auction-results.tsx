@@ -54,22 +54,30 @@ const axisNumberFormatter = new Intl.NumberFormat("ko-KR", {
  * @param item - The auction item to display
  * @param onClick - The callback invoked when the row is clicked
  */
+type AuctionRowProps = {
+    item: AuctionItem;
+    onClick: () => void;
+    selectedForComparison: boolean;
+    onToggleComparison: () => void;
+};
+
+function getRowPriceSummary(item: AuctionItem) {
+    return {
+        unitPrice: numberFormatter.format(item.auction_price_per_unit),
+        quantity: numberFormatter.format(item.item_count),
+        bundleTotal: numberFormatter.format(
+            item.auction_price_per_unit * item.item_count
+        ),
+    };
+}
+
 function AuctionRow({
     item,
     onClick,
     selectedForComparison,
     onToggleComparison,
-}: {
-    item: AuctionItem;
-    onClick: () => void;
-    selectedForComparison: boolean;
-    onToggleComparison: () => void;
-}) {
-    const unitPrice = numberFormatter.format(item.auction_price_per_unit);
-    const quantity = numberFormatter.format(item.item_count);
-    const bundleTotal = numberFormatter.format(
-        item.auction_price_per_unit * item.item_count
-    );
+}: AuctionRowProps) {
+    const { unitPrice, quantity, bundleTotal } = getRowPriceSummary(item);
     return (
         <tr className="hover:bg-gray-100">
             <td className="w-[50px] hidden md:table-cell">
@@ -349,14 +357,7 @@ function getCompleteRecentSalesMedian(recentSales: RecentSalesState) {
     return summary.medianUnitPrice;
 }
 
-function CurrentListingsMetrics({
-    summary,
-    hasMore,
-    optionFilters,
-    loadedItemCount,
-    resultFilters,
-    recentSales,
-}: Pick<
+type CurrentListingsMetricsProps = Pick<
     AuctionResultsProps,
     | "summary"
     | "hasMore"
@@ -364,61 +365,79 @@ function CurrentListingsMetrics({
     | "loadedItemCount"
     | "resultFilters"
     | "recentSales"
->) {
-    const resultFiltersActive = hasAuctionResultFilters(resultFilters);
-    const recentMedian = getCompleteRecentSalesMedian(recentSales);
-    const rawDifference =
-        summary &&
-        !hasMore &&
-        !hasAuctionOptionFilters(optionFilters) &&
-        !resultFiltersActive &&
-        recentMedian !== null
-            ? ((summary.lowestUnitPrice - recentMedian) / recentMedian) * 100
-            : null;
-    const difference =
-        rawDifference !== null && Number.isFinite(rawDifference)
-            ? rawDifference
-            : null;
-    const comparison =
-        difference === null
-            ? null
-            : `최근 1시간 거래 중앙값 대비 ${numberFormatter.format(Math.abs(difference))}% ${difference < 0 ? "낮음" : difference > 0 ? "높음" : "같음"}`;
+>;
 
+function getCurrentListingComparison({
+    summary,
+    hasMore,
+    optionFilters,
+    resultFilters,
+    recentSales,
+}: CurrentListingsMetricsProps) {
+    const recentMedian = getCompleteRecentSalesMedian(recentSales);
+    if (
+        !summary ||
+        hasMore ||
+        hasAuctionOptionFilters(optionFilters) ||
+        hasAuctionResultFilters(resultFilters) ||
+        recentMedian === null
+    ) {
+        return null;
+    }
+    const difference =
+        ((summary.lowestUnitPrice - recentMedian) / recentMedian) * 100;
+    if (!Number.isFinite(difference)) return null;
+    return `최근 1시간 거래 중앙값 대비 ${numberFormatter.format(Math.abs(difference))}% ${difference < 0 ? "낮음" : difference > 0 ? "높음" : "같음"}`;
+}
+
+function CurrentListingsSummary({
+    summary,
+    comparison,
+}: {
+    summary: AuctionSummary;
+    comparison: string | null;
+}) {
+    return (
+        <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div>
+                <dt className="text-sm text-base-content/70">최저 단가</dt>
+                <dd className="flex flex-wrap items-center gap-2 font-semibold">
+                    <span>
+                        {numberFormatter.format(summary.lowestUnitPrice)} Gold
+                    </span>
+                    {comparison && (
+                        <span className="badge badge-outline h-auto max-w-full whitespace-normal py-1 text-left text-xs leading-tight">
+                            {comparison}
+                        </span>
+                    )}
+                </dd>
+            </div>
+            <SummaryMetric
+                label="매물 단가 중앙값"
+                value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
+            />
+            <SummaryMetric
+                label="매물 수"
+                value={`${numberFormatter.format(summary.listingCount)}개`}
+            />
+            <SummaryMetric
+                label="총 수량"
+                value={`${numberFormatter.format(summary.totalQuantity)}개`}
+            />
+        </dl>
+    );
+}
+
+function CurrentListingsMetrics(props: CurrentListingsMetricsProps) {
+    const { summary, hasMore, loadedItemCount, resultFilters } = props;
+    const resultFiltersActive = hasAuctionResultFilters(resultFilters);
     return (
         <>
             {summary ? (
-                <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            최저 단가
-                        </dt>
-                        <dd className="flex flex-wrap items-center gap-2 font-semibold">
-                            <span>
-                                {numberFormatter.format(
-                                    summary.lowestUnitPrice
-                                )}{" "}
-                                Gold
-                            </span>
-                            {comparison && (
-                                <span className="badge badge-outline h-auto max-w-full whitespace-normal py-1 text-left text-xs leading-tight">
-                                    {comparison}
-                                </span>
-                            )}
-                        </dd>
-                    </div>
-                    <SummaryMetric
-                        label="매물 단가 중앙값"
-                        value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
-                    />
-                    <SummaryMetric
-                        label="매물 수"
-                        value={`${numberFormatter.format(summary.listingCount)}개`}
-                    />
-                    <SummaryMetric
-                        label="총 수량"
-                        value={`${numberFormatter.format(summary.totalQuantity)}개`}
-                    />
-                </dl>
+                <CurrentListingsSummary
+                    summary={summary}
+                    comparison={getCurrentListingComparison(props)}
+                />
             ) : (
                 <p>
                     {loadedItemCount > 0 && resultFiltersActive
