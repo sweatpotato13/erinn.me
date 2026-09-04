@@ -85,7 +85,7 @@ type AuctionViewProps = {
 function AuctionPageView(props: AuctionViewProps) {
     return (
         <div className="flex min-h-screen flex-col items-center justify-start p-4 md:p-6">
-            <div className="w-full max-w-4xl flex-grow rounded-lg p-0 backdrop-blur-sm md:p-6">
+            <div className="w-full max-w-4xl flex-grow rounded-lg p-0 md:p-6">
                 <h1 className="text-2xl font-bold">
                     마비노기 경매장 시세 조회
                 </h1>

@@ -47,11 +47,16 @@ function deferred<T>() {
     return { promise, resolve };
 }
 
-function item(name: string, price: number, quantity = 1): AuctionItem {
+function item(
+    name: string,
+    price: number,
+    quantity = 1,
+    displayName = name
+): AuctionItem {
     return {
         listingId: `${name}-${price}-${quantity}`,
         item_name: name,
-        item_display_name: name,
+        item_display_name: displayName,
         item_count: quantity,
         auction_price_per_unit: price,
         date_auction_expire: "2026-01-01",
@@ -535,6 +540,104 @@ describe("useAuctionSearch", () => {
         expect(
             result.current.items.map(value => value.auction_price_per_unit)
         ).toEqual([10, 20]);
+    });
+
+    async function searchFilterableItems() {
+        const items = [
+            item("철 검", 100, 2, "철 검 +1"),
+            item("철 검", 200, 3, "철 검 +2"),
+            item("가죽 장갑", 200, 4),
+            item("", 300, 5, "이름 없는 매물"),
+        ];
+        const fetchMock = jest.fn().mockResolvedValue(response(items));
+        global.fetch = fetchMock;
+        const { result } = renderHook(() => useAuctionSearch());
+        await act(async () => result.current.search("장비", categories[0]));
+        return { result, fetchMock };
+    }
+
+    it("filters the loaded snapshot by exact name and inclusive price", async () => {
+        const { result, fetchMock } = await searchFilterableItems();
+        expect(result.current.loadedItemCount).toBe(4);
+        expect(result.current.exactItemNames).toEqual(["가죽 장갑", "철 검"]);
+        act(() =>
+            result.current.applyResultFilters({
+                exactItemName: "철 검",
+                minUnitPrice: 100,
+                maxUnitPrice: 200,
+            })
+        );
+        expect(
+            result.current.items.map(value => value.item_display_name)
+        ).toEqual(["철 검 +1", "철 검 +2"]);
+        expect(result.current.summary).toEqual({
+            lowestUnitPrice: 100,
+            medianUnitPrice: 150,
+            listingCount: 2,
+            totalQuantity: 5,
+        });
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("supports minimum, maximum, and equal price boundaries", async () => {
+        const { result } = await searchFilterableItems();
+        act(() => result.current.applyResultFilters({ minUnitPrice: 200 }));
+        expect(
+            result.current.items.map(value => value.auction_price_per_unit)
+        ).toEqual([200, 200, 300]);
+        act(() => result.current.applyResultFilters({ maxUnitPrice: 200 }));
+        expect(
+            result.current.items.map(value => value.auction_price_per_unit)
+        ).toEqual([100, 200, 200]);
+        act(() =>
+            result.current.applyResultFilters({
+                minUnitPrice: 200,
+                maxUnitPrice: 200,
+            })
+        );
+        expect(result.current.items).toHaveLength(2);
+    });
+
+    it("keeps the selected sort when result filters are cleared", async () => {
+        const { result } = await searchFilterableItems();
+        act(() => result.current.applyResultFilters({ maxUnitPrice: 200 }));
+        act(() => result.current.sortByPrice());
+        act(() => result.current.sortByPrice());
+        act(() => result.current.clearResultFilters());
+        expect(
+            result.current.items.map(value => value.auction_price_per_unit)
+        ).toEqual([300, 200, 200, 100]);
+    });
+
+    it("returns an empty summary when local filters match nothing", async () => {
+        const { result, fetchMock } = await searchFilterableItems();
+        act(() => result.current.applyResultFilters({ minUnitPrice: 999 }));
+        expect(result.current.items).toEqual([]);
+        expect(result.current.summary).toBeNull();
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("clears result filters for a new search and reset", async () => {
+        global.fetch = jest
+            .fn()
+            .mockResolvedValueOnce(response([item("첫 결과", 100)]))
+            .mockResolvedValueOnce(response([item("다음 결과", 200)]));
+        const { result } = renderHook(() => useAuctionSearch());
+
+        await act(async () => result.current.search("첫 검색", categories[0]));
+        act(() => result.current.applyResultFilters({ minUnitPrice: 100 }));
+        expect(result.current.resultFilters).toEqual({ minUnitPrice: 100 });
+
+        await act(async () =>
+            result.current.search("다음 검색", categories[0])
+        );
+        expect(result.current.resultFilters).toEqual({});
+        expect(result.current.items[0].item_name).toBe("다음 결과");
+
+        act(() => result.current.applyResultFilters({ maxUnitPrice: 200 }));
+        act(() => result.current.reset());
+        expect(result.current.resultFilters).toEqual({});
+        expect(result.current.loadedItemCount).toBe(0);
     });
 
     it("updates summary metadata for each successful search", async () => {
@@ -1147,6 +1250,11 @@ describe("AuctionResults", () => {
         loading: false,
         optionEvaluation: null,
         optionFilters: {},
+        loadedItemCount: 0,
+        exactItemNames: [],
+        resultFilters: {},
+        applyResultFilters: jest.fn(),
+        clearResultFilters: jest.fn(),
         onSort: jest.fn(),
         onItemClick: jest.fn(),
         comparisonItems: [],
@@ -1183,11 +1291,13 @@ describe("AuctionResults", () => {
         recentSales = recentSalesState(comparisonSales()),
         hasMore = false,
         optionFilters = {},
+        resultFilters = {},
     }: {
         lowest?: number;
         recentSales?: RecentSalesState;
         hasMore?: boolean;
         optionFilters?: AuctionOptionFilters;
+        resultFilters?: typeof baseProps.resultFilters;
     } = {}) {
         render(
             <AuctionResults
@@ -1203,6 +1313,7 @@ describe("AuctionResults", () => {
                 refreshedAt={refreshedAt}
                 recentSales={recentSales}
                 optionFilters={optionFilters}
+                resultFilters={resultFilters}
             />
         );
         return within(screen.getByRole("region", { name: "현재 등록 매물" }));
@@ -1319,7 +1430,9 @@ describe("AuctionResults", () => {
             panel.getByText(/조회 완료:/).querySelector("time")
         ).toHaveAttribute("datetime", refreshedAt);
         expect(
-            panel.queryByText("현재 불러온 일부 매물만 반영한 요약입니다.")
+            panel.queryByText(
+                "필터 선택지와 요약은 현재 불러온 일부 매물만 반영합니다."
+            )
         ).not.toBeInTheDocument();
         expect(panel.getByRole("button", { name: "아이템" })).toBeVisible();
         expect(
@@ -1381,6 +1494,15 @@ describe("AuctionResults", () => {
         }
     );
 
+    it("hides the recent-sales comparison for local result filters", () => {
+        const panel = renderComparison({
+            resultFilters: { minUnitPrice: 90 },
+        });
+        expect(
+            panel.queryByText(/최근 1시간 거래 중앙값 대비/)
+        ).not.toBeInTheDocument();
+    });
+
     it.each([
         ["partial current listings", { hasMore: true }],
         [
@@ -1438,7 +1560,9 @@ describe("AuctionResults", () => {
             summary.getByText("현재 검색 조건에 유효한 매물이 없습니다.")
         ).toBeInTheDocument();
         expect(
-            summary.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
+            summary.getByText(
+                "필터 선택지와 요약은 현재 불러온 일부 매물만 반영합니다."
+            )
         ).toBeInTheDocument();
         expect(summary.queryByText(/0 Gold/)).not.toBeInTheDocument();
     });
@@ -1492,7 +1616,9 @@ describe("AuctionResults", () => {
                 refreshedAt="2026-08-20T04:00:00Z"
             />
         );
-        await user.click(screen.getByRole("button", { name: "가격" }));
+        await user.click(
+            screen.getByRole("button", { name: "가격 기준 정렬" })
+        );
         expect(onSort).toHaveBeenCalled();
         await user.click(screen.getByRole("button", { name: "아이템 0" }));
         expect(onItemClick).toHaveBeenCalledWith(items[0]);
@@ -1502,6 +1628,251 @@ describe("AuctionResults", () => {
         expect(onToggleComparison).toHaveBeenCalledWith(items[0]);
         await user.click(screen.getByLabelText("다음 페이지"));
         expect(setCurrentPage.mock.calls[0][0](1)).toBe(2);
+    });
+
+    it("applies a validated result filter and restores trigger focus", async () => {
+        const user = userEvent.setup();
+        const applyResultFilters = jest.fn();
+        const setCurrentPage = jest.fn();
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("철 검", 100), item("가죽 장갑", 200)]}
+                loadedItemCount={2}
+                exactItemNames={["가죽 장갑", "철 검"]}
+                refreshedAt={refreshedAt}
+                applyResultFilters={applyResultFilters}
+                setCurrentPage={setCurrentPage}
+            />
+        );
+
+        const trigger = screen.getByRole("button", { name: "결과 필터" });
+        await user.click(trigger);
+        const dialog = screen.getByRole("dialog", { name: "결과 필터" });
+        expect(dialog).toHaveAttribute("aria-modal", "true");
+        expect(
+            within(dialog).getByRole("button", { name: "닫기" })
+        ).toHaveFocus();
+        await user.selectOptions(
+            within(dialog).getByLabelText("정확한 아이템"),
+            "철 검"
+        );
+        await user.type(within(dialog).getByLabelText("최소 단가"), "100");
+        await user.type(within(dialog).getByLabelText("최대 단가"), "200");
+        await user.click(within(dialog).getByRole("button", { name: "적용" }));
+
+        expect(applyResultFilters).toHaveBeenCalledWith({
+            exactItemName: "철 검",
+            minUnitPrice: 100,
+            maxUnitPrice: 200,
+        });
+        expect(setCurrentPage.mock.calls[0][0](9)).toBe(1);
+        expect(trigger).toHaveFocus();
+    });
+
+    it("shows one logical range count, clears it, and resets pagination", async () => {
+        const user = userEvent.setup();
+        const clearResultFilters = jest.fn();
+        const setCurrentPage = jest.fn();
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("철 검", 100)]}
+                loadedItemCount={1}
+                exactItemNames={["가죽 장갑", "철 검"]}
+                resultFilters={{
+                    exactItemName: "철 검",
+                    minUnitPrice: 100,
+                    maxUnitPrice: 200,
+                }}
+                refreshedAt={refreshedAt}
+                clearResultFilters={clearResultFilters}
+                setCurrentPage={setCurrentPage}
+            />
+        );
+
+        expect(
+            screen.getByRole("button", { name: "결과 필터, 2개 적용" })
+        ).toBeVisible();
+        await user.click(
+            screen.getByRole("button", { name: "결과 필터 전체 해제" })
+        );
+        expect(clearResultFilters).toHaveBeenCalledTimes(1);
+        expect(setCurrentPage.mock.calls[0][0](3)).toBe(1);
+    });
+
+    it("omits a redundant exact-item selector and discards a closed draft", async () => {
+        const user = userEvent.setup();
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("철 검", 100)]}
+                loadedItemCount={1}
+                exactItemNames={["철 검"]}
+                resultFilters={{ minUnitPrice: 100 }}
+                refreshedAt={refreshedAt}
+            />
+        );
+
+        const trigger = screen.getByRole("button", {
+            name: "결과 필터, 1개 적용",
+        });
+        await user.click(trigger);
+        expect(
+            screen.queryByLabelText("정확한 아이템")
+        ).not.toBeInTheDocument();
+        const minimum = screen.getByLabelText("최소 단가");
+        expect(minimum).toHaveValue(100);
+        await user.clear(minimum);
+        await user.type(minimum, "200");
+        await user.click(screen.getByRole("button", { name: "닫기" }));
+        await user.click(trigger);
+        expect(screen.getByLabelText("최소 단가")).toHaveValue(100);
+    });
+
+    it.each(["0", "-1", "1.5", "9007199254740992"])(
+        "rejects invalid unit price %s without applying",
+        async value => {
+            const user = userEvent.setup();
+            const applyResultFilters = jest.fn();
+            render(
+                <AuctionResults
+                    {...baseProps}
+                    items={[item("철 검", 100)]}
+                    loadedItemCount={1}
+                    exactItemNames={["철 검"]}
+                    refreshedAt={refreshedAt}
+                    applyResultFilters={applyResultFilters}
+                />
+            );
+            await user.click(screen.getByRole("button", { name: "결과 필터" }));
+            await user.type(screen.getByLabelText("최소 단가"), value);
+            await user.click(screen.getByRole("button", { name: "적용" }));
+
+            expect(screen.getByRole("alert")).toHaveTextContent(
+                "단가는 1 이상의 정수로 입력해주세요."
+            );
+            expect(applyResultFilters).not.toHaveBeenCalled();
+        }
+    );
+
+    it("rejects bad native numeric input and reversed ranges", async () => {
+        const user = userEvent.setup();
+        const applyResultFilters = jest.fn();
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("철 검", 100)]}
+                loadedItemCount={1}
+                exactItemNames={["철 검"]}
+                refreshedAt={refreshedAt}
+                applyResultFilters={applyResultFilters}
+            />
+        );
+        await user.click(screen.getByRole("button", { name: "결과 필터" }));
+        const minimum = screen.getByLabelText("최소 단가");
+        fireEvent.change(minimum, { target: { value: "1e3" } });
+        fireEvent.submit(minimum.closest("form")!);
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "단가는 1 이상의 정수로 입력해주세요."
+        );
+        expect(applyResultFilters).not.toHaveBeenCalled();
+
+        fireEvent.change(minimum, { target: { value: "" } });
+        Object.defineProperty(minimum, "validity", {
+            configurable: true,
+            value: { badInput: true },
+        });
+        fireEvent.submit(minimum.closest("form")!);
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "단가는 1 이상의 정수로 입력해주세요."
+        );
+        expect(applyResultFilters).not.toHaveBeenCalled();
+
+        Object.defineProperty(minimum, "validity", {
+            configurable: true,
+            value: { badInput: false },
+        });
+        await user.type(minimum, "200");
+        await user.type(screen.getByLabelText("최대 단가"), "100");
+        await user.click(screen.getByRole("button", { name: "적용" }));
+        expect(screen.getByRole("alert")).toHaveTextContent(
+            "최소 단가는 최대 단가보다 클 수 없습니다."
+        );
+        expect(applyResultFilters).not.toHaveBeenCalled();
+    });
+
+    it("traps filter focus and closes on Escape", async () => {
+        const user = userEvent.setup();
+        render(
+            <AuctionResults
+                {...baseProps}
+                items={[item("철 검", 100), item("가죽 장갑", 200)]}
+                loadedItemCount={2}
+                exactItemNames={["가죽 장갑", "철 검"]}
+                refreshedAt={refreshedAt}
+            />
+        );
+        const trigger = screen.getByRole("button", { name: "결과 필터" });
+        await user.click(trigger);
+        const dialog = screen.getByRole("dialog", { name: "결과 필터" });
+        const close = within(dialog).getByRole("button", { name: "닫기" });
+        const apply = within(dialog).getByRole("button", { name: "적용" });
+        expect(close).toHaveFocus();
+        await user.tab({ shift: true });
+        expect(apply).toHaveFocus();
+        await user.tab();
+        expect(close).toHaveFocus();
+        await user.keyboard("{Escape}");
+        expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+        expect(trigger).toHaveFocus();
+    });
+
+    it("shows a filtered no-match state and separate price and quantity", () => {
+        const largeItem = item("대량", 1_000_000, 2_000);
+        const { rerender } = render(
+            <AuctionResults
+                {...baseProps}
+                items={[]}
+                loadedItemCount={2}
+                exactItemNames={["가죽 장갑", "철 검"]}
+                resultFilters={{ minUnitPrice: 999 }}
+                refreshedAt={refreshedAt}
+            />
+        );
+        expect(
+            screen.getByText("적용한 결과 필터와 일치하는 매물이 없습니다.")
+        ).toBeInTheDocument();
+        expect(
+            screen.getByRole("button", { name: "결과 필터 전체 해제" })
+        ).toBeVisible();
+
+        rerender(
+            <AuctionResults
+                {...baseProps}
+                items={[item("한 개", 100), largeItem]}
+                loadedItemCount={2}
+                refreshedAt={refreshedAt}
+            />
+        );
+        const singleRow = screen
+            .getByRole("button", { name: "한 개" })
+            .closest("tr")!;
+        expect(within(singleRow).getByText("100 Gold")).toBeInTheDocument();
+        expect(within(singleRow).getByText("1")).toBeInTheDocument();
+        const largeRow = screen
+            .getByRole("button", { name: "대량" })
+            .closest("tr")!;
+        expect(
+            within(largeRow).getByText("1,000,000 Gold")
+        ).toBeInTheDocument();
+        expect(within(largeRow).getByText("2000")).toBeInTheDocument();
+        expect(
+            screen.getByRole("checkbox", {
+                name: /대량, 1,000,000 Gold, 2000개/,
+            })
+        ).toBeVisible();
+        expect(screen.getAllByRole("columnheader")).toHaveLength(6);
     });
 
     it("renders the dedicated empty recent-sales state", () => {

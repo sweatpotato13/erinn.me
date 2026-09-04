@@ -4,6 +4,7 @@ import Image from "next/image";
 import { type RefObject, useRef, useState } from "react";
 
 import { AuctionComparison } from "@/app/auction/auction-comparison";
+import { AuctionResultControls } from "@/app/auction/auction-result-controls";
 import type {
     AuctionItem,
     AuctionSale,
@@ -13,7 +14,11 @@ import type {
     RecentSalesSummary,
     SortDirection,
 } from "@/app/auction/types";
-import type { AuctionOptionEvaluation } from "@/app/auction/use-auction-search";
+import {
+    type AuctionOptionEvaluation,
+    type AuctionResultFilters,
+    hasAuctionResultFilters,
+} from "@/app/auction/use-auction-search";
 import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
 import {
@@ -49,17 +54,19 @@ const axisNumberFormatter = new Intl.NumberFormat("ko-KR", {
  * @param item - The auction item to display
  * @param onClick - The callback invoked when the row is clicked
  */
+interface AuctionRowProps {
+    item: AuctionItem;
+    onClick: () => void;
+    selectedForComparison: boolean;
+    onToggleComparison: () => void;
+}
+
 function AuctionRow({
     item,
     onClick,
     selectedForComparison,
     onToggleComparison,
-}: {
-    item: AuctionItem;
-    onClick: () => void;
-    selectedForComparison: boolean;
-    onToggleComparison: () => void;
-}) {
+}: AuctionRowProps) {
     return (
         <tr className="hover:bg-gray-100">
             <td className="w-[50px] hidden md:table-cell">
@@ -125,6 +132,7 @@ function ResultsHeader({
                 <th>
                     <button
                         type="button"
+                        aria-label={`가격 기준 정렬${sortDirection === "asc" ? ", 오름차순" : sortDirection === "desc" ? ", 내림차순" : ""}`}
                         className="w-full text-left p-2 hover:bg-base-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         onClick={onSort}
                     >
@@ -253,31 +261,40 @@ export function ItemOptionsDialog({
 }) {
     const dialogRef = useDialogFocus(onClose);
     return (
-        <div className="fixed inset-0 flex items-start justify-center z-50">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-2 sm:items-center sm:p-4">
             <div
                 ref={dialogRef}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby="item-options-dialog-title"
                 tabIndex={-1}
-                className="bg-white border p-4 rounded-lg shadow-lg outline-none"
+                className="flex max-h-[calc(100dvh-1rem)] w-full flex-col overflow-hidden rounded-lg border bg-white shadow-lg outline-none sm:max-h-[calc(100dvh-2rem)] sm:max-w-2xl"
             >
-                <h2
-                    id="item-options-dialog-title"
-                    className="text-lg font-bold"
+                <div className="flex shrink-0 items-center justify-between gap-4 border-b p-4">
+                    <h2
+                        id="item-options-dialog-title"
+                        className="text-lg font-bold"
+                    >
+                        아이템 옵션
+                    </h2>
+                    <button
+                        type="button"
+                        className="btn btn-outline btn-sm shrink-0"
+                        onClick={onClose}
+                    >
+                        닫기
+                    </button>
+                </div>
+                <div
+                    data-testid="item-options-scroll"
+                    className="min-h-0 overflow-y-auto overscroll-contain break-words p-4 pb-[max(1rem,env(safe-area-inset-bottom))]"
                 >
-                    아이템 옵션
-                </h2>
-                <div className="mt-2">
                     {options.length > 0 ? (
                         <OptionRenderer options={options} />
                     ) : (
                         <div>옵션이 없습니다.</div>
                     )}
                 </div>
-                <button className="btn btn-outline mt-4" onClick={onClose}>
-                    닫기
-                </button>
             </div>
         </div>
     );
@@ -291,6 +308,11 @@ type AuctionResultsProps = Omit<TableProps, "isEmpty"> & {
     loading: boolean;
     optionEvaluation: AuctionOptionEvaluation | null;
     optionFilters: AuctionOptionFilters;
+    loadedItemCount: number;
+    exactItemNames: string[];
+    resultFilters: AuctionResultFilters;
+    applyResultFilters: (filters: AuctionResultFilters) => void;
+    clearResultFilters: () => void;
     recentSales: RecentSalesState;
     comparisonNotice: string | null;
     onRemoveComparison: (item: AuctionItem) => void;
@@ -330,73 +352,99 @@ function getCompleteRecentSalesMedian(recentSales: RecentSalesState) {
     return summary.medianUnitPrice;
 }
 
-function CurrentListingsMetrics({
+type CurrentListingsMetricsProps = Pick<
+    AuctionResultsProps,
+    | "summary"
+    | "hasMore"
+    | "optionFilters"
+    | "loadedItemCount"
+    | "resultFilters"
+    | "recentSales"
+>;
+
+function getCurrentListingComparison({
     summary,
     hasMore,
     optionFilters,
+    resultFilters,
     recentSales,
-}: Pick<
-    AuctionResultsProps,
-    "summary" | "hasMore" | "optionFilters" | "recentSales"
->) {
+}: CurrentListingsMetricsProps) {
     const recentMedian = getCompleteRecentSalesMedian(recentSales);
-    const rawDifference =
-        summary &&
-        !hasMore &&
-        !hasAuctionOptionFilters(optionFilters) &&
-        recentMedian !== null
-            ? ((summary.lowestUnitPrice - recentMedian) / recentMedian) * 100
-            : null;
+    if (
+        !summary ||
+        hasMore ||
+        hasAuctionOptionFilters(optionFilters) ||
+        hasAuctionResultFilters(resultFilters) ||
+        recentMedian === null
+    ) {
+        return null;
+    }
     const difference =
-        rawDifference !== null && Number.isFinite(rawDifference)
-            ? rawDifference
-            : null;
-    const comparison =
-        difference === null
-            ? null
-            : `최근 1시간 거래 중앙값 대비 ${numberFormatter.format(Math.abs(difference))}% ${difference < 0 ? "낮음" : difference > 0 ? "높음" : "같음"}`;
+        ((summary.lowestUnitPrice - recentMedian) / recentMedian) * 100;
+    if (!Number.isFinite(difference)) return null;
+    return `최근 1시간 거래 중앙값 대비 ${numberFormatter.format(Math.abs(difference))}% ${difference < 0 ? "낮음" : difference > 0 ? "높음" : "같음"}`;
+}
 
+interface CurrentListingsSummaryProps {
+    summary: AuctionSummary;
+    comparison: string | null;
+}
+
+function CurrentListingsSummary({
+    summary,
+    comparison,
+}: CurrentListingsSummaryProps) {
+    return (
+        <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div>
+                <dt className="text-sm text-base-content/70">최저 단가</dt>
+                <dd className="flex flex-wrap items-center gap-2 font-semibold">
+                    <span>
+                        {numberFormatter.format(summary.lowestUnitPrice)} Gold
+                    </span>
+                    {comparison && (
+                        <span className="badge badge-outline h-auto max-w-full whitespace-normal py-1 text-left text-xs leading-tight">
+                            {comparison}
+                        </span>
+                    )}
+                </dd>
+            </div>
+            <SummaryMetric
+                label="매물 단가 중앙값"
+                value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
+            />
+            <SummaryMetric
+                label="매물 수"
+                value={`${numberFormatter.format(summary.listingCount)}개`}
+            />
+            <SummaryMetric
+                label="총 수량"
+                value={`${numberFormatter.format(summary.totalQuantity)}개`}
+            />
+        </dl>
+    );
+}
+
+function CurrentListingsMetrics(props: CurrentListingsMetricsProps) {
+    const { summary, hasMore, loadedItemCount, resultFilters } = props;
+    const resultFiltersActive = hasAuctionResultFilters(resultFilters);
     return (
         <>
             {summary ? (
-                <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                    <div>
-                        <dt className="text-sm text-base-content/70">
-                            최저 단가
-                        </dt>
-                        <dd className="flex flex-wrap items-center gap-2 font-semibold">
-                            <span>
-                                {numberFormatter.format(
-                                    summary.lowestUnitPrice
-                                )}{" "}
-                                Gold
-                            </span>
-                            {comparison && (
-                                <span className="badge badge-outline h-auto max-w-full whitespace-normal py-1 text-left text-xs leading-tight">
-                                    {comparison}
-                                </span>
-                            )}
-                        </dd>
-                    </div>
-                    <SummaryMetric
-                        label="매물 단가 중앙값"
-                        value={`${numberFormatter.format(summary.medianUnitPrice)} Gold`}
-                    />
-                    <SummaryMetric
-                        label="매물 수"
-                        value={`${numberFormatter.format(summary.listingCount)}개`}
-                    />
-                    <SummaryMetric
-                        label="총 수량"
-                        value={`${numberFormatter.format(summary.totalQuantity)}개`}
-                    />
-                </dl>
+                <CurrentListingsSummary
+                    summary={summary}
+                    comparison={getCurrentListingComparison(props)}
+                />
             ) : (
-                <p>현재 검색 조건에 유효한 매물이 없습니다.</p>
+                <p>
+                    {loadedItemCount > 0 && resultFiltersActive
+                        ? "적용한 결과 필터와 일치하는 매물이 없습니다."
+                        : "현재 검색 조건에 유효한 매물이 없습니다."}
+                </p>
             )}
             {hasMore && (
                 <p className="alert alert-warning mt-3 text-sm">
-                    현재 불러온 일부 매물만 반영한 요약입니다.
+                    필터 선택지와 요약은 현재 불러온 일부 매물만 반영합니다.
                 </p>
             )}
         </>
@@ -414,14 +462,34 @@ function CurrentListingsHeader(props: AuctionResultsProps) {
                     판매자가 현재 제시한 매물의 가격과 수량입니다.
                 </p>
             </div>
-            {props.refreshedAt && !props.loading && !props.errorMessage && (
-                <p className="text-sm text-base-content/70">
-                    조회 완료:{" "}
-                    <time dateTime={props.refreshedAt}>
-                        {dateTimeFormatter.format(new Date(props.refreshedAt))}
-                    </time>
-                </p>
-            )}
+            <div className="flex flex-wrap items-center justify-end gap-2">
+                {props.loadedItemCount > 0 &&
+                    !props.loading &&
+                    !props.errorMessage && (
+                        <AuctionResultControls
+                            exactItemNames={props.exactItemNames}
+                            filters={props.resultFilters}
+                            onApply={filters => {
+                                props.applyResultFilters(filters);
+                                props.setCurrentPage(() => 1);
+                            }}
+                            onClear={() => {
+                                props.clearResultFilters();
+                                props.setCurrentPage(() => 1);
+                            }}
+                        />
+                    )}
+                {props.refreshedAt && !props.loading && !props.errorMessage && (
+                    <p className="text-sm text-base-content/70">
+                        조회 완료:{" "}
+                        <time dateTime={props.refreshedAt}>
+                            {dateTimeFormatter.format(
+                                new Date(props.refreshedAt)
+                            )}
+                        </time>
+                    </p>
+                )}
+            </div>
         </div>
     );
 }
