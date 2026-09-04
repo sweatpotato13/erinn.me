@@ -73,7 +73,7 @@ export function AuctionResultControls({
     filters,
     onApply,
     onClear,
-}: AuctionResultControlsProps) {
+}: AuctionResultControlsProps): React.JSX.Element {
     const [open, setOpen] = useState(false);
     const triggerRef = useRef<HTMLButtonElement>(null);
     const activeCount = activeFilterCount(filters);

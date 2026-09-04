@@ -49,7 +49,7 @@ export function useDialogFocus(
     triggerRef?: RefObject<HTMLElement | null>,
     fallbackFocusId?: string,
     preventInitialScroll = false
-) {
+): RefObject<HTMLDivElement | null> {
     const dialogRef = useRef<HTMLDivElement>(null);
     const onCloseRef = useRef(onClose);
 

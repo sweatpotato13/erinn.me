@@ -54,12 +54,12 @@ const axisNumberFormatter = new Intl.NumberFormat("ko-KR", {
  * @param item - The auction item to display
  * @param onClick - The callback invoked when the row is clicked
  */
-type AuctionRowProps = {
+interface AuctionRowProps {
     item: AuctionItem;
     onClick: () => void;
     selectedForComparison: boolean;
     onToggleComparison: () => void;
-};
+}
 
 function AuctionRow({
     item,
@@ -385,13 +385,15 @@ function getCurrentListingComparison({
     return `최근 1시간 거래 중앙값 대비 ${numberFormatter.format(Math.abs(difference))}% ${difference < 0 ? "낮음" : difference > 0 ? "높음" : "같음"}`;
 }
 
+interface CurrentListingsSummaryProps {
+    summary: AuctionSummary;
+    comparison: string | null;
+}
+
 function CurrentListingsSummary({
     summary,
     comparison,
-}: {
-    summary: AuctionSummary;
-    comparison: string | null;
-}) {
+}: CurrentListingsSummaryProps) {
     return (
         <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
             <div>

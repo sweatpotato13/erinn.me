@@ -56,6 +56,29 @@ export type AuctionResultFilters = {
     maxUnitPrice?: number;
 };
 
+export interface AuctionSearchModel {
+    items: AuctionItem[];
+    summary: AuctionSummary | null;
+    loadedItemCount: number;
+    exactItemNames: string[];
+    resultFilters: AuctionResultFilters;
+    hasMore: boolean;
+    refreshedAt: string | null;
+    optionEvaluation: AuctionOptionEvaluation | null;
+    errorMessage: string | null;
+    loading: boolean;
+    sortDirection: SortDirection;
+    reset: () => void;
+    search: (
+        itemName: string,
+        category: string,
+        filters?: AuctionOptionFilters
+    ) => Promise<void>;
+    sortByPrice: () => void;
+    applyResultFilters: Dispatch<SetStateAction<AuctionResultFilters>>;
+    clearResultFilters: () => void;
+}
+
 export function hasAuctionResultFilters(filters: AuctionResultFilters) {
     return Boolean(
         filters.exactItemName ||
@@ -413,7 +436,7 @@ function getFilteredAuctionResults(
  *
  * @returns The current auction items, error message, loading state, sort direction, and operations for searching and sorting items.
  */
-export function useAuctionSearch() {
+export function useAuctionSearch(): AuctionSearchModel {
     const request = useAuctionSearchRequest();
     const [resultFilters, setResultFilters] = useState<AuctionResultFilters>(
         {}
