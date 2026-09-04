@@ -1617,7 +1617,7 @@ describe("AuctionResults", () => {
             />
         );
         await user.click(
-            screen.getByRole("button", { name: "단가 기준 정렬" })
+            screen.getByRole("button", { name: "가격 기준 정렬" })
         );
         expect(onSort).toHaveBeenCalled();
         await user.click(screen.getByRole("button", { name: "아이템 0" }));
@@ -1828,7 +1828,7 @@ describe("AuctionResults", () => {
         expect(trigger).toHaveFocus();
     });
 
-    it("shows a filtered no-match state and compact bundle totals", () => {
+    it("shows a filtered no-match state and separate price and quantity", () => {
         const largeItem = item("대량", 1_000_000, 2_000);
         const { rerender } = render(
             <AuctionResults
@@ -1855,18 +1855,24 @@ describe("AuctionResults", () => {
                 refreshedAt={refreshedAt}
             />
         );
-        expect(screen.getByText("100 Gold × 1개")).toBeInTheDocument();
-        expect(screen.getByText("= 100 Gold")).toBeInTheDocument();
+        const singleRow = screen
+            .getByRole("button", { name: "한 개" })
+            .closest("tr")!;
+        expect(within(singleRow).getByText("100 Gold")).toBeInTheDocument();
+        expect(within(singleRow).getByText("1")).toBeInTheDocument();
+        const largeRow = screen
+            .getByRole("button", { name: "대량" })
+            .closest("tr")!;
         expect(
-            screen.getByText("1,000,000 Gold × 2,000개")
+            within(largeRow).getByText("1,000,000 Gold")
         ).toBeInTheDocument();
-        expect(screen.getByText("= 2,000,000,000 Gold")).toBeInTheDocument();
+        expect(within(largeRow).getByText("2000")).toBeInTheDocument();
         expect(
             screen.getByRole("checkbox", {
-                name: /대량, 단가 1,000,000 Gold, 수량 2,000개, 묶음 총액 2,000,000,000 Gold/,
+                name: /대량, 1,000,000 Gold, 2000개/,
             })
         ).toBeVisible();
-        expect(screen.getAllByRole("columnheader")).toHaveLength(5);
+        expect(screen.getAllByRole("columnheader")).toHaveLength(6);
     });
 
     it("renders the dedicated empty recent-sales state", () => {

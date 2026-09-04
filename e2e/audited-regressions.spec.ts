@@ -245,6 +245,10 @@ async function expectResponsiveResultFilterDialog(
         ).toBe("0px");
         expect(dialogBox!.width).toBeGreaterThanOrEqual(viewport.width - 32);
         expect(dialogBox!.width).toBeLessThanOrEqual(viewport.width);
+        expect(dialogBox!.y).toBeGreaterThanOrEqual(0);
+        expect(dialogBox!.y + dialogBox!.height).toBeLessThanOrEqual(
+            viewport.height
+        );
     } else {
         expect(dialogBox!.width).toBeLessThan(400);
         expect(dialogBox!.y).toBeGreaterThanOrEqual(triggerBox!.y);
@@ -955,7 +959,7 @@ test("auction result filters apply and clear without fetching", async ({
     });
     await expectFilteredAuctionResults(page, listings);
     expect(counts).toEqual({ auction: 1, history: 1 });
-    const sort = page.getByRole("button", { name: /^단가 기준 정렬/ });
+    const sort = page.getByRole("button", { name: /^가격 기준 정렬/ });
     await sort.click();
     await sort.click();
     await expect(listings.locator("tbody tr").first()).toContainText(
@@ -966,9 +970,9 @@ test("auction result filters apply and clear without fetching", async ({
     await expect(listings.locator("tbody tr")).toHaveCount(10);
     await expect(comparisonCheckbox(page, 5)).toBeChecked();
     await expect(listings.locator("tbody tr").last()).toContainText("아이템 2");
-    await expect(listings.locator("tbody tr").last()).toContainText(
-        "200 Gold × 2개 = 400 Gold"
-    );
+    const lastRow = listings.locator("tbody tr").last();
+    await expect(lastRow.locator("td").nth(2)).toHaveText("200 Gold");
+    await expect(lastRow.locator("td").nth(3)).toHaveText("2");
     expect(counts).toEqual({ auction: 1, history: 1 });
     await verifyMobileListingScroll(page, listings);
 });

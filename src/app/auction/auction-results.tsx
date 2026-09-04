@@ -61,23 +61,12 @@ type AuctionRowProps = {
     onToggleComparison: () => void;
 };
 
-function getRowPriceSummary(item: AuctionItem) {
-    return {
-        unitPrice: numberFormatter.format(item.auction_price_per_unit),
-        quantity: numberFormatter.format(item.item_count),
-        bundleTotal: numberFormatter.format(
-            item.auction_price_per_unit * item.item_count
-        ),
-    };
-}
-
 function AuctionRow({
     item,
     onClick,
     selectedForComparison,
     onToggleComparison,
 }: AuctionRowProps) {
-    const { unitPrice, quantity, bundleTotal } = getRowPriceSummary(item);
     return (
         <tr className="hover:bg-gray-100">
             <td className="w-[50px] hidden md:table-cell">
@@ -101,18 +90,14 @@ function AuctionRow({
                     {item.item_display_name}
                 </button>
             </td>
-            <td className="min-w-52 whitespace-nowrap">
-                <span>
-                    {unitPrice} Gold × {quantity}개
-                </span>{" "}
-                <span className="block sm:inline">= {bundleTotal} Gold</span>
-            </td>
+            <td>{item.auction_price_per_unit.toLocaleString()} Gold</td>
+            <td>{item.item_count}</td>
             <td>{item.date_auction_expire}</td>
             <td>
                 <input
                     type="checkbox"
                     className="checkbox checkbox-sm"
-                    aria-label={`${item.item_display_name}, 단가 ${unitPrice} Gold, 수량 ${quantity}개, 묶음 총액 ${bundleTotal} Gold, 만료 ${item.date_auction_expire} 비교 선택`}
+                    aria-label={`${item.item_display_name}, ${item.auction_price_per_unit.toLocaleString()} Gold, ${item.item_count}개, 만료 ${item.date_auction_expire} 비교 선택`}
                     aria-describedby="auction-comparison-selection-help"
                     checked={selectedForComparison}
                     onChange={onToggleComparison}
@@ -143,17 +128,18 @@ function ResultsHeader({
         <thead>
             <tr>
                 <th className="w-[50px] hidden md:table-cell"></th>
-                <th className="w-[40%]">아이템명</th>
+                <th className="w-[45%]">아이템명</th>
                 <th>
                     <button
                         type="button"
-                        aria-label={`단가 기준 정렬${sortDirection === "asc" ? ", 오름차순" : sortDirection === "desc" ? ", 내림차순" : ""}`}
+                        aria-label={`가격 기준 정렬${sortDirection === "asc" ? ", 오름차순" : sortDirection === "desc" ? ", 내림차순" : ""}`}
                         className="w-full text-left p-2 hover:bg-base-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
                         onClick={onSort}
                     >
-                        단가 × 수량 = 묶음 총액 {indicator}
+                        가격 {indicator}
                     </button>
                 </th>
+                <th>갯수</th>
                 <th>만료 시간</th>
                 <th>
                     비교
@@ -182,12 +168,12 @@ function ResultsTable(props: TableProps) {
     );
     return (
         <div className="overflow-auto h-[50%] rounded-md border">
-            <table className="table w-full min-w-[46rem]">
+            <table className="table w-full">
                 <ResultsHeader {...props} />
                 <tbody>
                     {props.isEmpty ? (
                         <tr>
-                            <td colSpan={5} className="text-center">
+                            <td colSpan={6} className="text-center">
                                 결과가 없습니다.
                             </td>
                         </tr>
