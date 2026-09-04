@@ -44,6 +44,20 @@ export type AuctionOptionEvaluation = {
     sourceComplete: true;
 };
 
+export type AuctionResultFilters = {
+    exactItemName?: string;
+    minUnitPrice?: number;
+    maxUnitPrice?: number;
+};
+
+export function hasAuctionResultFilters(filters: AuctionResultFilters) {
+    return Boolean(
+        filters.exactItemName ||
+        filters.minUnitPrice !== undefined ||
+        filters.maxUnitPrice !== undefined
+    );
+}
+
 export { prepareAuctionResults } from "@/lib/auction-market";
 
 type PreparedAuctionResults = {
@@ -248,8 +262,10 @@ function parseFilteredSearchResponse(value: unknown): AuctionSearchResponse {
  * @returns The current auction items, error message, loading state, sort direction, and operations for searching and sorting items.
  */
 export function useAuctionSearch() {
-    const [items, setItems] = useState<AuctionItem[]>([]);
-    const [summary, setSummary] = useState<AuctionSummary | null>(null);
+    const [loadedItems, setLoadedItems] = useState<AuctionItem[]>([]);
+    const [resultFilters, setResultFilters] = useState<AuctionResultFilters>(
+        {}
+    );
     const [hasMore, setHasMore] = useState(false);
     const [refreshedAt, setRefreshedAt] = useState<string | null>(null);
     const [optionEvaluation, setOptionEvaluation] =
@@ -272,8 +288,8 @@ export function useAuctionSearch() {
         sequenceRef.current += 1;
         activeControllerRef.current?.abort();
         activeControllerRef.current = null;
-        setItems([]);
-        setSummary(null);
+        setLoadedItems([]);
+        setResultFilters({});
         setHasMore(false);
         setRefreshedAt(null);
         setOptionEvaluation(null);
@@ -293,8 +309,8 @@ export function useAuctionSearch() {
         if (!parsedFilters.success) {
             activeControllerRef.current = null;
             setLoading(false);
-            setItems([]);
-            setSummary(null);
+            setLoadedItems([]);
+            setResultFilters({});
             setHasMore(false);
             setRefreshedAt(null);
             setOptionEvaluation(null);
@@ -308,8 +324,8 @@ export function useAuctionSearch() {
         const controller = new AbortController();
         activeControllerRef.current = controller;
         setLoading(true);
-        setItems([]);
-        setSummary(null);
+        setLoadedItems([]);
+        setResultFilters({});
         setHasMore(false);
         setRefreshedAt(null);
         setOptionEvaluation(null);
@@ -323,8 +339,7 @@ export function useAuctionSearch() {
             {
                 isActive: () => sequence === sequenceRef.current,
                 commit: results => {
-                    setItems(results.items);
-                    setSummary(results.summary);
+                    setLoadedItems(results.items);
                     setHasMore(results.hasMore);
                     setRefreshedAt(results.refreshedAt);
                     setOptionEvaluation(results.optionEvaluation);
@@ -341,17 +356,38 @@ export function useAuctionSearch() {
     const sortByPrice = () => {
         const direction = sortDirection === "asc" ? "desc" : "asc";
         setSortDirection(direction);
-        setItems(current =>
-            [...current].sort((a, b) =>
-                direction === "asc"
-                    ? a.auction_price_per_unit - b.auction_price_per_unit
-                    : b.auction_price_per_unit - a.auction_price_per_unit
-            )
-        );
     };
+
+    const exactItemNames = [
+        ...new Set(
+            loadedItems
+                .map(item => item.item_name)
+                .filter(itemName => itemName !== "")
+        ),
+    ].sort((a, b) => a.localeCompare(b, "ko-KR"));
+    const prepared = prepareAuctionResults(
+        loadedItems.filter(
+            item =>
+                (!resultFilters.exactItemName ||
+                    item.item_name === resultFilters.exactItemName) &&
+                (resultFilters.minUnitPrice === undefined ||
+                    item.auction_price_per_unit >=
+                        resultFilters.minUnitPrice) &&
+                (resultFilters.maxUnitPrice === undefined ||
+                    item.auction_price_per_unit <= resultFilters.maxUnitPrice)
+        )
+    );
+    const items =
+        sortDirection === "desc"
+            ? [...prepared.items].reverse()
+            : prepared.items;
+
     return {
         items,
-        summary,
+        summary: prepared.summary,
+        loadedItemCount: loadedItems.length,
+        exactItemNames,
+        resultFilters,
         hasMore,
         refreshedAt,
         optionEvaluation,
@@ -361,5 +397,7 @@ export function useAuctionSearch() {
         reset,
         search,
         sortByPrice,
+        applyResultFilters: setResultFilters,
+        clearResultFilters: () => setResultFilters({}),
     };
 }

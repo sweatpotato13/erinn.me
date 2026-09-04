@@ -11,7 +11,8 @@ function getFocusableElements(dialog: HTMLElement) {
 export function useDialogFocus(
     onClose: () => void,
     triggerRef?: RefObject<HTMLElement | null>,
-    fallbackFocusId?: string
+    fallbackFocusId?: string,
+    preventInitialScroll = false
 ) {
     const dialogRef = useRef<HTMLDivElement>(null);
     const onCloseRef = useRef(onClose);
@@ -25,7 +26,7 @@ export function useDialogFocus(
         if (!dialog) return;
         const previousFocus = triggerRef?.current ?? document.activeElement;
         const focusable = getFocusableElements(dialog);
-        (focusable[0] ?? dialog).focus();
+        (focusable[0] ?? dialog).focus({ preventScroll: preventInitialScroll });
 
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === "Escape") {
@@ -60,7 +61,7 @@ export function useDialogFocus(
                       : null;
             focusTarget?.focus();
         };
-    }, [fallbackFocusId, triggerRef]);
+    }, [fallbackFocusId, preventInitialScroll, triggerRef]);
 
     return dialogRef;
 }
