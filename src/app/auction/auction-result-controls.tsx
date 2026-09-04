@@ -137,34 +137,31 @@ function ResultFilterDialog({
     triggerRef: React.RefObject<HTMLButtonElement | null>;
 }) {
     const [error, setError] = useState<string | null>(null);
-    const scrollPositionRef = useRef<{ x: number; y: number } | null>(null);
+    const scrollPositionRef = useRef(
+        typeof window === "undefined"
+            ? null
+            : { x: window.scrollX, y: window.scrollY }
+    );
+    const dialogRef = useDialogFocus(onClose, triggerRef, undefined, true);
     useEffect(() => {
         if (!window.matchMedia?.("(max-width: 639px)").matches) return;
-        scrollPositionRef.current = { x: window.scrollX, y: window.scrollY };
+        const position = scrollPositionRef.current;
+        if (!position) return;
         const rootStyle = document.documentElement.style;
         const bodyStyle = document.body.style;
         const rootOverflow = rootStyle.overflow;
         const bodyOverflow = bodyStyle.overflow;
-        rootStyle.overflow = "hidden";
-        bodyStyle.overflow = "hidden";
+        const frame = requestAnimationFrame(() => {
+            window.scrollTo(position.x, position.y);
+            rootStyle.overflow = "hidden";
+            bodyStyle.overflow = "hidden";
+        });
         return () => {
+            cancelAnimationFrame(frame);
             rootStyle.overflow = rootOverflow;
             bodyStyle.overflow = bodyOverflow;
+            window.scrollTo(position.x, position.y);
         };
-    }, []);
-    const dialogRef = useDialogFocus(onClose, triggerRef, undefined, true);
-    useEffect(() => {
-        const position = scrollPositionRef.current;
-        if (!position) return;
-        const frame = requestAnimationFrame(() => {
-            if (
-                window.scrollX !== position.x ||
-                window.scrollY !== position.y
-            ) {
-                window.scrollTo(position.x, position.y);
-            }
-        });
-        return () => cancelAnimationFrame(frame);
     }, []);
     return (
         <>
