@@ -27,7 +27,7 @@ const marketOptions = [
     [{ option_type: "공격", option_value: "14", option_value2: "22" }],
 ];
 const marketItems = Array.from({ length: 11 }, (_, index) => ({
-    item_name: `아이템 ${index + 1}`,
+    item_name: index < 4 ? "공통 아이템" : "기타 아이템",
     item_display_name: `아이템 ${index + 1}`,
     item_count: index + 1,
     auction_price_per_unit: (index + 1) * 100,
@@ -196,6 +196,110 @@ function comparisonCheckbox(page: Page, itemNumber: number) {
     return page.getByRole("checkbox", {
         name: new RegExp(`^아이템 ${itemNumber}, .*비교 선택$`),
     });
+}
+
+function resultFilterDialog(page: Page) {
+    return page.getByRole("dialog", { name: "결과 필터" });
+}
+
+async function applyAuctionResultFilters(
+    page: Page,
+    filters: { exactItemName?: string; min?: string; max?: string }
+) {
+    await page.getByRole("button", { name: /^결과 필터(?:,|$)/ }).click();
+    const dialog = resultFilterDialog(page);
+    if (filters.exactItemName) {
+        await dialog
+            .getByLabel("정확한 아이템")
+            .selectOption(filters.exactItemName);
+    }
+    if (filters.min) await dialog.getByLabel("최소 단가").fill(filters.min);
+    if (filters.max) await dialog.getByLabel("최대 단가").fill(filters.max);
+    await dialog.getByRole("button", { name: "적용" }).click();
+}
+
+async function expectResponsiveResultFilterDialog(
+    page: Page,
+    table: Locator,
+    trigger: Locator
+) {
+    await trigger.scrollIntoViewIfNeeded();
+    const tableBefore = await table.boundingBox();
+    const triggerBox = await trigger.boundingBox();
+    await trigger.click();
+    const dialog = resultFilterDialog(page);
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole("button", { name: "닫기" })).toBeFocused();
+    const dialogBox = await dialog.boundingBox();
+    const viewport = page.viewportSize()!;
+    expect(tableBefore).not.toBeNull();
+    await expect.poll(() => table.boundingBox()).toEqual(tableBefore);
+    expect(triggerBox).not.toBeNull();
+    expect(dialogBox).not.toBeNull();
+    if (viewport.width < 640) {
+        expect(
+            await dialog.evaluate(node => getComputedStyle(node).position)
+        ).toBe("fixed");
+        expect(
+            await dialog.evaluate(node => getComputedStyle(node).bottom)
+        ).toBe("0px");
+        expect(dialogBox!.width).toBeGreaterThanOrEqual(viewport.width - 32);
+        expect(dialogBox!.width).toBeLessThanOrEqual(viewport.width);
+    } else {
+        expect(dialogBox!.width).toBeLessThan(400);
+        expect(dialogBox!.y).toBeGreaterThanOrEqual(triggerBox!.y);
+        expect(
+            Math.abs(
+                dialogBox!.x +
+                    dialogBox!.width -
+                    (triggerBox!.x + triggerBox!.width)
+            )
+        ).toBeLessThanOrEqual(2);
+    }
+    return dialog;
+}
+
+async function expectFilteredAuctionResults(page: Page, listings: Locator) {
+    await expect(
+        page.getByRole("button", { name: "결과 필터, 2개 적용" })
+    ).toBeVisible();
+    await expect(page.getByText("1 / 1", { exact: true })).toBeVisible();
+    await expect(listings.locator("tbody tr")).toHaveCount(4);
+    for (const itemNumber of [1, 2, 3, 4]) {
+        await expect(
+            page.getByRole("button", { name: `아이템 ${itemNumber}` })
+        ).toBeVisible();
+    }
+    const metrics = listings.locator("dl");
+    await expect(metrics.getByText("100 Gold")).toBeVisible();
+    await expect(metrics.getByText("250 Gold")).toBeVisible();
+    await expect(metrics.getByText("4개")).toBeVisible();
+    await expect(metrics.getByText("10개")).toBeVisible();
+    await expect(listings.getByText(/최근 1시간 거래 중앙값 대비/)).toHaveCount(
+        0
+    );
+    await expect(
+        listings.getByText(
+            "필터 선택지와 요약은 현재 불러온 일부 매물만 반영합니다."
+        )
+    ).toBeVisible();
+}
+
+async function verifyMobileListingScroll(page: Page, listings: Locator) {
+    if ((page.viewportSize()?.width ?? 1000) >= 640) return;
+    const scroll = listings.getByRole("table").locator("..");
+    await scroll.scrollIntoViewIfNeeded();
+    await expect
+        .poll(() =>
+            scroll.evaluate(node => node.scrollWidth > node.clientWidth)
+        )
+        .toBe(true);
+    await scroll.evaluate(node => {
+        node.scrollLeft = node.scrollWidth;
+    });
+    await expect(
+        listings.getByRole("columnheader", { name: /비교/ })
+    ).toBeInViewport();
 }
 
 async function selectComparisonItems(page: Page, itemNumbers: number[]) {
@@ -805,7 +909,9 @@ test("auction search renders the incomplete market snapshot", async ({
     await expect(metrics.getByText("66개")).toBeVisible();
     await expect(listings.getByText(/조회 완료:/)).toBeVisible();
     await expect(
-        listings.getByText("현재 불러온 일부 매물만 반영한 요약입니다.")
+        listings.getByText(
+            "필터 선택지와 요약은 현재 불러온 일부 매물만 반영합니다."
+        )
     ).toBeVisible();
     await expect(listings.getByText(/최근 1시간 거래 중앙값 대비/)).toHaveCount(
         0
@@ -814,6 +920,79 @@ test("auction search renders the incomplete market snapshot", async ({
     await expect(recentSalesDialog(page)).not.toBeVisible();
     await expect.poll(() => counts.auction).toBe(1);
     await expect.poll(() => counts.history).toBe(1);
+});
+
+test("auction result filter dialog stays responsive", async ({ page }) => {
+    const counts = await openMarket(page);
+    await searchMarket(page);
+    const listings = page.getByRole("region", { name: "현재 등록 매물" });
+    const table = listings.getByRole("table");
+    const trigger = page.getByRole("button", { name: "결과 필터" });
+    const dialog = await expectResponsiveResultFilterDialog(
+        page,
+        table,
+        trigger
+    );
+    expect(counts).toEqual({ auction: 1, history: 1 });
+    await page.keyboard.press("Escape");
+    await expect(dialog).not.toBeVisible();
+    await expect(trigger).toBeFocused();
+});
+
+test("auction result filters apply and clear without fetching", async ({
+    page,
+}) => {
+    const counts = await openMarket(page);
+    await searchMarket(page);
+    const listings = page.getByRole("region", { name: "현재 등록 매물" });
+    await comparisonCheckbox(page, 5).click();
+    await page.getByLabel("다음 페이지").click();
+    await expect(page.getByText("2 / 2", { exact: true })).toBeVisible();
+    await applyAuctionResultFilters(page, {
+        exactItemName: "공통 아이템",
+        min: "100",
+        max: "400",
+    });
+    await expectFilteredAuctionResults(page, listings);
+    expect(counts).toEqual({ auction: 1, history: 1 });
+    const sort = page.getByRole("button", { name: /^단가 기준 정렬/ });
+    await sort.click();
+    await sort.click();
+    await expect(listings.locator("tbody tr").first()).toContainText(
+        "아이템 4"
+    );
+    await page.getByRole("button", { name: "결과 필터 전체 해제" }).click();
+    await expect(page.getByText("1 / 2", { exact: true })).toBeVisible();
+    await expect(listings.locator("tbody tr")).toHaveCount(10);
+    await expect(comparisonCheckbox(page, 5)).toBeChecked();
+    await expect(listings.locator("tbody tr").last()).toContainText("아이템 2");
+    await expect(listings.locator("tbody tr").last()).toContainText(
+        "200 Gold × 2개 = 400 Gold"
+    );
+    expect(counts).toEqual({ auction: 1, history: 1 });
+    await verifyMobileListingScroll(page, listings);
+});
+
+test("auction navigation clears result filters", async ({ page }) => {
+    const counts = await openMarket(page);
+    await searchMarket(page);
+    await applyAuctionResultFilters(page, { min: "300" });
+    await expect(
+        page.getByRole("button", { name: "결과 필터, 1개 적용" })
+    ).toBeVisible();
+    await searchMarket(page, "새 아이템");
+    await expect(page.getByRole("button", { name: "결과 필터" })).toBeVisible();
+    await expect(
+        page.getByRole("button", { name: "결과 필터 전체 해제" })
+    ).toHaveCount(0);
+    await page.goBack({ waitUntil: "networkidle" });
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("아이템");
+    await expect(page.getByRole("button", { name: "결과 필터" })).toBeVisible();
+    await expect(
+        page.getByRole("button", { name: "결과 필터 전체 해제" })
+    ).toHaveCount(0);
+    await expect.poll(() => counts.auction).toBe(3);
+    await expect.poll(() => counts.history).toBe(3);
 });
 
 test("compact recent-sale context stays inline and on demand", async ({
