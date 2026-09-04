@@ -938,8 +938,33 @@ test("auction result filter dialog stays responsive", async ({ page }) => {
         trigger
     );
     expect(counts).toEqual({ auction: 1, history: 1 });
+    const initialViewport = page.viewportSize()!;
+    const alternateViewport = {
+        ...initialViewport,
+        width: initialViewport.width < 640 ? 800 : 390,
+    };
+    const expectScrollLock = (locked: boolean) =>
+        expect
+            .poll(() =>
+                page.evaluate(() => [
+                    document.documentElement.style.overflow,
+                    document.body.style.overflow,
+                ])
+            )
+            .toEqual(locked ? ["hidden", "hidden"] : ["", ""]);
+    await expectScrollLock(initialViewport.width < 640);
+    await page.setViewportSize(alternateViewport);
+    await expectScrollLock(alternateViewport.width < 640);
+    await expect(dialog).toBeVisible();
+    await page.setViewportSize(initialViewport);
+    await expectScrollLock(initialViewport.width < 640);
+    await expect(dialog).toBeVisible();
     await page.keyboard.press("Escape");
     await expect(dialog).not.toBeVisible();
+    await expectScrollLock(false);
+    await page.setViewportSize({ ...initialViewport, width: 800 });
+    await page.setViewportSize({ ...initialViewport, width: 390 });
+    await expectScrollLock(false);
     await expect(trigger).toBeFocused();
 });
 

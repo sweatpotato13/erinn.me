@@ -158,29 +158,54 @@ function ResultFilterButtons({
 }
 
 function useMobileDialogScrollLock() {
-    const scrollPositionRef = useRef(
-        typeof window === "undefined"
-            ? null
-            : { x: window.scrollX, y: window.scrollY }
-    );
     useEffect(() => {
-        if (!window.matchMedia?.("(max-width: 639px)").matches) return;
-        const position = scrollPositionRef.current;
-        if (!position) return;
+        const mediaQuery = window.matchMedia?.("(max-width: 639px)");
+        if (!mediaQuery) return;
         const rootStyle = document.documentElement.style;
         const bodyStyle = document.body.style;
-        const rootOverflow = rootStyle.overflow;
-        const bodyOverflow = bodyStyle.overflow;
-        const frame = requestAnimationFrame(() => {
-            window.scrollTo(position.x, position.y);
-            rootStyle.overflow = "hidden";
-            bodyStyle.overflow = "hidden";
-        });
+        let lock: {
+            x: number;
+            y: number;
+            rootOverflow: string;
+            bodyOverflow: string;
+        } | null = null;
+        let frame: number | null = null;
+
+        const release = () => {
+            if (frame !== null) cancelAnimationFrame(frame);
+            frame = null;
+            if (!lock) return;
+            rootStyle.overflow = lock.rootOverflow;
+            bodyStyle.overflow = lock.bodyOverflow;
+            window.scrollTo(lock.x, lock.y);
+            lock = null;
+        };
+        const update = () => {
+            if (!mediaQuery.matches) {
+                release();
+                return;
+            }
+            if (lock) return;
+            lock = {
+                x: window.scrollX,
+                y: window.scrollY,
+                rootOverflow: rootStyle.overflow,
+                bodyOverflow: bodyStyle.overflow,
+            };
+            frame = requestAnimationFrame(() => {
+                frame = null;
+                if (!lock) return;
+                window.scrollTo(lock.x, lock.y);
+                rootStyle.overflow = "hidden";
+                bodyStyle.overflow = "hidden";
+            });
+        };
+
+        update();
+        mediaQuery.addEventListener("change", update);
         return () => {
-            cancelAnimationFrame(frame);
-            rootStyle.overflow = rootOverflow;
-            bodyStyle.overflow = bodyOverflow;
-            window.scrollTo(position.x, position.y);
+            mediaQuery.removeEventListener("change", update);
+            release();
         };
     }, []);
 }
