@@ -33,6 +33,26 @@ describe("auction item catalog", () => {
         expect(getAuctionItemPath(item)).toBe(`/auction/items/${item.id}`);
     });
 
+    it("reports removed or renamed source records without changing catalog identity", () => {
+        const item = catalog.items[0];
+        const withoutItem = localItems.filter(row => row.id !== item.id);
+        expect(() => validateAuctionItemCatalog(catalog, withoutItem)).toThrow(
+            `catalog id must exist exactly once in local data: ${item.id}`
+        );
+        expect(() =>
+            validateAuctionItemCatalog(catalog, [
+                ...withoutItem,
+                { id: item.id, name: "변경된 이름" },
+            ])
+        ).toThrow(`catalog name mismatch for ${item.id}`);
+        for (const entry of catalog.items) {
+            expect(getAuctionCatalogItemById(entry.id)?.name).toBe(entry.name);
+            expect(getAuctionItemPath(entry)).toBe(
+                `/auction/items/${entry.id}`
+            );
+        }
+    });
+
     it.each([
         [
             "malformed date",

@@ -1,5 +1,7 @@
 import { resolve } from "node:path";
 
+import { hasExcludedKeyword } from "../src/constant/excluded-keywords";
+
 import { readSnapshot } from "./reference-data";
 
 type SourceItem = { Id: number; Name: string; IsAuctionSearchable: boolean };
@@ -24,7 +26,7 @@ export function resolveItems(
         if (
             name === undefined ||
             placeholders.has(name.trim()) ||
-            /^itemdb(?:_\w+)?\.\d+$/.test(name)
+            hasExcludedKeyword(name)
         ) {
             unresolved.push({ id: String(row.Id), key: row.Name });
         } else {

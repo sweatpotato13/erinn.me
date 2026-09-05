@@ -18,6 +18,7 @@ const source = [
     { Id: 6, Name: "short", IsAuctionSearchable: true },
     { Id: 7, Name: "blank", IsAuctionSearchable: true },
     { Id: 8, Name: "key", IsAuctionSearchable: true },
+    { Id: 9, Name: "broken", IsAuctionSearchable: true },
 ];
 const name = "한글  아이템 (2인)+&!";
 const strings = [
@@ -27,11 +28,12 @@ const strings = [
     { Id: "short", Str: "검" },
     { Id: "blank", Str: " " },
     { Id: "key", Str: "itemdb.123" },
+    { Id: "broken", Str: "not found key, itemdb_script.10910" },
 ];
 const resolved = resolveItems(source, strings);
 assert.deepEqual(
     resolved.unresolved.map(item => item.id),
-    ["3", "4", "7", "8"]
+    ["3", "4", "7", "8", "9"]
 );
 assert.equal(resolved.items.filter(item => item.name === name).length, 2);
 assert.deepEqual(Object.values(buildSuggestIndex(resolved.items)), [[name]]);
@@ -64,9 +66,9 @@ for (const [file, expected] of [
     ["suggest-index", index],
     ["item-id-map", imageMap],
 ] as const) {
-    assert.equal(
-        readFileSync(resolve(__dirname, `../src/data/${file}.json`), "utf8"),
-        JSON.stringify(expected),
+    assert(
+        readFileSync(resolve(__dirname, `../src/data/${file}.json`), "utf8") ===
+            JSON.stringify(expected),
         `${file} is stale; run pnpm items:build`
     );
 }
