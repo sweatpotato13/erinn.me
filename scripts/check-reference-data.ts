@@ -11,6 +11,7 @@ import {
     tableNames,
     validateData,
 } from "./reference-data";
+import knownMissingStrings from "./reference-known-missing-strings.json";
 
 const { data, manifest, warnings } = readSnapshot(
     resolve("src/data/reference")
@@ -40,11 +41,20 @@ assert.throws(
 assert.throws(
     () =>
         validateData({
-            ...data,
-            StringTable: data.StringTable.filter(row => row.Id !== item.Name),
+            ...withItem({ Name: "reference-check.present" }),
+            StringTable: data.StringTable.filter(
+                row => row.Id !== "reference-check.present"
+            ),
         }),
     /unresolved string/
 );
+validateData({
+    ...withItem({ Name: "reference-check.present" }),
+    StringTable: [
+        ...data.StringTable,
+        { Id: "reference-check.present", Str: "검증" },
+    ],
+});
 const placeholders = validateData(
     withItem({
         Name: "<nil>",
@@ -57,16 +67,15 @@ assert.deepEqual(placeholders.data.ItemList[0].NewField, {
     untouched: [3, 1, 3],
 });
 assert.ok(placeholders.warnings["ItemList.Name: placeholder"].count);
-const stringIds = new Set(data.StringTable.map(row => row.Id));
-const knownKey = data.ItemList.find(row => !stringIds.has(row.Name))?.Name;
-assert.ok(
-    knownKey,
-    "The initial snapshot contains reviewed untranslated item names"
-);
-assert.equal(
-    validateData(withItem({ Name: knownKey })).data.ItemList[0].Name,
-    knownKey
-);
+const knownKey = knownMissingStrings[0];
+if (knownKey) {
+    const knownGap = validateData({
+        ...withItem({ Name: knownKey }),
+        StringTable: data.StringTable.filter(row => row.Id !== knownKey),
+    });
+    assert.equal(knownGap.data.ItemList[0].Name, knownKey);
+    assert.ok(knownGap.warnings["ItemList.Name: known missing string"].count);
+}
 const duplicateUpgrades = [...data.ItemUpgradeList, data.ItemUpgradeList[0]];
 assert.equal(
     validateData({ ...data, ItemUpgradeList: duplicateUpgrades }).data

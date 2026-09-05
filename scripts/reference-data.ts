@@ -22,7 +22,7 @@ const reward = z.looseObject({ Id: id, Count: id, Rate: z.number() });
 const named = { Id: id, Name: z.string(), Desc: z.string() };
 
 // Validate relationships without stripping any decoded fields or defaulting values.
-export const tableSchemas = {
+const tableSchemas = {
     ItemList: rows(
         z.looseObject({
             ...named,
@@ -166,7 +166,6 @@ export const versionSchema = z.looseObject({
     CreatedAt: z.number().int().positive(),
 });
 const dataSchema = z.object({ Version: versionSchema, ...tableSchemas });
-export type ReferenceData = z.infer<typeof dataSchema>;
 const placeholders = new Set(["", "None", "<nil>"]);
 const knownMissing = new Set(knownMissingStrings);
 
