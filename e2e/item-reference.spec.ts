@@ -18,7 +18,7 @@ test("selects a real snapshot suggestion and preserves its exact auction query",
                 : { items: [], hasMore: false, nextCursor: null },
         });
     });
-    await page.goto("/auction");
+    await page.goto("/auction", { waitUntil: "networkidle" });
     const input = page.getByPlaceholder("아이템명");
     await input.fill("가을빛 포도나무");
     const suggestion = page.getByRole("button", { name, exact: true });
