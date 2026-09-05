@@ -66,8 +66,8 @@ describe("Homepage Component", () => {
             screen.getByRole("heading", { name: "뿔피리 조회" })
         ).toBeInTheDocument();
         expect(
-            screen.getByRole("heading", { name: "문의하기" })
-        ).toBeInTheDocument();
+            screen.queryByRole("link", { name: "문의하기" })
+        ).not.toBeInTheDocument();
     });
 
     test("Navigation links should have correct href attributes", () => {
@@ -95,11 +95,6 @@ describe("Homepage Component", () => {
         });
         const hornLink = hornHeading.closest("a");
         expect(hornLink).toHaveAttribute("href", "/horn");
-
-        const contactHeading = screen.getByRole("heading", {
-            name: "문의하기",
-        });
-        expect(contactHeading.closest("a")).toHaveAttribute("href", "/contact");
     });
 
     test("Retired feature links should not render", () => {

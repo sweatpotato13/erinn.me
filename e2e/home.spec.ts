@@ -297,15 +297,11 @@ test.describe("Homepage Tests", () => {
         await page.goto("/");
 
         await expect(page.locator("header")).toBeVisible();
-        for (const path of [
-            "/auction",
-            "/calculator",
-            "/npc-shop",
-            "/horn",
-            "/contact",
-        ]) {
+        for (const path of ["/auction", "/calculator", "/npc-shop", "/horn"]) {
             await expect(page.locator(`main a[href="${path}"]`)).toBeVisible();
         }
+        await expect(page.locator('main a[href="/contact"]')).toHaveCount(0);
+        await expect(page.locator('footer a[href="/contact"]')).toBeVisible();
 
         await page.setViewportSize({ width: 390, height: 844 });
         await page

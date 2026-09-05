@@ -80,11 +80,6 @@ export default function Page() {
                     </div>
                 </section>
             ))}
-            <aside className="mt-10 border-t border-slate-200 pt-5 text-sm text-slate-600">
-                <Link className="link" href="/contact">
-                    <h2>문의하기</h2>
-                </Link>
-            </aside>
         </div>
     );
 }
