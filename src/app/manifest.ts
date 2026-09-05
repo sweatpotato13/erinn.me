@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
 
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/feature-links";
+
 export default function manifest(): MetadataRoute.Manifest {
     return {
-        name: "Erinn.me - 마비노기 한국 서버 유틸리티",
+        name: SITE_TITLE,
         short_name: "Erinn",
-        description:
-            "마비노기 한국 서버의 경매장 시세, 거대한 외침의 뿔피리 내역, NPC 상점 재고를 한곳에서 조회하세요.",
+        description: SITE_DESCRIPTION,
         start_url: "/",
         display: "standalone",
         orientation: "portrait",

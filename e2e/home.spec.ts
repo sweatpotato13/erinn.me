@@ -5,13 +5,13 @@ import auctionCatalog from "../src/data/auction-item-catalog.json";
 const publicPages = [
     {
         path: "/",
-        title: "마비노기 거래 조회·세공 시뮬레이터·파티 계산 | Erinn.me",
+        title: "Erinn.me - 마비노기 도우미",
         description:
-            "마비노기 한국 서버의 경매장 시세·뿔피리·NPC 상점을 조회하고, 세공 목표 확률과 비용·파티 분배액을 계산하세요.",
+            "시세 확인부터 세공 시뮬레이션, 파티 정산까지. 에린 생활에 필요한 도구를 모았습니다.",
         canonical: "https://erinn.me",
         heading: "에린 생활 정보, 한곳에서",
         summary:
-            "경매장·뿔피리·NPC 상점을 조회하고, 세공 목표 확률과 비용·파티 분배액을 계산하세요.",
+            "시세 확인부터 세공 시뮬레이션, 파티 정산까지. 에린 생활에 필요한 도구를 모았습니다.",
     },
     {
         path: "/auction",

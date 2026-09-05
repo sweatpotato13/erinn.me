@@ -4,7 +4,11 @@ import Link from "next/link";
 import AuctionIcon from "@/components/icons/auction-icon";
 import HornIcon from "@/components/icons/horn-icon";
 import ShopIcon from "@/components/icons/shop-icon";
-import { FEATURE_GROUPS, FEATURE_LINKS } from "@/lib/feature-links";
+import {
+    FEATURE_GROUPS,
+    FEATURE_LINKS,
+    SITE_DESCRIPTION,
+} from "@/lib/feature-links";
 
 export const metadata: Metadata = {
     alternates: { canonical: "/" },
@@ -47,10 +51,7 @@ export default function Page() {
             <h1 className="text-3xl font-bold text-slate-900">
                 에린 생활 정보, 한곳에서
             </h1>
-            <p className="mt-2 mb-8 text-slate-600">
-                경매장·뿔피리·NPC 상점을 조회하고, 세공 목표 확률과 비용·파티
-                분배액을 계산하세요.
-            </p>
+            <p className="mt-2 mb-8 text-slate-600">{SITE_DESCRIPTION}</p>
             {FEATURE_GROUPS.map(group => (
                 <section key={group} className="mb-8" aria-label={group}>
                     <h2 className="mb-4 text-xl font-bold text-slate-900">

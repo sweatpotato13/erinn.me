@@ -49,6 +49,5 @@ export const FEATURE_GROUPS = [
     "생활·파티 계산",
 ].filter(group => FEATURE_LINKS.some(link => link.group === group));
 export const SITE_DESCRIPTION =
-    "마비노기 한국 서버의 경매장 시세·뿔피리·NPC 상점을 조회하고, 세공 목표 확률과 비용·파티 분배액을 계산하세요.";
-export const SITE_TITLE =
-    "마비노기 거래 조회·세공 시뮬레이터·파티 계산 | Erinn.me";
+    "시세 확인부터 세공 시뮬레이션, 파티 정산까지. 에린 생활에 필요한 도구를 모았습니다.";
+export const SITE_TITLE = "Erinn.me - 마비노기 도우미";
