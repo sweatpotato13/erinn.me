@@ -25,6 +25,18 @@ describe("enchant reference identity", () => {
             usage: 0,
         });
     });
+    it("resolves duplicate records only when their metadata and nonempty descriptions agree", () => {
+        expect(findEnchantReference("증류된 (랭크 5)", "접두")).toMatchObject({
+            rank: "5",
+            usage: 0,
+            description: expect.stringContaining(
+                "흙 속성 연금술 대미지 25~35 증가"
+            ),
+        });
+        expect(findEnchantReference("증발된", "접두")).not.toBeNull();
+        expect(findEnchantReference("나이트 (랭크 6)", "접미")).toBeNull();
+        expect(findEnchantReference("1페이지 완성된", "접미")).toBeNull();
+    });
     it("requires enough identity context, never chooses a colliding name by value", () => {
         expect(findEnchantReference("스네이크")).toBeNull();
         expect(findEnchantReference("스네이크", "접두")?.id).toBe(206);

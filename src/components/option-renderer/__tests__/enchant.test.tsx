@@ -20,6 +20,34 @@ beforeEach(() =>
         )
 );
 
+it("renders identical 증류된 references and compares the reported conditional rolls", () => {
+    const { container } = render(
+        <OptionRenderer
+            options={[
+                {
+                    option_type: "인챈트",
+                    option_sub_type: "접두",
+                    option_value: "증류된 (랭크 5)",
+                    option_desc:
+                        "라이프 드레인 랭크 7 이상일 때 방어 5 증가,스파크 랭크 6 이상일 때 크리티컬 4 증가,샌드 버스트 랭크 1 이상일 때 흙 속성 연금술 대미지 28 증가,프로즌 블래스트 랭크 1 이상일 때 물 속성 연금술 대미지 27 증가",
+                },
+                {
+                    option_type: "인챈트 종류",
+                    option_sub_type: "접두",
+                    option_value: "증류된 (랭크 5)",
+                },
+            ]}
+        />
+    );
+    expect(container).not.toHaveTextContent("기준 정보를 확인할 수 없습니다");
+    expect(screen.getByText(/• 샌드 버스트/)).toHaveTextContent("최대치 -7");
+    expect(screen.getByText(/• 프로즌 블래스트/)).toHaveTextContent(
+        "최대치 -3"
+    );
+    expect(container.textContent?.match(/최대치/g)).toHaveLength(2);
+    expect(screen.getAllByText("접두 · 5 랭크")).toHaveLength(2);
+});
+
 it("annotates only variable effects in 굴레, leaving intelligence and repair cost plain", () => {
     const { container } = render(
         <OptionRenderer

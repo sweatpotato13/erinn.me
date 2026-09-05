@@ -47,5 +47,18 @@ export function findEnchantReference(
             usages.includes(record.usage) &&
             (!ranks.length || record.rank === ranks[0])
     );
-    return matches.length === 1 ? matches[0] : null;
+    const first = matches[0];
+    // Different source IDs can describe the same enchantment.
+    if (
+        matches.length > 1 &&
+        matches.some(
+            record =>
+                !record.description ||
+                record.description !== first.description ||
+                record.usage !== first.usage ||
+                record.rank !== first.rank
+        )
+    )
+        return null;
+    return first ?? null;
 }
