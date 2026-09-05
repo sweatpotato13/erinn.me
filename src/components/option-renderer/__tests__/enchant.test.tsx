@@ -20,6 +20,30 @@ beforeEach(() =>
         )
 );
 
+it("shows 아련한 scroll effects without the extraction restriction", () => {
+    const { container } = render(
+        <OptionRenderer
+            options={[
+                {
+                    option_type: "인챈트 종류",
+                    option_sub_type: "접두",
+                    option_value: "아련한 (랭크 7)",
+                },
+            ]}
+        />
+    );
+    expect(container).not.toHaveTextContent("기준 정보를 확인할 수 없습니다");
+    expect(container).not.toHaveTextContent("인챈트 추출 불가");
+    expect(container).toHaveTextContent("접두 · 7 랭크");
+    expect(container).toHaveTextContent("스태프, 원드에 인챈트 가능");
+    expect(container).toHaveTextContent(
+        "메테오 스트라이크 랭크 1 이상일 때 마법 공격력 25~30 증가"
+    );
+    expect(container).toHaveTextContent("최대 마나 100 증가");
+    expect(container).toHaveTextContent("지력 10 증가");
+    expect(container).toHaveTextContent("인챈트 장비를 전용으로 만듦");
+});
+
 it("renders identical 증류된 references and compares the reported conditional rolls", () => {
     const { container } = render(
         <OptionRenderer
