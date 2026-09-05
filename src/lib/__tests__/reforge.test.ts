@@ -212,6 +212,38 @@ describe("reforge probabilities and current source rules", () => {
         ).toBe(false);
         expect(() => sampleRoll(pool, 1, [], "and", () => 1)).toThrow();
     });
+    it("runs the full count without targets and requires targets for auto-stop", () => {
+        const run = {
+            maxAttempts: 3,
+            price: BigInt(5),
+            budget: null,
+            stopOnHit: false,
+        };
+        const result = runReforgeChunk(
+            emptySession(),
+            model,
+            [],
+            "and",
+            run,
+            0,
+            BigInt(0)
+        );
+        expect(result.completed).toBe(3);
+        expect(result.session.spent).toBe(BigInt(15));
+        expect(result.session.hits).toBe(0);
+        expect(result.reason).toBe("최대 횟수 도달");
+        expect(() =>
+            runReforgeChunk(
+                emptySession(),
+                model,
+                [],
+                "and",
+                { ...run, stopOnHit: true },
+                0,
+                BigInt(0)
+            )
+        ).toThrow();
+    });
     it("stops on first hit, exact budget, cancellation and cap; preserves incurred prices and bounded history", () => {
         const run = {
             maxAttempts: 1000,

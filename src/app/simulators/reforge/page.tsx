@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { reforgeTools, reforgeVersion } from "@/lib/reforge-reference";
@@ -9,7 +8,7 @@ import ReforgeCalculator from "./reforge-calculator";
 
 const title = "마비노기 세공 시뮬레이터·확률·비용 계산기";
 const description =
-    "장비별 세공 옵션과 한계 돌파 범위를 확인하고, 목표 달성 확률·기대 Gold를 계산하세요. 예산과 횟수를 정해 세공을 반복하고 설정을 공유할 수 있습니다.";
+    "장비를 고르고 세공을 돌려보세요. 원하는 옵션에서 자동으로 멈추고, 성공 확률과 예상 비용을 확인할 수 있습니다.";
 const image = {
     url: `${REFORGE_PATH}/preview`,
     width: 1200,
@@ -40,12 +39,10 @@ export default function ReforgePage() {
     return (
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
             <h1 className="text-2xl break-keep font-bold text-slate-900 sm:text-3xl">
-                {title}
+                세공 시뮬레이터
             </h1>
             <p className="mt-3 mb-6 text-slate-600">
-                장비와 세공 도구를 골라 등장 옵션을 살펴보고, 원하는 레벨의
-                확률과 비용을 계산하세요. 이론적인 기댓값과 직접 돌린 세션
-                결과를 따로 보여줍니다.
+                장비를 고르고, 세공 도구를 눌러보세요.
             </p>
             <Suspense fallback={<p>계산기 설정 불러오는 중…</p>}>
                 <ReforgeCalculator
@@ -53,13 +50,10 @@ export default function ReforgePage() {
                     tools={reforgeTools}
                 />
             </Suspense>
-            <section
-                className="mt-8 space-y-3 border-t border-slate-200 pt-6 text-sm text-slate-700"
-                aria-labelledby="assumptions-heading"
-            >
-                <h2 id="assumptions-heading" className="text-xl font-bold">
+            <details className="mt-8 space-y-3 border-t border-slate-200 pt-6 text-sm text-slate-700">
+                <summary className="cursor-pointer font-semibold">
                     계산 가정과 출처
-                </h2>
+                </summary>
                 <p>
                     같은 시도에서 옵션은 중복되지 않습니다. 장비의 착용
                     종족·장비 타입·도구 조건을 만족하는 N개 중 L개를 균등하게
@@ -127,30 +121,8 @@ export default function ReforgePage() {
                             2025년 세공 개편
                         </a>
                     </li>
-                    <li>
-                        <a
-                            className="link"
-                            href="https://prilus.gitlab.io/metalware"
-                        >
-                            Prilus 데이터 출처
-                        </a>
-                    </li>
                 </ul>
-                <nav aria-label="관련 도구" className="flex flex-wrap gap-4">
-                    <Link className="link" href="/auction">
-                        경매장
-                    </Link>
-                    <Link className="link" href="/auction/items">
-                        아이템 목록
-                    </Link>
-                    <Link className="link" href="/calculator">
-                        파티 분배 계산기
-                    </Link>
-                    <Link className="link" href="/">
-                        전체 도구
-                    </Link>
-                </nav>
-            </section>
+            </details>
         </div>
     );
 }

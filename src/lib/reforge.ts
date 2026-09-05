@@ -359,7 +359,8 @@ export function runReforgeChunk(
         (run.price !== null && run.price < BigInt(0)) ||
         (run.budget !== null &&
             (run.budget < BigInt(0) || run.price === null)) ||
-        targetError(model.pool, targets) ||
+        ((targets.length > 0 || run.stopOnHit) &&
+            targetError(model.pool, targets)) ||
         (run.stopOnHit &&
             targetProbability(model.pool, model.tool.lines, targets, mode) ===
                 0)

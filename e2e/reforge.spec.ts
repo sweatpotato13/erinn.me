@@ -8,109 +8,123 @@ test.beforeEach(async ({ page }) => {
     await page.route(/prilus\.gitlab\.io/, route => route.abort());
 });
 
-test("local equipment discovery, targets, exact spending and share reload", async ({
+test("tool buttons run the chosen count, preserve tool totals and stop on targets", async ({
     page,
 }) => {
     await page.goto(base);
     await page.getByLabel("장비 이름 검색").fill("켈틱 드루이드 스태프");
     await page.getByRole("button", { name: "장비 검색", exact: true }).click();
     await page
-        .getByRole("button", { name: /켈틱 드루이드 스태프 #40878/ })
+        .getByRole("button", { name: /^켈틱 드루이드 스태프/ })
+        .first()
         .click();
-    await expect(
-        page.getByRole("heading", { name: "2. 목표 설정" })
-    ).toBeVisible();
+    await expect(page.getByRole("region", { name: "세공 결과" })).toContainText(
+        "1 랭크"
+    );
+    await expect(page.getByLabel("반복 횟수", { exact: true })).toHaveValue(
+        "1"
+    );
+    await expect(page.getByTestId("target-probability")).toHaveCount(0);
     await page.evaluate(() => {
         Math.random = () => 0;
     });
-    await page.getByLabel("1회 가격 (Gold)", { exact: true }).fill("3");
-    await page.getByLabel("이번 실행 예산").fill("6");
-    await page.getByRole("button", { name: "1회 돌리기", exact: true }).click();
-    await expect(page.getByTestId("session-attempts")).toHaveText("1회");
-    await expect(page.getByTestId("session-spend")).toHaveText("3 Gold");
-    await page.getByLabel("1회 가격 (Gold)", { exact: true }).fill("0");
     await page
-        .getByRole("button", { name: "목표까지 돌리기", exact: true })
+        .getByLabel("정교한 세공 도구 1회 가격 (Gold)", { exact: true })
+        .fill("3");
+    await page.getByLabel("반복 횟수", { exact: true }).fill("3");
+    await page
+        .getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
         .click();
-    await expect(page.getByTestId("session-attempts")).toHaveText("2회");
-    await expect(page.getByTestId("session-spend")).toHaveText("3 Gold");
+    await expect(page.getByTestId("session-attempts")).toHaveText("3회");
+    await expect(page.getByTestId("tool-count-1")).toHaveText("3회");
+    await expect(page.getByTestId("session-spend")).toHaveText("9 Gold");
+    await expect(
+        page.getByRole("region", { name: "세공 결과" }).locator("li")
+    ).toHaveCount(3);
+    await page
+        .getByLabel("영롱한 세공 도구 1회 가격 (Gold)", { exact: true })
+        .fill("5");
+    await page
+        .getByRole("button", { name: "영롱한 세공 도구 사용", exact: true })
+        .click();
+    await expect(page.getByTestId("session-attempts")).toHaveText("6회");
+    await expect(page.getByTestId("tool-count-4")).toHaveText("3회");
+    await expect(page.getByTestId("tool-count-1")).toHaveText("3회");
+    await expect(page.getByTestId("session-spend")).toHaveText("24 Gold");
+    await page
+        .getByLabel("자동 멈춤 옵션 1", { exact: true })
+        .selectOption("1");
+    await page.getByLabel("최소 레벨 1", { exact: true }).selectOption("7");
+    await page.getByLabel("반복 횟수", { exact: true }).fill("1000");
+    await page
+        .getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
+        .click();
+    await expect(page.getByTestId("session-attempts")).toHaveText("7회");
+    await expect(page.getByTestId("session-spend")).toHaveText("27 Gold");
     await expect(
         page.getByRole("status").filter({ hasText: "목표 달성" })
     ).toBeVisible();
+    await expect(page.getByTestId("target-probability")).toBeVisible();
     await page
-        .getByRole("combobox", { name: "목표 옵션 1", exact: true })
+        .getByLabel("자동 멈춤 옵션 2", { exact: true })
         .selectOption("15");
+    await page.getByLabel("자동 멈춤 조건", { exact: true }).selectOption("or");
+    await expect(page.getByTestId("session-attempts")).toHaveText("7회");
+    await page.getByLabel("확률 기준 도구").selectOption("6");
+    await expect(page.getByTestId("session-attempts")).toHaveText("7회");
     await page
-        .getByRole("combobox", { name: "최소 레벨 1", exact: true })
-        .selectOption("20");
-    await expect(page.getByTestId("session-attempts")).toHaveText("0회");
-    await expect(
-        page.getByRole("link", { name: "이 목표로 경매장 검색" })
-    ).toHaveAttribute("href", /option_reforge=/);
-    await page.getByRole("button", { name: "목표 추가", exact: true }).click();
-    await expect(
-        page.getByText("경매장은 세공 조건 1개만 지원", { exact: false })
-    ).toBeVisible();
-    await page
-        .getByRole("combobox", { name: "목표 조건", exact: true })
-        .selectOption("or");
-    await page
-        .getByRole("button", { name: "설정 링크 복사", exact: true })
+        .getByRole("button", { name: "횟수 초기화", exact: true })
         .click();
-    const shared = await page.getByLabel("공유 설정 URL").inputValue();
-    expect(shared).toContain("mode=or");
-    expect(shared).toContain("price=0");
-    await page.reload();
-    await expect(
-        page.getByRole("combobox", { name: "목표 옵션 1", exact: true })
-    ).toHaveValue("15");
-    await expect(
-        page.getByRole("combobox", { name: "목표 조건", exact: true })
-    ).toHaveValue("or");
-    await expect(
-        page.getByLabel("1회 가격 (Gold)", { exact: true })
-    ).toHaveValue("0");
     await expect(page.getByTestId("session-attempts")).toHaveText("0회");
+    await expect(page.getByTestId("tool-count-1")).toHaveText("0회");
+    await expect(page.getByTestId("tool-count-4")).toHaveText("0회");
+    await expect(page.getByRole("region", { name: "세공 결과" })).toContainText(
+        "세공 도구를 눌러 시작하세요."
+    );
+    await page.getByLabel("자동 멈춤 옵션 1", { exact: true }).selectOption("");
+    await page.getByLabel("자동 멈춤 옵션 1", { exact: true }).selectOption("");
+    await page.getByText("다른 세공 도구", { exact: true }).click();
+    await page.getByLabel("반복 횟수", { exact: true }).fill("1");
     await page
-        .getByRole("combobox", { name: "세공 도구", exact: true })
-        .selectOption("5");
-    await expect(page.getByText(/서로 다른 1개/)).toBeVisible();
-    await page.goBack();
+        .getByRole("button", { name: "초심자의 세공 도구 사용", exact: true })
+        .click();
+    await expect(page.getByTestId("tool-count-5")).toHaveText("1회");
     await expect(
-        page.getByRole("combobox", { name: "세공 도구", exact: true })
-    ).toHaveValue("1");
+        page.getByRole("region", { name: "세공 결과" }).locator("li")
+    ).toHaveCount(1);
+    await expect(page.getByTestId("session-spend")).toContainText(
+        "가격 미입력 1회"
+    );
+    await page.getByLabel("장비 이름 검색").fill("장갑");
+    await page.getByRole("button", { name: "장비 검색", exact: true }).click();
+    await page.getByRole("button", { name: /장갑/ }).first().click();
+    await expect(page.getByTestId("session-attempts")).toHaveText("0회");
+    for (const removed of [
+        "설정 링크 복사",
+        "등장 옵션과 효과 보기",
+        "공유 링크는 장비",
+        "이 옵션은 넥슨",
+        "Prilus 데이터 출처",
+    ]) {
+        await expect(page.getByRole("main")).not.toContainText(removed);
+    }
     await expect(
-        page.getByRole("combobox", { name: "목표 옵션 1", exact: true })
-    ).toHaveValue("15");
-    await page.goForward();
-    await expect(
-        page.getByRole("combobox", { name: "세공 도구", exact: true })
-    ).toHaveValue("5");
+        page.getByRole("navigation", { name: "관련 도구" })
+    ).toHaveCount(0);
 });
 
-test("bounded runs remain cancellable, budget equality, impossible and changed settings", async ({
+test("runs stay cancellable and invalid settings cannot execute", async ({
     page,
 }) => {
-    await page.goto(
-        settings.replace("goals=1:7", "goals=1:25") + "&price=3&budget=6"
-    );
+    await page.goto(settings.replace("goals=1:7", "goals=1:25") + "&price=0");
     await expect(page.getByTestId("target-probability")).toBeVisible();
     await page.evaluate(() => {
         Math.random = () => 0;
     });
+    await page.getByLabel("반복 횟수", { exact: true }).fill("1000000");
     await page
-        .getByRole("button", { name: "목표까지 돌리기", exact: true })
+        .getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
         .click();
-    await expect(page.getByTestId("session-attempts")).toHaveText("2회");
-    await expect(page.getByTestId("session-spend")).toHaveText("6 Gold");
-    await page.getByLabel("이번 실행 예산").fill("");
-    await page.getByLabel("최대 시도 횟수", { exact: true }).fill("1000000");
-    await page
-        .getByRole("button", { name: "목표까지 돌리기", exact: true })
-        .click();
-    await expect(
-        page.getByRole("button", { name: "중지", exact: true })
-    ).toBeEnabled();
     await expect
         .poll(async () =>
             Number(
@@ -119,29 +133,46 @@ test("bounded runs remain cancellable, budget equality, impossible and changed s
                 ).replace(/\D/g, "")
             )
         )
-        .toBeGreaterThan(102);
+        .toBeGreaterThan(100);
     await page.getByRole("button", { name: "중지", exact: true }).click();
     await expect(
-        page.getByRole("status").filter({ hasText: "취소됨" })
+        page.getByRole("status").filter({ hasText: "중지했습니다" })
     ).toBeVisible();
-    await page.getByText("최근 기록 (100/100)", { exact: true }).click();
+    const stopped = await page.getByTestId("session-attempts").innerText();
     await expect(
         page.getByRole("button", { name: "중지", exact: true })
+    ).toHaveCount(0);
+    await expect(page.getByTestId("session-attempts")).toHaveText(stopped);
+    await page.getByLabel("반복 횟수", { exact: true }).fill("0");
+    await expect(
+        page.getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
+    ).toBeDisabled();
+    await page.getByLabel("반복 횟수", { exact: true }).fill("1");
+    await page
+        .getByLabel("정교한 세공 도구 1회 가격 (Gold)", { exact: true })
+        .fill("-1");
+    await expect(
+        page.getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
     ).toBeDisabled();
     await page.goto(settings.replace("goals=1:7", "goals=1:26"));
     await expect(
         page.getByRole("alert").filter({ hasText: "달성 불가능" })
     ).toBeVisible();
-    await expect(
-        page.getByRole("button", { name: "목표까지 돌리기", exact: true })
-    ).toBeDisabled();
+    await page
+        .getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
+        .click();
+    await expect(page.getByTestId("session-attempts")).toHaveText("0회");
     await page.goto(settings.replace("1788405829", "1"));
     await expect(
-        page.getByText(/공유 데이터 버전 1과 현재 버전/)
+        page.getByText("데이터가 업데이트되어 현재 기준으로 계산합니다.")
     ).toBeVisible();
     await page.goto(settings.replace("e=40878", "e=999999999"));
     await expect(
         page.getByRole("alert").filter({ hasText: "지원하지 않는 장비" })
+    ).toBeVisible();
+    await page.goto(settings.replace("t=1", "t=3"));
+    await expect(
+        page.getByRole("alert").filter({ hasText: "지원하지 않는 세공 도구" })
     ).toBeVisible();
     await page.goto(settings + "&t=5");
     await expect(
@@ -186,7 +217,9 @@ test("released groups, mobile modal keyboard access, long names and reduced moti
     await expect(trigger).toBeFocused();
     await page.getByLabel("장비 이름 검색").fill("스페셜");
     await page.getByRole("button", { name: "장비 검색", exact: true }).click();
-    await expect(page.getByText(/최대 30개 표시/)).toBeVisible();
+    await expect(
+        page.getByRole("button", { name: /스페셜/ }).first()
+    ).toBeVisible();
     expect(
         await page.evaluate(
             () => document.documentElement.scrollWidth <= window.innerWidth
@@ -256,12 +289,15 @@ test("large Gold assumptions stay approximate while session spending stays exact
 }) => {
     await page.goto(settings + "&price=9007199254740993");
     await expect(
-        page.getByRole("heading", { name: "3. 이론 확률과 비용" })
+        page.getByRole("heading", { name: "이론 확률과 비용" })
     ).toBeVisible();
     await expect(
         page.locator("dl").filter({ hasText: "기대 비용" })
     ).toContainText(/약 .*e\+/);
-    await page.getByRole("button", { name: "1회 돌리기", exact: true }).click();
+    await page.getByLabel("반복 횟수", { exact: true }).fill("1");
+    await page
+        .getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
+        .click();
     await expect(page.getByTestId("session-spend")).toHaveText(
         "9,007,199,254,740,993 Gold"
     );

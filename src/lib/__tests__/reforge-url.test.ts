@@ -1,17 +1,13 @@
 /** @jest-environment node */
 jest.mock("server-only", () => ({}), { virtual: true });
 import { GET } from "@/app/api/reforge/route";
-import { parseReforgeOptionValue } from "@/lib/auction-options";
-import { parseAuctionSearchParams } from "@/lib/auction-url";
 import {
-    getReforgeModel,
     reforgeVersion,
     searchReforgeEquipment,
 } from "@/lib/reforge-reference";
 import {
     defaultReforgeConfig,
     parseReforgeConfig,
-    reforgeAuctionPath,
     reforgeConfigPath,
 } from "@/lib/reforge-url";
 
@@ -61,38 +57,6 @@ test("bounded versioned settings roundtrip preserves zero and unknown prices, re
             reforgeVersion
         ).error
     ).not.toBeNull();
-});
-test("only a verified single reforge target can enter the existing auction contract", () => {
-    const model = getReforgeModel(item.id, 1)!;
-    expect(parseReforgeOptionValue("마법 공격력(20레벨:80 증가)")).toEqual({
-        name: "마법 공격력",
-        level: 20,
-        effect: "80 증가",
-    });
-    const link = reforgeAuctionPath(model, config.targets)!;
-    expect(link).toContain("option_reforge=");
-    expect(
-        parseAuctionSearchParams(new URL(link, "https://erinn.me").searchParams)
-            .search
-    ).toMatchObject({
-        itemName: item.name,
-        optionFilters: { reforge: { optionName: "마법 공격력", minLevel: 20 } },
-    });
-    expect(
-        reforgeAuctionPath(model, [...config.targets, { id: 1, level: 1 }])
-    ).toBeNull();
-    expect(reforgeAuctionPath(model, [{ id: 1, level: 1 }])).toBeNull();
-    expect(
-        reforgeAuctionPath(
-            {
-                ...model,
-                pool: model.pool.map(a =>
-                    a.id === 15 ? { ...a, name: "변경된 이름" } : a
-                ),
-            },
-            config.targets
-        )
-    ).toBeNull();
 });
 test("API returns only bounded equipment search or selected model; rejects unsupported IDs", async () => {
     const get = (q: string) =>
