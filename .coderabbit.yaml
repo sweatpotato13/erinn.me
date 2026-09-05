@@ -1,3 +1,7 @@
 reviews:
   path_filters:
     - "!src/data/**"
+  auto_review:
+    base_branches:
+      - "^develop$"
+      - "^main$"
