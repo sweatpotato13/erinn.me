@@ -69,6 +69,13 @@ To get a local copy up and running follow these simple example steps.
     pnpm start
     ```
 
+### Reference data
+
+Maintainers can run `pnpm data:collect` to refresh the committed Korean game
+reference snapshot and `pnpm data:check` to validate it without network access.
+See [setup, snapshot contract, review and rollback](docs/reference-data.md).
+Collection is separate from normal development and production builds.
+
 ### Rate-limit deployment
 
 The API proxy trusts only Vercel's `x-vercel-forwarded-for` header for client

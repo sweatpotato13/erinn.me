@@ -1,0 +1,6 @@
+[
+{"Elements":[{"AdjustMinLevel":0,"MaxLevel":1},{"AdjustMinLevel":0,"MaxLevel":3},{"AdjustMinLevel":0,"MaxLevel":5},{"AdjustMinLevel":0,"MaxLevel":6},{"AdjustMinLevel":0,"MaxLevel":10},{"AdjustMinLevel":0,"MaxLevel":20}],"ItemId":53940},
+{"Elements":[{"AdjustMinLevel":0,"MaxLevel":1},{"AdjustMinLevel":0,"MaxLevel":3},{"AdjustMinLevel":0,"MaxLevel":5},{"AdjustMinLevel":1,"MaxLevel":6},{"AdjustMinLevel":1,"MaxLevel":10},{"AdjustMinLevel":3,"MaxLevel":20}],"ItemId":53941},
+{"Elements":[{"AdjustMinLevel":0,"MaxLevel":1},{"AdjustMinLevel":0,"MaxLevel":3},{"AdjustMinLevel":1,"MaxLevel":5},{"AdjustMinLevel":1,"MaxLevel":6},{"AdjustMinLevel":2,"MaxLevel":10},{"AdjustMinLevel":4,"MaxLevel":20}],"ItemId":53942},
+{"Elements":[{"AdjustMinLevel":0,"MaxLevel":1},{"AdjustMinLevel":0,"MaxLevel":3},{"AdjustMinLevel":1,"MaxLevel":5},{"AdjustMinLevel":1,"MaxLevel":6},{"AdjustMinLevel":2,"MaxLevel":10},{"AdjustMinLevel":4,"MaxLevel":20}],"ItemId":5000078}
+]

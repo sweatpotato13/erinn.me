@@ -5,10 +5,10 @@ import { chromium } from "@playwright/test";
 
 import {
     publishSnapshot,
+    type Source,
     tableNames,
     validateData,
     versionSchema,
-    type Source,
 } from "./reference-data";
 
 const site = "https://prilus.gitlab.io/";
@@ -94,7 +94,10 @@ export async function collectReference() {
             names =>
                 new Promise<string>((resolveData, reject) => {
                     const request = indexedDB.open("prilus_mabi_db");
-                    request.onerror = () => reject(request.error);
+                    request.onerror = () =>
+                        reject(
+                            request.error ?? new Error("IndexedDB open failed")
+                        );
                     request.onupgradeneeded = () => {
                         request.transaction?.abort();
                         reject(new Error("Expected populated Prilus database"));
