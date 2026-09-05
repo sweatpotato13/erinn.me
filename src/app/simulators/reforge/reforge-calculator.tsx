@@ -279,9 +279,13 @@ function CalculatorSession({
     const auction = !error ? reforgeAuctionPath(model, targets) : null;
     useEffect(() => {
         setPriceText(config.price);
+    }, [config.price]);
+    useEffect(() => {
         setBudgetText(config.budget);
+    }, [config.budget]);
+    useEffect(() => {
         setCapText(String(config.cap));
-    }, [config.price, config.budget, config.cap]);
+    }, [config.cap]);
     useEffect(
         () => () => {
             cancelled.current = true;
@@ -722,7 +726,8 @@ function CalculatorSession({
                             running ||
                             Boolean(error) ||
                             invalidInputs ||
-                            budgetWithoutPrice
+                            budgetWithoutPrice ||
+                            !p
                         }
                         onClick={() => start(Math.min(100, cap), true)}
                     >
