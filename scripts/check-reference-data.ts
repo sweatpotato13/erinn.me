@@ -18,6 +18,11 @@ const { data, manifest, warnings } = readSnapshot(
     resolve("src/data/reference")
 );
 assert.deepEqual(Object.keys(manifest.tables).sort(), [...tableNames].sort());
+assert.equal(manifest.snapshot, "snapshots");
+assert.deepEqual(
+    fs.readdirSync(resolve("src/data/reference/snapshots")).sort(),
+    tableNames.map(name => `${name}.json`).sort()
+);
 assert.ok(!Object.hasOwn(manifest.tables, "EffectList"));
 assert.deepEqual(warnings, manifest.warnings);
 assert.equal(
@@ -202,7 +207,7 @@ try {
             ([name]) => !addedTables.has(name)
         )
     );
-    const legacySnapshot = `snapshots/${data.Version.CreatedAt}-${sha256(stableJson(legacyTables))}`;
+    const legacySnapshot = "snapshots";
     fs.mkdirSync(join(root, legacySnapshot), { recursive: true });
     for (const name of Object.keys(legacyTables)) {
         fs.copyFileSync(
@@ -262,7 +267,7 @@ try {
             fs.readFileSync(join(root, "manifest.json"), "utf8"),
             originalManifest
         );
-        assert.equal(readSnapshot(root).manifest.snapshot, first.snapshot);
+        assert.deepEqual(readSnapshot(root).manifest, first);
         assert.equal(fs.existsSync(join(root, ".collect-lock")), false);
     };
     assert.throws(() =>
@@ -280,7 +285,7 @@ try {
     );
     unchanged();
     const changed = {
-        ...data,
+        ...withItem({ NewField: "updated content" }),
         Version: { CreatedAt: data.Version.CreatedAt + 1 },
     };
     const write = fs.writeFileSync;
@@ -306,29 +311,48 @@ try {
     }
     unchanged();
     const rename = fs.renameSync;
-    const failPromotion = mock.method(
-        fs,
-        "renameSync",
-        (...args: Parameters<typeof rename>) => {
-            if (String(args[0]).endsWith("manifest.json"))
-                throw new Error("simulated manifest rename failure");
-            return rename(...args);
-        }
-    );
-    try {
-        assert.throws(
-            () => publishSnapshot(root, changed, manifest.source),
-            /simulated manifest rename failure/
+    for (const failure of ["candidate", "manifest.json"]) {
+        const failPromotion = mock.method(
+            fs,
+            "renameSync",
+            (...args: Parameters<typeof rename>) => {
+                if (String(args[0]).includes(failure))
+                    throw new Error("simulated promotion failure");
+                return rename(...args);
+            }
         );
-    } finally {
-        failPromotion.mock.restore();
+        try {
+            assert.throws(
+                () => publishSnapshot(root, changed, manifest.source),
+                /simulated promotion failure/
+            );
+        } finally {
+            failPromotion.mock.restore();
+        }
+        unchanged();
     }
-    unchanged();
     const second = publishSnapshot(root, changed, manifest.source);
-    assert.equal(readSnapshot(root).manifest.snapshot, second.snapshot);
-    assert.ok(fs.existsSync(join(root, first.snapshot, "ItemList.json")));
-    fs.writeFileSync(join(root, "manifest.json"), originalManifest);
-    assert.equal(readSnapshot(root).manifest.snapshot, first.snapshot); // Rollback only changes the pointer.
+    assert.equal(second.snapshot, first.snapshot);
+    assert.deepEqual(readSnapshot(root).manifest, second);
+    assert.equal(
+        readSnapshot(root).data.ItemList[0].NewField,
+        "updated content"
+    );
+    assert.deepEqual(
+        tableNames.filter(
+            name => first.tables[name]?.sha256 !== second.tables[name]?.sha256
+        ),
+        ["ItemList"]
+    );
+    assert.deepEqual(
+        fs.readdirSync(join(root, "snapshots")).sort(),
+        tableNames.map(name => `${name}.json`).sort()
+    );
+    assert.equal(fs.existsSync(join(root, ".collect-lock")), false);
+    assert.deepEqual(publishSnapshot(root, changed, manifest.source), second);
+    const freshRoot = join(root, "fresh");
+    publishSnapshot(freshRoot, data, manifest.source);
+    assert.deepEqual(readSnapshot(freshRoot).manifest.tables, first.tables);
     fs.appendFileSync(join(root, first.snapshot, "ItemList.json"), " ");
     assert.throws(() => readSnapshot(root), /checksum/);
 } finally {

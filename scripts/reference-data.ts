@@ -416,7 +416,7 @@ const sourceSchema = z.object({
 export type Source = z.infer<typeof sourceSchema>;
 const manifestSchema = z.object({
     formatVersion: z.literal(1),
-    snapshot: z.string().regex(/^snapshots\/[1-9][0-9]*-[a-f0-9]{64}$/),
+    snapshot: z.literal("snapshots"),
     source: sourceSchema,
     sourceVersion: versionSchema,
     collectedAt: z.iso.datetime(),
@@ -438,14 +438,6 @@ function readStoredSnapshot(root: string) {
     const manifest = manifestSchema.parse(
         readJson(join(root, "manifest.json"))
     );
-    if (
-        manifest.snapshot !==
-        `snapshots/${manifest.sourceVersion.CreatedAt}-${sha256(stableJson(manifest.tables))}`
-    ) {
-        throw new Error(
-            "Snapshot path does not match its version/table metadata"
-        );
-    }
     const input: Record<string, unknown> = { Version: manifest.sourceVersion };
     for (const name of tableNames) {
         const meta = manifest.tables[name];
@@ -486,9 +478,10 @@ export function publishSnapshot(
         mkdirSync(lock);
     } catch {
         throw new Error(
-            `Collector lock exists or cannot be created: ${lock}. If no collector is running, remove a stale lock and retry.`
+            `Collector lock exists or cannot be created: ${lock}. If no collector is running, inspect and recover any previous-snapshots backup before removing the lock and retrying.`
         );
     }
+    let cleanup = true;
     try {
         const previous = existsSync(join(root, "manifest.json"))
             ? readStoredSnapshot(root).manifest
@@ -522,12 +515,13 @@ export function publishSnapshot(
                 `${name}: ${old?.count ?? 0} -> ${tables[name].count} entries; ${tables[name].bytes} bytes; ${old?.sha256 === tables[name].sha256 ? "unchanged" : "changed"}`
             );
         }
-        const digest = sha256(stableJson(tables));
-        const snapshot = `snapshots/${data.Version.CreatedAt}-${digest}`;
         console.log(
             `Source version: ${data.Version.CreatedAt}; warnings: ${JSON.stringify(warnings)}`
         );
-        if (previous?.snapshot === snapshot) {
+        if (
+            previous?.sourceVersion.CreatedAt === data.Version.CreatedAt &&
+            stableJson(previous.tables) === stableJson(tables)
+        ) {
             console.log(
                 "No data changes; keeping the existing manifest and collection timestamp."
             );
@@ -539,37 +533,43 @@ export function publishSnapshot(
             );
         const manifest: Manifest = {
             formatVersion: 1,
-            snapshot,
+            snapshot: "snapshots",
             source,
             sourceVersion: data.Version,
             collectedAt: new Date().toISOString(),
             tables,
             warnings,
         };
-        mkdirSync(join(root, "snapshots"), { recursive: true });
-        const target = join(root, snapshot);
-        if (existsSync(target)) {
-            for (const name of tableNames) {
-                if (
-                    sha256(
-                        readFileSync(join(target, `${name}.json`), "utf8")
-                    ) !== tables[name].sha256
-                )
-                    throw new Error(
-                        `Existing candidate ${name} is corrupt; remove the unreferenced candidate and retry`
-                    );
-            }
-        } else renameSync(stage, target);
+        const target = join(root, "snapshots");
+        const backup = join(lock, "previous-snapshots");
+        if (!previous && existsSync(target))
+            throw new Error(
+                "Snapshot directory exists without a manifest; inspect it before collecting"
+            );
         const manifestPath = join(lock, "manifest.json");
         writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 4)}\n`, {
             flag: "wx",
         });
-        // The only publication point. Never mutate or delete the previously referenced files.
-        renameSync(manifestPath, join(root, "manifest.json"));
+        // Fixed paths require a directory swap. Keep the old files until the manifest commits.
+        // An interrupted process leaves its backup in the lock for manual recovery.
+        if (previous) renameSync(target, backup);
+        let promoted = false;
+        try {
+            renameSync(stage, target);
+            promoted = true;
+            renameSync(manifestPath, join(root, "manifest.json"));
+        } catch (error) {
+            // Never discard the backup if restoring it also fails.
+            cleanup = false;
+            if (promoted) renameSync(target, stage);
+            if (previous) renameSync(backup, target);
+            cleanup = true;
+            throw error;
+        }
         return manifest;
     } finally {
         try {
-            rmSync(lock, { recursive: true, force: true });
+            if (cleanup) rmSync(lock, { recursive: true, force: true });
         } catch (error) {
             console.warn(
                 `Could not remove collector lock ${lock}: ${String(error)}`
