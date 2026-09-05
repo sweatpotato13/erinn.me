@@ -69,6 +69,37 @@ To get a local copy up and running follow these simple example steps.
     pnpm start
     ```
 
+### Reference data
+
+Maintainers can run `pnpm data:collect` to refresh the committed Korean game
+reference snapshot and `pnpm data:check` to validate it without network access.
+Collection is separate from normal development and production builds.
+
+1. Install Chromium once with `pnpm exec playwright install chromium` after
+   installing the project dependencies.
+2. Start with a clean `src/data/reference` directory in Git, then run
+   `pnpm data:collect` and `pnpm data:check`.
+3. Review `git diff -- src/data/reference`, including the source version,
+   warnings, counts and checksums in `manifest.json`, and the changed rows in
+   `snapshots/*.json`. Commit approved updates together:
+   `git add src/data/reference && git commit -m "chore(data): Refresh reference data"`.
+4. To discard an uncommitted refresh, run
+   `git restore --source=HEAD --staged --worktree -- src/data/reference`.
+   To restore an earlier committed version, replace `HEAD` with the desired
+   commit, run `pnpm data:check`, and commit the restored manifest and tables
+   together. Inspect `git status` for new, untracked files; restore does not
+   remove those.
+
+Downstream scripts can call
+`readSnapshot(resolve("src/data/reference"))` from `scripts/reference-data.ts`
+to load and validate `{ manifest, data, warnings }` without network access.
+Application features should derive only the records they need from the committed
+JSON files; avoid bundling the entire dataset or importing this Node-only helper
+into client code. Source field names, array order, duplicates and placeholders
+are preserved. If collection stops with a stale `.collect-lock`, inspect its
+`previous-snapshots` backup and restore files matching the active manifest before
+removing the lock; do not delete a backup merely because its process has exited.
+
 ### Rate-limit deployment
 
 The API proxy trusts only Vercel's `x-vercel-forwarded-for` header for client

@@ -43,6 +43,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Check committed reference data
+        run: pnpm data:check
+
       - name: Build
         run: pnpm build
 

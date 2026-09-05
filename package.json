@@ -4,6 +4,8 @@
   "private": true,
   "packageManager": "pnpm@11.25.0",
   "scripts": {
+    "data:collect": "pnpm exec tsx scripts/collect-reference-data.ts",
+    "data:check": "pnpm exec tsx scripts/check-reference-data.ts",
     "catalog:collect": "pnpm exec tsx scripts/collect-auction-item-candidates.ts",
     "catalog:validate": "pnpm exec tsx scripts/validate-auction-item-catalog.ts",
     "prebuild": "pnpm catalog:validate && pnpm exec tsx scripts/build-suggest-index.ts && pnpm exec tsx scripts/build-item-id-map.ts",
