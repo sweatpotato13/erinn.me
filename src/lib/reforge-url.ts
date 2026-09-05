@@ -122,7 +122,8 @@ export function reforgeConfigPath(config: ReforgeConfig) {
         throw new Error("공유할 설정을 확인하세요.");
     return `${REFORGE_PATH}?${params}`;
 }
-// Existing Nexon option-value fixture: "마법 공격력(20레벨:...)".
+// Auction record inspected 2026-09-06: "마법 공격력(20레벨:80 증가)".
+// https://mabinogi.shimplace.com/infocenter/item/detail.php?n=8626&subclass=302
 // Keep an explicit allowlist until further names are checked against actual listings.
 const verifiedAuctionNames: Record<number, string> = { 15: "마법 공격력" };
 export function reforgeAuctionPath(

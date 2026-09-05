@@ -1,6 +1,7 @@
 /** @jest-environment node */
 jest.mock("server-only", () => ({}), { virtual: true });
 import { GET } from "@/app/api/reforge/route";
+import { parseReforgeOptionValue } from "@/lib/auction-options";
 import { parseAuctionSearchParams } from "@/lib/auction-url";
 import {
     getReforgeModel,
@@ -63,6 +64,11 @@ test("bounded versioned settings roundtrip preserves zero and unknown prices, re
 });
 test("only a verified single reforge target can enter the existing auction contract", () => {
     const model = getReforgeModel(item.id, 1)!;
+    expect(parseReforgeOptionValue("마법 공격력(20레벨:80 증가)")).toEqual({
+        name: "마법 공격력",
+        level: 20,
+        effect: "80 증가",
+    });
     const link = reforgeAuctionPath(model, config.targets)!;
     expect(link).toContain("option_reforge=");
     expect(

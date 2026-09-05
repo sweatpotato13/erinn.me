@@ -128,9 +128,7 @@ test("bounded runs remain cancellable, budget equality, impossible and changed s
     await expect(
         page.getByRole("button", { name: "중지", exact: true })
     ).toBeDisabled();
-    await page
-        .getByRole("combobox", { name: "최소 레벨 1", exact: true })
-        .selectOption("26");
+    await page.goto(settings.replace("goals=1:7", "goals=1:26"));
     await expect(
         page.getByRole("alert").filter({ hasText: "달성 불가능" })
     ).toBeVisible();
@@ -153,6 +151,7 @@ test("bounded runs remain cancellable, budget equality, impossible and changed s
 
 test("released groups, mobile modal keyboard access, long names and reduced motion", async ({
     page,
+    browserName,
 }) => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.setViewportSize({ width: 320, height: 720 });
@@ -171,7 +170,8 @@ test("released groups, mobile modal keyboard access, long names and reduced moti
     for (const path of ["/auction", "/horn", "/npc-shop", "/calculator", base])
         await expect(menu.locator(`a[href="${path}"]`)).toBeVisible();
     await menu.getByRole("button", { name: "메뉴 닫기" }).focus();
-    await page.keyboard.press("Tab");
+    // WebKit follows the platform convention: Option-Tab includes links.
+    await page.keyboard.press(browserName === "webkit" ? "Alt+Tab" : "Tab");
     await expect(
         menu.getByRole("link", { name: "경매장", exact: true })
     ).toBeFocused();
@@ -249,4 +249,26 @@ test("server HTML, social metadata, real image and base-only sitemap", async ({
     ).toHaveLength(1);
     expect(sitemap).not.toMatch(/\/preview|\?v=|simulators\/echostone/);
     expect(sitemap).toContain("/auction/items/");
+});
+
+test("large Gold assumptions stay approximate while session spending stays exact", async ({
+    page,
+}) => {
+    await page.goto(settings + "&price=9007199254740993");
+    await expect(
+        page.getByRole("heading", { name: "3. 이론 확률과 비용" })
+    ).toBeVisible();
+    await expect(
+        page.locator("dl").filter({ hasText: "기대 비용" })
+    ).toContainText(/약 .*e\+/);
+    await page.getByRole("button", { name: "1회 돌리기", exact: true }).click();
+    await expect(page.getByTestId("session-spend")).toHaveText(
+        "9,007,199,254,740,993 Gold"
+    );
+    await expect(
+        page
+            .getByRole("combobox", { name: "최소 레벨 1", exact: true })
+            .locator("option")
+            .last()
+    ).toHaveValue("25");
 });

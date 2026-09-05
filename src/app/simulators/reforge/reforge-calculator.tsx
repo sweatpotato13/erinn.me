@@ -31,7 +31,9 @@ import {
 
 const number = (value: number) =>
     Number.isFinite(value)
-        ? value.toLocaleString("ko-KR", { maximumFractionDigits: 2 })
+        ? value > Number.MAX_SAFE_INTEGER
+            ? `약 ${value.toExponential(4)}`
+            : value.toLocaleString("ko-KR", { maximumFractionDigits: 2 })
         : "도달 불가";
 const percent = (p: number) =>
     p > 0 && p < 0.000001
@@ -474,7 +476,7 @@ function CalculatorSession({
                                     }
                                 >
                                     {Array.from(
-                                        { length: max + 1 },
+                                        { length: max },
                                         (_, n) => n + 1
                                     ).map(level => (
                                         <option key={level} value={level}>
@@ -507,7 +509,9 @@ function CalculatorSession({
                                 <p className="w-full text-sm text-slate-600">
                                     선택된 경우 목표 충족{" "}
                                     {percent(conditionalChance(a, t.level))} ·{" "}
-                                    {effectText(a, t.level)}
+                                    {conditionalChance(a, t.level) === 0
+                                        ? "이 조건의 레벨은 등장하지 않습니다."
+                                        : effectText(a, t.level)}
                                 </p>
                             )}
                         </div>
