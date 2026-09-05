@@ -1,6 +1,5 @@
 /** @jest-environment node */
 
-import localItems from "@/data/all-item-list.json";
 import catalog from "@/data/auction-item-catalog.json";
 import {
     getAuctionCatalogItemByExactName,
@@ -10,6 +9,9 @@ import {
 } from "@/lib/auction-item-catalog";
 import { validateAuctionItemCatalog } from "@/lib/auction-item-catalog-validator";
 
+import { readItemReference } from "../../../scripts/item-reference";
+
+const { items: localItems } = readItemReference();
 const cloneCatalog = () => structuredClone(catalog);
 
 describe("auction item catalog", () => {
