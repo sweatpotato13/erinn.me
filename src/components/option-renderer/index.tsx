@@ -1,12 +1,12 @@
 import React from "react";
 
+import { parseReforgeOptionValue } from "@/lib/auction-options";
 import {
-    parseEnchantName,
-    parseReforgeOptionValue,
-} from "@/lib/auction-options";
+    compareEnchantEffect,
+    enchantDescriptionLines,
+} from "@/lib/enchant-effects";
+import { findEnchantReference } from "@/lib/enchant-reference";
 import type { ItemOption } from "@/types/item-option";
-
-import { ENCHANT_OPTIONS } from "../../constant/enchants";
 
 interface OptionRendererProps {
     options: ItemOption[];
@@ -74,6 +74,50 @@ function ItemStatLine({ stat }: ItemStatLineProps) {
             <div className="text-red-400">전용 해제 거래 보증서 사용 불가</div>
         );
     return null;
+}
+
+function EnchantReferenceDetails({
+    info,
+    expanded = false,
+}: {
+    info: ReturnType<typeof findEnchantReference>;
+    expanded?: boolean;
+}) {
+    if (!info)
+        return (
+            <div className="text-gray-400 text-xs">
+                인챈트 기준 정보를 확인할 수 없습니다.
+            </div>
+        );
+    return (
+        <div className="text-xs mt-1" data-enchant-id={info.id}>
+            <div className="text-gray-300">
+                {
+                    (
+                        {
+                            0: "접두",
+                            1: "접미",
+                            11: "유물 접두",
+                            12: "유물 접미",
+                        } as Record<number, string>
+                    )[info.usage]
+                }{" "}
+                · {info.rank ? `${info.rank} 랭크` : "랭크 정보 없음"}
+            </div>
+            <details open={expanded}>
+                <summary className="cursor-pointer text-gray-300">
+                    참고 효과 · 조건이 있는 효과는 조건 충족 시 적용
+                </summary>
+                <div className="pl-2 text-blue-300">
+                    {info.description
+                        ? enchantDescriptionLines(info.description).map(
+                              (line, index) => <div key={index}>{line}</div>
+                          )
+                        : "효과 설명을 확인할 수 없습니다."}
+                </div>
+            </details>
+        </div>
+    );
 }
 
 function OptionRenderer({ options }: OptionRendererProps) {
@@ -170,11 +214,10 @@ function OptionRenderer({ options }: OptionRendererProps) {
             {enchants.length > 0 && (
                 <OptionSection title="인챈트">
                     {enchants.map((enchant, index) => {
-                        const enchantName =
-                            parseEnchantName(enchant.option_value) ?? "";
-                        const enchantInfo = enchantName
-                            ? ENCHANT_OPTIONS[enchantName]
-                            : undefined;
+                        const enchantInfo = findEnchantReference(
+                            enchant.option_value,
+                            enchant.option_sub_type
+                        );
 
                         return (
                             <div
@@ -191,86 +234,44 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                     {enchant.option_desc
                                         ?.split(",")
                                         .map((stat, statIndex) => {
-                                            const matches = stat.match(
-                                                /(.+?) (\d+%?|[\d.]+) (증가|감소)/
-                                            );
-                                            if (matches) {
-                                                const [
-                                                    ,
-                                                    statType,
-                                                    valueStr,
-                                                    changeType,
-                                                ] = matches;
-                                                const value = valueStr.includes(
-                                                    "%"
-                                                )
-                                                    ? valueStr
-                                                    : parseInt(valueStr);
-
-                                                // 수리비 증가는 부정적인 효과이므로 빨간색으로 표시
-                                                const isNegativeEffect =
-                                                    (changeType === "증가" &&
-                                                        statType.trim() ===
-                                                            "수리비") ||
-                                                    changeType === "감소";
-
-                                                const enchantStat =
-                                                    enchantInfo?.stats.find(
-                                                        s =>
-                                                            s.type ===
-                                                            statType.trim()
-                                                    );
-                                                const difference =
-                                                    enchantStat?.min &&
-                                                    enchantStat?.max
-                                                        ? parseInt(valueStr) -
-                                                          enchantStat.max
-                                                        : null;
-
-                                                return (
-                                                    <div
-                                                        key={`enchant-stat-${statIndex}`}
-                                                        className={
-                                                            isNegativeEffect
-                                                                ? "text-red-400"
-                                                                : "text-blue-400"
-                                                        }
-                                                    >
-                                                        • {statType} {value}{" "}
-                                                        {changeType}
-                                                        {difference !==
-                                                            null && (
-                                                            <span
-                                                                className={`ml-1 ${
-                                                                    difference ===
-                                                                    0
-                                                                        ? "text-black"
-                                                                        : difference <
-                                                                            0
-                                                                          ? "text-red-400"
-                                                                          : ""
-                                                                }`}
-                                                            >
-                                                                (최대치
-                                                                {difference ===
-                                                                0
-                                                                    ? ""
-                                                                    : ` ${difference}`}
-                                                                )
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                );
-                                            }
+                                            const comparison = enchantInfo
+                                                ? compareEnchantEffect(
+                                                      stat,
+                                                      enchantInfo.description
+                                                  )
+                                                : null;
                                             return (
                                                 <div
                                                     key={`enchant-stat-${statIndex}`}
-                                                    className="text-gray-300"
+                                                    className="text-blue-300"
                                                 >
                                                     • {stat}
+                                                    {comparison && (
+                                                        <span
+                                                            className={
+                                                                comparison.outsideRange ||
+                                                                comparison.difference <
+                                                                    0
+                                                                    ? "ml-1 text-red-400"
+                                                                    : "ml-1 text-yellow-300"
+                                                            }
+                                                            title={
+                                                                comparison.referenceText
+                                                            }
+                                                        >
+                                                            (
+                                                            {comparison.outsideRange
+                                                                ? "기준 범위 밖"
+                                                                : `최대치${comparison.difference === 0 ? "" : ` ${comparison.difference}${comparison.unit}`}`}
+                                                            )
+                                                        </span>
+                                                    )}
                                                 </div>
                                             );
                                         })}
+                                    <EnchantReferenceDetails
+                                        info={enchantInfo}
+                                    />
                                 </div>
                             </div>
                         );
@@ -443,18 +444,13 @@ function OptionRenderer({ options }: OptionRendererProps) {
             {enchantScrollInfo.length > 0 && (
                 <OptionSection title="인챈트 스크롤 정보">
                     {enchantScrollInfo.map((scrollInfo, index) => {
-                        // 인챈트 종류에서 이름 추출 및 매칭
-                        let enchantInfo = null;
-                        let enchantName = "";
-
-                        if (scrollInfo.option_type === "인챈트 종류") {
-                            enchantName =
-                                scrollInfo.option_value?.split("(")[0].trim() ||
-                                "";
-                            enchantInfo = enchantName
-                                ? ENCHANT_OPTIONS[enchantName]
-                                : undefined;
-                        }
+                        const enchantInfo =
+                            scrollInfo.option_type === "인챈트 종류"
+                                ? findEnchantReference(
+                                      scrollInfo.option_value,
+                                      scrollInfo.option_sub_type
+                                  )
+                                : null;
 
                         return (
                             <div
@@ -472,27 +468,10 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                             • 인챈트: {scrollInfo.option_value}{" "}
                                             ({scrollInfo.option_sub_type})
                                         </div>
-                                        {/* 인챈트 상세 옵션 정보 */}
-                                        {enchantInfo && (
-                                            <div className="pl-6 mt-1">
-                                                <div className="text-gray-300 text-xs mb-1">
-                                                    ▼ 인챈트 효과
-                                                </div>
-                                                {enchantInfo.stats.map(
-                                                    (stat, statIndex) => (
-                                                        <div
-                                                            key={`enchant-detail-${statIndex}`}
-                                                            className="text-blue-300 text-xs"
-                                                        >
-                                                            • {stat.type}:{" "}
-                                                            {stat.value
-                                                                ? stat.value
-                                                                : `${stat.min}~${stat.max}`}
-                                                        </div>
-                                                    )
-                                                )}
-                                            </div>
-                                        )}
+                                        <EnchantReferenceDetails
+                                            info={enchantInfo}
+                                            expanded
+                                        />
                                     </div>
                                 )}
                                 {scrollInfo.option_type ===
