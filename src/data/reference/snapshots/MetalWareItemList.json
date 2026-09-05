@@ -1,0 +1,7 @@
+[
+{"AbilityLimit":3,"Desc":"itemdb_etc.14497","Id":1,"ItemId":5050005,"LimitBreakRateFactor":10,"MaxLevelFactor":100,"MinLevelFactor":35,"Name":"itemdb_etc.14489","RateAbility1":0,"RateAbility2":0,"RateAbility3":1,"RateRank1":1,"RateRank2":0,"RateRank3":0},
+{"AbilityLimit":3,"Desc":"itemdb_etc.14498","Id":2,"ItemId":5050006,"LimitBreakRateFactor":0,"MaxLevelFactor":100,"MinLevelFactor":0,"Name":"itemdb_etc.14490","RateAbility1":0,"RateAbility2":0,"RateAbility3":1,"RateRank1":1,"RateRank2":0,"RateRank3":0},
+{"AbilityLimit":3,"Desc":"itemdb_etc.14501","Id":4,"ItemId":5050013,"LimitBreakRateFactor":10,"MaxLevelFactor":100,"MinLevelFactor":39,"Name":"itemdb_etc.14493","RateAbility1":0,"RateAbility2":0,"RateAbility3":1,"RateRank1":1,"RateRank2":0,"RateRank3":0},
+{"AbilityLimit":1,"Desc":"itemdb_etc.14502","Id":5,"ItemId":5050014,"LimitBreakRateFactor":0,"MaxLevelFactor":75,"MinLevelFactor":0,"Name":"itemdb_etc.14494","RateAbility1":1,"RateAbility2":0,"RateAbility3":0,"RateRank1":1,"RateRank2":0,"RateRank3":0},
+{"AbilityLimit":3,"Desc":"itemdb_etc.14504","Id":6,"ItemId":5050020,"LimitBreakRateFactor":15,"MaxLevelFactor":100,"MinLevelFactor":45,"Name":"itemdb_etc.14496","RateAbility1":0,"RateAbility2":0,"RateAbility3":1,"RateRank1":1,"RateRank2":0,"RateRank3":0}
+]

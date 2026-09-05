@@ -1,0 +1,579 @@
+import { createHash } from "node:crypto";
+import {
+    existsSync,
+    mkdirSync,
+    mkdtempSync,
+    readFileSync,
+    renameSync,
+    rmSync,
+    writeFileSync,
+} from "node:fs";
+import { join } from "node:path";
+
+import * as z from "zod";
+
+import knownMissingStrings from "./reference-known-missing-strings.json";
+
+const id = z.number().int().nonnegative();
+const rows = <T extends z.ZodType>(schema: T) => z.array(schema).min(1);
+const record = z.looseObject({});
+const material = z.looseObject({ ItemIds: z.array(id).min(1), Count: id });
+const reward = z.looseObject({ Id: id, Count: id, Rate: z.number() });
+const named = { Id: id, Name: z.string(), Desc: z.string() };
+
+// Validate relationships without stripping any decoded fields or defaulting values.
+const tableSchemas = {
+    ItemList: rows(
+        z.looseObject({
+            ...named,
+            ColorTableIds: z.array(id),
+            IsAuctionSearchable: z.boolean(),
+            HaveMesh: z.boolean(),
+            IsDyeAble: z.boolean(),
+        })
+    ),
+    OptionSetList: rows(
+        z.looseObject({ ...named, Name2: z.string(), Usage: id, Level: id })
+    ),
+    StringTable: rows(
+        z.looseObject({ Id: z.string().min(1), Str: z.string() })
+    ),
+    ItemExtendMetalWareList: rows(
+        z.looseObject({
+            Id: id,
+            EquipType: z.string(),
+            Human: z.boolean(),
+            Elf: z.boolean(),
+            Giant: z.boolean(),
+        })
+    ),
+    MetalWareAbilityList: rows(
+        z.looseObject({
+            Id: id,
+            Desc: z.string(),
+            SubDesc: z.string(),
+            EquipFilterMap: z.record(z.string(), z.boolean()),
+            TypeFilterMap: z.record(z.string(), z.boolean()),
+            BaseMaxLevel: id,
+            InitialValue: z.number(),
+            ValuePerLevel: z.number(),
+        })
+    ),
+    MetalWareItemList: rows(
+        z.looseObject({
+            ...named,
+            ItemId: id,
+            RateRank1: z.number(),
+            RateRank2: z.number(),
+            RateRank3: z.number(),
+            AbilityLimit: id,
+        })
+    ),
+    MetalWareLevelList: rows(
+        z.looseObject({
+            Level: id,
+            Rank1MinLevel: id,
+            Rank1MaxLevel: id,
+            Rank2MinLevel: id,
+            Rank2MaxLevel: id,
+            Rank3MinLevel: id,
+            Rank3MaxLevel: id,
+            LimitBreakMinLevel: id,
+            LimitBreakMaxLevel: id,
+        })
+    ),
+    EchoStoneList: rows(
+        z.looseObject({
+            Id: id,
+            ItemId: id,
+            Upgrades: rows(
+                z.looseObject({
+                    Grade: id,
+                    ConvertFixedRewards: z.array(reward),
+                    ConvertAdditionalRewardIds: z.array(id),
+                })
+            ),
+        })
+    ),
+    EchoStoneAwakenAdjustByGradeList: rows(
+        z.looseObject({
+            Grade: id,
+            Elements: rows(z.looseObject({ MaxLevel: id, AdjustMaxLevel: id })),
+        })
+    ),
+    EchoStoneAwakenAdjustByItemList: rows(
+        z.looseObject({
+            ItemId: id,
+            Elements: rows(z.looseObject({ MaxLevel: id, AdjustMinLevel: id })),
+        })
+    ),
+    EchoStoneConvertAdditionalRewardList: rows(
+        z.looseObject({ Id: id, Rate: z.number(), RewardTables: rows(reward) })
+    ),
+    RandomTableList: rows(
+        z.looseObject({
+            Id: id,
+            Name: z.string(),
+            TotalProb: z.number(),
+            Elements: rows(
+                z.looseObject({
+                    Name: z.string(),
+                    Type: id,
+                    Prob: z.number(),
+                    MWAbilityId: id,
+                })
+            ),
+        })
+    ),
+    ProductionList: rows(
+        z.looseObject({
+            ItemId: id,
+            Type: id,
+            FormId: id,
+            Essentials: z.array(material),
+            CompleteEssentials: z.array(
+                z.looseObject({
+                    Essentials: z.array(material),
+                    ExtraData: z.string(),
+                })
+            ),
+        })
+    ),
+    ItemExtendUpgradeList: rows(
+        z.looseObject({
+            Id: id,
+            UpgradeMax: id,
+            GemUpgradeMax: id,
+            UpgradeIds: z.array(id),
+        })
+    ),
+    ItemUpgradeList: rows(
+        z.looseObject({
+            ...named,
+            NeedGems: z.array(record),
+            AvailableNpcs: z.array(z.string()),
+            ModifyStats: z.array(record),
+            OptionSetIds: z.array(id),
+            Personalize: z.boolean(),
+        })
+    ),
+    MiniatureList: rows(
+        z.looseObject({
+            Id: id,
+            ItemId: id,
+            Name: z.string(),
+            Description: z.string(),
+            BonusStatMap: z.record(z.string(), z.number()),
+            IsExtraMiniature: z.boolean(),
+            IsAuctionSearchable: z.boolean(),
+        })
+    ),
+    ItemExtendTotemList: rows(
+        z.looseObject({
+            Id: id,
+            TotemType: z.string(),
+            Bonuses: z.array(
+                z.looseObject({
+                    StatName: z.string(),
+                    Min: z.number(),
+                    Max: z.number(),
+                })
+            ),
+            isExtra: z.boolean(),
+            isPet: z.boolean(),
+        })
+    ),
+    BarterList: rows(
+        z.looseObject({
+            Id: id,
+            Name: z.string(),
+            PostId: id,
+            Prices: rows(
+                z.looseObject({ Id: id, Count: z.number().int().positive() })
+            ),
+            ResetType: z.string().min(1),
+            Limit: id,
+        })
+    ),
+    CommercePostNameMap: z
+        .record(z.string().regex(/^\d+$/), z.string().min(1))
+        .refine(
+            value => Object.keys(value).length > 0,
+            "Expected commerce post names"
+        ),
+    SkillList: rows(
+        z.looseObject({
+            ...named,
+            Category: id,
+            VariableMap: z.record(z.string(), z.string()),
+            MaxLevel: id,
+            HumanLevelEffectDescList: z.array(z.string()),
+            ElfLevelEffectDescList: z.array(z.string()),
+            GiantLevelEffectDescList: z.array(z.string()),
+            ComboCardStackDuration: z.number(),
+            ComboCardStackCooldown: z.number(),
+        })
+    ),
+};
+
+export const tableNames = Object.keys(tableSchemas) as Array<
+    keyof typeof tableSchemas
+>;
+export const versionSchema = z.looseObject({
+    CreatedAt: z.number().int().positive(),
+});
+const dataSchema = z.object({ Version: versionSchema, ...tableSchemas });
+const placeholders = new Set(["", "None", "<nil>"]);
+const knownMissing = new Set(knownMissingStrings);
+
+export function validateData(input: unknown) {
+    const data = dataSchema.parse(input);
+    const warnings: Record<string, { count: number; examples: string[] }> = {};
+    const warn = (kind: string, value: string) => {
+        const entry = (warnings[kind] ??= { count: 0, examples: [] });
+        entry.count++;
+        if (entry.examples.length < 5 && !entry.examples.includes(value))
+            entry.examples.push(value);
+    };
+    const lookup = (table: "ItemList" | "OptionSetList" | "StringTable") => {
+        const ids = new Set(data[table].map(row => row.Id));
+        if (ids.size !== data[table].length)
+            throw new Error(`${table}: duplicate lookup key`);
+        return ids;
+    };
+    const items = lookup("ItemList");
+    const options = lookup("OptionSetList");
+    const strings = lookup("StringTable");
+    const checkString = (value: string, path: string) => {
+        if (strings.has(value)) return;
+        if (placeholders.has(value)) warn(`${path}: placeholder`, value);
+        else if (knownMissing.has(value))
+            warn(`${path}: known missing string`, value);
+        else
+            throw new Error(
+                `${path}: unresolved string ${value}; review upstream before extending the known-missing list`
+            );
+    };
+    const requireRef = (
+        ids: Set<string | number>,
+        value: string | number,
+        path: string
+    ) => {
+        if (!ids.has(value))
+            throw new Error(`${path}: unresolved reference ${value}`);
+    };
+    for (const name of [
+        "ItemList",
+        "OptionSetList",
+        "MetalWareAbilityList",
+        "MetalWareItemList",
+        "ItemUpgradeList",
+        "RandomTableList",
+        "MiniatureList",
+        "BarterList",
+        "SkillList",
+    ] as const) {
+        for (const row of data[name]) {
+            for (const field of [
+                "Name",
+                "Name2",
+                "Desc",
+                "SubDesc",
+                "Description",
+            ]) {
+                const value = row[field];
+                if (typeof value !== "string") continue;
+                // Upstream explicitly marks unnamed skill IDs; keep that source value.
+                if (
+                    name === "SkillList" &&
+                    field === "Name" &&
+                    value === `unknownid:${row.Id}`
+                )
+                    warn(`${name}.${field}: placeholder`, value);
+                else checkString(value, `${name}.${field}`);
+            }
+        }
+    }
+    for (const name of [
+        "ItemExtendMetalWareList",
+        "ItemExtendUpgradeList",
+        "ItemExtendTotemList",
+    ] as const) {
+        for (const row of data[name]) requireRef(items, row.Id, `${name}.Id`);
+    }
+    for (const name of [
+        "MetalWareItemList",
+        "EchoStoneList",
+        "EchoStoneAwakenAdjustByItemList",
+        "ProductionList",
+        "MiniatureList",
+    ] as const) {
+        for (const row of data[name])
+            requireRef(items, row.ItemId, `${name}.ItemId`);
+    }
+    const posts = new Set(Object.keys(data.CommercePostNameMap));
+    for (const value of Object.values(data.CommercePostNameMap))
+        checkString(value, "CommercePostNameMap");
+    for (const row of data.BarterList) {
+        requireRef(posts, String(row.PostId), "BarterList.PostId");
+        for (const price of row.Prices)
+            requireRef(items, price.Id, "BarterList.Prices.Id");
+    }
+    for (const row of data.SkillList) {
+        for (const value of Object.values(row.VariableMap))
+            checkString(value, "SkillList.VariableMap");
+        for (const field of [
+            "HumanLevelEffectDescList",
+            "ElfLevelEffectDescList",
+            "GiantLevelEffectDescList",
+        ] as const) {
+            for (const value of row[field])
+                checkString(value, `SkillList.${field}`);
+        }
+    }
+    const upgrades = new Set(data.ItemUpgradeList.map(row => row.Id));
+    for (const row of data.ItemExtendUpgradeList) {
+        for (const value of row.UpgradeIds)
+            requireRef(upgrades, value, "ItemExtendUpgradeList.UpgradeIds");
+    }
+    for (const row of data.ItemUpgradeList) {
+        for (const value of row.OptionSetIds)
+            requireRef(options, value, "ItemUpgradeList.OptionSetIds");
+    }
+    for (const row of data.ProductionList) {
+        for (const material of [
+            ...row.Essentials,
+            ...row.CompleteEssentials.flatMap(group => group.Essentials),
+        ]) {
+            for (const value of material.ItemIds)
+                requireRef(items, value, "ProductionList.Essentials.ItemIds");
+        }
+    }
+    const rewards = new Set(
+        data.EchoStoneConvertAdditionalRewardList.map(row => row.Id)
+    );
+    const grades = new Set(
+        data.EchoStoneAwakenAdjustByGradeList.map(row => row.Grade)
+    );
+    for (const row of data.EchoStoneList) {
+        for (const upgrade of row.Upgrades) {
+            requireRef(grades, upgrade.Grade, "EchoStoneList.Upgrades.Grade");
+            for (const value of upgrade.ConvertAdditionalRewardIds)
+                requireRef(
+                    rewards,
+                    value,
+                    "EchoStoneList.ConvertAdditionalRewardIds"
+                );
+            for (const reward of upgrade.ConvertFixedRewards)
+                requireRef(
+                    items,
+                    reward.Id,
+                    "EchoStoneList.ConvertFixedRewards"
+                );
+        }
+    }
+    for (const row of data.EchoStoneConvertAdditionalRewardList) {
+        for (const reward of row.RewardTables)
+            requireRef(
+                items,
+                reward.Id,
+                "EchoStoneConvertAdditionalRewardList.RewardTables"
+            );
+    }
+    return { data, warnings };
+}
+
+export function stableJson(value: unknown): string {
+    return JSON.stringify(value, (_key, entry) =>
+        entry && typeof entry === "object" && !Array.isArray(entry)
+            ? Object.fromEntries(
+                  Object.keys(entry)
+                      .sort()
+                      .map(key => [key, entry[key]])
+              )
+            : entry
+    );
+}
+
+export const sha256 = (value: string) =>
+    createHash("sha256").update(value).digest("hex");
+const readJson = (path: string): unknown =>
+    JSON.parse(readFileSync(path, "utf8"));
+const tableMetadata = z.object({
+    count: id,
+    bytes: id,
+    sha256: z.string().regex(/^[a-f0-9]{64}$/),
+});
+const sourceSchema = z.object({
+    site: z.literal("https://prilus.gitlab.io/"),
+    region: z.literal("kr"),
+    language: z.literal("kr"),
+    resourceUrl: z.url(),
+    versionUrl: z.url(),
+    decoder: z.literal("upstream-playwright-indexeddb"),
+    assets: z.array(z.url()).min(1),
+});
+export type Source = z.infer<typeof sourceSchema>;
+const manifestSchema = z.object({
+    formatVersion: z.literal(1),
+    snapshot: z.literal("snapshots"),
+    source: sourceSchema,
+    sourceVersion: versionSchema,
+    collectedAt: z.iso.datetime(),
+    // A stored snapshot describes its own coverage; new candidates still require all tables.
+    tables: z
+        .partialRecord(z.enum(tableNames), tableMetadata)
+        .refine(
+            value => Object.keys(value).length > 0,
+            "Expected snapshot tables"
+        ),
+    warnings: z.record(
+        z.string(),
+        z.object({ count: id, examples: z.array(z.string()) })
+    ),
+});
+export type Manifest = z.infer<typeof manifestSchema>;
+
+function readStoredSnapshot(root: string) {
+    const manifest = manifestSchema.parse(
+        readJson(join(root, "manifest.json"))
+    );
+    const input: Record<string, unknown> = { Version: manifest.sourceVersion };
+    for (const name of tableNames) {
+        const meta = manifest.tables[name];
+        if (!meta) continue;
+        const text = readFileSync(
+            join(root, manifest.snapshot, `${name}.json`),
+            "utf8"
+        );
+        if (
+            sha256(text) !== meta.sha256 ||
+            Buffer.byteLength(text) !== meta.bytes
+        )
+            throw new Error(`${name}: snapshot checksum/size mismatch`);
+        const table = tableSchemas[name].parse(JSON.parse(text));
+        if (Object.keys(table).length !== meta.count)
+            throw new Error(`${name}: snapshot count mismatch`);
+        input[name] = table;
+    }
+    return { manifest, input };
+}
+
+export function readSnapshot(root: string) {
+    const { manifest, input } = readStoredSnapshot(root);
+    return { manifest, ...validateData(input) };
+}
+
+export function publishSnapshot(
+    root: string,
+    input: unknown,
+    source: Source
+): Manifest {
+    const { data, warnings } = validateData(input);
+    sourceSchema.parse(source);
+    mkdirSync(root, { recursive: true });
+    const lock = join(root, ".collect-lock");
+    // ponytail: one local writer; per-region locks only if more regions are added.
+    try {
+        mkdirSync(lock);
+    } catch {
+        throw new Error(
+            `Collector lock exists or cannot be created: ${lock}. If no collector is running, inspect and recover any previous-snapshots backup before removing the lock and retrying.`
+        );
+    }
+    let cleanup = true;
+    try {
+        const previous = existsSync(join(root, "manifest.json"))
+            ? readStoredSnapshot(root).manifest
+            : undefined;
+        if (
+            previous &&
+            data.Version.CreatedAt < previous.sourceVersion.CreatedAt
+        )
+            throw new Error(
+                "Source version is older than the committed snapshot; retry a current mirror"
+            );
+        const tables = {} as Record<
+            (typeof tableNames)[number],
+            z.infer<typeof tableMetadata>
+        >;
+        const stage = mkdtempSync(join(lock, "candidate-"));
+        for (const name of tableNames) {
+            // One record per line; preserve all upstream array ordering and duplicate IDs.
+            const table = data[name];
+            const text = Array.isArray(table)
+                ? `[\n${table.map(row => stableJson(row)).join(",\n")}\n]\n`
+                : `${stableJson(table)}\n`;
+            tables[name] = {
+                count: Object.keys(table).length,
+                bytes: Buffer.byteLength(text),
+                sha256: sha256(text),
+            };
+            writeFileSync(join(stage, `${name}.json`), text, { flag: "wx" });
+            const old = previous?.tables[name];
+            console.log(
+                `${name}: ${old?.count ?? 0} -> ${tables[name].count} entries; ${tables[name].bytes} bytes; ${old?.sha256 === tables[name].sha256 ? "unchanged" : "changed"}`
+            );
+        }
+        console.log(
+            `Source version: ${data.Version.CreatedAt}; warnings: ${JSON.stringify(warnings)}`
+        );
+        if (
+            previous?.sourceVersion.CreatedAt === data.Version.CreatedAt &&
+            stableJson(previous.tables) === stableJson(tables)
+        ) {
+            console.log(
+                "No data changes; keeping the existing manifest and collection timestamp."
+            );
+            return previous;
+        }
+        if (previous?.sourceVersion.CreatedAt === data.Version.CreatedAt)
+            console.warn(
+                "Same source version has changed table content; inspect the table hashes/diff before committing."
+            );
+        const manifest: Manifest = {
+            formatVersion: 1,
+            snapshot: "snapshots",
+            source,
+            sourceVersion: data.Version,
+            collectedAt: new Date().toISOString(),
+            tables,
+            warnings,
+        };
+        const target = join(root, "snapshots");
+        const backup = join(lock, "previous-snapshots");
+        if (!previous && existsSync(target))
+            throw new Error(
+                "Snapshot directory exists without a manifest; inspect it before collecting"
+            );
+        const manifestPath = join(lock, "manifest.json");
+        writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 4)}\n`, {
+            flag: "wx",
+        });
+        // Fixed paths require a directory swap. Keep the old files until the manifest commits.
+        // An interrupted process leaves its backup in the lock for manual recovery.
+        if (previous) renameSync(target, backup);
+        let promoted = false;
+        try {
+            renameSync(stage, target);
+            promoted = true;
+            renameSync(manifestPath, join(root, "manifest.json"));
+        } catch (error) {
+            // Never discard the backup if restoring it also fails.
+            cleanup = false;
+            if (promoted) renameSync(target, stage);
+            if (previous) renameSync(backup, target);
+            cleanup = true;
+            throw error;
+        }
+        return manifest;
+    } finally {
+        try {
+            if (cleanup) rmSync(lock, { recursive: true, force: true });
+        } catch (error) {
+            console.warn(
+                `Could not remove collector lock ${lock}: ${String(error)}`
+            );
+        }
+    }
+}

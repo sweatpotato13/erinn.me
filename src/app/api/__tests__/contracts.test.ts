@@ -471,6 +471,34 @@ describe("API query contracts", () => {
         expect(fetch).not.toHaveBeenCalled();
     });
 
+    it.each([
+        "가을빛 포도나무 의자(2인)",
+        "생활 협회 코인 상자",
+        "보호의 6단계 푸른 개조석",
+    ])("suggests resolved snapshot names exactly: %s", async name => {
+        const response = getSuggest(
+            request(`/api/suggest?${new URLSearchParams({ q: name })}`) as never
+        );
+        const { suggestions } = await response.json();
+        expect(suggestions.filter((value: string) => value === name)).toEqual([
+            name,
+        ]);
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
+    it("deduplicates and bounds suggestions without exposing source keys", async () => {
+        const response = getSuggest(request("/api/suggest?q=최고") as never);
+        const { suggestions } = await response.json();
+        expect(suggestions.length).toBeGreaterThan(0);
+        expect(suggestions.length).toBeLessThanOrEqual(20);
+        expect(new Set(suggestions).size).toBe(suggestions.length);
+        const unresolved = getSuggest(
+            request("/api/suggest?q=itemdb") as never
+        );
+        expect(await unresolved.json()).toEqual({ suggestions: [] });
+        expect(fetch).not.toHaveBeenCalled();
+    });
+
     it("rejects oversized suggestions and short-circuits short queries", async () => {
         expect(
             getSuggest(request(`/api/suggest?q=${"a".repeat(101)}`) as never)
