@@ -75,10 +75,17 @@ Maintainers can run `pnpm data:collect` to refresh the committed Korean game
 reference snapshot and `pnpm data:check` to validate it without network access.
 Collection is separate from normal development and production builds.
 
+After refreshing the snapshot, regenerate consumer indexes with
+`pnpm items:build` and `pnpm enchants:build` before `pnpm data:check`.
+Review, commit and roll back the generated indexes together with their source.
+See [enchantment reference data](docs/enchant-reference.md) for supported effects,
+identity matching and migration notes.
+
 1. Install Chromium once with `pnpm exec playwright install chromium` after
    installing the project dependencies.
 2. Start with a clean `src/data/reference` directory in Git, then run
-   `pnpm data:collect` and `pnpm data:check`.
+   `pnpm data:collect`, `pnpm items:build`, `pnpm enchants:build` and
+   `pnpm data:check`.
 3. Review `git diff -- src/data/reference`, including the source version,
    warnings, counts and checksums in `manifest.json`, and the changed rows in
    `snapshots/*.json`. Commit approved updates together:
