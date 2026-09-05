@@ -4,8 +4,19 @@ import { hasExcludedKeyword } from "../src/constant/excluded-keywords";
 
 import { readSnapshot } from "./reference-data";
 
-type SourceItem = { Id: number; Name: string; IsAuctionSearchable: boolean };
-export type ReferenceItem = { id: string; name: string };
+interface SourceItem {
+    Id: number;
+    Name: string;
+    IsAuctionSearchable: boolean;
+}
+export interface ReferenceItem {
+    id: string;
+    name: string;
+}
+interface ItemReferenceResult {
+    items: ReferenceItem[];
+    unresolved: Array<{ id: string; key: string }>;
+}
 const placeholders = new Set(["", "None", "<nil>"]);
 const excludedKeywords = ["피터", "머미", "스폰서", "낡은", "뮤턴트", "점령전"];
 
@@ -17,7 +28,7 @@ export const imageIdOverrides: Record<string, string> = {
 export function resolveItems(
     source: SourceItem[],
     strings: Array<{ Id: string; Str: string }>
-) {
+): ItemReferenceResult {
     const names = new Map(strings.map(row => [row.Id, row.Str]));
     const items: ReferenceItem[] = [];
     const unresolved: Array<{ id: string; key: string }> = [];
@@ -36,12 +47,14 @@ export function resolveItems(
     return { items, unresolved };
 }
 
-export function readItemReference() {
+export function readItemReference(): ItemReferenceResult {
     const { data } = readSnapshot(resolve(__dirname, "../src/data/reference"));
     return resolveItems(data.ItemList, data.StringTable);
 }
 
-export function buildSuggestIndex(items: ReferenceItem[]) {
+export function buildSuggestIndex(
+    items: ReferenceItem[]
+): Record<string, string[]> {
     const index: Record<string, string[]> = Object.create(null);
     // IsAuctionSearchable is advisory; retain the existing all-name policy.
     for (const name of new Set(items.map(item => item.name))) {
@@ -59,7 +72,7 @@ export function buildSuggestIndex(items: ReferenceItem[]) {
 export function buildItemIdMap(
     items: ReferenceItem[],
     overrides = imageIdOverrides
-) {
+): Record<string, string> {
     const map: Record<string, string> = Object.create(null);
     for (const { id, name } of items) {
         if (!Object.hasOwn(map, name) || Number(id) > Number(map[name]))
