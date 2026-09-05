@@ -55,6 +55,19 @@ describe("item image route", () => {
         );
     });
 
+    it.each([
+        ["가을빛 포도나무 의자(2인)", "5400282"],
+        ["생활 협회 코인 상자", "4090082"],
+    ])("keeps snapshot image identity for %s", async (name, id) => {
+        const response = await GET(
+            request(new URLSearchParams({ name }).toString()) as never
+        );
+        expect(response.status).toBe(200);
+        expect((jest.mocked(fetch).mock.calls[0][0] as URL).pathname).toBe(
+            `/invimage/kr/${id}/${id}.png`
+        );
+    });
+
     it("rejects missing and invalid identifiers without fetch", async () => {
         expect((await GET(request("") as never)).status).toBe(400);
         expect((await GET(request("id=bad%21") as never)).status).toBe(400);

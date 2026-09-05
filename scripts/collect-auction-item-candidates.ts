@@ -5,6 +5,8 @@ import { basename, resolve } from "node:path";
 
 import * as z from "zod";
 
+import { readItemReference } from "./item-reference";
+
 type Candidate = { name: string; canonicalId?: string };
 type Evidence = "current-listing" | "recent-sale";
 const candidateInputSchema = z.array(
@@ -56,9 +58,7 @@ if (!parsedInput.success) {
 const candidates: Candidate[] = parsedInput.data.map(candidate =>
     typeof candidate === "string" ? { name: candidate } : candidate
 );
-const localItems: Array<{ id: string; name: string }> = readJson(
-    "src/data/all-item-list.json"
-);
+const { items: localItems } = readItemReference();
 const idsByName = new Map<string, string[]>();
 for (const item of localItems) {
     const ids = idsByName.get(item.name) ?? [];
