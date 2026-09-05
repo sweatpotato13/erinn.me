@@ -270,5 +270,5 @@ test("large Gold assumptions stay approximate while session spending stays exact
             .getByRole("combobox", { name: "최소 레벨 1", exact: true })
             .locator("option")
             .last()
-    ).toHaveValue("25");
+    ).toHaveAttribute("value", "25");
 });
