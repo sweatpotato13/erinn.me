@@ -157,6 +157,63 @@ const tableSchemas = {
             Personalize: z.boolean(),
         })
     ),
+    MiniatureList: rows(
+        z.looseObject({
+            Id: id,
+            ItemId: id,
+            Name: z.string(),
+            Description: z.string(),
+            BonusStatMap: z.record(z.string(), z.number()),
+            IsExtraMiniature: z.boolean(),
+            IsAuctionSearchable: z.boolean(),
+        })
+    ),
+    ItemExtendTotemList: rows(
+        z.looseObject({
+            Id: id,
+            TotemType: z.string(),
+            Bonuses: z.array(
+                z.looseObject({
+                    StatName: z.string(),
+                    Min: z.number(),
+                    Max: z.number(),
+                })
+            ),
+            isExtra: z.boolean(),
+            isPet: z.boolean(),
+        })
+    ),
+    BarterList: rows(
+        z.looseObject({
+            Id: id,
+            Name: z.string(),
+            PostId: id,
+            Prices: rows(
+                z.looseObject({ Id: id, Count: z.number().int().positive() })
+            ),
+            ResetType: z.string().min(1),
+            Limit: id,
+        })
+    ),
+    CommercePostNameMap: z
+        .record(z.string().regex(/^\d+$/), z.string().min(1))
+        .refine(
+            value => Object.keys(value).length > 0,
+            "Expected commerce post names"
+        ),
+    SkillList: rows(
+        z.looseObject({
+            ...named,
+            Category: id,
+            VariableMap: z.record(z.string(), z.string()),
+            MaxLevel: id,
+            HumanLevelEffectDescList: z.array(z.string()),
+            ElfLevelEffectDescList: z.array(z.string()),
+            GiantLevelEffectDescList: z.array(z.string()),
+            ComboCardStackDuration: z.number(),
+            ComboCardStackCooldown: z.number(),
+        })
+    ),
 };
 
 export const tableNames = Object.keys(tableSchemas) as Array<
@@ -187,6 +244,16 @@ export function validateData(input: unknown) {
     const items = lookup("ItemList");
     const options = lookup("OptionSetList");
     const strings = lookup("StringTable");
+    const checkString = (value: string, path: string) => {
+        if (strings.has(value)) return;
+        if (placeholders.has(value)) warn(`${path}: placeholder`, value);
+        else if (knownMissing.has(value))
+            warn(`${path}: known missing string`, value);
+        else
+            throw new Error(
+                `${path}: unresolved string ${value}; review upstream before extending the known-missing list`
+            );
+    };
     const requireRef = (
         ids: Set<string | number>,
         value: string | number,
@@ -202,25 +269,35 @@ export function validateData(input: unknown) {
         "MetalWareItemList",
         "ItemUpgradeList",
         "RandomTableList",
+        "MiniatureList",
+        "BarterList",
+        "SkillList",
     ] as const) {
         for (const row of data[name]) {
-            for (const field of ["Name", "Name2", "Desc", "SubDesc"]) {
+            for (const field of [
+                "Name",
+                "Name2",
+                "Desc",
+                "SubDesc",
+                "Description",
+            ]) {
                 const value = row[field];
-                if (typeof value !== "string" || strings.has(value)) continue;
-                if (placeholders.has(value))
+                if (typeof value !== "string") continue;
+                // Upstream explicitly marks unnamed skill IDs; keep that source value.
+                if (
+                    name === "SkillList" &&
+                    field === "Name" &&
+                    value === `unknownid:${row.Id}`
+                )
                     warn(`${name}.${field}: placeholder`, value);
-                else if (name === "ItemList" && knownMissing.has(value))
-                    warn(`${name}.${field}: known missing string`, value);
-                else
-                    throw new Error(
-                        `${name}.${field}: unresolved string ${value}; review upstream before extending the known-missing list`
-                    );
+                else checkString(value, `${name}.${field}`);
             }
         }
     }
     for (const name of [
         "ItemExtendMetalWareList",
         "ItemExtendUpgradeList",
+        "ItemExtendTotemList",
     ] as const) {
         for (const row of data[name]) requireRef(items, row.Id, `${name}.Id`);
     }
@@ -229,9 +306,30 @@ export function validateData(input: unknown) {
         "EchoStoneList",
         "EchoStoneAwakenAdjustByItemList",
         "ProductionList",
+        "MiniatureList",
     ] as const) {
         for (const row of data[name])
             requireRef(items, row.ItemId, `${name}.ItemId`);
+    }
+    const posts = new Set(Object.keys(data.CommercePostNameMap));
+    for (const value of Object.values(data.CommercePostNameMap))
+        checkString(value, "CommercePostNameMap");
+    for (const row of data.BarterList) {
+        requireRef(posts, String(row.PostId), "BarterList.PostId");
+        for (const price of row.Prices)
+            requireRef(items, price.Id, "BarterList.Prices.Id");
+    }
+    for (const row of data.SkillList) {
+        for (const value of Object.values(row.VariableMap))
+            checkString(value, "SkillList.VariableMap");
+        for (const field of [
+            "HumanLevelEffectDescList",
+            "ElfLevelEffectDescList",
+            "GiantLevelEffectDescList",
+        ] as const) {
+            for (const value of row[field])
+                checkString(value, `SkillList.${field}`);
+        }
     }
     const upgrades = new Set(data.ItemUpgradeList.map(row => row.Id));
     for (const row of data.ItemExtendUpgradeList) {
@@ -322,7 +420,13 @@ const manifestSchema = z.object({
     source: sourceSchema,
     sourceVersion: versionSchema,
     collectedAt: z.iso.datetime(),
-    tables: z.record(z.enum(tableNames), tableMetadata),
+    // A stored snapshot describes its own coverage; new candidates still require all tables.
+    tables: z
+        .partialRecord(z.enum(tableNames), tableMetadata)
+        .refine(
+            value => Object.keys(value).length > 0,
+            "Expected snapshot tables"
+        ),
     warnings: z.record(
         z.string(),
         z.object({ count: id, examples: z.array(z.string()) })
@@ -330,7 +434,7 @@ const manifestSchema = z.object({
 });
 export type Manifest = z.infer<typeof manifestSchema>;
 
-export function readSnapshot(root: string) {
+function readStoredSnapshot(root: string) {
     const manifest = manifestSchema.parse(
         readJson(join(root, "manifest.json"))
     );
@@ -344,21 +448,27 @@ export function readSnapshot(root: string) {
     }
     const input: Record<string, unknown> = { Version: manifest.sourceVersion };
     for (const name of tableNames) {
+        const meta = manifest.tables[name];
+        if (!meta) continue;
         const text = readFileSync(
             join(root, manifest.snapshot, `${name}.json`),
             "utf8"
         );
-        const meta = manifest.tables[name];
         if (
             sha256(text) !== meta.sha256 ||
             Buffer.byteLength(text) !== meta.bytes
         )
             throw new Error(`${name}: snapshot checksum/size mismatch`);
-        const table = JSON.parse(text);
-        if (!Array.isArray(table) || table.length !== meta.count)
+        const table = tableSchemas[name].parse(JSON.parse(text));
+        if (Object.keys(table).length !== meta.count)
             throw new Error(`${name}: snapshot count mismatch`);
         input[name] = table;
     }
+    return { manifest, input };
+}
+
+export function readSnapshot(root: string) {
+    const { manifest, input } = readStoredSnapshot(root);
     return { manifest, ...validateData(input) };
 }
 
@@ -381,7 +491,7 @@ export function publishSnapshot(
     }
     try {
         const previous = existsSync(join(root, "manifest.json"))
-            ? readSnapshot(root).manifest
+            ? readStoredSnapshot(root).manifest
             : undefined;
         if (
             previous &&
@@ -390,20 +500,26 @@ export function publishSnapshot(
             throw new Error(
                 "Source version is older than the committed snapshot; retry a current mirror"
             );
-        const tables = {} as Manifest["tables"];
+        const tables = {} as Record<
+            (typeof tableNames)[number],
+            z.infer<typeof tableMetadata>
+        >;
         const stage = mkdtempSync(join(lock, "candidate-"));
         for (const name of tableNames) {
             // One record per line; preserve all upstream array ordering and duplicate IDs.
-            const text = `[\n${data[name].map(row => stableJson(row)).join(",\n")}\n]\n`;
+            const table = data[name];
+            const text = Array.isArray(table)
+                ? `[\n${table.map(row => stableJson(row)).join(",\n")}\n]\n`
+                : `${stableJson(table)}\n`;
             tables[name] = {
-                count: data[name].length,
+                count: Object.keys(table).length,
                 bytes: Buffer.byteLength(text),
                 sha256: sha256(text),
             };
             writeFileSync(join(stage, `${name}.json`), text, { flag: "wx" });
             const old = previous?.tables[name];
             console.log(
-                `${name}: ${old?.count ?? 0} -> ${tables[name].count} rows; ${tables[name].bytes} bytes; ${old?.sha256 === tables[name].sha256 ? "unchanged" : "changed"}`
+                `${name}: ${old?.count ?? 0} -> ${tables[name].count} entries; ${tables[name].bytes} bytes; ${old?.sha256 === tables[name].sha256 ? "unchanged" : "changed"}`
             );
         }
         const digest = sha256(stableJson(tables));

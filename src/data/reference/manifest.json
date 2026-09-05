@@ -1,12 +1,12 @@
 {
     "formatVersion": 1,
-    "snapshot": "snapshots/1788405829-10150d0f338b11fbf47eebffb66900f5b2cec025fc9eedff304b85524b6a2df6",
+    "snapshot": "snapshots/1788405829-9774bd88b9f59e21203e609e72037afceea1ec64bde53d2737262df353fa6275",
     "source": {
         "site": "https://prilus.gitlab.io/",
         "region": "kr",
         "language": "kr",
-        "resourceUrl": "https://mabires4.pril.cc/resourcedata/kr/kr_resourcedata.bin.br",
-        "versionUrl": "https://mabires4.pril.cc/resourceversion/kr/kr_resourceversion.json",
+        "resourceUrl": "https://mabires2.pril.cc/resourcedata/kr/kr_resourcedata.bin.br",
+        "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-indexeddb",
         "assets": [
             "https://prilus.gitlab.io/assets/index-CZYUf-Rr.js"
@@ -15,7 +15,7 @@
     "sourceVersion": {
         "CreatedAt": 1788405829
     },
-    "collectedAt": "2026-09-05T07:55:19.239Z",
+    "collectedAt": "2026-09-05T08:29:58.696Z",
     "tables": {
         "ItemList": {
             "count": 43064,
@@ -91,6 +91,31 @@
             "count": 3637,
             "bytes": 1369032,
             "sha256": "e9a987d0df2d1436d55efcf03652ab06b2d7b11cdf396687c410ef0533b9fc1d"
+        },
+        "MiniatureList": {
+            "count": 200,
+            "bytes": 35726,
+            "sha256": "fe86558a32c8e7ace6c9b37de4aceec966a9071537ecc6d5673322d27e7bc90c"
+        },
+        "ItemExtendTotemList": {
+            "count": 271,
+            "bytes": 33188,
+            "sha256": "d6d07101d08f3d2bc0ca2ef2fbf4d33050b68b1675d38a5948c1f21f31c637d7"
+        },
+        "BarterList": {
+            "count": 28,
+            "bytes": 4009,
+            "sha256": "b4cc74ed43965cf4c3e45089fb15da7081bea0c3571cf7ccf644472b69edefb8"
+        },
+        "CommercePostNameMap": {
+            "count": 17,
+            "bytes": 427,
+            "sha256": "5c4e4c3dbf7b7b0ba8c8035d4db22fda9e644768499e9e28c55e64f982d5f971"
+        },
+        "SkillList": {
+            "count": 1171,
+            "bytes": 602436,
+            "sha256": "a7381abdb2f307da7709b7458ecbab6186ad96ae62326a4783732a8f4d593cd2"
         }
     },
     "warnings": {
@@ -122,6 +147,46 @@
         },
         "RandomTableList.Name: placeholder": {
             "count": 6,
+            "examples": [
+                "<nil>"
+            ]
+        },
+        "SkillList.Name: placeholder": {
+            "count": 10,
+            "examples": [
+                "unknownid:35020",
+                "unknownid:50148",
+                "unknownid:20015",
+                "unknownid:23015",
+                "unknownid:10035"
+            ]
+        },
+        "SkillList.Desc: placeholder": {
+            "count": 388,
+            "examples": [
+                "<nil>"
+            ]
+        },
+        "SkillList.Desc: known missing string": {
+            "count": 1,
+            "examples": [
+                "skillinfo.7334"
+            ]
+        },
+        "SkillList.HumanLevelEffectDescList: placeholder": {
+            "count": 1014,
+            "examples": [
+                "<nil>"
+            ]
+        },
+        "SkillList.ElfLevelEffectDescList: placeholder": {
+            "count": 3,
+            "examples": [
+                "<nil>"
+            ]
+        },
+        "SkillList.GiantLevelEffectDescList: placeholder": {
+            "count": 17,
             "examples": [
                 "<nil>"
             ]

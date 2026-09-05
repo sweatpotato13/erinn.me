@@ -7,6 +7,7 @@ import { mock } from "node:test";
 import {
     publishSnapshot,
     readSnapshot,
+    sha256,
     stableJson,
     tableNames,
     validateData,
@@ -16,7 +17,8 @@ import knownMissingStrings from "./reference-known-missing-strings.json";
 const { data, manifest, warnings } = readSnapshot(
     resolve("src/data/reference")
 );
-assert.equal(tableNames.length, 15);
+assert.deepEqual(Object.keys(manifest.tables).sort(), [...tableNames].sort());
+assert.ok(!Object.hasOwn(manifest.tables, "EffectList"));
 assert.deepEqual(warnings, manifest.warnings);
 assert.equal(
     stableJson({ b: 2, a: { y: 1, x: [2, 1] } }),
@@ -82,6 +84,80 @@ assert.equal(
         .ItemUpgradeList.length,
     duplicateUpgrades.length
 );
+assert.deepEqual(
+    readSnapshot(resolve("src/data/reference")).data.CommercePostNameMap,
+    data.CommercePostNameMap
+);
+assert.throws(() => validateData({ ...data, CommercePostNameMap: {} }));
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            CommercePostNameMap: {
+                ...data.CommercePostNameMap,
+                "201": "reference-check.missing-post-name",
+            },
+        }),
+    /unresolved string/
+);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            CommercePostNameMap: Object.fromEntries(
+                Object.entries(data.CommercePostNameMap).filter(
+                    ([key]) => key !== String(data.BarterList[0].PostId)
+                )
+            ),
+        }),
+    /BarterList.PostId: unresolved reference/
+);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            MiniatureList: [
+                { ...data.MiniatureList[0], ItemId: Number.MAX_SAFE_INTEGER },
+            ],
+        }),
+    /MiniatureList.ItemId: unresolved reference/
+);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            BarterList: [
+                {
+                    ...data.BarterList[0],
+                    Prices: [{ Id: Number.MAX_SAFE_INTEGER, Count: 1 }],
+                },
+            ],
+        }),
+    /BarterList.Prices.Id: unresolved reference/
+);
+assert.equal(
+    validateData({
+        ...data,
+        ItemExtendTotemList: [{ ...data.ItemExtendTotemList[0], Bonuses: [] }],
+    }).data.ItemExtendTotemList[0].Bonuses.length,
+    0
+);
+const unknownSkill = {
+    ...data.SkillList[0],
+    Name: `unknownid:${data.SkillList[0].Id}`,
+};
+assert.equal(
+    validateData({ ...data, SkillList: [unknownSkill] }).data.SkillList[0].Name,
+    unknownSkill.Name
+);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            SkillList: [{ ...unknownSkill, Name: "unknownid:invalid" }],
+        }),
+    /unresolved string/
+);
 assert.throws(
     () => validateData({ ...data, ItemList: [...data.ItemList, item] }),
     /duplicate lookup/
@@ -113,7 +189,65 @@ assert.throws(
 const root = fs.mkdtempSync(join(tmpdir(), "reference-check-"));
 const log = mock.method(console, "log", () => {});
 try {
+    // Reproduce this change's 15 -> 20 transition without downloading or retaining a second dataset.
+    const addedTables = new Set([
+        "MiniatureList",
+        "ItemExtendTotemList",
+        "BarterList",
+        "CommercePostNameMap",
+        "SkillList",
+    ]);
+    const legacyTables = Object.fromEntries(
+        Object.entries(manifest.tables).filter(
+            ([name]) => !addedTables.has(name)
+        )
+    );
+    const legacySnapshot = `snapshots/${data.Version.CreatedAt}-${sha256(stableJson(legacyTables))}`;
+    fs.mkdirSync(join(root, legacySnapshot), { recursive: true });
+    for (const name of Object.keys(legacyTables)) {
+        fs.copyFileSync(
+            resolve("src/data/reference", manifest.snapshot, `${name}.json`),
+            join(root, legacySnapshot, `${name}.json`)
+        );
+    }
+    const legacyManifest = JSON.stringify({
+        ...manifest,
+        snapshot: legacySnapshot,
+        tables: legacyTables,
+    });
+    fs.writeFileSync(join(root, "manifest.json"), legacyManifest);
+    // An incomplete candidate cannot publish just because historical coverage is readable.
+    assert.throws(() =>
+        publishSnapshot(
+            root,
+            { ...data, MiniatureList: undefined },
+            manifest.source
+        )
+    );
+    assert.equal(
+        fs.readFileSync(join(root, "manifest.json"), "utf8"),
+        legacyManifest
+    );
     const first = publishSnapshot(root, data, manifest.source);
+    for (const [name, meta] of Object.entries(legacyTables)) {
+        assert.equal(
+            sha256(
+                fs.readFileSync(
+                    join(root, legacySnapshot, `${name}.json`),
+                    "utf8"
+                )
+            ),
+            meta.sha256
+        );
+    }
+    assert.deepEqual(
+        readSnapshot(root).data.CommercePostNameMap,
+        data.CommercePostNameMap
+    );
+    assert.equal(
+        first.tables.CommercePostNameMap?.count,
+        Object.keys(data.CommercePostNameMap).length
+    );
     const originalManifest = fs.readFileSync(
         join(root, "manifest.json"),
         "utf8"
