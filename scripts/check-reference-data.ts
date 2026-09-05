@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import { syncBuiltinESMExports } from "node:module";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { mock } from "node:test";
@@ -301,6 +302,7 @@ try {
             return write(...args);
         }
     );
+    syncBuiltinESMExports();
     try {
         assert.throws(
             () => publishSnapshot(root, changed, manifest.source),
@@ -308,6 +310,7 @@ try {
         );
     } finally {
         failWrite.mock.restore();
+        syncBuiltinESMExports();
     }
     unchanged();
     const rename = fs.renameSync;
@@ -321,6 +324,7 @@ try {
                 return rename(...args);
             }
         );
+        syncBuiltinESMExports();
         try {
             assert.throws(
                 () => publishSnapshot(root, changed, manifest.source),
@@ -328,6 +332,7 @@ try {
             );
         } finally {
             failPromotion.mock.restore();
+            syncBuiltinESMExports();
         }
         unchanged();
     }
