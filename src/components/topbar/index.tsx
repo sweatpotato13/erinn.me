@@ -1,82 +1,148 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 
-import AuctionIcon from "../icons/auction-icon";
-import HornIcon from "../icons/horn-icon";
-import ShopIcon from "../icons/shop-icon";
-
-const MENU_ITEMS = [
-    { href: "/npc-shop", label: "NPC 상점 조회", Icon: ShopIcon },
-    { href: "/auction", label: "경매장", Icon: AuctionIcon },
-    { href: "/calculator", label: "파티 분배 계산기", Icon: AuctionIcon },
-    { href: "/horn", label: "뿔피리", Icon: HornIcon },
-];
-
-function MenuIcon({ isOpen }: { isOpen: boolean }) {
-    return (
-        <svg
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            strokeWidth={1.5}
-            stroke="currentColor"
-            className="h-6 w-6 transform transition-transform duration-300 ease-in-out"
-        >
-            <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d={
-                    isOpen
-                        ? "M6 18L18 6M6 6l12 12"
-                        : "M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                }
-            />
-        </svg>
-    );
-}
-
-function NavigationMenu({ onNavigate }: { onNavigate: () => void }) {
-    return (
-        <nav className="absolute top-[calc(4rem+env(safe-area-inset-top))] right-0 z-50 mt-2 w-48 rounded-lg bg-base-200 shadow-lg">
-            <ul className="menu p-2">
-                {MENU_ITEMS.map(({ href, label, Icon }) => (
-                    <li key={href}>
-                        <Link href={href} onClick={onNavigate}>
-                            <Icon className="h-5 w-5" />
-                            <span>{label}</span>
-                        </Link>
-                    </li>
-                ))}
-            </ul>
-        </nav>
-    );
-}
+import { FEATURE_GROUPS, FEATURE_LINKS } from "@/lib/feature-links";
 
 function Topbar() {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    return (
-        <header className="navbar fixed top-0 left-0 z-50 h-[calc(4rem+env(safe-area-inset-top))] w-full bg-base-100 pt-[env(safe-area-inset-top)] shadow-lg">
-            <div className="flex-1">
-                <Link href="/" className="btn btn-ghost text-xl normal-case">
-                    Erinn.me
+    const pathname = usePathname();
+    const dialog = useRef<HTMLDialogElement>(null);
+    const trigger = useRef<HTMLButtonElement>(null);
+    const desktopNav = useRef<HTMLElement>(null);
+    const [open, setOpen] = useState(false);
+    const current = (url: string) =>
+        pathname === url || pathname.startsWith(`${url}/`);
+    const close = () => dialog.current?.close();
+    useEffect(() => {
+        const closeOutside = (event: MouseEvent) => {
+            const nav = desktopNav.current;
+            if (
+                nav &&
+                event.target instanceof Node &&
+                !nav.contains(event.target)
+            )
+                nav.querySelectorAll<HTMLDetailsElement>(
+                    "details[open]"
+                ).forEach(details => {
+                    details.open = false;
+                });
+        };
+        document.addEventListener("click", closeOutside);
+        return () => document.removeEventListener("click", closeOutside);
+    }, []);
+    useEffect(() => {
+        if (!open) return;
+        const previous = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        return () => {
+            document.body.style.overflow = previous;
+        };
+    }, [open]);
+    const links = (group: string) =>
+        FEATURE_LINKS.filter(link => link.group === group).map(link => (
+            <li key={link.url}>
+                <Link
+                    href={link.url}
+                    aria-current={current(link.url) ? "page" : undefined}
+                    className={`block min-h-11 rounded-lg px-3 py-3 hover:bg-slate-100 ${current(link.url) ? "bg-slate-100 font-bold text-slate-950" : "text-slate-700"}`}
+                    onClick={e => {
+                        const details = e.currentTarget.closest("details");
+                        if (details) details.open = false;
+                        close();
+                    }}
+                >
+                    {link.label}
                 </Link>
-            </div>
-            <button
-                className="btn btn-square btn-ghost"
-                aria-label={isMenuOpen ? "메뉴 닫기" : "메뉴 열기"}
-                aria-expanded={isMenuOpen}
-                onClick={() => setIsMenuOpen(open => !open)}
+            </li>
+        ));
+    return (
+        <header
+            className="fixed top-0 left-0 z-50 flex h-[calc(4rem+env(safe-area-inset-top))] w-full items-center justify-between gap-2 bg-white px-3 pt-[env(safe-area-inset-top)] shadow-sm"
+            onKeyDown={e => {
+                if (e.key !== "Escape") return;
+                const details = (e.target as HTMLElement).closest("details");
+                if (details) {
+                    details.open = false;
+                    details.querySelector("summary")?.focus();
+                }
+            }}
+        >
+            <Link href="/" className="btn btn-ghost text-xl normal-case">
+                Erinn.me
+            </Link>
+            <nav
+                ref={desktopNav}
+                aria-label="카테고리 탐색"
+                className="hidden items-center gap-3 xl:flex"
             >
-                <MenuIcon isOpen={isMenuOpen} />
+                {FEATURE_GROUPS.map(group => (
+                    <details key={group} className="relative">
+                        <summary className="cursor-pointer rounded-lg px-4 py-3 font-semibold hover:bg-slate-100">
+                            {group}
+                        </summary>
+                        <ul className="absolute top-full right-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                            {links(group)}
+                        </ul>
+                    </details>
+                ))}
+            </nav>
+            <button
+                ref={trigger}
+                className="btn btn-ghost xl:hidden"
+                aria-haspopup="dialog"
+                aria-expanded={open}
+                aria-controls="full-menu"
+                onClick={() => {
+                    dialog.current?.showModal();
+                    setOpen(true);
+                }}
+            >
+                전체 메뉴
             </button>
-            {isMenuOpen && (
-                <NavigationMenu onNavigate={() => setIsMenuOpen(false)} />
-            )}
+            <dialog
+                id="full-menu"
+                ref={dialog}
+                aria-labelledby="full-menu-title"
+                className="fixed inset-0 m-auto max-h-[calc(100dvh-env(safe-area-inset-top)-2rem)] w-[calc(100%-2rem)] max-w-xl overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-slate-900 shadow-xl backdrop:bg-black/40"
+                onClose={() => {
+                    setOpen(false);
+                    trigger.current?.focus();
+                }}
+                onClick={e => {
+                    if (e.target === dialog.current) {
+                        const r = dialog.current.getBoundingClientRect();
+                        if (
+                            e.clientX < r.left ||
+                            e.clientX > r.right ||
+                            e.clientY < r.top ||
+                            e.clientY > r.bottom
+                        )
+                            close();
+                    }
+                }}
+            >
+                <div className="mb-4 flex items-center justify-between">
+                    <h2 id="full-menu-title" className="text-xl font-bold">
+                        전체 메뉴
+                    </h2>
+                    <button className="btn btn-ghost" onClick={close}>
+                        메뉴 닫기
+                    </button>
+                </div>
+                <nav aria-label="전체 기능">
+                    {FEATURE_GROUPS.map(group => (
+                        <section key={group} className="mb-4">
+                            <h3 className="border-b border-slate-200 pb-2 text-sm font-bold text-slate-600">
+                                {group}
+                            </h3>
+                            <ul>{links(group)}</ul>
+                        </section>
+                    ))}
+                </nav>
+            </dialog>
         </header>
     );
 }
-
 export default Topbar;

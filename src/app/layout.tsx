@@ -8,6 +8,7 @@ import Footer from "@/components/footer";
 import { Providers } from "@/components/providers";
 import PWARegistration from "@/components/pwa-registration";
 import Topbar from "@/components/topbar";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/feature-links";
 
 export const viewport: Viewport = {
     themeColor: "#000000",
@@ -20,15 +21,13 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
     metadataBase: new URL("https://erinn.me"),
     title: {
-        default: "마비노기 경매장·뿔피리·NPC 상점 조회 | Erinn.me",
+        default: SITE_TITLE,
         template: "%s | Erinn.me",
     },
-    description:
-        "마비노기 한국 서버의 경매장 시세, 거대한 외침의 뿔피리 내역, NPC 상점 재고를 한곳에서 조회하세요.",
+    description: SITE_DESCRIPTION,
     openGraph: {
-        title: "마비노기 경매장·뿔피리·NPC 상점 조회 | Erinn.me",
-        description:
-            "마비노기 한국 서버의 경매장 시세, 거대한 외침의 뿔피리 내역, NPC 상점 재고를 한곳에서 조회하세요.",
+        title: SITE_TITLE,
+        description: SITE_DESCRIPTION,
         type: "website",
         locale: "ko_KR",
         siteName: "Erinn.me",
