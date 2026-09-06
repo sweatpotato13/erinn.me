@@ -148,11 +148,11 @@ const equipment = data.ItemExtendMetalWareList.map(r => {
             : {}),
     };
 }).sort((a, b) => a.id - b.id);
-for (const rows of [tools, abilities, equipment])
+for (const [name, rows] of Object.entries({ tools, abilities, equipment }))
     assert.equal(
         new Set(rows.map(r => r.id)).size,
         rows.length,
-        "Duplicate identity"
+        `Duplicate identity in ${name}`
     );
 assert.equal(
     new Set(levels.map(r => r.level)).size,
