@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import AuctionIcon from "@/components/icons/auction-icon";
-import DocumentIcon from "@/components/icons/document-icon";
 import HornIcon from "@/components/icons/horn-icon";
 import ShopIcon from "@/components/icons/shop-icon";
+import {
+    FEATURE_GROUPS,
+    FEATURE_LINKS,
+    SITE_DESCRIPTION,
+} from "@/lib/feature-links";
 
 export const metadata: Metadata = {
     alternates: { canonical: "/" },
@@ -33,7 +37,7 @@ function NavigationCard({
                     {icon}
                 </div>
                 <div>
-                    <h2 className="font-semibold text-slate-900">{title}</h2>
+                    <h3 className="font-semibold text-slate-900">{title}</h3>
                     <p className="mt-1 text-sm text-slate-500">{description}</p>
                 </div>
             </div>
@@ -47,42 +51,35 @@ export default function Page() {
             <h1 className="text-3xl font-bold text-slate-900">
                 에린 생활 정보, 한곳에서
             </h1>
-            <p className="mt-2 mb-8 text-slate-600">
-                경매장 시세, 거대한 외침의 뿔피리 내역, NPC 상점 재고를 한곳에서
-                조회하세요.
-            </p>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                <NavigationCard
-                    href="/auction"
-                    title="경매장"
-                    description="실시간 경매장 아이템 가격을 확인하세요"
-                    icon={<AuctionIcon className="h-6 w-6 text-slate-600" />}
-                />
-                <NavigationCard
-                    href="/calculator"
-                    title="파티 분배 계산기"
-                    description="경매 수수료와 파티 분배액을 계산하세요"
-                    icon={<AuctionIcon className="h-6 w-6 text-slate-600" />}
-                />
-                <NavigationCard
-                    href="/horn"
-                    title="뿔피리 조회"
-                    description="뿔피리 내역을 조회하세요"
-                    icon={<HornIcon className="h-6 w-6 text-slate-600" />}
-                />
-                <NavigationCard
-                    href="/npc-shop"
-                    title="NPC 상점"
-                    description="NPC 상점 아이템 정보를 확인하세요"
-                    icon={<ShopIcon className="h-6 w-6 text-slate-600" />}
-                />
-                <NavigationCard
-                    href="/contact"
-                    title="문의하기"
-                    description="문의사항이나 피드백을 보내주세요"
-                    icon={<DocumentIcon className="h-6 w-6 text-slate-600" />}
-                />
-            </div>
+            <p className="mt-2 mb-8 text-slate-600">{SITE_DESCRIPTION}</p>
+            {FEATURE_GROUPS.filter(group => group !== "도움").map(group => (
+                <section key={group} className="mb-8" aria-label={group}>
+                    <h2 className="mb-4 text-xl font-bold text-slate-900">
+                        {group}
+                    </h2>
+                    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                        {FEATURE_LINKS.filter(link => link.group === group).map(
+                            link => (
+                                <NavigationCard
+                                    key={link.url}
+                                    href={link.url}
+                                    title={link.label}
+                                    description={link.description}
+                                    icon={
+                                        link.url === "/horn" ? (
+                                            <HornIcon className="h-6 w-6 text-slate-600" />
+                                        ) : link.url === "/npc-shop" ? (
+                                            <ShopIcon className="h-6 w-6 text-slate-600" />
+                                        ) : (
+                                            <AuctionIcon className="h-6 w-6 text-slate-600" />
+                                        )
+                                    }
+                                />
+                            )
+                        )}
+                    </div>
+                </section>
+            ))}
         </div>
     );
 }

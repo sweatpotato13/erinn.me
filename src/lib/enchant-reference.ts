@@ -1,14 +1,21 @@
 import records from "@/data/enchant-index.json";
 
 import { normalizeOptionText, parseEnchantName } from "./auction-options";
+import { enchantDescriptionLines } from "./enchant-effects";
 
 type EnchantReference = (typeof records)[number];
 const byName = new Map<string, EnchantReference[]>();
 for (const record of records) {
+    const reference = {
+        ...record,
+        description: enchantDescriptionLines(record.description)
+            .filter(line => line !== "[인챈트 추출 불가]")
+            .join("\n"),
+    };
     for (const name of record.names) {
         const key = normalizeOptionText(name);
         const matches = byName.get(key) ?? [];
-        matches.push(record);
+        matches.push(reference);
         byName.set(key, matches);
     }
 }
@@ -47,5 +54,18 @@ export function findEnchantReference(
             usages.includes(record.usage) &&
             (!ranks.length || record.rank === ranks[0])
     );
-    return matches.length === 1 ? matches[0] : null;
+    const first = matches[0];
+    // Different source IDs can describe the same enchantment.
+    if (
+        matches.length > 1 &&
+        matches.some(
+            record =>
+                !record.description ||
+                record.description !== first.description ||
+                record.usage !== first.usage ||
+                record.rank !== first.rank
+        )
+    )
+        return null;
+    return first ?? null;
 }

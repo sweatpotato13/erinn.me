@@ -5,13 +5,13 @@ import auctionCatalog from "../src/data/auction-item-catalog.json";
 const publicPages = [
     {
         path: "/",
-        title: "마비노기 경매장·뿔피리·NPC 상점 조회 | Erinn.me",
+        title: "Erinn.me - 마비노기 도우미",
         description:
-            "마비노기 한국 서버의 경매장 시세, 거대한 외침의 뿔피리 내역, NPC 상점 재고를 한곳에서 조회하세요.",
+            "시세 확인부터 세공 시뮬레이션, 파티 정산까지. 에린 생활에 필요한 도구를 모았습니다.",
         canonical: "https://erinn.me",
         heading: "에린 생활 정보, 한곳에서",
         summary:
-            "경매장 시세, 거대한 외침의 뿔피리 내역, NPC 상점 재고를 한곳에서 조회하세요.",
+            "시세 확인부터 세공 시뮬레이션, 파티 정산까지. 에린 생활에 필요한 도구를 모았습니다.",
     },
     {
         path: "/auction",
@@ -130,6 +130,7 @@ test.describe("Homepage Tests", () => {
             ...publicPages.map(route =>
                 new URL(route.path, "https://erinn.me").toString()
             ),
+            "https://erinn.me/simulators/reforge",
             "https://erinn.me/auction/items",
             ...auctionCatalog.items.map(
                 item => `https://erinn.me/auction/items/${item.id}`
@@ -295,25 +296,30 @@ test.describe("Homepage Tests", () => {
     test("Navigation works correctly", async ({ page }) => {
         await page.goto("/");
 
-        await expect(page.locator("header.navbar")).toBeVisible();
+        await expect(page.locator("header")).toBeVisible();
+        for (const path of ["/auction", "/calculator", "/npc-shop", "/horn"]) {
+            await expect(page.locator(`main a[href="${path}"]`)).toBeVisible();
+        }
+        await expect(page.locator('main a[href="/contact"]')).toHaveCount(0);
+        await expect(page.locator('footer a[href="/contact"]')).toBeVisible();
+
+        await page.setViewportSize({ width: 390, height: 844 });
+        await page
+            .getByRole("button", { name: "전체 메뉴", exact: true })
+            .click();
+        const menu = page.getByRole("dialog", { name: "전체 메뉴" });
+        await expect(page.locator('a[href="/dungeon"]')).toHaveCount(0);
+        await expect(page.locator('a[href="/crafting"]')).toHaveCount(0);
         for (const path of [
             "/auction",
             "/calculator",
             "/npc-shop",
             "/horn",
-            "/contact",
+            "/simulators/reforge",
         ]) {
-            await expect(page.locator(`main a[href="${path}"]`)).toBeVisible();
+            await expect(menu.locator(`a[href="${path}"]`)).toBeVisible();
         }
-
-        await page.locator("header.navbar button").click();
-        await expect(page.locator('a[href="/dungeon"]')).toHaveCount(0);
-        await expect(page.locator('a[href="/crafting"]')).toHaveCount(0);
-        for (const path of ["/auction", "/calculator", "/npc-shop", "/horn"]) {
-            await expect(
-                page.locator(`header a[href="${path}"]`)
-            ).toBeVisible();
-        }
+        await menu.getByRole("button", { name: "메뉴 닫기" }).click();
 
         await page.locator('main a[href="/auction"]').click();
         await expect(page).toHaveURL(/auction/);

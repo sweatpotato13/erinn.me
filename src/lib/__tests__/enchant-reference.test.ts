@@ -9,6 +9,39 @@ import { findEnchantReference } from "../enchant-reference";
 const description = (name: string) => findEnchantReference(name)!.description;
 
 describe("enchant reference identity", () => {
+    it.each([
+        "노련한",
+        "희미한",
+        "사념의",
+        "의식의",
+        "붕괴의",
+        "아련한",
+        "숙련자",
+        "낙원",
+        "침식",
+        "공명",
+        "파동",
+    ])("ignores extraction restrictions when resolving %s", name => {
+        const info = findEnchantReference(name);
+        expect(info).not.toBeNull();
+        expect(info?.description).not.toContain("인챈트 추출 불가");
+        expect(info?.description).toContain("인챈트 장비를 전용으로 만듦");
+    });
+
+    it.each([
+        ["나이트 (랭크 6)", "접미"],
+        ["핫 (랭크 9)", "접두"],
+        ["모이스트 (랭크 6)", "접두"],
+        ["미끄러짐 (랭크 F)", "접두"],
+        ["전나무 (랭크 C)", "접미"],
+        ["스칼라 (랭크 3)", "접미"],
+    ])(
+        "keeps differing effects or conditions unresolved for %s",
+        (value, subtype) => {
+            expect(findEnchantReference(value, subtype)).toBeNull();
+        }
+    );
+
     it("resolves aliases and legacy listing spellings without changing search normalization", () => {
         expect(findEnchantReference("  녹턴 (접미) ")).toEqual(
             findEnchantReference("야상곡")
@@ -24,6 +57,18 @@ describe("enchant reference identity", () => {
             rank: "6",
             usage: 0,
         });
+    });
+    it("resolves duplicate records only when their metadata and nonempty descriptions agree", () => {
+        expect(findEnchantReference("증류된 (랭크 5)", "접두")).toMatchObject({
+            rank: "5",
+            usage: 0,
+            description: expect.stringContaining(
+                "흙 속성 연금술 대미지 25~35 증가"
+            ),
+        });
+        expect(findEnchantReference("증발된", "접두")).not.toBeNull();
+        expect(findEnchantReference("나이트 (랭크 6)", "접미")).toBeNull();
+        expect(findEnchantReference("1페이지 완성된", "접미")).toBeNull();
     });
     it("requires enough identity context, never chooses a colliding name by value", () => {
         expect(findEnchantReference("스네이크")).toBeNull();
