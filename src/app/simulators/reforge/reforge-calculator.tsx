@@ -1,11 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { fetchItemPriceSummary } from "@/lib/api/auction";
 import {
     emptySession,
     EQUIPMENT_TYPES,
@@ -60,6 +61,11 @@ export default function ReforgeCalculator({
         new URLSearchParams(params.toString()),
         version
     );
+    const [manualPrices, setManualPrices] = useState<Record<number, string>>(
+        config.price === "" ? {} : { [config.toolId]: config.price }
+    );
+    const [ready, setReady] = useState(false);
+    useEffect(() => setReady(true), []);
     const [search, setSearch] = useState("");
     const [query, setQuery] = useState("");
     const update = (patch: Partial<ReforgeConfig>) => {
@@ -123,12 +129,13 @@ export default function ReforgeCalculator({
                     <input
                         className="input mt-2 w-full"
                         value={search}
+                        disabled={!ready}
                         maxLength={100}
                         onChange={e => setSearch(e.target.value)}
                         placeholder="예: 켈틱 드루이드 스태프"
                     />
                 </label>
-                <button className="btn" type="submit">
+                <button className="btn" type="submit" disabled={!ready}>
                     장비 검색
                 </button>
             </form>
@@ -191,6 +198,13 @@ export default function ReforgeCalculator({
                         models={models.data}
                         config={config}
                         update={update}
+                        manualPrices={manualPrices}
+                        setPrice={(id, price) =>
+                            setManualPrices(previous => ({
+                                ...previous,
+                                [id]: price,
+                            }))
+                        }
                     />
                 )}
         </div>
@@ -201,16 +215,40 @@ function CalculatorSession({
     models,
     config,
     update,
+    manualPrices,
+    setPrice,
 }: {
     models: ReforgeModel[];
     config: ReforgeConfig;
     update: (patch: Partial<ReforgeConfig>) => void;
+    manualPrices: Record<number, string>;
+    setPrice: (id: number, price: string) => void;
 }) {
     const model = models.find(m => m.tool.id === config.toolId) ?? models[0];
     const targets = config.targets;
-    const [prices, setPrices] = useState<Record<number, string>>({
-        [config.toolId]: config.price,
+    const markets = useQueries({
+        queries: models.map(({ tool }) => ({
+            queryKey: ["reforge-tool-price", tool.name],
+            queryFn: ({ signal }: { signal: AbortSignal }) =>
+                fetchItemPriceSummary(tool.name, signal),
+            staleTime: 60_000,
+            retry: false,
+            refetchOnWindowFocus: false,
+        })),
     });
+    const prices: Record<number, string> = Object.fromEntries(
+        models.map((m, i) => {
+            const summary = markets[i].data;
+            const marketPrice =
+                summary &&
+                summary.availableQuantity > 0 &&
+                Number.isSafeInteger(summary.minPrice) &&
+                summary.minPrice > 0
+                    ? String(summary.minPrice)
+                    : "";
+            return [m.tool.id, manualPrices[m.tool.id] ?? marketPrice];
+        })
+    );
     const [capText, setCapText] = useState(String(config.cap));
     const [session, setSession] = useState(emptySession);
     const [counts, setCounts] = useState<Record<number, number>>({});
@@ -328,6 +366,8 @@ function CalculatorSession({
         timer.current = setTimeout(chunk, 0);
     };
     const toolCard = (m: ReforgeModel) => {
+        const market = markets[models.indexOf(m)];
+        const automatic = manualPrices[m.tool.id] === undefined;
         const text = prices[m.tool.id] ?? "";
         const invalidPrice = text !== "" && parseGold(text) === null;
         return (
@@ -373,18 +413,29 @@ function CalculatorSession({
                         className="input w-full px-2 text-xs sm:text-sm"
                         inputMode="numeric"
                         maxLength={30}
-                        placeholder="1회 가격 · Gold"
+                        placeholder={
+                            automatic && market.isPending
+                                ? "가격 조회 중…"
+                                : "1회 가격 · Gold"
+                        }
                         disabled={running}
                         value={text}
                         aria-invalid={invalidPrice}
-                        onChange={e =>
-                            setPrices({
-                                ...prices,
-                                [m.tool.id]: e.target.value,
-                            })
-                        }
+                        aria-busy={market.isFetching}
+                        onChange={e => setPrice(m.tool.id, e.target.value)}
                     />
                 </label>
+                {automatic && !market.isPending && (
+                    <p className="mt-1 text-center text-xs text-slate-500">
+                        {market.isError
+                            ? "가격 조회 실패"
+                            : text === ""
+                              ? "시세 없음"
+                              : market.data?.isComplete
+                                ? "경매장 최저가"
+                                : "조회된 매물 최저가"}
+                    </p>
+                )}
                 {invalidPrice && (
                     <p role="alert" className="mt-1 text-xs text-red-700">
                         0 이상의 정수를 입력하세요.

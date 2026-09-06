@@ -6,6 +6,51 @@ const settings = `${base}?v=1788405829&e=40878&t=1&goals=1:7&mode=and&cap=1000`;
 
 test.beforeEach(async ({ page }) => {
     await page.route(/prilus\.gitlab\.io/, route => route.abort());
+    await page.route("**/api/auction/price-summary?*", route =>
+        route.fulfill({
+            json: {
+                minPrice: 0,
+                averagePrice: 0,
+                availableQuantity: 0,
+                isComplete: true,
+            },
+        })
+    );
+});
+
+test("equipment search waits for hydration before accepting input", async ({
+    page,
+}) => {
+    let releaseScripts!: () => void;
+    const scriptsReady = new Promise<void>(resolve => {
+        releaseScripts = resolve;
+    });
+    await page.route("**/_next/static/chunks/**", async route => {
+        if (route.request().resourceType() === "script") await scriptsReady;
+        await route.continue();
+    });
+    await page.goto(base, { waitUntil: "commit" });
+    try {
+        await expect(page.locator("footer")).toBeVisible();
+        await expect(
+            page.getByLabel("장비 이름 검색").and(page.locator(":enabled"))
+        ).toHaveCount(0);
+    } finally {
+        releaseScripts();
+    }
+    await page.getByLabel("장비 이름 검색").fill("켈틱 드루이드 스태프");
+    const searchResponse = page.waitForResponse(response => {
+        const url = new URL(response.url());
+        return (
+            url.pathname === "/api/reforge" &&
+            url.searchParams.get("q") === "켈틱 드루이드 스태프"
+        );
+    });
+    await page.getByRole("button", { name: "장비 검색", exact: true }).click();
+    expect((await searchResponse).status()).toBe(200);
+    await expect(
+        page.getByRole("button", { name: /^켈틱 드루이드 스태프/ }).first()
+    ).toBeVisible();
 });
 
 test("tool buttons run the chosen count, preserve tool totals and stop on targets", async ({
@@ -111,6 +156,84 @@ test("tool buttons run the chosen count, preserve tool totals and stop on target
     await expect(
         page.getByRole("navigation", { name: "관련 도구" })
     ).toHaveCount(0);
+});
+
+test("auction defaults preserve manual prices through delayed responses and equipment changes", async ({
+    page,
+}) => {
+    let releasePrice!: () => void;
+    const delayedPrice = new Promise<void>(resolve => {
+        releasePrice = resolve;
+    });
+    await page.route("**/api/auction/price-summary?*", async route => {
+        const name = new URL(route.request().url()).searchParams.get(
+            "item_name"
+        );
+        if (name === "정교한 세공 도구") await delayedPrice;
+        if (name === "찬란한 세공 도구")
+            return route.fulfill({
+                status: 503,
+                json: { error: "unavailable" },
+            });
+        const minPrice = name === "초심자의 세공 도구" ? 0 : 1000000;
+        await route.fulfill({
+            json: {
+                minPrice,
+                averagePrice: 1500000,
+                availableQuantity: minPrice ? 5 : 0,
+                isComplete: name !== "수수한 세공 도구",
+            },
+        });
+    });
+    await page.goto(settings.replace("cap=1000", "cap=1"));
+    const regular = page.getByLabel("정교한 세공 도구 1회 가격 (Gold)", {
+        exact: true,
+    });
+    const fine = page.getByLabel("영롱한 세공 도구 1회 가격 (Gold)", {
+        exact: true,
+    });
+    await expect(fine).toHaveValue("1000000");
+    await expect(regular).toHaveAttribute("aria-busy", "true");
+    await regular.fill("123");
+    releasePrice();
+    await expect(regular).toHaveAttribute("aria-busy", "false");
+    await expect(regular).toHaveValue("123");
+    await page
+        .getByRole("button", { name: "영롱한 세공 도구 사용", exact: true })
+        .click();
+    await expect(page.getByTestId("session-spend")).toHaveText(
+        "1,000,000 Gold"
+    );
+    await page
+        .getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
+        .click();
+    await expect(page.getByTestId("session-spend")).toHaveText(
+        "1,000,123 Gold"
+    );
+    await expect(
+        page.getByText("가격 조회 실패", { exact: true })
+    ).toBeVisible();
+    await page.getByText("다른 세공 도구", { exact: true }).click();
+    await expect(
+        page.getByLabel("수수한 세공 도구 1회 가격 (Gold)")
+    ).toHaveValue("1000000");
+    await expect(
+        page.getByText("조회된 매물 최저가", { exact: true })
+    ).toBeVisible();
+    await expect(
+        page.getByLabel("초심자의 세공 도구 1회 가격 (Gold)")
+    ).toHaveValue("");
+    await page.getByLabel("장비 이름 검색").fill("장갑");
+    await page.getByRole("button", { name: "장비 검색", exact: true }).click();
+    await page.getByRole("button", { name: /장갑/ }).first().click();
+    await expect(regular).toHaveValue("123");
+    await page.goto(settings.replace("cap=1000", "cap=1") + "&price=0");
+    await expect(regular).toHaveAttribute("aria-busy", "false");
+    await expect(regular).toHaveValue("0");
+    await expect(page.getByRole("main")).not.toContainText(
+        "한국 서버 로컬 스냅샷"
+    );
+    await expect(page.getByRole("main")).not.toContainText("원본 기준일");
 });
 
 test("runs stay cancellable and invalid settings cannot execute", async ({
