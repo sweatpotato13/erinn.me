@@ -1,8 +1,10 @@
 import { expect, test } from "@playwright/test";
 
+import { version } from "../src/data/reforge-reference.json";
+
 const base = "/simulators/reforge";
 const title = "마비노기 세공 시뮬레이터·확률·비용 계산기";
-const settings = `${base}?v=1788405829&e=40878&t=1&goals=1:7&mode=and&cap=1000`;
+const settings = `${base}?v=${version}&e=40878&t=1&goals=1:7&mode=and&cap=1000`;
 
 test.beforeEach(async ({ page }) => {
     await page.route(/prilus\.gitlab\.io/, route => route.abort());
@@ -340,7 +342,7 @@ test("runs stay cancellable and invalid settings cannot execute", async ({
         .getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
         .click();
     await expect(page.getByTestId("session-attempts")).toHaveText("0회");
-    await page.goto(settings.replace("1788405829", "1"));
+    await page.goto(settings.replace(`v=${version}`, "v=1"));
     await expect(
         page.getByText("데이터가 업데이트되어 현재 기준으로 계산합니다.")
     ).toBeVisible();
