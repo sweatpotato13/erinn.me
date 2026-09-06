@@ -93,7 +93,7 @@ export function parseReforgeConfig(
         changedVersion: params.get("v") !== version,
     };
 }
-export function reforgeConfigPath(config: ReforgeConfig) {
+export function reforgeConfigPath(config: ReforgeConfig): string {
     const params = new URLSearchParams({
         v: config.version,
         t: String(config.toolId),

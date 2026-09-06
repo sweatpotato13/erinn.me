@@ -36,6 +36,10 @@ export const metadata: Metadata = {
     },
 };
 export default function ReforgePage() {
+    const sourceDate = new Date(Number(reforgeVersion) * 1000);
+    const sourceDateLabel = Number.isNaN(sourceDate.getTime())
+        ? "확인 불가"
+        : sourceDate.toISOString().slice(0, 10);
     return (
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
             <h1 className="text-2xl break-keep font-bold text-slate-900 sm:text-3xl">
@@ -82,11 +86,9 @@ export default function ReforgePage() {
                 </p>
                 <p>
                     한국 서버 로컬 스냅샷 버전 {reforgeVersion} · 원본 기준일{" "}
-                    {new Date(Number(reforgeVersion) * 1000)
-                        .toISOString()
-                        .slice(0, 10)}
-                    . 현재 게임과 차이가 있다면 게임 내 안내를 확인하세요.
-                    계산과 시뮬레이션은 저장된 동일 버전 데이터를 사용합니다.
+                    {sourceDateLabel}. 현재 게임과 차이가 있다면 게임 내 안내를
+                    확인하세요. 계산과 시뮬레이션은 저장된 동일 버전 데이터를
+                    사용합니다.
                 </p>
                 <ul className="flex flex-wrap gap-x-5 gap-y-2">
                     <li>

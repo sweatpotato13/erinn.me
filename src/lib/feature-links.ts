@@ -47,6 +47,7 @@ export const FEATURE_GROUPS = [
     "강화 시뮬레이터",
     "아이템 비교",
     "생활·파티 계산",
+    "도움",
 ].filter(group => FEATURE_LINKS.some(link => link.group === group));
 export const SITE_DESCRIPTION =
     "시세 확인부터 세공 시뮬레이션, 파티 정산까지. 에린 생활에 필요한 도구를 모았습니다.";

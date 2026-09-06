@@ -52,7 +52,7 @@ export default function Page() {
                 에린 생활 정보, 한곳에서
             </h1>
             <p className="mt-2 mb-8 text-slate-600">{SITE_DESCRIPTION}</p>
-            {FEATURE_GROUPS.map(group => (
+            {FEATURE_GROUPS.filter(group => group !== "도움").map(group => (
                 <section key={group} className="mb-8" aria-label={group}>
                     <h2 className="mb-4 text-xl font-bold text-slate-900">
                         {group}

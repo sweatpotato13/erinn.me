@@ -3,7 +3,7 @@ import {
     searchReforgeEquipment,
 } from "@/lib/reforge-reference";
 
-export function GET(request: Request) {
+export function GET(request: Request): Response {
     const params = new URL(request.url).searchParams;
     if (
         params.toString().length > 500 ||

@@ -9,7 +9,9 @@ import {
 
 export const reforgeVersion = reference.version;
 export const reforgeTools: ReforgeTool[] = reference.tools;
-export function searchReforgeEquipment(query: string) {
+export function searchReforgeEquipment(
+    query: string
+): typeof reference.equipment {
     const q = query.trim().toLocaleLowerCase("ko-KR");
     if (!q || q.length > 100) return [];
     return reference.equipment

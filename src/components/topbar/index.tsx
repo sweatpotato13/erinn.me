@@ -10,10 +10,28 @@ function Topbar() {
     const pathname = usePathname();
     const dialog = useRef<HTMLDialogElement>(null);
     const trigger = useRef<HTMLButtonElement>(null);
+    const desktopNav = useRef<HTMLElement>(null);
     const [open, setOpen] = useState(false);
     const current = (url: string) =>
         pathname === url || pathname.startsWith(`${url}/`);
     const close = () => dialog.current?.close();
+    useEffect(() => {
+        const closeOutside = (event: MouseEvent) => {
+            const nav = desktopNav.current;
+            if (
+                nav &&
+                event.target instanceof Node &&
+                !nav.contains(event.target)
+            )
+                nav.querySelectorAll<HTMLDetailsElement>(
+                    "details[open]"
+                ).forEach(details => {
+                    details.open = false;
+                });
+        };
+        document.addEventListener("click", closeOutside);
+        return () => document.removeEventListener("click", closeOutside);
+    }, []);
     useEffect(() => {
         if (!open) return;
         const previous = document.body.style.overflow;
@@ -55,6 +73,7 @@ function Topbar() {
                 Erinn.me
             </Link>
             <nav
+                ref={desktopNav}
                 aria-label="카테고리 탐색"
                 className="hidden items-center gap-3 xl:flex"
             >
@@ -121,9 +140,6 @@ function Topbar() {
                             <ul>{links(group)}</ul>
                         </section>
                     ))}
-                    <ul className="border-t border-slate-200 pt-2">
-                        {links("도움")}
-                    </ul>
                 </nav>
             </dialog>
         </header>

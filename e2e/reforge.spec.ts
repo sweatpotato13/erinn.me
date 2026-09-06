@@ -250,6 +250,38 @@ test("released groups, mobile modal keyboard access, long names and reduced moti
     ).toHaveCount(0);
 });
 
+test("help navigation is grouped once and desktop menus close outside", async ({
+    page,
+}) => {
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(base);
+    const nav = page.getByRole("navigation", { name: "카테고리 탐색" });
+    await nav.locator("summary", { hasText: "거래·조회" }).click();
+    await nav.locator("summary", { hasText: "도움" }).click();
+    await expect(nav.locator("details[open]")).toHaveCount(2);
+    await expect(nav.getByRole("link", { name: "문의하기" })).toBeVisible();
+    await page
+        .getByRole("heading", { name: "세공 시뮬레이터", exact: true })
+        .click();
+    await expect(nav.locator("details[open]")).toHaveCount(0);
+    await nav.locator("summary", { hasText: "도움" }).click();
+    await nav.getByRole("link", { name: "문의하기" }).click();
+    await expect(page).toHaveURL(/\/contact$/);
+    await expect(nav.locator("details[open]")).toHaveCount(0);
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole("button", { name: "전체 메뉴", exact: true }).click();
+    const menu = page.getByRole("dialog", { name: "전체 메뉴" });
+    await expect(
+        menu.getByRole("heading", { name: "도움", exact: true })
+    ).toHaveCount(1);
+    await expect(menu.getByRole("link", { name: "문의하기" })).toHaveCount(1);
+    await menu.getByRole("link", { name: "문의하기" }).click();
+    await expect(menu).not.toBeVisible();
+    await page.goto("/");
+    await expect(page.locator('main a[href="/contact"]')).toHaveCount(0);
+    await expect(page.locator('footer a[href="/contact"]')).toHaveCount(1);
+});
+
 test("server HTML, social metadata, real image and base-only sitemap", async ({
     request,
 }) => {
