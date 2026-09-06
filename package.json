@@ -5,11 +5,11 @@
   "packageManager": "pnpm@11.25.0",
   "scripts": {
     "data:collect": "pnpm exec tsx scripts/collect-reference-data.ts",
-    "data:check": "pnpm exec tsx scripts/check-reference-data.ts && pnpm exec tsx scripts/check-item-reference.ts && pnpm exec tsx scripts/check-enchant-reference.ts && pnpm exec tsx scripts/build-reforge-reference.ts --check",
+    "data:check": "pnpm exec tsx scripts/check-reference-data.ts && pnpm exec tsx scripts/check-item-reference.ts && pnpm exec tsx scripts/check-enchant-reference.ts && pnpm exec tsx scripts/build-reforge-reference.ts --check && pnpm exec tsx scripts/build-echostone-reference.ts --check",
     "items:build": "pnpm exec tsx scripts/build-suggest-index.ts && pnpm exec tsx scripts/build-item-id-map.ts",
     "catalog:collect": "pnpm exec tsx scripts/collect-auction-item-candidates.ts",
     "catalog:validate": "pnpm exec tsx scripts/validate-auction-item-catalog.ts",
-    "prebuild": "pnpm catalog:validate && pnpm items:build && pnpm enchants:build && pnpm reforge:build",
+    "prebuild": "pnpm catalog:validate && pnpm items:build && pnpm enchants:build && pnpm reforge:build && pnpm echostone:build",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -22,7 +22,8 @@
     "test:coverage": "jest --coverage",
     "test:e2e": "playwright test",
     "enchants:build": "pnpm exec tsx scripts/build-enchant-index.ts",
-    "reforge:build": "pnpm exec tsx scripts/build-reforge-reference.ts"
+    "reforge:build": "pnpm exec tsx scripts/build-reforge-reference.ts",
+    "echostone:build": "pnpm exec tsx scripts/build-echostone-reference.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
