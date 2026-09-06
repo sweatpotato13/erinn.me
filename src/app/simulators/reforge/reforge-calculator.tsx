@@ -299,7 +299,7 @@ function CalculatorSession({
             return;
         update({
             toolId: selected.tool.id,
-            price: prices[selected.tool.id] ?? "",
+            price: manualPrices[selected.tool.id] ?? "",
             cap,
         });
         if (
@@ -685,7 +685,9 @@ function CalculatorSession({
                             onChange={e =>
                                 update({
                                     toolId: Number(e.target.value),
-                                    price: prices[Number(e.target.value)] ?? "",
+                                    price:
+                                        manualPrices[Number(e.target.value)] ??
+                                        "",
                                 })
                             }
                         >

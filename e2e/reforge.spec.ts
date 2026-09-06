@@ -236,6 +236,61 @@ test("auction defaults preserve manual prices through delayed responses and equi
     await expect(page.getByRole("main")).not.toContainText("원본 기준일");
 });
 
+test("reload refreshes automatic prices and preserves manual prices from both tool controls", async ({
+    page,
+}) => {
+    let minPrice = 100;
+    await page.route("**/api/auction/price-summary?*", route =>
+        route.fulfill({
+            json: {
+                minPrice,
+                averagePrice: minPrice,
+                availableQuantity: 5,
+                isComplete: true,
+            },
+        })
+    );
+    await page.goto(settings.replace("cap=1000", "cap=1"));
+    const regular = page.getByLabel("정교한 세공 도구 1회 가격 (Gold)", {
+        exact: true,
+    });
+    const fine = page.getByLabel("영롱한 세공 도구 1회 가격 (Gold)", {
+        exact: true,
+    });
+    const selector = page.getByLabel("확률 기준 도구");
+    await expect(regular).toHaveValue("100");
+    await page
+        .getByRole("button", { name: "정교한 세공 도구 사용", exact: true })
+        .click();
+    await expect(page.getByTestId("session-attempts")).toHaveText("1회");
+    expect(new URL(page.url()).searchParams.has("price")).toBe(false);
+    minPrice = 200;
+    await page.reload();
+    await expect(regular).toHaveValue("200");
+    await selector.selectOption("4");
+    expect(new URL(page.url()).searchParams.has("price")).toBe(false);
+    minPrice = 300;
+    await page.reload();
+    await expect(fine).toHaveValue("300");
+    await fine.fill("0");
+    await selector.selectOption("1");
+    await selector.selectOption("4");
+    expect(new URL(page.url()).searchParams.get("price")).toBe("0");
+    minPrice = 400;
+    await page.reload();
+    await expect(fine).toHaveAttribute("aria-busy", "false");
+    await expect(fine).toHaveValue("0");
+    await fine.fill("123");
+    await page
+        .getByRole("button", { name: "영롱한 세공 도구 사용", exact: true })
+        .click();
+    await expect(page.getByTestId("session-attempts")).toHaveText("1회");
+    expect(new URL(page.url()).searchParams.get("price")).toBe("123");
+    await page.reload();
+    await expect(fine).toHaveAttribute("aria-busy", "false");
+    await expect(fine).toHaveValue("123");
+});
+
 test("runs stay cancellable and invalid settings cannot execute", async ({
     page,
 }) => {
