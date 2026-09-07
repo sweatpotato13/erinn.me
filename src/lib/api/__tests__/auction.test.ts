@@ -36,6 +36,28 @@ describe("auction price client", () => {
         );
     });
 
+    it.each([
+        ["2026-09-07T00:00:00Z", true],
+        ["2024-02-29T23:59:59.123+09:00", true],
+        ["2000-02-29T00:00:00Z", true],
+        ["invalid", false],
+        ["2026-02-30T00:00:00Z", false],
+        ["2026-02-29T00:00:00Z", false],
+        ["1900-02-29T00:00:00Z", false],
+        ["2026-04-31T00:00:00+09:00", false],
+        ["2026-09-07T24:00:00Z", false],
+    ])(
+        "validates calendar components in collection time %s",
+        async (fetchedAt, valid) => {
+            jest.mocked(fetch).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ ...validSummary, fetchedAt }),
+            } as Response);
+            const summary = await fetchItemPriceSummary("item");
+            expect(summary.fetchedAt).toBe(valid ? fetchedAt : undefined);
+        }
+    );
+
     it("loads and validates all coupon summaries in one request", async () => {
         const summaries = {
             10: validSummary,
