@@ -4,6 +4,7 @@ import {
     awakenEcho,
     canPolish,
     createEchoPool,
+    ECHO_POLISH_AGENT,
     echoAction,
     echoEffect,
     echoLevels,
@@ -143,7 +144,7 @@ const polish: EchoPool = {
 };
 const goal = { name: "target", level: 2 };
 
-test("strategies use actual state probabilities; duplicate identities sum", () => {
+test("strategies use actual state probabilities and existing polishing eligibility", () => {
     const result = echoStrategies(synthetic, goal, costs, polish);
     expect(result.cycleSuccess).toBeCloseTo(0.044, 15);
     expect(result.A.gold).toBeCloseTo(100 / 0.02, 10);
@@ -174,6 +175,9 @@ test("strategies use actual state probabilities; duplicate identities sum", () =
             result.A
         )
     ).toEqual(result.A);
+});
+
+test("duplicate option identities sum with independent polishing distributions", () => {
     const duplicates = {
         ...synthetic,
         options: synthetic.options.map(o => ({ ...o, name: "target" })),
@@ -234,13 +238,20 @@ test("polishing never inherits the agent, consumes one chance, and awakening rep
     expect(awakenEcho(red, sequence(0.99, 0)).id).not.toBe(1);
 });
 
-test("chunk runner handles cancellation, first hit, exact budgets, mixed action boundaries and bounded history", () => {
-    const run = {
-        policy: "polishing" as const,
-        cap: 1000,
-        budget: BigInt(149),
-        costs,
-    };
+const run = {
+    policy: "polishing" as const,
+    cap: 1000,
+    budget: BigInt(149),
+    costs,
+};
+const free = {
+    ...run,
+    policy: "awakening" as const,
+    cap: 205,
+    budget: BigInt(0),
+    costs: { awakening: BigInt(0), stone: null },
+};
+test("chunk runner stops before an unaffordable polishing action", () => {
     const first = runEchoChunk(
         emptyEchoSession(),
         synthetic,
@@ -255,6 +266,8 @@ test("chunk runner handles cancellation, first hit, exact budgets, mixed action 
     expect(first.reason).toBe("예산 한도 도달");
     expect(first.session.actions).toBe(1);
     expect(first.spent).toBe(BigInt(100));
+});
+test("chunk runner stops at the first success with an exact mixed-action budget", () => {
     const hit = runEchoChunk(
         emptyEchoSession(),
         synthetic,
@@ -272,6 +285,8 @@ test("chunk runner handles cancellation, first hit, exact budgets, mixed action 
     expect(
         runEchoChunk(hit.session, synthetic, goal, polish, run).completed
     ).toBe(0);
+});
+test("chunk runner observes cancellation before any action", () => {
     expect(
         runEchoChunk(
             emptyEchoSession(),
@@ -284,13 +299,8 @@ test("chunk runner handles cancellation, first hit, exact budgets, mixed action 
             () => true
         ).reason
     ).toBe("취소됨");
-    const free = {
-        ...run,
-        policy: "awakening" as const,
-        cap: 205,
-        budget: BigInt(0),
-        costs: { awakening: BigInt(0), stone: null },
-    };
+});
+test("chunk runner carries progress across chunks and bounds history", () => {
     let batch = runEchoChunk(
         emptyEchoSession(),
         synthetic,
@@ -317,6 +327,8 @@ test("chunk runner handles cancellation, first hit, exact budgets, mixed action 
     expect(batch.reason).toBe("최대 횟수 도달");
     expect(batch.session.actions).toBe(205);
     expect(batch.session.history).toHaveLength(100);
+});
+test("chunk runner rejects unknown budget prices and stops for impossible targets", () => {
     expect(() =>
         runEchoChunk(emptyEchoSession(), synthetic, goal, null, {
             ...free,
@@ -332,6 +344,8 @@ test("chunk runner handles cancellation, first hit, exact budgets, mixed action 
             free
         ).reason
     ).toBe("달성 불가능한 목표");
+});
+test("chunk runner preserves bigint costs beyond safe integer precision", () => {
     const large = BigInt("9007199254740993");
     const exact = runEchoChunk(
         emptyEchoSession(),
@@ -431,3 +445,64 @@ test("polishing fixtures reproduce the accepted game data and exclude premium lo
         )
     ).toEqual([{ level: 11, probability: 1 }]);
 });
+
+test.each([-1, 0.5, Number.NaN, Infinity, Number.MAX_SAFE_INTEGER + 1])(
+    "chunk runner rejects invalid carried action count %s before running",
+    completed => {
+        const random = jest.fn(() => 0);
+        expect(() =>
+            runEchoChunk(
+                emptyEchoSession(),
+                synthetic,
+                goal,
+                polish,
+                run,
+                completed,
+                BigInt(0),
+                () => false,
+                random
+            )
+        ).toThrow("누적 횟수와 비용");
+        expect(random).not.toHaveBeenCalled();
+    }
+);
+
+test("chunk runner rejects negative carried spend before checking the budget", () => {
+    const random = jest.fn(() => 0);
+    expect(() =>
+        runEchoChunk(
+            emptyEchoSession(),
+            synthetic,
+            goal,
+            polish,
+            run,
+            0,
+            BigInt(-1),
+            () => false,
+            random
+        )
+    ).toThrow("누적 횟수와 비용");
+    expect(random).not.toHaveBeenCalled();
+});
+
+test.each([53941, 53942, 5000078, 0])(
+    "polishing rejects unverified agent %s before reading options",
+    agent => {
+        expect(reference.polishingAgent).toBe(ECHO_POLISH_AGENT);
+        expect(ECHO_POLISH_AGENT).toBe(53940);
+        const invalid = {
+            ...polish,
+            agent,
+            get options(): EchoPool["options"] {
+                throw new Error("options accessed");
+            },
+        };
+        expect(() =>
+            polishOutcomes(
+                synthetic,
+                { id: 1, level: 1, polishingUsed: false },
+                invalid
+            )
+        ).toThrow("연마 레벨 확률이 검증되지 않았습니다.");
+    }
+);

@@ -69,7 +69,10 @@ export function defaultEchoConfig(data: EchoReference): EchoConfig {
         current: null,
     };
 }
-export function echoConfigError(config: EchoConfig, data: EchoReference) {
+export function echoConfigError(
+    config: EchoConfig,
+    data: EchoReference
+): string | null {
     const color = data.colors.find(c => c.id === config.color);
     if (!color?.options.some(o => o.name === config.target.name))
         return "이 색상에 없는 목표 옵션입니다.";
@@ -78,7 +81,14 @@ export function echoConfigError(config: EchoConfig, data: EchoReference) {
         config.current
     );
 }
-export function parseEchoConfig(params: URLSearchParams, data: EchoReference) {
+export function parseEchoConfig(
+    params: URLSearchParams,
+    data: EchoReference
+): {
+    config: EchoConfig;
+    error: string | null;
+    changedVersion: boolean;
+} {
     const fallback = defaultEchoConfig(data);
     const bad = () => ({
         config: fallback,
@@ -103,7 +113,10 @@ export function parseEchoConfig(params: URLSearchParams, data: EchoReference) {
         return bad();
     }
 }
-export function echoConfigPath(config: EchoConfig, data: EchoReference) {
+export function echoConfigPath(
+    config: EchoConfig,
+    data: EchoReference
+): string {
     const params = new URLSearchParams({ s: JSON.stringify(config) });
     if (parseEchoConfig(params, data).error)
         throw new Error("공유할 설정을 확인하세요.");

@@ -263,6 +263,7 @@ const upgrades = data.EchoStoneList.map(color => {
 });
 const result = {
     version: String(manifest.sourceVersion.CreatedAt),
+    polishingAgent: evidence.agentId,
     colors,
     upgrades,
     levels,

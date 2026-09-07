@@ -1,3 +1,7 @@
+import polishingEvidence from "@/data/echostone-polishing-evidence.json";
+
+export const ECHO_POLISH_AGENT = polishingEvidence.agentId;
+
 export interface EchoLevel {
     level: number;
     weight: number;
@@ -23,6 +27,7 @@ export interface EchoOption {
 }
 export interface EchoReference {
     version: string;
+    polishingAgent: number;
     colors: Array<{
         id: number;
         name: string;
@@ -67,7 +72,7 @@ export function echoLevels(
     max: number,
     grade: number,
     agentId: number
-) {
+): EchoLevel[] {
     const upper = data.grades[grade]?.[max];
     const lower = data.agents.find(a => a.id === agentId)?.lower[max];
     const rows = data.levels[max];
@@ -112,13 +117,13 @@ export function createEchoPool(
         }),
     };
 }
-export function echoEffect(option: EchoOption, level: number) {
+export function echoEffect(option: EchoOption, level: number): string {
     const e = option.effect;
     if (!e) return "효과 수치 자료 없음";
     if (!e.standard) return e.unit;
     return `${((e.initial + e.perLevel * (level - 1)) * e.standard).toLocaleString("ko-KR", { maximumFractionDigits: 4 })} ${e.unit}`;
 }
-export function levelChance(levels: EchoLevel[], minimum: number) {
+export function levelChance(levels: EchoLevel[], minimum: number): number {
     return (
         levels.reduce(
             (sum, r) => sum + (r.level >= minimum ? r.weight : 0),
@@ -126,7 +131,10 @@ export function levelChance(levels: EchoLevel[], minimum: number) {
         ) / total(levels)
     );
 }
-export function echoTargetError(pool: EchoPool, target: EchoTarget) {
+export function echoTargetError(
+    pool: EchoPool,
+    target: EchoTarget
+): string | null {
     return !Number.isInteger(target.level) ||
         target.level < 1 ||
         target.level > 20 ||
@@ -134,7 +142,14 @@ export function echoTargetError(pool: EchoPool, target: EchoTarget) {
         ? "목표 옵션과 1~20 정수 레벨을 확인하세요."
         : null;
 }
-export function echoProbability(pool: EchoPool, target: EchoTarget) {
+export function echoProbability(
+    pool: EchoPool,
+    target: EchoTarget
+): {
+    option: number;
+    conditional: number;
+    combined: number;
+} {
     const error = echoTargetError(pool, target);
     if (error) throw new Error(error);
     const options = pool.options.filter(o => o.name === target.name);
@@ -145,7 +160,10 @@ export function echoProbability(pool: EchoPool, target: EchoTarget) {
     );
     return { option, conditional: combined / option, combined };
 }
-export function echoStateError(pool: EchoPool, state: EchoState | null) {
+export function echoStateError(
+    pool: EchoPool,
+    state: EchoState | null
+): string | null {
     if (!state) return null;
     const option = pool.options.find(o => o.id === state.id);
     return !option ||
@@ -160,14 +178,14 @@ export function echoHit(
     pool: EchoPool,
     target: EchoTarget,
     state: EchoState | null
-) {
+): boolean {
     return (
         !!state &&
         pool.options.some(o => o.id === state.id && o.name === target.name) &&
         state.level >= target.level
     );
 }
-export function canPolish(pool: EchoPool, state: EchoState | null) {
+export function canPolish(pool: EchoPool, state: EchoState | null): boolean {
     return (
         !!state &&
         !echoStateError(pool, state) &&
@@ -180,10 +198,15 @@ export function polishOutcomes(
     pool: EchoPool,
     state: EchoState,
     polish: EchoPool | null
-) {
+): Array<{ level: number; probability: number }> {
     if (!canPolish(pool, state))
         throw new Error("이미 연마했거나 최대 레벨이므로 연마할 수 없습니다.");
-    if (!polish || polish.color !== pool.color || polish.grade !== pool.grade)
+    if (
+        !polish ||
+        polish.color !== pool.color ||
+        polish.grade !== pool.grade ||
+        polish.agent !== ECHO_POLISH_AGENT
+    )
         throw new Error("연마 레벨 확률이 검증되지 않았습니다.");
     const option = polish.options.find(o => o.id === state.id);
     if (!option) throw new Error("연마 옵션의 확률 자료가 없습니다.");
@@ -228,7 +251,11 @@ export function echoStrategies(
     target: EchoTarget,
     costs: EchoCosts,
     polish: EchoPool | null
-) {
+): ReturnType<typeof echoProbability> & {
+    A: EchoExpectation;
+    B: EchoExpectation | null;
+    cycleSuccess: number | null;
+} {
     const probabilities = echoProbability(pool, target);
     const A = expectation(1 / probabilities.combined, 0, costs);
     if (!polish) return { ...probabilities, A, B: null, cycleSuccess: null };
@@ -270,7 +297,7 @@ export function existingEchoStrategy(
     costs: EchoCosts,
     polish: EchoPool | null,
     restart: EchoExpectation | null
-) {
+): EchoExpectation | null {
     if (echoStateError(pool, state))
         throw new Error(echoStateError(pool, state)!);
     if (echoHit(pool, target, state)) return expectation(0, 0, costs);
@@ -356,7 +383,7 @@ export function echoAction(
     costs: EchoCosts,
     polish: EchoPool | null,
     random = Math.random
-) {
+): EchoSession & { current: EchoState } {
     if (echoStateError(pool, session.current))
         throw new Error(echoStateError(pool, session.current)!);
     const price = action === "awakening" ? costs.awakening : costs.stone;
@@ -403,7 +430,9 @@ export function runEchoChunk(
     spent = BigInt(0),
     cancelled = () => false,
     random = Math.random
-) {
+): { session: EchoSession; completed: number; spent: bigint; reason: string } {
+    if (!Number.isSafeInteger(completed) || completed < 0 || spent < BigInt(0))
+        throw new Error("누적 횟수와 비용은 0 이상이어야 합니다.");
     if (
         !Number.isSafeInteger(run.cap) ||
         run.cap < 1 ||

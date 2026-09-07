@@ -5,7 +5,7 @@ import { ImageResponse } from "next/og";
 
 const font = readFile(join(process.cwd(), "public/fonts/auction-preview.otf"));
 export const dynamic = "force-static";
-export async function GET() {
+export async function GET(): Promise<ImageResponse> {
     return new ImageResponse(
         <div
             style={{

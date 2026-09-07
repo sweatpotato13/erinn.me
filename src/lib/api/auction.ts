@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import {
     AUCTION_COUPONS,
     type AuctionCouponDiscount,
@@ -62,6 +64,8 @@ function isFiniteNonNegative(value: unknown): value is number {
     return typeof value === "number" && Number.isFinite(value) && value >= 0;
 }
 
+const collectionTime = z.iso.datetime({ offset: true });
+
 /**
  * Validates and converts an unknown value into a price summary.
  *
@@ -90,7 +94,7 @@ function parsePriceSummary(value: unknown): PriceSummaryResponse {
         availableQuantity: candidate.availableQuantity,
         isComplete: candidate.isComplete,
         ...(typeof candidate.fetchedAt === "string" &&
-        Number.isFinite(Date.parse(candidate.fetchedAt))
+        collectionTime.safeParse(candidate.fetchedAt).success
             ? { fetchedAt: candidate.fetchedAt }
             : {}),
     };
