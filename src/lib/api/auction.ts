@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 import {
     AUCTION_COUPONS,
     type AuctionCouponDiscount,
@@ -41,6 +43,7 @@ export interface AuctionResponse {
 }
 
 export interface PriceSummaryResponse {
+    fetchedAt?: string;
     minPrice: number;
     averagePrice: number;
     availableQuantity: number;
@@ -60,6 +63,8 @@ export type CouponPriceSummaries = Record<
 function isFiniteNonNegative(value: unknown): value is number {
     return typeof value === "number" && Number.isFinite(value) && value >= 0;
 }
+
+const collectionTime = z.iso.datetime({ offset: true });
 
 /**
  * Validates and converts an unknown value into a price summary.
@@ -88,6 +93,10 @@ function parsePriceSummary(value: unknown): PriceSummaryResponse {
         averagePrice: candidate.averagePrice,
         availableQuantity: candidate.availableQuantity,
         isComplete: candidate.isComplete,
+        ...(typeof candidate.fetchedAt === "string" &&
+        collectionTime.safeParse(candidate.fetchedAt).success
+            ? { fetchedAt: candidate.fetchedAt }
+            : {}),
     };
 }
 
