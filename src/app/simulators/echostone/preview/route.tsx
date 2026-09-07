@@ -34,7 +34,7 @@ export async function GET() {
                 에코스톤 각성·연마석 계산기
             </div>
             <div style={{ display: "flex", fontSize: 44, marginTop: 20 }}>
-                색상별 목표 확률 · 기대 비용 · 각성 시뮬레이션
+                승급 · 고유 스탯 · 각성 · 레벨 재부여
             </div>
             <div
                 style={{
@@ -44,7 +44,7 @@ export async function GET() {
                     marginTop: 50,
                 }}
             >
-                각성제별 확률과 재료, 한 번뿐인 연마 조건을 확인하세요.
+                에코스톤을 키우고 원하는 각성 능력을 만나보세요.
             </div>
         </div>,
         {

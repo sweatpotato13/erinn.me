@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -14,24 +15,28 @@ import {
     echoAction,
     echoEffect,
     type EchoExpectation,
-    echoHit,
     type EchoItem,
     type EchoReference,
     type EchoSession,
     echoStrategies,
     emptyEchoSession,
     existingEchoStrategy,
-    levelChance,
-    polishOutcomes,
     runEchoChunk,
 } from "@/lib/echostone";
 import {
+    type EchoGrowth,
+    type EchoUpgradeData,
+    newEchoGrowth,
+} from "@/lib/echostone-upgrade";
+import {
     type EchoConfig,
-    echoConfigPath,
     ECHOSTONE_PATH,
     parseEchoConfig,
 } from "@/lib/echostone-url";
-import { parseGold, successThreshold, successWithin } from "@/lib/reforge";
+import { parseGold } from "@/lib/reforge";
+
+import styles from "./echostone.module.css";
+import EchostoneUpgrade from "./echostone-upgrade";
 
 const number = (n: number) =>
     !Number.isFinite(n)
@@ -39,19 +44,33 @@ const number = (n: number) =>
         : n > Number.MAX_SAFE_INTEGER
           ? `약 ${n.toExponential(4)}`
           : n.toLocaleString("ko-KR", { maximumFractionDigits: 2 });
-const percent = (p: number) =>
-    p > 0 && p < 0.000001
-        ? `${(p * 100).toExponential(4)}%`
-        : `${(p * 100).toLocaleString("ko-KR", { maximumFractionDigits: 6 })}%`;
 const priceError = (s: string) => s !== "" && parseGold(s) === null;
 const labelClass = "flex min-w-0 flex-col gap-2 text-sm font-medium";
-const boxClass =
-    "space-y-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5";
 const errorText = (e: unknown) =>
     e instanceof Error ? e.message : "계산을 완료하지 못했습니다.";
+type CalculatorReference = EchoReference & { upgrades: EchoUpgradeData[] };
 type PriceId = keyof EchoConfig["prices"];
 
-export default function EchostoneCalculator({ data }: { data: EchoReference }) {
+const targetMaximum = (data: EchoReference, config: EchoConfig) =>
+    Math.max(
+        ...data.colors
+            .find(c => c.id === config.color)!
+            .options.filter(o => o.name === config.target.name)
+            .map(o => o.max)
+    );
+const clampTarget = (data: EchoReference, config: EchoConfig): EchoConfig => ({
+    ...config,
+    target: {
+        ...config.target,
+        level: Math.min(config.target.level, targetMaximum(data, config)),
+    },
+});
+
+export default function EchostoneCalculator({
+    data,
+}: {
+    data: CalculatorReference;
+}) {
     const params = useSearchParams();
     const parsed = parseEchoConfig(
         new URLSearchParams(params.toString()),
@@ -69,14 +88,20 @@ export default function EchostoneCalculator({ data }: { data: EchoReference }) {
             )}
             {parsed.changedVersion && (
                 <p role="status" className="mb-4 text-amber-800">
-                    공유한 데이터 버전과 다릅니다. 현재 버전 {data.version}{" "}
-                    기준으로 다시 계산합니다. 현재 옵션은 다시 입력하세요.
+                    데이터가 업데이트되었습니다. 보유한 옵션을 다시 입력하세요.
                 </p>
             )}
             <Calculator
                 key={params.toString()}
                 data={data}
-                initial={parsed.config}
+                initial={{
+                    ...parsed.config,
+                    grade: 30,
+                    agent:
+                        parsed.config.agent === 5000078
+                            ? 53942
+                            : parsed.config.agent,
+                }}
                 invalid={!!parsed.error}
             />
         </>
@@ -87,11 +112,14 @@ function Calculator({
     initial,
     invalid,
 }: {
-    data: EchoReference;
+    data: CalculatorReference;
     initial: EchoConfig;
     invalid: boolean;
 }) {
-    const [config, setConfig] = useState(initial);
+    const [config, setConfig] = useState(() => clampTarget(data, initial));
+    const [mode, setMode] = useState<"awakening" | "upgrade">("awakening");
+    const [growth, setGrowth] = useState<EchoGrowth | null>(null);
+    const [growthColor, setGrowthColor] = useState(1);
     const [session, setSession] = useState(() =>
         emptyEchoSession(initial.current)
     );
@@ -99,10 +127,7 @@ function Calculator({
     const [running, setRunning] = useState(false);
     const [message, setMessage] = useState("");
     const [failure, setFailure] = useState("");
-    const [filter, setFilter] = useState("");
     const [cap, setCap] = useState(String(initial.cap));
-    const [attempts, setAttempts] = useState("1000");
-    const [share, setShare] = useState("");
     const cancelled = useRef(false);
     useEffect(() => {
         setReady(true);
@@ -111,12 +136,13 @@ function Calculator({
         };
     }, []);
     const update = (patch: Partial<EchoConfig>) => {
-        setConfig(c => ({ ...c, ...patch }));
-        setShare("");
+        setConfig(c => clampTarget(data, { ...c, ...patch }));
     };
     const color = data.colors.find(c => c.id === config.color)!;
     const normal = createEchoPool(data, config.color, config.grade, 53940);
-    const models = data.agents.map(agent => {
+    const upgradeData = data.upgrades.find(d => d.color === growthColor)!;
+    const agents = data.agents.filter(a => a.id !== 5000078);
+    const models = agents.map(agent => {
         try {
             return {
                 agent,
@@ -136,20 +162,14 @@ function Calculator({
     const pool = selected.pool;
     // Official same-probability rule: normal agent 53940, regardless of the prior agent.
     const polish = normal;
-    const fee = parseGold(config.fee);
-    const costsFor = (id: number) => {
-        const price = parseGold(config.prices[id as PriceId]);
-        return {
-            awakening: price === null || fee === null ? null : price + fee,
-            stone: parseGold(config.prices[5040961]),
-        };
+    // Only agent purchases are included in the displayed Gold total.
+    const costs = {
+        awakening: parseGold(config.prices[config.agent]),
+        stone: BigInt(0),
     };
-    const costs = costsFor(config.agent);
-    const budget = parseGold(config.budget);
-    const invalidCosts =
-        Object.values(config.prices).some(priceError) ||
-        priceError(config.fee) ||
-        priceError(config.budget);
+    const invalidCosts = agents.some(a =>
+        priceError(config.prices[a.id as PriceId])
+    );
     const invalidCap = !/^[1-9]\d{0,6}$/.test(cap) || Number(cap) > ECHO_CAP;
     const blocked = !ready || invalid || running || invalidCosts;
     const result = pool
@@ -158,10 +178,6 @@ function Calculator({
     const current = session.current;
     const currentOption = normal.options.find(o => o.id === current?.id);
     const currentEligible = canPolish(normal, current);
-    const outcomes =
-        current && currentEligible
-            ? polishOutcomes(normal, current, polish)
-            : null;
     const restart = config.policy === "awakening" ? result?.A : result?.B;
     const existing = existingEchoStrategy(
         normal,
@@ -172,17 +188,13 @@ function Calculator({
         restart ?? null
     );
     const probability = result?.combined ?? 0;
-    const budgetError =
-        budget !== null && session.unknownCosts > 0
-            ? "가격 미입력으로 진행한 기록이 있어 남은 예산을 알 수 없습니다. 기록을 초기화한 뒤 실행하세요."
-            : "";
     const reset = () => {
         setSession(emptyEchoSession());
         setMessage("");
         setFailure("");
-        setShare("");
     };
     const changeStone = (patch: Partial<EchoConfig>) => {
+        if (patch.color === config.color) return;
         update({ ...patch, current: null });
         reset();
     };
@@ -192,20 +204,8 @@ function Calculator({
         if (!actionPool) return;
         setFailure("");
         setMessage("");
-        setShare("");
         try {
-            if (budgetError) throw new Error(budgetError);
             if (action !== "auto") {
-                const price =
-                    action === "awakening" ? costs.awakening : costs.stone;
-                if (budget !== null && price === null)
-                    throw new Error(
-                        "예산을 적용하려면 필요한 가격을 입력하세요."
-                    );
-                if (budget !== null && session.spent + price! > budget) {
-                    setMessage("예산 한도 도달");
-                    return;
-                }
                 setSession(
                     echoAction(session, actionPool, action, costs, polish)
                 );
@@ -222,7 +222,12 @@ function Calculator({
                     actionPool,
                     config.target,
                     polish,
-                    { policy: config.policy, cap: Number(cap), budget, costs },
+                    {
+                        policy: config.policy,
+                        cap: Number(cap),
+                        budget: null,
+                        costs,
+                    },
                     completed,
                     spent,
                     () => cancelled.current
@@ -243,706 +248,648 @@ function Calculator({
             setRunning(false);
         }
     }
-    async function copySettings() {
-        try {
-            const path = echoConfigPath(
-                {
-                    ...config,
-                    version: data.version,
-                    cap: Number(cap),
-                    current: session.current,
-                },
-                data
-            );
-            const url = new URL(path, window.location.origin).toString();
-            setShare(url);
-            await navigator.clipboard.writeText(url);
-            setMessage("설정 링크를 복사했습니다.");
-        } catch {
-            setMessage("복사할 수 없으면 아래 설정 링크를 직접 복사하세요.");
-        }
-    }
     return (
-        <div className="space-y-5">
-            <fieldset disabled={!ready || running} className={boxClass}>
-                <legend className="px-2 font-semibold">목표 설정</legend>
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    <label className={labelClass}>
-                        색상
-                        <select
-                            className="select w-full"
-                            value={config.color}
-                            onChange={e => {
-                                const id = Number(e.target.value);
-                                changeStone({
-                                    color: id,
-                                    target: {
-                                        name: data.colors.find(
-                                            c => c.id === id
-                                        )!.options[0].name,
-                                        level: 1,
-                                    },
-                                });
-                            }}
-                        >
-                            {data.colors.map(c => (
-                                <option key={c.id} value={c.id}>
-                                    {c.name}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <label className={labelClass}>
-                        등급
-                        <select
-                            className="select w-full"
-                            value={config.grade}
-                            onChange={e =>
-                                changeStone({ grade: Number(e.target.value) })
-                            }
-                        >
-                            {Array.from({ length: 30 }, (_, i) => (
-                                <option key={i + 1} value={i + 1}>
-                                    {i + 1}등급
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <label className={labelClass}>
-                        각성제
-                        <select
-                            className="select w-full"
-                            value={config.agent}
-                            onChange={e =>
-                                update({
-                                    agent: Number(
-                                        e.target.value
-                                    ) as EchoConfig["agent"],
-                                })
-                            }
-                        >
-                            {data.agents.map(a => (
-                                <option key={a.id} value={a.id}>
-                                    {a.name}
-                                    {!a.searchable ? " (거래 불가)" : ""}
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <label className={labelClass}>
-                        최소 목표 레벨
-                        <select
-                            className="select w-full"
-                            value={config.target.level}
-                            onChange={e =>
-                                update({
-                                    target: {
-                                        ...config.target,
-                                        level: Number(e.target.value),
-                                    },
-                                })
-                            }
-                        >
-                            {Array.from({ length: 20 }, (_, i) => (
-                                <option key={i + 1} value={i + 1}>
-                                    {i + 1} 이상
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                </div>
-                <label className={labelClass}>
-                    목표 옵션
-                    <select
-                        className="select w-full"
-                        value={config.target.name}
-                        onChange={e =>
-                            update({
-                                target: {
-                                    ...config.target,
-                                    name: e.target.value,
-                                },
-                            })
+        <div className={styles.calculator}>
+            <div
+                className={styles.modeSwitch}
+                role="group"
+                aria-label="에코스톤 작업"
+            >
+                <button
+                    aria-pressed={mode === "upgrade"}
+                    disabled={!ready || running || invalid}
+                    onClick={() => {
+                        if (!growth) {
+                            setGrowth(newEchoGrowth(upgradeData));
                         }
-                    >
-                        {[...new Set(color.options.map(o => o.name))].map(
-                            name => (
-                                <option key={name}>{name}</option>
+                        setMode("upgrade");
+                    }}
+                >
+                    승급
+                </button>
+                <button
+                    aria-pressed={mode === "awakening"}
+                    disabled={!ready || running || invalid}
+                    onClick={() => setMode("awakening")}
+                >
+                    각성·연마
+                </button>
+            </div>
+            {mode === "upgrade" && growth ? (
+                <EchostoneUpgrade
+                    colors={data.colors}
+                    data={upgradeData}
+                    value={growth}
+                    onChange={setGrowth}
+                    onColor={id => {
+                        if (id === growthColor) return;
+                        setGrowthColor(id);
+                        setGrowth(
+                            newEchoGrowth(
+                                data.upgrades.find(d => d.color === id)!
                             )
-                        )}
-                    </select>
-                </label>
-                <p className="text-sm text-slate-600">
-                    색상·등급을 바꾸면 현재 옵션과 사용 기록이 초기화됩니다.
-                    같은 이름의 옵션은 확률을 합산합니다.
-                </p>
-            </fieldset>
-            {selected.error && (
-                <p role="alert" className="text-red-700">
-                    {selected.error}
-                </p>
-            )}
-            {invalidCosts && (
-                <p role="alert" className="text-red-700">
-                    가격과 예산은 0 이상의 정수(최대 30자리)로 입력하세요.
-                    빈칸은 가격 미입력입니다.
-                </p>
-            )}
-            <section className={boxClass} aria-labelledby="echo-comparison">
-                <h2 id="echo-comparison" className="text-lg font-semibold">
-                    각성제별 확률과 기대 비용
-                </h2>
-                <p className="text-sm text-slate-600">
-                    옵션 확률 = 해당 능력이 나올 확률 · 조건부 확률 = 해당
-                    능력에서 목표 레벨 이상일 확률 · 목표 확률 = 두 확률의 곱.
-                    비용은 입력 가격 기준 이론 기대값입니다.
-                </p>
-                <div className="overflow-x-auto">
-                    <table className="table table-sm w-full">
-                        <caption className="sr-only">
-                            각성제별 목표 확률과 각성만 반복하는 전략 A
-                        </caption>
-                        <thead>
-                            <tr>
-                                <th>각성제</th>
-                                <th>옵션 확률</th>
-                                <th>조건부 레벨 확률</th>
-                                <th>목표 확률</th>
-                                <th>평균 각성 횟수</th>
-                                <th>기대 Gold</th>
-                                <th>기대 AP</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {models.map(m => {
-                                const r = m.pool
-                                    ? echoStrategies(
-                                          m.pool,
-                                          config.target,
-                                          costsFor(m.agent.id),
-                                          null
-                                      )
-                                    : null;
-                                return (
-                                    <tr
-                                        key={m.agent.id}
-                                        className={
-                                            m.agent.id === config.agent
-                                                ? "bg-blue-50"
-                                                : ""
+                        );
+                    }}
+                    onBusy={setRunning}
+                />
+            ) : (
+                <>
+                    <div className={styles.workspace}>
+                        <section
+                            className={styles.window}
+                            aria-labelledby="echo-window-title"
+                        >
+                            <h2
+                                id="echo-window-title"
+                                className={styles.windowTitle}
+                            >
+                                에코스톤 각성
+                            </h2>
+                            <p className={styles.hint}>
+                                30등급 에코스톤과 각성제를 선택해 주세요.
+                            </p>
+                            <fieldset
+                                disabled={!ready || running}
+                                className={styles.stoneSettings}
+                            >
+                                <legend className="sr-only">
+                                    에코스톤 선택
+                                </legend>
+                                <div
+                                    className={styles.colors}
+                                    role="group"
+                                    aria-label="색상"
+                                >
+                                    {data.colors.map(c => (
+                                        <button
+                                            type="button"
+                                            key={c.id}
+                                            aria-label={c.name}
+                                            aria-pressed={config.color === c.id}
+                                            onClick={() =>
+                                                changeStone({
+                                                    color: c.id,
+                                                    target: {
+                                                        name: c.options[0].name,
+                                                        level: 1,
+                                                    },
+                                                })
+                                            }
+                                        >
+                                            <Image
+                                                src={`/images/echostone/${53933 + c.id}.png`}
+                                                alt=""
+                                                width={36}
+                                                height={36}
+                                                unoptimized
+                                            />
+                                            <span>
+                                                {c.name.replace(
+                                                    " 에코스톤",
+                                                    ""
+                                                )}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </fieldset>
+                            <div className={styles.materials}>
+                                <div>
+                                    <div className={styles.slot}>
+                                        <Image
+                                            src={`/images/echostone/${53933 + color.id}.png`}
+                                            alt={color.name}
+                                            width={56}
+                                            height={56}
+                                            unoptimized
+                                        />
+                                    </div>
+                                    <p>{color.name}</p>
+                                </div>
+                                <span
+                                    className={styles.plus}
+                                    aria-hidden="true"
+                                >
+                                    +
+                                </span>
+                                <div>
+                                    <div
+                                        className={`${styles.slot} ${styles.agentSlot}`}
+                                    >
+                                        <Image
+                                            src={`/images/echostone/${config.agent}.png`}
+                                            alt={selected.agent.name}
+                                            width={32}
+                                            height={64}
+                                            unoptimized
+                                        />
+                                    </div>
+                                    <p>각성제</p>
+                                </div>
+                            </div>
+                            <label className={styles.agentSelect}>
+                                <span className="sr-only">각성제</span>
+                                <select
+                                    className="select w-full"
+                                    disabled={!ready || running}
+                                    value={config.agent}
+                                    onChange={e =>
+                                        update({
+                                            agent: Number(
+                                                e.target.value
+                                            ) as EchoConfig["agent"],
+                                        })
+                                    }
+                                >
+                                    {agents.map(a => (
+                                        <option key={a.id} value={a.id}>
+                                            {a.name}
+                                            {!a.searchable
+                                                ? " (거래 불가)"
+                                                : ""}
+                                        </option>
+                                    ))}
+                                </select>
+                            </label>
+                            <div className={styles.result}>
+                                <h3>현재 각성 능력</h3>
+                                <div
+                                    className={styles.ability}
+                                    data-testid="echo-current"
+                                    aria-live="polite"
+                                    aria-atomic="true"
+                                >
+                                    <p>
+                                        {color.name}{" "}
+                                        <strong>{config.grade}등급</strong>
+                                    </p>
+                                    {current && currentOption ? (
+                                        <>
+                                            <p className={styles.abilityName}>
+                                                {currentOption.name}{" "}
+                                                <span>
+                                                    ({current.level}/
+                                                    {currentOption.max} 레벨)
+                                                </span>
+                                            </p>
+                                            <p className={styles.effect}>
+                                                {echoEffect(
+                                                    currentOption,
+                                                    current.level
+                                                )}
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <p className={styles.empty}>
+                                            각성하면 새로운 능력이 부여됩니다.
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+                            <div className={styles.gameNotice}>
+                                <p>
+                                    필요 AP <strong>25</strong>
+                                </p>
+                                <p>
+                                    {current?.polishingUsed
+                                        ? "레벨 재부여 사용 완료"
+                                        : currentEligible
+                                          ? "레벨 재부여 가능"
+                                          : current
+                                            ? "최대 레벨: 연마 불가"
+                                            : "각성 후 레벨을 한 번 재부여할 수 있습니다."}
+                                </p>
+                            </div>
+                            <div className={styles.actions}>
+                                <button
+                                    className={styles.gameButton}
+                                    disabled={blocked || !currentEligible}
+                                    onClick={() => void run("polishing")}
+                                >
+                                    <Image
+                                        src="/images/echostone/5040961.png"
+                                        alt=""
+                                        width={24}
+                                        height={24}
+                                        unoptimized
+                                    />
+                                    레벨 재부여
+                                </button>
+                                <button
+                                    className={styles.gameButton}
+                                    disabled={blocked || !pool}
+                                    onClick={() => void run("awakening")}
+                                >
+                                    각성
+                                </button>
+                            </div>
+                            <p className={styles.hint}>
+                                레벨 재부여는 연마석 1개를 사용하며, 레벨이
+                                낮아지지 않습니다.
+                            </p>
+                            <details className={styles.existing}>
+                                <summary>보유한 에코스톤 입력</summary>
+                                <fieldset
+                                    disabled={!ready || running}
+                                    className="mt-3 space-y-3"
+                                >
+                                    <label className={labelClass}>
+                                        현재 옵션
+                                        <select
+                                            className="select w-full"
+                                            value={current?.id ?? ""}
+                                            onChange={e => {
+                                                const id = Number(
+                                                    e.target.value
+                                                );
+                                                setSession(
+                                                    emptyEchoSession(
+                                                        id
+                                                            ? {
+                                                                  id,
+                                                                  level: 1,
+                                                                  polishingUsed: false,
+                                                              }
+                                                            : null
+                                                    )
+                                                );
+                                                setMessage("");
+                                            }}
+                                        >
+                                            <option value="">없음</option>
+                                            {normal.options.map(o => (
+                                                <option key={o.id} value={o.id}>
+                                                    {o.name}
+                                                    {normal.options.some(
+                                                        other =>
+                                                            other.id !== o.id &&
+                                                            other.name ===
+                                                                o.name
+                                                    )
+                                                        ? ` (최대 ${o.max} 레벨 · ${o.id})`
+                                                        : ""}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </label>
+                                    <div className="flex flex-wrap items-center gap-4">
+                                        <label className={labelClass}>
+                                            현재 레벨
+                                            <select
+                                                className="select"
+                                                disabled={!current}
+                                                value={current?.level ?? 1}
+                                                onChange={e => {
+                                                    setSession(
+                                                        emptyEchoSession({
+                                                            ...current!,
+                                                            level: Number(
+                                                                e.target.value
+                                                            ),
+                                                        })
+                                                    );
+                                                    setMessage("");
+                                                }}
+                                            >
+                                                {Array.from(
+                                                    {
+                                                        length:
+                                                            currentOption?.max ??
+                                                            1,
+                                                    },
+                                                    (_, i) => (
+                                                        <option
+                                                            key={i + 1}
+                                                            value={i + 1}
+                                                        >
+                                                            {i + 1}
+                                                        </option>
+                                                    )
+                                                )}
+                                            </select>
+                                        </label>
+                                        <label className="flex items-center gap-2 text-sm">
+                                            <input
+                                                className="checkbox checkbox-sm"
+                                                type="checkbox"
+                                                disabled={!current}
+                                                checked={
+                                                    current?.polishingUsed ??
+                                                    false
+                                                }
+                                                onChange={e => {
+                                                    setSession(
+                                                        emptyEchoSession({
+                                                            ...current!,
+                                                            polishingUsed:
+                                                                e.target
+                                                                    .checked,
+                                                        })
+                                                    );
+                                                    setMessage("");
+                                                }}
+                                            />
+                                            이미 연마 사용
+                                        </label>
+                                    </div>
+                                    <p className="text-xs">
+                                        직접 수정하면 사용 기록이 초기화됩니다.
+                                    </p>
+                                </fieldset>
+                            </details>
+                        </section>
+                        <section
+                            className={styles.targetPanel}
+                            aria-labelledby="echo-target-title"
+                        >
+                            <h2 id="echo-target-title">
+                                원하는 옵션까지 각성하기
+                            </h2>
+                            <p className="text-sm text-slate-500">
+                                목표를 정하면 달성할 때까지 반복합니다.
+                            </p>
+                            <fieldset
+                                disabled={!ready || running}
+                                className="space-y-4"
+                            >
+                                <label className={labelClass}>
+                                    목표 옵션
+                                    <select
+                                        className="select w-full"
+                                        value={config.target.name}
+                                        onChange={e =>
+                                            update({
+                                                target: {
+                                                    ...config.target,
+                                                    name: e.target.value,
+                                                },
+                                            })
                                         }
                                     >
-                                        <th className="min-w-36 whitespace-normal">
-                                            {m.agent.name}
-                                            {!m.agent.searchable &&
-                                                " (거래 불가)"}
-                                        </th>
-                                        {r ? (
-                                            <>
-                                                <td>{percent(r.option)}</td>
-                                                <td>
-                                                    {percent(r.conditional)}
-                                                </td>
-                                                <td>{percent(r.combined)}</td>
-                                                <td>
-                                                    {number(r.A.awakenings)}
-                                                </td>
-                                                <td>
-                                                    {r.A.gold === null
-                                                        ? "가격 미입력"
-                                                        : `약 ${number(r.A.gold)}`}
-                                                </td>
-                                                <td>{number(r.A.ap)}</td>
-                                            </>
-                                        ) : (
-                                            <td colSpan={6}>{m.error}</td>
+                                        {[
+                                            ...new Set(
+                                                color.options.map(o => o.name)
+                                            ),
+                                        ].map(name => (
+                                            <option key={name}>{name}</option>
+                                        ))}
+                                    </select>
+                                </label>
+                                <label className={labelClass}>
+                                    최소 목표 레벨
+                                    <select
+                                        className="select w-full"
+                                        value={config.target.level}
+                                        onChange={e =>
+                                            update({
+                                                target: {
+                                                    ...config.target,
+                                                    level: Number(
+                                                        e.target.value
+                                                    ),
+                                                },
+                                            })
+                                        }
+                                    >
+                                        {Array.from(
+                                            {
+                                                length: targetMaximum(
+                                                    data,
+                                                    config
+                                                ),
+                                            },
+                                            (_, i) => (
+                                                <option
+                                                    key={i + 1}
+                                                    value={i + 1}
+                                                >
+                                                    {i + 1}레벨
+                                                </option>
+                                            )
                                         )}
-                                    </tr>
-                                );
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-                {result && (
-                    <div className="space-y-2 text-sm">
-                        <p data-testid="echo-probability">
-                            선택 각성제의 목표 확률: {percent(probability)}
-                        </p>
-                        {probability === 0 && (
-                            <p role="alert" className="text-amber-800">
-                                이 설정에서는 달성 불가능한 목표입니다. 옵션과
-                                등급·목표 레벨을 확인하세요.
-                            </p>
-                        )}
-                        <p>
-                            각성만 반복할 때 50% 도달:{" "}
-                            {number(successThreshold(probability, 0.5))}회 · 90%
-                            도달: {number(successThreshold(probability, 0.9))}회
-                        </p>
-                        <label className={labelClass}>
-                            확률을 확인할 각성 횟수
-                            <input
-                                className="input w-full sm:max-w-xs"
-                                inputMode="numeric"
-                                maxLength={7}
-                                value={attempts}
-                                onChange={e => setAttempts(e.target.value)}
-                            />
-                        </label>
-                        {/^(0|[1-9]\d{0,6})$/.test(attempts) &&
-                        Number(attempts) <= ECHO_CAP ? (
-                            <p>
-                                {number(Number(attempts))}회 이내 성공 확률:{" "}
-                                {percent(
-                                    successWithin(probability, Number(attempts))
+                                    </select>
+                                </label>
+                                <label className="flex items-start gap-2 text-sm">
+                                    <input
+                                        className="checkbox checkbox-sm mt-0.5"
+                                        type="checkbox"
+                                        checked={config.policy === "polishing"}
+                                        onChange={e =>
+                                            update({
+                                                policy: e.target.checked
+                                                    ? "polishing"
+                                                    : "awakening",
+                                            })
+                                        }
+                                    />
+                                    목표 옵션이 나오면 연마도 사용
+                                </label>
+                            </fieldset>
+                            {selected.error && (
+                                <p
+                                    role="alert"
+                                    className="text-sm text-red-700"
+                                >
+                                    {selected.error}
+                                </p>
+                            )}
+                            {result && probability === 0 && (
+                                <p
+                                    role="alert"
+                                    className="text-sm text-amber-800"
+                                >
+                                    이 설정에서는 달성 불가능한 목표입니다.
+                                    등급과 목표 레벨을 확인하세요.
+                                </p>
+                            )}
+                            {invalidCosts && (
+                                <p
+                                    role="alert"
+                                    className="text-sm text-red-700"
+                                >
+                                    비용 설정을 확인하세요. 가격과 예산은 0
+                                    이상의 정수로 입력할 수 있습니다.
+                                </p>
+                            )}
+                            {invalidCap && (
+                                <p role="alert">
+                                    최대 횟수는 1~1,000,000 정수로 입력하세요.
+                                </p>
+                            )}
+                            <button
+                                className={styles.autoButton}
+                                disabled={blocked || !pool || invalidCap}
+                                onClick={() => void run("auto")}
+                            >
+                                목표까지 자동 실행
+                            </button>
+                            {running && (
+                                <button
+                                    className="btn w-full"
+                                    onClick={() => {
+                                        cancelled.current = true;
+                                    }}
+                                >
+                                    중지
+                                </button>
+                            )}
+                            <div role="status" className={styles.status}>
+                                {running ? "자동 실행 중…" : message}
+                            </div>
+                            {failure && (
+                                <p
+                                    role="alert"
+                                    className="text-sm text-red-700"
+                                >
+                                    {failure}
+                                </p>
+                            )}
+                            <div className={styles.usage}>
+                                <div className="flex items-center justify-between gap-2">
+                                    <h3>각성·연마에 사용한 재료</h3>
+                                    <button
+                                        className="btn btn-ghost btn-xs"
+                                        disabled={!ready || running}
+                                        onClick={reset}
+                                    >
+                                        기록 초기화
+                                    </button>
+                                </div>
+                                <dl className={styles.counts}>
+                                    <div>
+                                        <dt>각성제</dt>
+                                        <dd>
+                                            {number(session.awakenings)}
+                                            <small>개</small>
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt>연마석</dt>
+                                        <dd>
+                                            {number(session.stones)}
+                                            <small>개</small>
+                                        </dd>
+                                    </div>
+                                    <div>
+                                        <dt>AP</dt>
+                                        <dd>
+                                            {number(session.awakenings * 25)}
+                                        </dd>
+                                    </div>
+                                </dl>
+                                <p
+                                    data-testid="echo-totals"
+                                    className={styles.total}
+                                >
+                                    각성 {number(session.awakenings)}회 · 연마{" "}
+                                    {number(session.stones)}회 ·{" "}
+                                    {number(session.awakenings * 25)} AP ·{" "}
+                                    각성제{" "}
+                                    {session.spent.toLocaleString("ko-KR")} Gold
+                                    {session.unknownCosts > 0 &&
+                                        ` + 가격 미입력 ${session.unknownCosts}행동`}
+                                </p>
+                            </div>
+                            <details className={styles.history}>
+                                <summary>최근 시뮬레이션 기록</summary>
+                                <ol className="mt-3 max-h-48 space-y-2 overflow-y-auto text-sm">
+                                    {[...session.history].reverse().map(row => (
+                                        <li key={row.number}>
+                                            #{row.number}{" "}
+                                            {row.action === "awakening"
+                                                ? "각성"
+                                                : "연마"}{" "}
+                                            ·{" "}
+                                            {
+                                                normal.options.find(
+                                                    o => o.id === row.state.id
+                                                )?.name
+                                            }{" "}
+                                            {row.state.level}레벨
+                                        </li>
+                                    ))}
+                                </ol>
+                                {session.actions === 0 && (
+                                    <p className="mt-2 text-sm text-slate-500">
+                                        아직 사용한 재료가 없습니다.
+                                    </p>
                                 )}
+                            </details>
+                        </section>
+                    </div>
+                    <details className={styles.costSettings}>
+                        <summary>비용 설정과 예상 비용</summary>
+                        <div className="mt-5 space-y-5">
+                            <p className="text-sm text-slate-500">
+                                경매장 최저가를 자동으로 불러오며 직접 수정할 수
+                                있습니다. 비용은 각성제만 집계하고 연마석·승급
+                                비용은 제외합니다.
                             </p>
-                        ) : (
-                            <p role="alert">0~1,000,000회 정수로 입력하세요.</p>
-                        )}
-                        <p>
-                            독립적으로 같은 조건을 반복한 결과입니다. 평균·확률
-                            횟수는 성공 보장이 아닙니다.
-                        </p>
-                    </div>
-                )}
-            </section>
-            <fieldset disabled={!ready || running} className={boxClass}>
-                <legend className="px-2 font-semibold">재료 가격과 예산</legend>
-                <p className="text-sm text-slate-600">
-                    가격 빈칸은 미입력, 0은 무료로 가정합니다. 거래 불가 재료는
-                    직접 기회비용을 입력하세요. 시세는 버튼으로 조회한 뒤 직접
-                    적용합니다.
-                </p>
-                <div className="grid gap-4 sm:grid-cols-2">
-                    {[...data.agents, data.stone].map(item => (
-                        <PriceField
-                            key={item.id}
-                            item={item}
-                            value={config.prices[item.id as PriceId]}
-                            onChange={value =>
-                                update({
-                                    prices: {
-                                        ...config.prices,
-                                        [item.id]: value,
-                                    },
-                                })
-                            }
-                        />
-                    ))}
-                </div>
-                <div className="grid gap-4 sm:grid-cols-2">
-                    <label className={labelClass}>
-                        각성 1회 Gold 이용 수수료 (직접 입력)
-                        <input
-                            className="input w-full"
-                            inputMode="numeric"
-                            maxLength={30}
-                            value={config.fee}
-                            onChange={e => update({ fee: e.target.value })}
-                        />
-                    </label>
-                    <label className={labelClass}>
-                        기록 전체 예산 (Gold, 빈칸은 제한 없음)
-                        <input
-                            className="input w-full"
-                            inputMode="numeric"
-                            maxLength={30}
-                            value={config.budget}
-                            onChange={e => update({ budget: e.target.value })}
-                        />
-                    </label>
-                </div>
-                <p className="text-sm text-slate-600">
-                    AP는 Gold와 별개입니다. 직접 오르골 이용 기준 각성 1회당 25
-                    AP, 연마 0 AP입니다. 적용한 가격은 이후 시도에만 반영됩니다.
-                </p>
-            </fieldset>
-            <section className={boxClass} aria-labelledby="echo-current">
-                <h2 id="echo-current" className="text-lg font-semibold">
-                    현재 옵션과 1회 연마
-                </h2>
-                <fieldset
-                    disabled={!ready || running}
-                    className="grid gap-4 sm:grid-cols-3"
-                >
-                    <label className={labelClass}>
-                        현재 옵션
-                        <select
-                            className="select w-full"
-                            value={current?.id ?? ""}
-                            onChange={e => {
-                                const id = Number(e.target.value);
-                                setSession(
-                                    emptyEchoSession(
-                                        id
-                                            ? {
-                                                  id,
-                                                  level: 1,
-                                                  polishingUsed: false,
-                                              }
-                                            : null
-                                    )
-                                );
-                                setShare("");
-                            }}
-                        >
-                            <option value="">없음</option>
-                            {normal.options.map(o => (
-                                <option key={o.id} value={o.id}>
-                                    {o.name} (항목 {o.id})
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                    <label className={labelClass}>
-                        현재 레벨
-                        <select
-                            className="select w-full"
-                            disabled={!current}
-                            value={current?.level ?? 1}
-                            onChange={e => {
-                                setSession(
-                                    emptyEchoSession({
-                                        ...current!,
-                                        level: Number(e.target.value),
-                                    })
-                                );
-                                setShare("");
-                            }}
-                        >
-                            {Array.from(
-                                { length: currentOption?.max ?? 1 },
-                                (_, i) => (
-                                    <option key={i + 1} value={i + 1}>
-                                        {i + 1}
-                                    </option>
-                                )
-                            )}
-                        </select>
-                    </label>
-                    <label className="flex items-center gap-2 text-sm">
-                        <input
-                            className="checkbox"
-                            type="checkbox"
-                            disabled={!current}
-                            checked={current?.polishingUsed ?? false}
-                            onChange={e => {
-                                setSession(
-                                    emptyEchoSession({
-                                        ...current!,
-                                        polishingUsed: e.target.checked,
-                                    })
-                                );
-                                setShare("");
-                            }}
-                        />
-                        이미 연마 사용
-                    </label>
-                </fieldset>
-                <p className="text-sm text-slate-600">
-                    게임에서 보유한 옵션을 직접 입력할 수 있습니다. 직접
-                    수정하면 이전 시뮬레이션 비용 기록이 초기화됩니다.
-                </p>
-                <p data-testid="echo-current">
-                    {current && currentOption
-                        ? `${currentOption.name} ${current.level}/${currentOption.max} 레벨 · ${echoEffect(currentOption, current.level)} · ${current.polishingUsed ? "연마 사용 완료" : currentEligible ? "연마 조건 충족" : "최대 레벨: 연마 불가"}`
-                        : "현재 각성 옵션이 없습니다."}
-                </p>
-                <p className="text-sm text-slate-600">
-                    연마는 일반 에코스톤 각성제의 등급별 레벨 확률을 사용합니다.
-                    이전 각성제의 고급·최고급 보정은 적용되지 않습니다.
-                </p>
-                {outcomes && current && (
-                    <div className="space-y-2">
-                        <p data-testid="echo-polish-probability">
-                            개선 확률:{" "}
-                            {percent(
-                                outcomes.reduce(
-                                    (s, o) =>
-                                        s +
-                                        (o.level > current.level
-                                            ? o.probability
-                                            : 0),
-                                    0
-                                )
-                            )}{" "}
-                            · 유지 확률:{" "}
-                            {percent(
-                                outcomes.find(o => o.level === current.level)
-                                    ?.probability ?? 0
-                            )}{" "}
-                            · 목표 성공:{" "}
-                            {percent(
-                                outcomes.reduce(
-                                    (s, o) =>
-                                        s +
-                                        (echoHit(normal, config.target, {
-                                            ...current,
-                                            level: o.level,
-                                        })
-                                            ? o.probability
-                                            : 0),
-                                    0
-                                )
-                            )}
-                        </p>
-                        <ul>
-                            {outcomes.map(o => (
-                                <li key={o.level}>
-                                    {o.level} 레벨: {percent(o.probability)}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-                <div className="grid gap-3 md:grid-cols-3">
-                    <Expectation
-                        title="A · 각성만 반복"
-                        value={result?.A ?? null}
-                    />
-                    <Expectation
-                        title="B · 목표 옵션 미달 시 1회 연마"
-                        value={result?.B ?? null}
-                    />
-                    <Expectation
-                        title="C · 현재 옵션에서 시작"
-                        value={existing}
-                    />
-                </div>
-                <p className="text-sm text-slate-600">
-                    B는 목표 옵션이 나왔지만 목표 레벨보다 낮을 때만 1회
-                    연마합니다. C는 현재 목표 옵션을 연마한 뒤 실패하면 아래에서
-                    선택한 정책으로 다시 각성합니다. 이미 달성했다면 추가 비용은
-                    0입니다. 연마를 사용했거나 최대 레벨이면 바로 재시작 비용을
-                    표시합니다.
-                </p>
-            </section>
-            <section className={boxClass} aria-labelledby="echo-simulation">
-                <h2 id="echo-simulation" className="text-lg font-semibold">
-                    각성 시뮬레이션
-                </h2>
-                <fieldset
-                    disabled={!ready || running}
-                    className="grid gap-4 sm:grid-cols-2"
-                >
-                    <label className={labelClass}>
-                        반복·재시작 정책
-                        <select
-                            className="select w-full"
-                            value={config.policy}
-                            onChange={e =>
-                                update({
-                                    policy: e.target
-                                        .value as EchoConfig["policy"],
-                                })
-                            }
-                        >
-                            <option value="awakening">A · 각성만 반복</option>
-                            <option value="polishing">
-                                B · 목표 옵션 미달 시 1회 연마
-                            </option>
-                        </select>
-                    </label>
-                    <label className={labelClass}>
-                        자동 실행 최대 행동 횟수
-                        <input
-                            className="input w-full"
-                            inputMode="numeric"
-                            maxLength={7}
-                            value={cap}
-                            onChange={e => {
-                                setCap(e.target.value);
-                                setShare("");
-                            }}
-                        />
-                    </label>
-                </fieldset>
-                <p className="text-sm text-slate-600">
-                    각성·연마를 각각 1행동으로 셉니다. 자동 실행은 첫 목표
-                    달성·취소·최대 1,000,000행동·예산 부족에서 멈춥니다. 최근
-                    100행동만 저장합니다.
-                </p>
-                {invalidCap && (
-                    <p role="alert">
-                        최대 횟수는 1~1,000,000 정수로 입력하세요.
-                    </p>
-                )}
-                {budgetError && <p role="alert">{budgetError}</p>}
-                <div className="flex flex-wrap gap-2">
-                    <button
-                        className="btn btn-primary"
-                        disabled={blocked || !pool || !!budgetError}
-                        onClick={() => void run("awakening")}
-                    >
-                        각성 1회
-                    </button>
-                    <button
-                        className="btn"
-                        disabled={blocked || !currentEligible || !!budgetError}
-                        onClick={() => void run("polishing")}
-                    >
-                        연마 1회
-                    </button>
-                    <button
-                        className="btn"
-                        disabled={
-                            blocked || !pool || invalidCap || !!budgetError
-                        }
-                        onClick={() => void run("auto")}
-                    >
-                        목표까지 자동 실행
-                    </button>
-                    <button
-                        className="btn"
-                        disabled={!running}
-                        onClick={() => {
-                            cancelled.current = true;
-                        }}
-                    >
-                        중지
-                    </button>
-                    <button
-                        className="btn btn-ghost"
-                        disabled={!ready || running}
-                        onClick={reset}
-                    >
-                        기록 초기화
-                    </button>
-                </div>
-                {failure && (
-                    <p role="alert" className="text-red-700">
-                        {failure}
-                    </p>
-                )}
-                <p role="status">{running ? "자동 실행 중…" : message}</p>
-                <p data-testid="echo-totals">
-                    각성 {number(session.awakenings)}회 · 연마{" "}
-                    {number(session.stones)}회 ·{" "}
-                    {number(session.awakenings * 25)} AP ·{" "}
-                    {session.spent.toLocaleString("ko-KR")} Gold
-                    {session.unknownCosts > 0 &&
-                        ` + 가격 미입력 ${session.unknownCosts}행동`}
-                </p>
-                <ul className="text-sm text-slate-600">
-                    {data.agents.map(a => (
-                        <li key={a.id}>
-                            {a.name}
-                            {!a.searchable ? " (거래 불가)" : ""}:{" "}
-                            {number(session.agents[a.id] ?? 0)}개
-                        </li>
-                    ))}
-                </ul>
-                <details>
-                    <summary className="cursor-pointer font-medium">
-                        최근 시뮬레이션 기록
-                    </summary>
-                    <ol className="mt-3 max-h-64 space-y-1 overflow-y-auto text-sm">
-                        {[...session.history].reverse().map(row => (
-                            <li key={row.number}>
-                                #{row.number}{" "}
-                                {row.action === "awakening" ? "각성" : "연마"} ·{" "}
-                                {
-                                    normal.options.find(
-                                        o => o.id === row.state.id
-                                    )?.name
-                                }{" "}
-                                {row.state.level}레벨
-                                {row.state.polishingUsed && " (연마 소진)"}
-                            </li>
-                        ))}
-                    </ol>
-                </details>
-            </section>
-            <details className={boxClass}>
-                <summary className="cursor-pointer font-semibold">
-                    등장 옵션·레벨·효과 보기
-                </summary>
-                <label className={labelClass}>
-                    옵션 이름 필터
-                    <input
-                        className="input w-full"
-                        maxLength={100}
-                        value={filter}
-                        onChange={e => setFilter(e.target.value)}
-                    />
-                </label>
-                <div className="max-h-96 overflow-auto">
-                    <table className="table table-sm">
-                        <caption className="sr-only">
-                            현재 색상·등급·각성제의 항목별 확률
-                        </caption>
-                        <thead>
-                            <tr>
-                                <th>옵션</th>
-                                <th>레벨</th>
-                                <th>효과 범위</th>
-                                <th>옵션 비중</th>
-                                <th>조건부 ≥{config.target.level}</th>
-                                <th>결합 확률</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {(pool?.options ?? [])
-                                .filter(o => o.name.includes(filter.trim()))
-                                .map(o => {
-                                    const low = o.levels[0].level,
-                                        high =
-                                            o.levels[o.levels.length - 1].level,
-                                        q = levelChance(
-                                            o.levels,
-                                            config.target.level
-                                        );
-                                    return (
-                                        <tr key={o.id}>
-                                            <th className="min-w-40 whitespace-normal">
-                                                {o.name}
-                                            </th>
-                                            <td>
-                                                {low}~{high}
-                                            </td>
-                                            <td className="min-w-36 whitespace-normal">
-                                                {echoEffect(o, low)} ~{" "}
-                                                {echoEffect(o, high)}
-                                            </td>
-                                            <td>{percent(o.chance)}</td>
-                                            <td>{percent(q)}</td>
-                                            <td>{percent(o.chance * q)}</td>
-                                        </tr>
-                                    );
-                                })}
-                        </tbody>
-                    </table>
-                </div>
-                {!pool && (
-                    <p>이 설정의 레벨 확률 자료가 없어 표시할 수 없습니다.</p>
-                )}
-            </details>
-            <section className={boxClass} aria-label="설정 공유">
-                <button
-                    className="btn"
-                    disabled={blocked || invalidCap}
-                    onClick={() => void copySettings()}
-                >
-                    설정 링크 복사
-                </button>
-                <p className="text-sm text-slate-600">
-                    색상·등급·목표·가격·현재 옵션과 연마 사용 여부를 공유합니다.
-                    링크는 무작위 기록을 재현하지 않으며 열 때 자동 실행이나
-                    시세 조회를 하지 않습니다.
-                </p>
-                {share && (
-                    <label className={labelClass}>
-                        공유 링크
-                        <input
-                            className="input w-full"
-                            readOnly
-                            value={share}
-                            onFocus={e => e.target.select()}
-                        />
-                    </label>
-                )}
-            </section>
+                            <fieldset
+                                disabled={!ready || running}
+                                className="space-y-4"
+                            >
+                                <legend className="sr-only">각성제 가격</legend>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                    {agents.map(item => (
+                                        <PriceField
+                                            key={item.id}
+                                            item={item}
+                                            value={
+                                                config.prices[
+                                                    item.id as PriceId
+                                                ]
+                                            }
+                                            onChange={value =>
+                                                setConfig(c => ({
+                                                    ...c,
+                                                    prices: {
+                                                        ...c.prices,
+                                                        [item.id]: value,
+                                                    },
+                                                }))
+                                            }
+                                        />
+                                    ))}
+                                </div>
+                                <div className="grid gap-4 sm:grid-cols-3">
+                                    <label className={labelClass}>
+                                        자동 실행 최대 행동 횟수
+                                        <input
+                                            className="input w-full"
+                                            inputMode="numeric"
+                                            maxLength={7}
+                                            value={cap}
+                                            onChange={e =>
+                                                setCap(e.target.value)
+                                            }
+                                        />
+                                    </label>
+                                </div>
+                            </fieldset>
+                            <div className="grid gap-3 sm:grid-cols-3">
+                                <Expectation
+                                    title="각성만 사용"
+                                    value={result?.A ?? null}
+                                />
+                                <Expectation
+                                    title="각성과 연마 함께 사용"
+                                    value={result?.B ?? null}
+                                />
+                                <Expectation
+                                    title="현재 옵션에서 시작"
+                                    value={existing}
+                                />
+                            </div>
+                            <p className="text-xs text-slate-500">
+                                입력 가격 기준의 평균 비용이며 성공을 보장하지
+                                않습니다. 목표 달성 또는 최대 횟수에서 자동
+                                실행이 멈춥니다.
+                            </p>
+                        </div>
+                    </details>
+                </>
+            )}
         </div>
     );
 }
@@ -966,7 +913,7 @@ function Expectation({
                         {number(value.ap)} AP ·{" "}
                         {value.gold === null
                             ? "가격 미입력"
-                            : `약 ${number(value.gold)} Gold`}
+                            : `각성제 약 ${number(value.gold)} Gold`}
                     </p>
                 </>
             ) : (
@@ -984,10 +931,11 @@ function PriceField({
     value: string;
     onChange: (value: string) => void;
 }) {
+    const priceRevision = useRef(value !== "" ? 1 : 0);
     const market = useQuery({
         queryKey: ["echostone-price", item.id],
         queryFn: ({ signal }) => fetchItemPriceSummary(item.name, signal),
-        enabled: false,
+        enabled: item.searchable,
         retry: false,
         refetchOnWindowFocus: false,
     });
@@ -996,6 +944,29 @@ function PriceField({
         market.data &&
         market.data.availableQuantity > 0 &&
         Number.isSafeInteger(market.data.minPrice);
+    useEffect(() => {
+        if (
+            priceRevision.current === 0 &&
+            value === "" &&
+            valid &&
+            !market.isFetching
+        ) {
+            priceRevision.current++;
+            onChange(String(market.data.minPrice));
+        }
+    }, [market.data, market.isFetching, onChange, valid, value]);
+    async function refreshPrice() {
+        const revision = ++priceRevision.current;
+        const result = await market.refetch();
+        if (
+            revision === priceRevision.current &&
+            result.isSuccess &&
+            result.data.availableQuantity > 0 &&
+            Number.isSafeInteger(result.data.minPrice)
+        ) {
+            onChange(String(result.data.minPrice));
+        }
+    }
     return (
         <div className="space-y-2 rounded-lg border border-slate-100 p-3">
             <label className={labelClass}>
@@ -1005,18 +976,25 @@ function PriceField({
                     inputMode="numeric"
                     maxLength={30}
                     value={value}
-                    onChange={e => onChange(e.target.value)}
-                    placeholder="가격 미입력"
+                    onFocus={() => {
+                        priceRevision.current++;
+                    }}
+                    onChange={e => {
+                        priceRevision.current++;
+                        onChange(e.target.value);
+                    }}
+                    placeholder={
+                        market.isFetching ? "시세 조회 중…" : "가격 미입력"
+                    }
                 />
             </label>
-            <p className="text-xs text-slate-500">아이템 #{item.id}</p>
             {item.searchable ? (
                 <div className="flex flex-wrap items-center gap-2">
                     <button
                         type="button"
                         className="btn btn-sm"
                         disabled={market.isFetching}
-                        onClick={() => void market.refetch()}
+                        onClick={() => void refreshPrice()}
                     >
                         {market.isFetching ? "조회 중…" : "시세 조회"}
                     </button>
@@ -1026,17 +1004,6 @@ function PriceField({
                     >
                         경매장 보기
                     </Link>
-                    {valid && (
-                        <button
-                            type="button"
-                            className="btn btn-sm"
-                            onClick={() =>
-                                onChange(String(market.data.minPrice))
-                            }
-                        >
-                            조회 가격 적용
-                        </button>
-                    )}
                 </div>
             ) : (
                 <p className="text-sm text-slate-600">

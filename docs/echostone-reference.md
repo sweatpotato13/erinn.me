@@ -37,3 +37,19 @@ C: one stone plus failure probability times the selected restart policy's expect
 Expectations use floating point and are approximate displays of exact analytical formulas; actual Gold totals/budgets use bigint.
 Mixed-cost cycles have no fixed-price geometric budget estimate.
 Each actual action checks cancellation, target, action cap and remaining budget before sampling/spending; only the latest 100 actions are retained.
+
+## UI item images
+
+`public/images/echostone/*.png` contains the existing game inventory icons, downloaded unchanged from `https://mabires2.pril.cc/invimage/kr/{itemId}/{itemId}.png`. IDs 53934–53938 identify the five colors; 53940/53941/53942 identify the three displayed agents; 5040961 identifies the polishing stone. The layout follows the awakening window in the official guide. Images are served locally without runtime upstream requests.
+
+## Upgrade simulation and simplified UI
+
+The UI groups the identical highest-quality agent identities under 53942. Legacy 5000078 selections normalize to it. Price inputs and Gold totals cover agent purchases only; polishing stones, service fees, upgrade fees and whole-session budgets are excluded from the UI. Raw identities and the reusable budget engine remain intact.
+
+`EchoStoneList.Upgrades[Grade]` describes the attempt from that grade to the next; grade30 is a terminal zero row. The compact generator validates all150 source rows and rejects downgrade-enabled rows. Upgrade simulation uses RateEasy for the base Gold-upgrade chance, without dungeon or potion bonuses. Gold upgrade fees are not included in the agent-only cost display.
+
+The user explicitly requested an equal probability for each integer between AbilityMin and AbilityMax, inclusive. Black echostone life/mana/stamina are sampled independently under that assumption. New stones start at grade1 with each stat1 as the starting assumption; there is no manual grade/stat input. Failure retains grade and stats. Success increments grade and accumulates the sampled gains. Continuous runs stop at the requested grade, cancellation or10000 actions and retain only100 recent rows. Upgrade and awakening/polishing are independent simulators. Awakening/polishing always uses grade30 and does not consume the upgrade result. Each simulator retains its own color and state when switching views. Starting a new upgrade stone or changing its color clears only upgrade progress.
+
+Upgrade visuals follow the official guide images `https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195649.png` and `https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195654.png`.
+
+Agent price fields automatically request the existing auction summary on mount and seed untouched empty inputs with an available safe-integer minimum price. Manual edits (including zero) and restored prices take priority over late results; missing listings or failed requests remain unpriced. The single manual refresh button fetches and applies the latest available price; edits made while that request is pending take priority.

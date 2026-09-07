@@ -218,9 +218,53 @@ for (const fixture of evidence.fixtures) {
         fixture.totalWeight
     );
 }
+const upgradeSchema = z.object({
+    Grade: z.number().int().min(1).max(30),
+    AbilityMin: z.number().int().nonnegative(),
+    AbilityMax: z.number().int().nonnegative(),
+    RateEasy: z.number().min(0).max(100),
+    IsDownGrade: z.literal(false),
+});
+const statNames = [
+    ["체력"],
+    ["지력"],
+    ["솜씨"],
+    ["의지"],
+    ["생명력", "마나", "스태미나"],
+];
+const upgrades = data.EchoStoneList.map(color => {
+    const rows = unique(
+        color.Upgrades.map(raw => upgradeSchema.parse(raw)),
+        r => r.Grade,
+        "upgrade grade"
+    ).sort((a, b) => a.Grade - b.Grade);
+    assert.deepEqual(
+        rows.map(r => r.Grade),
+        Array.from({ length: 30 }, (_, i) => i + 1)
+    );
+    for (const r of rows) {
+        assert(r.AbilityMax >= r.AbilityMin);
+        if (r.Grade < 30) assert(r.RateEasy > 0 && r.AbilityMin > 0);
+        else
+            assert(
+                r.RateEasy === 0 && r.AbilityMax === 0 && r.AbilityMin === 0
+            );
+    }
+    return {
+        color: color.Id,
+        stats: statNames[color.Id - 1],
+        steps: rows.map(r => ({
+            grade: r.Grade,
+            min: r.AbilityMin,
+            max: r.AbilityMax,
+            chance: r.RateEasy / 100,
+        })),
+    };
+});
 const result = {
     version: String(manifest.sourceVersion.CreatedAt),
     colors,
+    upgrades,
     levels,
     grades,
     agents,
