@@ -16,24 +16,19 @@ Items 53940/53941/53942 are auction searchable; 5000078 has the same highest-qua
 Stone 5040961 is not auction searchable in the snapshot. Opportunity prices can be entered manually, including zero; blank means unknown.
 Direct orrery access spends 25 AP per awakening, separate from Gold; an optional user-entered service fee is not a claimed game fee.
 
-## Evidence gate — not yet satisfied
+## Polishing distribution and source fixtures
 
-Checked 2026-09-07:
+Checked 2026-09-07. The user confirmed that Prilus contains data extracted from the actual game and accepted it as the calculation source; a separate probability-screen capture is not required for this implementation.
 
-- [Official 2025-09-11 patch](https://mabinogi.nexon.com/m/news/notice_view.asp?id=4893022): one reroll per awakening, max-level exclusion, only stone consumed, retain higher current level; normal-awakener wording.
-- [Official echo guide](https://mabinogi.nexon.com/page/archive/guide_view.asp?id=4886983): current rule description, without numeric grade-dependent reroll probabilities.
-- Snapshot item 5040961 description excludes additional bonus effects. No separate polishing adjustment row exists.
+- [Prilus echostone data](https://prilus.gitlab.io/echostone), committed Korean snapshot `1788405829`: original level weights, grade upper bounds and agent lower bounds.
+- [Official 2025-09-11 patch](https://mabinogi.nexon.com/m/news/notice_view.asp?id=4893022) and [current echo guide](https://mabinogi.nexon.com/page/archive/guide_view.asp?id=4886983): polishing uses the probabilities of 에코스톤 각성제, the exact name resolved for item **53940**. It consumes only the stone, permits one attempt, excludes maximum-level options and retains the current level on a lower draw.
+- Snapshot item 5040961 description excludes additional bonus effects. Consequently the prior high/highest-quality agent's minimum adjustment is not carried over.
 
-- [Official in-game awakening screen](https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195739.png), linked from the guide (updated 2026-02-12), inspected 2026-09-07: blue grade 21, Icebolt maximum damage 11/20, highest-quality agent effect, reroll available. Snapshot grade 21 caps ordinary awakening at 11 for base maximum 20. Therefore retain base maximum separately from awakening support when checking polishing eligibility. The image contains **no numeric reroll distribution** and does not verify grade truncation for polishing.
+The implemented mapping joins `RandomTableList[10000 + option.Max]`, `EchoStoneAwakenAdjustByItemList[53940]` and the current grade's `EchoStoneAwakenAdjustByGradeList` row. Retain levels above the exclusive lower bound and at or below the inclusive grade cap, then normalize their weights. This applies the official same-probability rule to the accepted game-data source, rather than claiming an independent in-game experiment.
 
-These establish eligibility and material rules. They do **not** independently verify the normal-agent numeric mapping, especially grade truncation.
-`src/data/echostone-polishing-evidence.json` records the unresolved status. No in-game observations have been fabricated.
-Polishing calculations/actions must stay unavailable until a dated in-game probability fixture establishes the mapping.
-The issue must remain open/incomplete until that fixture is recorded and production strategy B/C and polishing actions pass verification.
+`src/data/echostone-polishing-evidence.json` records that basis and six numerical fixtures: grades 21/30 × base maximum 3/5/20. The generator checks their source version, joins, bounds, exact weights and totals; unit tests also check the resulting probabilities and state transitions. At grade 30, maximum-5 polishing uses weights `[100,80,60,40,20]` over 300, while highest-quality awakening omits level 1 and normalizes over 200. Polishing must not inherit that premium adjustment.
 
-Needed evidence: game version/date, stone grade, option/base maximum, complete displayed reroll-level probability table, and provenance (screenshot or independently inspectable capture).
-Compare at grade 30 and at a truncated grade with maxima 3/5/20; confirm the distribution does not inherit the prior premium agent.
-If observations verify 53940, add the fixture and use that independent distribution. If they contradict it, implement the observed rule rather than change the expected fixture.
+The [official in-game awakening screen](https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195739.png) shows blue grade 21, Icebolt maximum damage 11/20 and reroll available. The ordinary grade cap is 11, but the option's own maximum remains 20 for eligibility. Under the documented distribution, polishing that level-11 state cannot improve it; it still consumes the one permitted attempt. The fixture records the screen only as eligibility evidence, not as a numerical reroll measurement.
 
 ## Cost and simulation rules
 

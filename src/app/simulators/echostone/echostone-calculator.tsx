@@ -16,7 +16,6 @@ import {
     type EchoExpectation,
     echoHit,
     type EchoItem,
-    type EchoPool,
     type EchoReference,
     type EchoSession,
     echoStrategies,
@@ -52,13 +51,7 @@ const errorText = (e: unknown) =>
     e instanceof Error ? e.message : "계산을 완료하지 못했습니다.";
 type PriceId = keyof EchoConfig["prices"];
 
-export default function EchostoneCalculator({
-    data,
-    polishingUnavailable,
-}: {
-    data: EchoReference;
-    polishingUnavailable: string;
-}) {
+export default function EchostoneCalculator({ data }: { data: EchoReference }) {
     const params = useSearchParams();
     const parsed = parseEchoConfig(
         new URLSearchParams(params.toString()),
@@ -85,7 +78,6 @@ export default function EchostoneCalculator({
                 data={data}
                 initial={parsed.config}
                 invalid={!!parsed.error}
-                polishingUnavailable={polishingUnavailable}
             />
         </>
     );
@@ -94,12 +86,10 @@ function Calculator({
     data,
     initial,
     invalid,
-    polishingUnavailable,
 }: {
     data: EchoReference;
     initial: EchoConfig;
     invalid: boolean;
-    polishingUnavailable: string;
 }) {
     const [config, setConfig] = useState(initial);
     const [session, setSession] = useState(() =>
@@ -144,8 +134,8 @@ function Calculator({
     });
     const selected = models.find(m => m.agent.id === config.agent)!;
     const pool = selected.pool;
-    // No production mapping until the independent in-game probability fixture is recorded.
-    const polish: EchoPool | null = null;
+    // Official same-probability rule: normal agent 53940, regardless of the prior agent.
+    const polish = normal;
     const fee = parseGold(config.fee);
     const costsFor = (id: number) => {
         const price = parseGold(config.prices[id as PriceId]);
@@ -169,7 +159,7 @@ function Calculator({
     const currentOption = normal.options.find(o => o.id === current?.id);
     const currentEligible = canPolish(normal, current);
     const outcomes =
-        current && currentEligible && polish
+        current && currentEligible
             ? polishOutcomes(normal, current, polish)
             : null;
     const restart = config.policy === "awakening" ? result?.A : result?.B;
@@ -198,7 +188,8 @@ function Calculator({
     };
 
     async function run(action: "awakening" | "polishing" | "auto") {
-        if (!pool) return;
+        const actionPool = action === "polishing" ? normal : pool;
+        if (!actionPool) return;
         setFailure("");
         setMessage("");
         setShare("");
@@ -215,7 +206,9 @@ function Calculator({
                     setMessage("예산 한도 도달");
                     return;
                 }
-                setSession(echoAction(session, pool, action, costs, polish));
+                setSession(
+                    echoAction(session, actionPool, action, costs, polish)
+                );
                 return;
             }
             cancelled.current = false;
@@ -226,7 +219,7 @@ function Calculator({
             while (true) {
                 const batch = runEchoChunk(
                     next,
-                    pool,
+                    actionPool,
                     config.target,
                     polish,
                     { policy: config.policy, cap: Number(cap), budget, costs },
@@ -656,14 +649,13 @@ function Calculator({
                         ? `${currentOption.name} ${current.level}/${currentOption.max} 레벨 · ${echoEffect(currentOption, current.level)} · ${current.polishingUsed ? "연마 사용 완료" : currentEligible ? "연마 조건 충족" : "최대 레벨: 연마 불가"}`
                         : "현재 각성 옵션이 없습니다."}
                 </p>
-                {!polish && (
-                    <p role="status" className="text-amber-800">
-                        {polishingUnavailable}
-                    </p>
-                )}
+                <p className="text-sm text-slate-600">
+                    연마는 일반 에코스톤 각성제의 등급별 레벨 확률을 사용합니다.
+                    이전 각성제의 고급·최고급 보정은 적용되지 않습니다.
+                </p>
                 {outcomes && current && (
                     <div className="space-y-2">
-                        <p>
+                        <p data-testid="echo-polish-probability">
                             개선 확률:{" "}
                             {percent(
                                 outcomes.reduce(
@@ -747,9 +739,8 @@ function Calculator({
                             }
                         >
                             <option value="awakening">A · 각성만 반복</option>
-                            <option value="polishing" disabled={!polish}>
+                            <option value="polishing">
                                 B · 목표 옵션 미달 시 1회 연마
-                                {!polish ? " (확률 검증 대기)" : ""}
                             </option>
                         </select>
                     </label>
@@ -788,13 +779,7 @@ function Calculator({
                     </button>
                     <button
                         className="btn"
-                        disabled={
-                            blocked ||
-                            !pool ||
-                            !polish ||
-                            !currentEligible ||
-                            !!budgetError
-                        }
+                        disabled={blocked || !currentEligible || !!budgetError}
                         onClick={() => void run("polishing")}
                     >
                         연마 1회
@@ -802,11 +787,7 @@ function Calculator({
                     <button
                         className="btn"
                         disabled={
-                            blocked ||
-                            !pool ||
-                            invalidCap ||
-                            !!budgetError ||
-                            (config.policy === "polishing" && !polish)
+                            blocked || !pool || invalidCap || !!budgetError
                         }
                         onClick={() => void run("auto")}
                     >
@@ -989,7 +970,7 @@ function Expectation({
                     </p>
                 </>
             ) : (
-                <p>확률 검증 대기: 계산 불가</p>
+                <p>각성제 설정의 확률 자료가 없어 계산할 수 없습니다.</p>
             )}
         </div>
     );

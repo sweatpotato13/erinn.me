@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 
 import { z } from "zod";
 
+import evidence from "../src/data/echostone-polishing-evidence.json";
 import { resolveItems } from "./item-reference";
 import { readSnapshot } from "./reference-data";
 
@@ -186,6 +187,37 @@ assert.deepEqual(
     agents.map(r => r.id),
     [53940, 53941, 53942, 5000078]
 );
+assert.equal(
+    evidence.sourceVersion,
+    String(manifest.sourceVersion.CreatedAt),
+    "Review polishing fixtures when the snapshot changes"
+);
+assert.equal(evidence.agentId, 53940);
+assert.equal(item(evidence.agentId).name, "에코스톤 각성제");
+for (const fixture of evidence.fixtures) {
+    assert.equal(fixture.levelTableId, 10000 + fixture.baseMaximum);
+    const lower = agents.find(a => a.id === evidence.agentId)!.lower[
+        fixture.baseMaximum
+    ];
+    const upper = grades[fixture.grade][fixture.baseMaximum];
+    assert.equal(lower, fixture.lowerExclusive);
+    assert.equal(upper, fixture.upperInclusive);
+    const rows = levels[fixture.baseMaximum].filter(
+        r => r.level > lower && r.level <= upper
+    );
+    assert.deepEqual(
+        rows.map(r => r.level),
+        fixture.weights.map((_, i) => i + lower + 1)
+    );
+    assert.deepEqual(
+        rows.map(r => r.weight),
+        fixture.weights
+    );
+    assert.equal(
+        rows.reduce((sum, r) => sum + r.weight, 0),
+        fixture.totalWeight
+    );
+}
 const result = {
     version: String(manifest.sourceVersion.CreatedAt),
     colors,

@@ -10,7 +10,7 @@ import EchostoneCalculator from "./echostone-calculator";
 
 const title = "마비노기 에코스톤 각성·연마석 계산기";
 const description =
-    "에코스톤 색상·등급·각성제별 목표 확률과 기대 비용을 계산하고, 각성을 시뮬레이션하세요. 현재 옵션의 1회 연마 조건과 검증 상태도 확인할 수 있습니다.";
+    "에코스톤 색상·등급·각성제별 목표 확률과 기대 비용을 계산하세요. 각성과 1회 연마를 시뮬레이션하고 현재 옵션에서 연마할지 다시 각성할지 비교할 수 있습니다.";
 const image = {
     url: `${ECHOSTONE_PATH}/preview`,
     width: 1200,
@@ -49,10 +49,7 @@ export default function EchostonePage() {
                 수 있습니다.
             </p>
             <Suspense fallback={<p>계산기 설정 불러오는 중…</p>}>
-                <EchostoneCalculator
-                    data={reference}
-                    polishingUnavailable={evidence.reason}
-                />
+                <EchostoneCalculator data={reference} />
             </Suspense>
             <section
                 aria-labelledby="echo-rules"
@@ -81,8 +78,11 @@ export default function EchostonePage() {
                     않습니다.
                 </p>
                 <p>
-                    연마 확률 검증 상태: {evidence.reason} 각성·옵션 탐색은
-                    이용할 수 있습니다.
+                    연마는 Prilus 게임 데이터의 일반 에코스톤 각성제(53940) 레벨
+                    가중치와 현재 등급 상한을 적용합니다. 이전에 사용한
+                    고급·최고급 각성제의 보정은 이어지지 않습니다. 각성 가능한
+                    레벨 상한에 도달했더라도 옵션 자체의 최대 레벨 미만이면
+                    연마할 수 있으나, 개선 확률이 0일 수 있습니다.
                 </p>
                 <p>
                     한국어 데이터 버전: <code>{reference.version}</code> · 규칙

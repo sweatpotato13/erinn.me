@@ -191,11 +191,11 @@ export function polishOutcomes(
     const outcomes = new Map<number, number>();
     for (const row of option.levels) {
         const level = Math.max(state.level, row.level);
-        outcomes.set(level, (outcomes.get(level) ?? 0) + row.weight / sum);
+        outcomes.set(level, (outcomes.get(level) ?? 0) + row.weight);
     }
-    return [...outcomes].map(([level, probability]) => ({
+    return [...outcomes].map(([level, weight]) => ({
         level,
-        probability,
+        probability: weight / sum,
     }));
 }
 export interface EchoCosts {

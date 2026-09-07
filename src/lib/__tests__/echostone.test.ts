@@ -216,8 +216,6 @@ test("polishing never inherits the agent, consumes one chance, and awakening rep
     expect(canPolish(pool, { ...state, level: 3 })).toBe(false);
     expect(() => polishEcho(pool, state, null)).toThrow("검증");
     expect(echoStrategies(pool, target, costs, null).B).toBeNull();
-    expect(evidence.status).toBe("unverified");
-    expect(evidence.observations).toEqual([]);
     const session = echoAction(
         emptyEchoSession(state),
         pool,
@@ -388,4 +386,48 @@ test("unknown prices, zero prices and numerical boundaries stay explicit", () =>
     expect(successWithin(1, 0)).toBe(0);
     expect(successWithin(1, 1)).toBe(1);
     expect(() => awakenEcho(red, () => 1)).toThrow("난수");
+});
+
+test("polishing fixtures reproduce the accepted game data and exclude premium lower bounds", () => {
+    expect(evidence.sourceVersion).toBe(reference.version);
+    expect(evidence.agentId).toBe(53940);
+    for (const fixture of evidence.fixtures) {
+        const rows = echoLevels(
+            reference,
+            fixture.baseMaximum,
+            fixture.grade,
+            evidence.agentId
+        );
+        expect(rows.map(r => r.weight)).toEqual(fixture.weights);
+        expect(rows.reduce((s, r) => s + r.weight, 0)).toBe(
+            fixture.totalWeight
+        );
+        expect(rows[0].level).toBe(fixture.lowerExclusive + 1);
+        expect(rows.at(-1)!.level).toBe(fixture.upperInclusive);
+        expect(levelChance(rows, fixture.upperInclusive)).toBeCloseTo(
+            fixture.weights.at(-1)! / fixture.totalWeight,
+            15
+        );
+    }
+    const normal = createEchoPool(reference, 1, 30, evidence.agentId);
+    const premium = createEchoPool(reference, 1, 30, 53942);
+    const option = normal.options.find(o => o.max === 5)!;
+    const state = { id: option.id, level: 1, polishingUsed: false };
+    const outcomes = polishOutcomes(premium, state, normal);
+    expect(outcomes.find(o => o.level === 5)!.probability).toBeCloseTo(
+        20 / 300,
+        15
+    );
+    expect(
+        levelChance(premium.options.find(o => o.id === option.id)!.levels, 5)
+    ).toBeCloseTo(20 / 200, 15);
+    const grade21 = createEchoPool(reference, 2, 21, evidence.agentId);
+    const truncated = grade21.options.find(o => o.max === 20)!;
+    expect(
+        polishOutcomes(
+            grade21,
+            { id: truncated.id, level: 11, polishingUsed: false },
+            grade21
+        )
+    ).toEqual([{ level: 11, probability: 1 }]);
 });

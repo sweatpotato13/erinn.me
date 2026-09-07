@@ -160,13 +160,30 @@ test("current state, maximum and used eligibility survive sharing without automa
     await expect(page.getByTestId("echo-current")).toContainText(
         "연마 조건 충족"
     );
+    const polishButton = page.getByRole("button", {
+        name: "연마 1회",
+        exact: true,
+    });
+    await expect(polishButton).toBeEnabled();
+    await page
+        .getByLabel("에코스톤 연마석 (경매 검색 미지원) 1개 가격 (Gold)", {
+            exact: true,
+        })
+        .fill("50");
+    await page.evaluate(() => {
+        Math.random = () => 0;
+    });
+    await polishButton.click();
+    await expect(page.getByTestId("echo-current")).toContainText(
+        "체력 2/3 레벨"
+    );
     await expect(
-        page.getByRole("button", { name: "연마 1회", exact: true })
-    ).toBeDisabled();
-    await expect(
-        page.getByText(/연마석의 등급별 레벨 범위/).first()
-    ).toBeVisible();
-    await page.getByLabel("이미 연마 사용", { exact: true }).check();
+        page.getByLabel("이미 연마 사용", { exact: true })
+    ).toBeChecked();
+    await expect(polishButton).toBeDisabled();
+    await expect(page.getByTestId("echo-totals")).toHaveText(
+        "각성 0회 · 연마 1회 · 0 AP · 50 Gold"
+    );
     await page.getByLabel(normalPrice, { exact: true }).fill("0");
     await page
         .getByRole("button", { name: "설정 링크 복사", exact: true })
@@ -273,4 +290,121 @@ test("server HTML has rules and social metadata; image and sitemap use published
         sitemap.match(new RegExp(`<loc>https://erinn.me${base}</loc>`, "g"))
     ).toHaveLength(1);
     expect(sitemap).not.toMatch(/\/preview|\?s=/);
+});
+
+test("polishing is independent of the awakening agent and uses the normal level distribution", async ({
+    page,
+}) => {
+    await page.goto(base);
+    const option = reference.colors[0].options.find(o => o.max === 20)!;
+    await page
+        .getByRole("combobox", { name: "현재 옵션", exact: true })
+        .selectOption(String(option.id));
+    await page
+        .getByRole("combobox", { name: "현재 레벨", exact: true })
+        .selectOption("4");
+    const probabilities = page.getByTestId("echo-polish-probability");
+    const before = await probabilities.textContent();
+    expect(before).toContain("개선 확률: 68.818636%");
+    await page
+        .getByRole("combobox", { name: "각성제", exact: true })
+        .selectOption("53942");
+    await expect(probabilities).toHaveText(before!);
+    await page
+        .getByRole("combobox", { name: "등급", exact: true })
+        .selectOption("1");
+    await page
+        .getByRole("combobox", { name: "현재 옵션", exact: true })
+        .selectOption(String(option.id));
+    await expect(
+        page.getByRole("button", { name: "각성 1회", exact: true })
+    ).toBeDisabled();
+    await expect(probabilities).toContainText(
+        "개선 확률: 0% · 유지 확률: 100%"
+    );
+    await page
+        .getByLabel("에코스톤 연마석 (경매 검색 미지원) 1개 가격 (Gold)", {
+            exact: true,
+        })
+        .fill("50");
+    await page.getByRole("button", { name: "연마 1회", exact: true }).click();
+    await expect(page.getByTestId("echo-totals")).toHaveText(
+        "각성 0회 · 연마 1회 · 0 AP · 50 Gold"
+    );
+});
+
+test("mixed policy spends only when affordable, stops after polishing success and displays all strategies", async ({
+    page,
+}) => {
+    await page.goto(base);
+    await page.getByLabel(normalPrice, { exact: true }).fill("100");
+    await page
+        .getByLabel("에코스톤 연마석 (경매 검색 미지원) 1개 가격 (Gold)", {
+            exact: true,
+        })
+        .fill("50");
+    await page
+        .getByRole("combobox", { name: "반복·재시작 정책", exact: true })
+        .selectOption("polishing");
+    const comparison = page
+        .getByRole("heading", {
+            name: "B · 목표 옵션 미달 시 1회 연마",
+            exact: true,
+        })
+        .locator("..");
+    await expect(comparison).toContainText("기대 각성");
+    await expect(comparison).not.toContainText("계산 불가");
+    await page.getByLabel("기록 전체 예산", { exact: false }).fill("149");
+    await page.evaluate(() => {
+        const draws = [0, 0, 0.99];
+        let i = 0;
+        Math.random = () => draws[i++ % draws.length];
+    });
+    await page
+        .getByRole("button", { name: "목표까지 자동 실행", exact: true })
+        .click();
+    await expect(page.getByTestId("echo-totals")).toHaveText(
+        "각성 1회 · 연마 0회 · 25 AP · 100 Gold"
+    );
+    await expect(
+        page.getByRole("status").filter({ hasText: "예산 한도 도달" })
+    ).toBeVisible();
+    await page.getByLabel("기록 전체 예산", { exact: false }).fill("150");
+    await page
+        .getByRole("button", { name: "목표까지 자동 실행", exact: true })
+        .click();
+    await expect(page.getByTestId("echo-totals")).toHaveText(
+        "각성 1회 · 연마 1회 · 25 AP · 150 Gold"
+    );
+    await expect(
+        page.getByRole("status").filter({ hasText: "목표 달성" })
+    ).toBeVisible();
+    const existing = page
+        .getByRole("heading", { name: "C · 현재 옵션에서 시작", exact: true })
+        .locator("..");
+    await expect(existing).toContainText("기대 각성 0회 · 연마석 0개");
+    await page.evaluate(() => {
+        Math.random = () => 0;
+    });
+    await page.getByLabel("기록 전체 예산", { exact: false }).fill("");
+    await page.getByRole("button", { name: "각성 1회", exact: true }).click();
+    await expect(
+        page.getByLabel("이미 연마 사용", { exact: true })
+    ).not.toBeChecked();
+    await expect(existing).not.toContainText("기대 각성 0회 · 연마석 0개");
+    await expect(
+        page.getByRole("button", { name: "연마 1회", exact: true })
+    ).toBeEnabled();
+    await page
+        .getByRole("button", { name: "설정 링크 복사", exact: true })
+        .click();
+    await page.goto(
+        await page.getByLabel("공유 링크", { exact: true }).inputValue()
+    );
+    await expect(
+        page.getByRole("combobox", { name: "반복·재시작 정책", exact: true })
+    ).toHaveValue("polishing");
+    await expect(page.getByTestId("echo-totals")).toHaveText(
+        "각성 0회 · 연마 0회 · 0 AP · 0 Gold"
+    );
 });

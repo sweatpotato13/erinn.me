@@ -1,15 +1,82 @@
 {
-    "status": "unverified",
+    "status": "source-backed",
     "checkedAt": "2026-09-07",
     "sourceVersion": "1788405829",
-    "candidateAgentId": 53940,
-    "reason": "연마석의 등급별 레벨 범위·확률을 게임 내 확률표와 대조하지 못했습니다. 일반 각성제 보정 적용 여부를 확인한 뒤 연마 계산과 시뮬레이션을 제공합니다.",
+    "agentId": 53940,
+    "basis": "The user confirmed Prilus is extracted from actual game data. Combine that accepted source with the official rule that polishing uses the probabilities of 에코스톤 각성제 (item 53940). These are source-derived fixtures, not independently observed reroll trials.",
+    "rule": "Use RandomTableList 10000 + option.Max, the normal agent 53940 exclusive lower bound, and the current grade inclusive upper bound. Renormalize retained weights. Preserve max(currentLevel, sampledLevel); previous premium-agent adjustments do not carry over.",
     "sources": [
         "https://mabinogi.nexon.com/m/news/notice_view.asp?id=4893022",
         "https://mabinogi.nexon.com/page/archive/guide_view.asp?id=4886983",
-        "https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195739.png"
+        "https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195739.png",
+        "https://prilus.gitlab.io/echostone"
     ],
-    "observations": [],
+    "tables": [
+        "RandomTableList",
+        "EchoStoneAwakenAdjustByGradeList",
+        "EchoStoneAwakenAdjustByItemList",
+        "ItemList",
+        "StringTable"
+    ],
+    "fixtures": [
+        {
+            "grade": 21,
+            "baseMaximum": 3,
+            "levelTableId": 10003,
+            "lowerExclusive": 0,
+            "upperInclusive": 2,
+            "weights": [100, 60],
+            "totalWeight": 160
+        },
+        {
+            "grade": 21,
+            "baseMaximum": 5,
+            "levelTableId": 10005,
+            "lowerExclusive": 0,
+            "upperInclusive": 3,
+            "weights": [100, 80, 60],
+            "totalWeight": 240
+        },
+        {
+            "grade": 21,
+            "baseMaximum": 20,
+            "levelTableId": 10020,
+            "lowerExclusive": 0,
+            "upperInclusive": 11,
+            "weights": [1000, 958, 916, 874, 832, 790, 748, 706, 664, 622, 580],
+            "totalWeight": 8690
+        },
+        {
+            "grade": 30,
+            "baseMaximum": 3,
+            "levelTableId": 10003,
+            "lowerExclusive": 0,
+            "upperInclusive": 3,
+            "weights": [100, 60, 20],
+            "totalWeight": 180
+        },
+        {
+            "grade": 30,
+            "baseMaximum": 5,
+            "levelTableId": 10005,
+            "lowerExclusive": 0,
+            "upperInclusive": 5,
+            "weights": [100, 80, 60, 40, 20],
+            "totalWeight": 300
+        },
+        {
+            "grade": 30,
+            "baseMaximum": 20,
+            "levelTableId": 10020,
+            "lowerExclusive": 0,
+            "upperInclusive": 20,
+            "weights": [
+                1000, 958, 916, 874, 832, 790, 748, 706, 664, 622, 580, 538,
+                496, 454, 412, 370, 328, 286, 244, 202
+            ],
+            "totalWeight": 12020
+        }
+    ],
     "eligibilityObservation": {
         "source": "https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195739.png",
         "color": 2,
