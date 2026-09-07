@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 import reference from "../src/data/echostone-reference.json";
 import { defaultEchoConfig, echoConfigPath } from "../src/lib/echostone-url";
@@ -12,6 +12,34 @@ const work = (page: Page) =>
     page.getByRole("group", { name: "에코스톤 작업", exact: true });
 const upgrading = (page: Page) =>
     page.getByRole("region", { name: "에코스톤 승급", exact: true });
+
+async function expectResponsiveWorkspace(page: Page, heading: string) {
+    const workspace = page
+        .getByRole("heading", { name: heading, exact: true })
+        .locator("../..");
+    for (const [width, columns] of [
+        [320, 1],
+        [700, 1],
+        [701, 2],
+        [1440, 2],
+    ]) {
+        await page.setViewportSize({ width, height: 720 });
+        await expect
+            .poll(() =>
+                workspace.evaluate(
+                    element =>
+                        getComputedStyle(element).gridTemplateColumns.split(" ")
+                            .length
+                )
+            )
+            .toBe(columns);
+        expect(
+            await page.evaluate(
+                () => document.documentElement.scrollWidth <= window.innerWidth
+            )
+        ).toBe(true);
+    }
+}
 
 test.beforeEach(async ({ page }) => {
     await page.route(/prilus\.gitlab\.io/, route => route.abort());
@@ -28,13 +56,9 @@ test.beforeEach(async ({ page }) => {
     );
 });
 
-test("simple game controls use local icons, keep three agents and only the two official sources", async ({
+test("game controls keep three agents and only the two official sources", async ({
     page,
 }) => {
-    const requests: string[] = [];
-    page.on("request", r => {
-        if (/prilus\.gitlab\.io/.test(r.url())) requests.push(r.url());
-    });
     await page.goto(base);
     await expect(
         page.getByRole("button", { name: "각성", exact: true })
@@ -66,6 +90,13 @@ test("simple game controls use local icons, keep three agents and only the two o
     await expect(page.getByTestId("echo-current")).toContainText(
         "블루 에코스톤 30등급"
     );
+});
+test("icons load locally without runtime source requests", async ({ page }) => {
+    const requests: string[] = [];
+    page.on("request", r => {
+        if (/prilus\.gitlab\.io/.test(r.url())) requests.push(r.url());
+    });
+    await page.goto(base);
     expect(
         await page
             .locator('img[src^="/images/echostone/"]')
@@ -78,17 +109,22 @@ test("simple game controls use local icons, keep three agents and only the two o
             )
     ).toBe(true);
     expect(requests).toHaveLength(0);
+});
+test("cost controls omit removed fields", async ({ page }) => {
+    await page.goto(base);
     await costs(page);
     await expect(page.getByLabel(/1개 가격 \(Gold\)/)).toHaveCount(3);
     await expect(
         page.getByLabel(/이용 수수료|기록 전체 예산|연마석.*가격/)
     ).toHaveCount(0);
-    await page.setViewportSize({ width: 320, height: 720 });
-    expect(
-        await page.evaluate(
-            () => document.documentElement.scrollWidth <= window.innerWidth
-        )
-    ).toBe(true);
+});
+test("awakening layout fits a narrow viewport", async ({ page }) => {
+    await page.goto(base);
+    await costs(page);
+    await expectResponsiveWorkspace(page, "에코스톤 각성");
+});
+test("awakening can be activated with the keyboard", async ({ page }) => {
+    await page.goto(base);
     await page.getByRole("button", { name: "각성", exact: true }).focus();
     await page.keyboard.press("Enter");
     await expect(page.getByTestId("echo-totals")).toContainText("각성 1회");
@@ -180,6 +216,15 @@ test("agent prices load automatically and one refresh button applies the latest 
         "120"
     );
     expect(requests).toHaveLength(initialRequests + 1);
+});
+test("awakening charges the loaded agent price and polishing consumes one chance", async ({
+    page,
+}) => {
+    await page.goto(base);
+    await costs(page);
+    await expect(page.getByLabel(normalPrice, { exact: true })).toHaveValue(
+        "120"
+    );
     await page.evaluate(() => {
         Math.random = () => 0;
     });
@@ -198,9 +243,7 @@ test("agent prices load automatically and one refresh button applies the latest 
     );
 });
 
-test("late market results preserve manual zero and missing prices remain blank", async ({
-    page,
-}) => {
+async function mockInitialMarket(page: Page) {
     let release!: () => void;
     const gate = new Promise<void>(resolve => {
         release = resolve;
@@ -235,6 +278,13 @@ test("late market results preserve manual zero and missing prices remain blank",
             });
         }
     });
+
+    return release;
+}
+test("late initial market results preserve manual zero and missing prices remain blank", async ({
+    page,
+}) => {
+    const release = await mockInitialMarket(page);
     await page.goto(base);
     await costs(page);
     await page.getByLabel(normalPrice, { exact: true }).fill("0");
@@ -259,6 +309,15 @@ test("late market results preserve manual zero and missing prices remain blank",
             .getByRole("alert")
             .filter({ hasText: "시세를 불러오지 못했습니다" })
     ).toBeVisible();
+});
+test("manual edits during refresh win until the next explicit refresh", async ({
+    page,
+}) => {
+    await page.goto(base);
+    await costs(page);
+    await expect(page.getByLabel(normalPrice, { exact: true })).toHaveValue(
+        "120"
+    );
     let releaseRefresh!: () => void;
     const refreshGate = new Promise<void>(resolve => {
         releaseRefresh = resolve;
@@ -360,12 +419,6 @@ test("upgrade and awakening keep independent colors, progress and fixed grade30 
     await expect(
         page.getByText("보유 스탯·등급 입력", { exact: true })
     ).toHaveCount(0);
-    await page.setViewportSize({ width: 320, height: 720 });
-    expect(
-        await page.evaluate(
-            () => document.documentElement.scrollWidth <= window.innerWidth
-        )
-    ).toBe(true);
     await upgrading(page)
         .getByRole("button", { name: "승급", exact: true })
         .click();
@@ -381,6 +434,20 @@ test("upgrade and awakening keep independent colors, progress and fixed grade30 
         "레드 에코스톤 2등급"
     );
     await expect(page.getByTestId("echo-upgrade-count")).toContainText("1회");
+});
+test("upgrade layout fits a narrow viewport", async ({ page }) => {
+    await page.goto(base);
+    await work(page).getByRole("button", { name: "승급", exact: true }).click();
+    await expectResponsiveWorkspace(page, "에코스톤 승급");
+});
+test("continuous upgrade reaches grade30 with accumulated stats and can restart", async ({
+    page,
+}) => {
+    await page.goto(base);
+    await work(page).getByRole("button", { name: "승급", exact: true }).click();
+    await page.evaluate(() => {
+        Math.random = () => 0;
+    });
     await upgrading(page)
         .getByRole("button", { name: "연속 승급", exact: true })
         .click();
@@ -397,9 +464,7 @@ test("upgrade and awakening keep independent colors, progress and fixed grade30 
     await expect(page.getByTestId("echo-upgrade-count")).toContainText("0회");
 });
 
-test("upgrade target stopping, failed stat retention, cancellation and black stat reset", async ({
-    page,
-}) => {
+async function growBlackTo25(page: Page) {
     await page.goto(base);
     await work(page).getByRole("button", { name: "승급", exact: true }).click();
     await page
@@ -419,6 +484,14 @@ test("upgrade target stopping, failed stat retention, cancellation and black sta
         await expect(page.getByTestId("echo-growth")).toContainText(
             `${stat} 25`
         );
+}
+test("continuous upgrade stops at the selected target", async ({ page }) => {
+    await growBlackTo25(page);
+});
+test("failed upgrade retains grade and all intrinsic stats", async ({
+    page,
+}) => {
+    await growBlackTo25(page);
     const before = await page.getByTestId("echo-growth").textContent();
     await page.evaluate(() => {
         Math.random = () => 0.99;
@@ -430,6 +503,15 @@ test("upgrade target stopping, failed stat retention, cancellation and black sta
     await expect(
         page.getByRole("status").filter({ hasText: "승급 실패" })
     ).toBeVisible();
+});
+test("continuous upgrade can be cancelled without changing failed stats", async ({
+    page,
+}) => {
+    await growBlackTo25(page);
+    const before = await page.getByTestId("echo-growth").textContent();
+    await page.evaluate(() => {
+        Math.random = () => 0.99;
+    });
     await page
         .getByRole("combobox", { name: "승급 목표 등급", exact: true })
         .selectOption("30");
@@ -441,6 +523,11 @@ test("upgrade target stopping, failed stat retention, cancellation and black sta
         page.getByRole("status").filter({ hasText: "연속 승급 중지" })
     ).toBeVisible();
     await expect(page.getByTestId("echo-growth")).toHaveText(before!);
+});
+test("changing color resets black stone stats and attempts", async ({
+    page,
+}) => {
+    await growBlackTo25(page);
     await page
         .getByRole("button", { name: "실버 에코스톤", exact: true })
         .click();
