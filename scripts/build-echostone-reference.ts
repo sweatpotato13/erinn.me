@@ -21,7 +21,9 @@ const items = new Map(data.ItemList.map(r => [r.Id, r]));
 const text = (key: string) => {
     const value = strings.get(key);
     assert(
-        value?.trim() && !["None", "<nil>"].includes(value),
+        typeof value === "string" &&
+            value.trim() &&
+            !["None", "<nil>"].includes(value),
         `Missing echo string ${key}`
     );
     return value
