@@ -41,6 +41,7 @@ export interface AuctionResponse {
 }
 
 export interface PriceSummaryResponse {
+    fetchedAt?: string;
     minPrice: number;
     averagePrice: number;
     availableQuantity: number;
@@ -88,6 +89,10 @@ function parsePriceSummary(value: unknown): PriceSummaryResponse {
         averagePrice: candidate.averagePrice,
         availableQuantity: candidate.availableQuantity,
         isComplete: candidate.isComplete,
+        ...(typeof candidate.fetchedAt === "string" &&
+        Number.isFinite(Date.parse(candidate.fetchedAt))
+            ? { fetchedAt: candidate.fetchedAt }
+            : {}),
     };
 }
 

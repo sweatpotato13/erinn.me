@@ -492,7 +492,7 @@ test("server HTML, social metadata, real image and base-only sitemap", async ({
     expect(
         sitemap.match(new RegExp(`<loc>https://erinn.me${base}</loc>`, "g"))
     ).toHaveLength(1);
-    expect(sitemap).not.toMatch(/\/preview|\?v=|simulators\/echostone/);
+    expect(sitemap).not.toMatch(/\/preview|\?v=/);
     expect(sitemap).toContain("/auction/items/");
 });
 

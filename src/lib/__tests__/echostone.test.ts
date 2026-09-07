@@ -354,6 +354,22 @@ test("chunk runner handles cancellation, first hit, exact budgets, mixed action 
     expect(exact.spent).toBe(large);
 });
 
+test("grade-limited awakening maximum does not replace the option maximum", () => {
+    const blue = createEchoPool(reference, 2, 21, 53942);
+    const icebolt = blue.options.find(
+        o => o.name === "아이스볼트 최대 대미지"
+    )!;
+    expect(icebolt).toBeDefined();
+    expect(Math.max(...icebolt.levels.map(r => r.level))).toBe(11);
+    expect(icebolt.max).toBe(20);
+    expect(
+        canPolish(blue, { id: icebolt.id, level: 11, polishingUsed: false })
+    ).toBe(true);
+    expect(
+        canPolish(blue, { id: icebolt.id, level: 20, polishingUsed: false })
+    ).toBe(false);
+});
+
 test("unknown prices, zero prices and numerical boundaries stay explicit", () => {
     expect(
         echoStrategies(red, target, { awakening: null, stone: null }, null).A

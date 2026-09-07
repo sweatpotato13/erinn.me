@@ -36,6 +36,19 @@ describe("auction price client", () => {
         );
     });
 
+    it("preserves valid collection time and ignores malformed optional time", async () => {
+        for (const fetchedAt of ["2026-09-07T00:00:00Z", "invalid"]) {
+            jest.mocked(fetch).mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({ ...validSummary, fetchedAt }),
+            } as Response);
+            const summary = await fetchItemPriceSummary("item");
+            expect(summary.fetchedAt).toBe(
+                fetchedAt === "invalid" ? undefined : fetchedAt
+            );
+        }
+    });
+
     it("loads and validates all coupon summaries in one request", async () => {
         const summaries = {
             10: validSummary,

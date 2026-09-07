@@ -6,7 +6,18 @@
     "reason": "연마석의 등급별 레벨 범위·확률을 게임 내 확률표와 대조하지 못했습니다. 일반 각성제 보정 적용 여부를 확인한 뒤 연마 계산과 시뮬레이션을 제공합니다.",
     "sources": [
         "https://mabinogi.nexon.com/m/news/notice_view.asp?id=4893022",
-        "https://mabinogi.nexon.com/page/archive/guide_view.asp?id=4886983"
+        "https://mabinogi.nexon.com/page/archive/guide_view.asp?id=4886983",
+        "https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195739.png"
     ],
-    "observations": []
+    "observations": [],
+    "eligibilityObservation": {
+        "source": "https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195739.png",
+        "color": 2,
+        "grade": 21,
+        "option": "아이스볼트 최대 대미지",
+        "currentLevel": 11,
+        "displayedMaximum": 20,
+        "rerollAvailable": true,
+        "numericRerollDistributionShown": false
+    }
 }

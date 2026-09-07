@@ -92,6 +92,7 @@ export function parseEchoConfig(params: URLSearchParams, data: EchoReference) {
         return { config: fallback, error: null, changedVersion: false };
     try {
         const config = configSchema.parse(JSON.parse(raw));
+        if (config.version !== data.version) config.current = null;
         if (echoConfigError(config, data)) return bad();
         return {
             config,

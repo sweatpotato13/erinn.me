@@ -22,6 +22,12 @@ test("round trips all agent prices, zero vs blank and independent one-use state"
     config.version = "1";
     expect(
         parseEchoConfig(
+            new URLSearchParams({ s: JSON.stringify(config) }),
+            reference
+        ).config.current
+    ).toBeNull();
+    expect(
+        parseEchoConfig(
             new URL(echoConfigPath(config, reference), "https://erinn.me")
                 .searchParams,
             reference

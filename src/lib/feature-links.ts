@@ -35,6 +35,13 @@ export const FEATURE_LINKS = [
         searchVisible: true,
     },
     {
+        label: "에코스톤 계산기",
+        url: "/simulators/echostone",
+        description: "각성 목표 확률과 비용, 1회 연마 조건을 확인하세요",
+        group: "강화 시뮬레이터",
+        searchVisible: true,
+    },
+    {
         label: "문의하기",
         url: "/contact",
         description: "문의사항이나 피드백을 보내주세요",

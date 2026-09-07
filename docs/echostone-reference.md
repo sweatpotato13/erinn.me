@@ -24,6 +24,8 @@ Checked 2026-09-07:
 - [Official echo guide](https://mabinogi.nexon.com/page/archive/guide_view.asp?id=4886983): current rule description, without numeric grade-dependent reroll probabilities.
 - Snapshot item 5040961 description excludes additional bonus effects. No separate polishing adjustment row exists.
 
+- [Official in-game awakening screen](https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195739.png), linked from the guide (updated 2026-02-12), inspected 2026-09-07: blue grade 21, Icebolt maximum damage 11/20, highest-quality agent effect, reroll available. Snapshot grade 21 caps ordinary awakening at 11 for base maximum 20. Therefore retain base maximum separately from awakening support when checking polishing eligibility. The image contains **no numeric reroll distribution** and does not verify grade truncation for polishing.
+
 These establish eligibility and material rules. They do **not** independently verify the normal-agent numeric mapping, especially grade truncation.
 `src/data/echostone-polishing-evidence.json` records the unresolved status. No in-game observations have been fabricated.
 Polishing calculations/actions must stay unavailable until a dated in-game probability fixture establishes the mapping.

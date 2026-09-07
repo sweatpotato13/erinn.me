@@ -106,7 +106,6 @@ export function createEchoPool(
             }
             return {
                 ...o,
-                max: data.grades[grade][o.max],
                 chance: o.weight / color.total,
                 levels,
             };
