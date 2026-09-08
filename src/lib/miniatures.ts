@@ -4,7 +4,7 @@ export interface Miniature {
     name: string;
     itemName: string;
     description: string;
-    effects: Record<string, number>;
+    effects: Partial<Record<string, number>>;
     extra: boolean;
     searchable: boolean;
 }
@@ -51,7 +51,7 @@ export const effectLabel = (key: string) =>
     knownEffect(key) ? MINIATURE_EFFECTS[key].label : key;
 export const miniatureNumber = (n: number) =>
     n.toLocaleString("ko-KR", { maximumFractionDigits: 6 });
-export function effectValue(key: string, value: number, delta = false) {
+export function effectValue(key: string, value = 0, delta = false) {
     if (!knownEffect(key))
         return `${miniatureNumber(value)} (단위·계산 규칙 미확인)`;
     return `${delta && value > 0 ? "+" : ""}${miniatureNumber(value)}${MINIATURE_EFFECTS[key].unit === "%" ? (delta ? "%p" : "%") : ""}`;
@@ -65,7 +65,12 @@ export function miniatureTotals(items: Miniature[], ids: number[]) {
         if (!installed.has(item.id)) continue;
         const group = item.extra ? extra : normal;
         for (const [key, value] of Object.entries(item.effects)) {
-            if (knownEffect(key) && Number.isFinite(value) && value >= 0)
+            if (
+                knownEffect(key) &&
+                typeof value === "number" &&
+                Number.isFinite(value) &&
+                value >= 0
+            )
                 group[key] = Math.max(group[key] ?? 0, value);
         }
     }
