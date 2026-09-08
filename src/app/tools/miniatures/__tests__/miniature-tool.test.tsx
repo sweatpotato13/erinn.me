@@ -79,6 +79,14 @@ function mount() {
     );
     return { ...render(element), client, element };
 }
+const originalMatchMedia = Object.getOwnPropertyDescriptor(
+    window,
+    "matchMedia"
+);
+const originalScrollIntoView = Object.getOwnPropertyDescriptor(
+    Element.prototype,
+    "scrollIntoView"
+);
 beforeEach(() => {
     localStorage.clear();
     priceFetch.mockReset();
@@ -86,7 +94,19 @@ beforeEach(() => {
     window.matchMedia = jest.fn().mockReturnValue({ matches: false });
     Element.prototype.scrollIntoView = jest.fn();
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+    jest.restoreAllMocks();
+    if (originalMatchMedia)
+        Object.defineProperty(window, "matchMedia", originalMatchMedia);
+    else Reflect.deleteProperty(window, "matchMedia");
+    if (originalScrollIntoView)
+        Object.defineProperty(
+            Element.prototype,
+            "scrollIntoView",
+            originalScrollIntoView
+        );
+    else Reflect.deleteProperty(Element.prototype, "scrollIntoView");
+});
 
 test("candidate effects and installations stay separate; four maximum", () => {
     localStorage.setItem(MINIATURE_STORAGE_KEY, stored([1, 2, 3]));

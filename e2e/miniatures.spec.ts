@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, type Page, test } from "@playwright/test";
 
 import data from "../src/data/miniature-reference.json";
 
@@ -19,9 +19,11 @@ async function choose(page: Page, id: number) {
     await page.getByLabel("미니어처 검색", { exact: true }).fill(item(id).name);
     await row(page, id).getByRole("button", { name: "비교 추가" }).click();
 }
-test("navigation, installation, four candidates, explicit market, details and narrow layout", async ({
-    page,
-}, info) => {
+test.beforeEach(async ({ page }) => {
+    await page.route("**/api/item-image?**", route => route.abort());
+});
+
+async function mockMarket(page: Page) {
     const prices: string[] = [];
     const forbidden: string[] = [];
     page.on("request", request => {
@@ -32,7 +34,6 @@ test("navigation, installation, four candidates, explicit market, details and na
         )
             forbidden.push(request.url());
     });
-    await page.route("**/api/item-image?**", route => route.abort());
     await page.route("**/api/auction/price-summary?**", async route => {
         prices.push(
             new URL(route.request().url()).searchParams.get("item_name")!
@@ -47,6 +48,24 @@ test("navigation, installation, four candidates, explicit market, details and na
             },
         });
     });
+    return { prices, forbidden };
+}
+
+async function installCollection(page: Page) {
+    for (const id of [592, 739, 789, 485, 826, 770]) {
+        await page
+            .getByLabel("미니어처 검색", { exact: true })
+            .fill(item(id).name);
+        await row(page, id)
+            .getByRole("checkbox", {
+                name: `${item(id).name} 설치 중`,
+                exact: true,
+            })
+            .check();
+    }
+}
+
+test("home and menu navigation", async ({ page }) => {
     await page.goto("/");
     await page
         .locator("main")
@@ -76,22 +95,35 @@ test("navigation, installation, four candidates, explicit market, details and na
         await group.press("Escape");
         await expect(group).toBeFocused();
     }
+});
+
+test("installed collection survives comparison and reload", async ({
+    page,
+}) => {
+    await mockMarket(page);
+    await page.goto(path);
+    await installCollection(page);
     const baseline = page.getByRole("region", { name: "설치 기준" });
-    for (const id of [592, 739, 789, 485, 826, 770]) {
-        await page
-            .getByLabel("미니어처 검색", { exact: true })
-            .fill(item(id).name);
-        await row(page, id)
-            .getByRole("checkbox", {
-                name: `${item(id).name} 설치 중`,
-                exact: true,
-            })
-            .check();
-    }
     await expect(baseline).toContainText("6개");
     const before = await page.evaluate(key => localStorage.getItem(key), key);
     await page.getByLabel("목표 능력치").selectOption("CriticalDamage");
     await expect(baseline).toContainText("크리티컬 대미지");
+    for (const id of [564, 790, 1207, 341]) await choose(page, id);
+    expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(
+        before
+    );
+    await page.reload();
+    await expect(
+        page.getByRole("heading", { name: /내 설치 현황/ })
+    ).toContainText("6개");
+});
+
+test("four-candidate limit and selection survive filtering", async ({
+    page,
+}) => {
+    await mockMarket(page);
+    await page.goto(path);
+    const before = await page.evaluate(key => localStorage.getItem(key), key);
     for (const id of [564, 790, 1207, 341]) await choose(page, id);
     await page.getByLabel("목표 능력치").selectOption("all");
     await page
@@ -106,10 +138,16 @@ test("navigation, installation, four candidates, explicit market, details and na
     await expect(
         page.getByRole("region", { name: "구매 후보 비교" })
     ).toContainText("4 / 4");
-    expect(prices.length).toBeGreaterThan(0);
     expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe(
         before
     );
+});
+
+test("set bonuses and unsupported auction searches stay explicit", async ({
+    page,
+}) => {
+    await page.goto(path);
+    await choose(page, 1207);
     const setCandidate = page.getByRole("article", {
         name: `${item(1207).name} 가격 비교`,
     });
@@ -118,6 +156,15 @@ test("navigation, installation, four candidates, explicit market, details and na
     await expect(
         setCandidate.getByText("세트 효과는 합계에서 제외합니다.")
     ).toBeVisible();
+});
+
+test("automatic market prices, overrides and narrow layout", async ({
+    page,
+}, info) => {
+    const { prices, forbidden } = await mockMarket(page);
+    await page.goto(path);
+    await installCollection(page);
+    for (const id of [564, 790, 1207, 341]) await choose(page, id);
     const mismatch = page.getByRole("article", {
         name: `${item(341).name} 가격 비교`,
     });
@@ -146,16 +193,11 @@ test("navigation, installation, four candidates, explicit market, details and na
         path: info.outputPath("comparison.png"),
         fullPage: true,
     });
-    await page.reload();
-    await expect(
-        page.getByRole("heading", { name: /내 설치 현황/ })
-    ).toContainText("6개");
 });
 
-test("local installations survive reload; sharing is absent and music search excludes zero effects", async ({
+test("local installation recovery, scoped reset and absent sharing", async ({
     page,
 }) => {
-    await page.route("**/api/item-image?**", route => route.abort());
     await page.goto(path);
     await page.evaluate(
         ({ key, value }) => {
@@ -171,15 +213,7 @@ test("local installations survive reload; sharing is absent and music search exc
     await expect(
         page.getByRole("button", { name: "공유", exact: true })
     ).toHaveCount(0);
-    await page
-        .getByLabel("미니어처 검색", { exact: true })
-        .fill("사이브 음악 버프");
-    await expect(row(page, 912)).toBeVisible();
-    await page.getByLabel("목표 능력치").selectOption("AttackMax");
-    await expect(row(page, 912)).toHaveCount(0);
-    await page.getByLabel("목표 능력치").selectOption("MusicSkill");
-    await expect(row(page, 912)).toContainText("음악 버프 스킬 효과 3");
-    await expect(row(page, 912)).not.toContainText("최대 대미지 0");
+    await page.getByLabel("미니어처 검색", { exact: true }).fill("사이브");
     await row(page, 912).getByRole("checkbox").check();
     await page.reload();
     await expect(
@@ -195,6 +229,21 @@ test("local installations survive reload; sharing is absent and music search exc
     expect(
         await page.evaluate(() => localStorage.getItem("unrelated-favorites"))
     ).toBe("keep");
+});
+
+test("music search excludes zero effects for a specific stat", async ({
+    page,
+}) => {
+    await page.goto(path);
+    await page
+        .getByLabel("미니어처 검색", { exact: true })
+        .fill("사이브 음악 버프");
+    await expect(row(page, 912)).toBeVisible();
+    await page.getByLabel("목표 능력치").selectOption("AttackMax");
+    await expect(row(page, 912)).toHaveCount(0);
+    await page.getByLabel("목표 능력치").selectOption("MusicSkill");
+    await expect(row(page, 912)).toContainText("음악 버프 스킬 효과 3");
+    await expect(row(page, 912)).not.toContainText("최대 대미지 0");
 });
 
 test("crawler HTML, canonical and one sitemap URL", async ({ request }) => {
