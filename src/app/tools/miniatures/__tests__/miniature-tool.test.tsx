@@ -297,8 +297,47 @@ test("storage denial, safe descriptions/icon fallback, focus and clipboard fallb
         expect(screen.getByText(/직접 복사/)).toBeInTheDocument()
     );
     expect(
-        (screen.getByLabelText("공유 링크")).value
+        screen.getByLabelText<HTMLInputElement>("공유 링크").value
     ).toContain("/tools/miniatures?s=");
     get.mockRestore();
     set.mockRestore();
+});
+
+test("failed preview icons recover on item changes; a pending batch cannot overlap", async () => {
+    let resolve!: (value: typeof market) => void;
+    priceFetch.mockImplementation(
+        () =>
+            new Promise(r => {
+                resolve = r;
+            })
+    );
+    mount();
+    fireEvent.click(row(4).getByRole("button", { name: "미리보기" }));
+    const preview = within(
+        screen.getByRole("region", { name: "구매 후 효과 미리보기" })
+    );
+    fireEvent.error(preview.getByAltText(""));
+    expect(preview.getByLabelText("아이콘 없음")).toBeInTheDocument();
+    fireEvent.click(row(5).getByRole("button", { name: "미리보기" }));
+    expect(preview.getByAltText("")).toHaveAttribute(
+        "src",
+        "/api/item-image?id=105"
+    );
+    add(5);
+    openDetails();
+    fireEvent.click(screen.getByRole("button", { name: "가격 조회" }));
+    await waitFor(() => expect(priceFetch).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByRole("button", { name: "가격 조회 중…" }));
+    fireEvent.change(detail(5).getByRole("textbox"), {
+        target: { value: "7" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "전체 해제" }));
+    add(4);
+    await act(async () => {
+        resolve(market);
+        await Promise.resolve();
+    });
+    expect(priceFetch).toHaveBeenCalledTimes(1);
+    expect(detail(4).getByRole("textbox")).toHaveValue("");
+    expect(detail(4).getByText("가격 미확인")).toBeInTheDocument();
 });

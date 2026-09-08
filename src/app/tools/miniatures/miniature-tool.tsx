@@ -34,10 +34,10 @@ import {
 import styles from "./miniature-tool.module.css";
 
 function Icon({ item }: { item: Miniature }) {
-    const [failed, setFailed] = useState(false);
+    const [failedItemId, setFailedItemId] = useState<number | null>(null);
     return (
         <span className={styles.icon}>
-            {failed ? (
+            {failedItemId === item.itemId ? (
                 <span aria-label="아이콘 없음">◇</span>
             ) : (
                 // Inventory images already use the shared proxy; preserve a fixed-size fallback.
@@ -47,7 +47,7 @@ function Icon({ item }: { item: Miniature }) {
                     width={40}
                     height={40}
                     loading="lazy"
-                    onError={() => setFailed(true)}
+                    onError={() => setFailedItemId(item.itemId)}
                 />
             )}
         </span>
