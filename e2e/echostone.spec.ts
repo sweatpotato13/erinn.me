@@ -97,17 +97,17 @@ test("icons load locally without runtime source requests", async ({ page }) => {
         if (/prilus\.gitlab\.io/.test(r.url())) requests.push(r.url());
     });
     await page.goto(base);
-    expect(
-        await page
-            .locator('img[src^="/images/echostone/"]')
-            .evaluateAll(images =>
-                images.every(
-                    image =>
-                        (image as HTMLImageElement).complete &&
-                        (image as HTMLImageElement).naturalWidth > 0
-                )
+    const icons = page.locator('img[src^="/images/echostone/"]');
+    await expect(icons).toHaveCount(8);
+    for (const icon of await icons.all()) {
+        await icon.scrollIntoViewIfNeeded();
+        await expect(icon).toHaveJSProperty("complete", true);
+        await expect
+            .poll(() =>
+                icon.evaluate(image => (image as HTMLImageElement).naturalWidth)
             )
-    ).toBe(true);
+            .toBeGreaterThan(0);
+    }
     expect(requests).toHaveLength(0);
 });
 test("cost controls omit removed fields", async ({ page }) => {
@@ -125,7 +125,11 @@ test("awakening layout fits a narrow viewport", async ({ page }) => {
 });
 test("awakening can be activated with the keyboard", async ({ page }) => {
     await page.goto(base);
-    await page.getByRole("button", { name: "각성", exact: true }).focus();
+    const awaken = page.getByRole("button", { name: "각성", exact: true });
+    // focus() does not wait for the hydration-disabled button to be enabled.
+    await expect(awaken).toBeEnabled();
+    await awaken.focus();
+    await expect(awaken).toBeFocused();
     await page.keyboard.press("Enter");
     await expect(page.getByTestId("echo-totals")).toContainText("각성 1회");
 });
