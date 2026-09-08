@@ -15,18 +15,14 @@ test("server content explains supported rules, sources and unique base metadata"
         screen.getByText(/능력치마다 독립적으로 설치 중인/)
     ).toBeInTheDocument();
     expect(screen.getByText(/세트 효과, 펫 하우스/)).toBeInTheDocument();
-    expect(screen.getByText(/원본 버전 1788405829/)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "경매장" })).toHaveAttribute(
-        "href",
-        "/auction"
-    );
+    expect(screen.queryByText(/데이터: Prilus/)).not.toBeInTheDocument();
+    expect(
+        screen.queryByRole("navigation", { name: "관련 도구" })
+    ).not.toBeInTheDocument();
+    expect(
+        screen.queryByRole("link", { name: "마비노기 공식 공지" })
+    ).not.toBeInTheDocument();
     expect(metadata.alternates?.canonical).toBe("/tools/miniatures");
-    expect(metadata.openGraph?.images).toEqual([
-        expect.objectContaining({
-            url: "/tools/miniatures/preview",
-            width: 1200,
-            height: 630,
-        }),
-    ]);
-    expect(metadata.twitter).toMatchObject({ card: "summary_large_image" });
+    expect(metadata.openGraph).toBeUndefined();
+    expect(metadata.twitter).toBeUndefined();
 });

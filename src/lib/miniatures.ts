@@ -150,12 +150,16 @@ export function matchesMiniature(
         item.description,
         ...Object.keys(item.effects).map(effectLabel),
     ].join(" ");
-    return miniatureSearchText(text).includes(miniatureSearchText(search));
+    return search
+        .trim()
+        .split(/\s+/)
+        .every(word =>
+            miniatureSearchText(text).includes(miniatureSearchText(word))
+        );
 }
 
 export function filterMiniatures(
     items: Miniature[],
-    installed: number[],
     options: {
         search: string;
         type: string;
@@ -164,26 +168,23 @@ export function filterMiniatures(
         auctionOnly: boolean;
     }
 ) {
-    const baseline = miniatureTotals(items, installed);
-    const benefit = (item: Miniature) =>
-        Math.max(
-            0,
-            (item.effects[options.stat] ?? 0) -
-                ((item.extra ? baseline.extra : baseline.normal)[
-                    options.stat
-                ] ?? 0)
-        );
     return items
         .filter(
             item =>
                 matchesMiniature(item, options.search, options.type) &&
+                (options.stat === "all" ||
+                    (item.effects[options.stat] ?? 0) > 0) &&
                 (!options.auctionOnly || item.searchable) &&
-                (options.minimum === null ||
+                (options.stat === "all" ||
+                    options.minimum === null ||
                     (item.effects[options.stat] ?? 0) >= options.minimum)
         )
         .sort(
             (a, b) =>
-                benefit(b) - benefit(a) ||
+                (options.stat === "all"
+                    ? b.id - a.id
+                    : (b.effects[options.stat] ?? 0) -
+                      (a.effects[options.stat] ?? 0)) ||
                 a.name.localeCompare(b.name, "ko") ||
                 a.id - b.id
         );

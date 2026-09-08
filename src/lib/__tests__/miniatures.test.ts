@@ -98,7 +98,7 @@ test("unknown effects remain visible but outside totals; percent points are sepa
     ).toBeCloseTo(0.2);
 });
 
-test("Korean effect/item search, combined filters, and benefit ordering", () => {
+test("Korean effect/item search, combined filters, and descending own-effect / registration ordering", () => {
     const options = {
         search: "",
         type: "all",
@@ -106,30 +106,33 @@ test("Korean effect/item search, combined filters, and benefit ordering", () => 
         minimum: null,
         auctionOnly: false,
     };
-    expect(filterMiniatures(items, [1], options).map(i => i.id)).toEqual([
-        5, 3, 4, 1, 2,
+    expect(filterMiniatures(items, options).map(i => i.id)).toEqual([
+        5, 4, 1, 2, 3,
     ]);
     expect(
-        filterMiniatures(items, [], {
+        filterMiniatures(items, { ...options, stat: "all" }).map(i => i.id)
+    ).toEqual([5, 4, 3, 2, 1]);
+    expect(
+        filterMiniatures(items, {
             ...options,
             search: "최대대미지",
             type: "extra",
         }).map(i => i.id)
     ).toEqual([3]);
     expect(
-        filterMiniatures(items, [], {
+        filterMiniatures(items, {
             ...options,
             search: "판매후보4",
             minimum: 6,
         }).map(i => i.id)
     ).toEqual([4]);
     expect(
-        filterMiniatures([{ ...items[0], searchable: false }], [], {
+        filterMiniatures([{ ...items[0], searchable: false }], {
             ...options,
             auctionOnly: true,
         })
     ).toEqual([]);
-    expect(filterMiniatures(items, [], { ...options, minimum: 9 })).toEqual([]);
+    expect(filterMiniatures(items, { ...options, minimum: 9 })).toEqual([]);
 });
 
 test("price states, cost-per-gain and incomplete/overflow baskets", () => {
@@ -157,4 +160,36 @@ test("price states, cost-per-gain and incomplete/overflow baskets", () => {
         expect(benefitCost(p, delta)).toBeNull();
     expect(basketCost([0, 100, null])).toEqual({ subtotal: 100, missing: 1 });
     expect(basketCost([Number.MAX_SAFE_INTEGER, 1]).subtotal).toBeNull();
+});
+
+test("stat filtering excludes missing/zero effects and name plus effect terms match independently", () => {
+    const options = {
+        search: "사이브 음악 버프",
+        type: "all",
+        stat: "MusicSkill",
+        minimum: null,
+        auctionOnly: false,
+    };
+    expect(
+        filterMiniatures(reference.miniatures, {
+            ...options,
+            stat: "all",
+            minimum: 99,
+        }).map(i => i.id)
+    ).toEqual([912]);
+    expect(
+        filterMiniatures(reference.miniatures, options).map(i => i.id)
+    ).toEqual([912]);
+    expect(
+        filterMiniatures(reference.miniatures, {
+            ...options,
+            stat: "AttackMax",
+        })
+    ).toEqual([]);
+    expect(
+        filterMiniatures(
+            [item(1, { MusicSkill: 0 }), item(2, { AttackMax: 4 })],
+            { ...options, search: "" }
+        )
+    ).toEqual([]);
 });

@@ -1,5 +1,13 @@
 # Miniature reference and comparison
 
+## Current UI revision (2026-09-08)
+
+The default target is **전체**, allowing name/effect searches across all miniatures. Selecting a specific stat excludes missing and zero effects; the minimum-value filter applies only to specific stats. Search words match independently. Cards display actual item effects. Specific stats sort by descending item effect; 전체 sorts by descending facility ID as a registration-order proxy because release dates are unavailable.
+
+Saved installations use a non-scrolling responsive grid: image, name, then normal/extra type on separate lines. The catalog checkbox adds installations; there is no duplicate installation search/editor. Candidate cards integrate individual before/after effects, editable prices, automatic auction lookup on selection, and immediately visible lookup results, pending/error states. The basket retains independent group maxima. No standalone preview, share URL/state/image endpoint, title strip, provenance footer, or related-tools footer remains. Local installation persistence and scoped reset remain.
+
+Verification and screenshots below describe the original implementation and its retired UI, not this revision.
+
 ## Source and refresh
 
 The committed MiniatureList is already part of the existing manual collector and manifest. Build reads `readSnapshot` and reuses `resolveItems`; no runtime reference-table download or second collector. Facility `Id` identifies installations/comparison; `ItemId` identifies inventory images, prices and exact `ItemList.Name` auction searches. MiniatureList booleans are retained unchanged. Item/facility description differences are retained as plain text.
@@ -95,7 +103,7 @@ Match translucent dark gray panels, thin outlines/inset edges, shallow title bar
 
 Visual verification must compare real desktop/mobile output to this screenshot. Readable contrast, 44px touch controls and mobile stacking are intentional web adaptations. Implementation screenshots and verification results will be recorded after browser checks.
 
-## Implementation verification (2026-09-08)
+## Original implementation verification (2026-09-08; before UI revision)
 
 ### Requirements and evidence
 

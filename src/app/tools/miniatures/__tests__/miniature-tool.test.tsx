@@ -9,17 +9,11 @@ import {
 } from "@testing-library/react";
 
 import MiniatureTool from "@/app/tools/miniatures/miniature-tool";
+import reference from "@/data/miniature-reference.json";
 import { fetchItemPriceSummary } from "@/lib/api/auction";
 import type { Miniature, MiniatureReference } from "@/lib/miniatures";
-import {
-    defaultMiniatureConfig,
-    MINIATURE_STORAGE_KEY,
-} from "@/lib/miniatures-state";
+import { MINIATURE_STORAGE_KEY } from "@/lib/miniatures-state";
 
-let query = "";
-jest.mock("next/navigation", () => ({
-    useSearchParams: () => new URLSearchParams(query),
-}));
 jest.mock("@/lib/api/auction", () => ({ fetchItemPriceSummary: jest.fn() }));
 const priceFetch = jest.mocked(fetchItemPriceSummary);
 const makeItem = (
@@ -48,7 +42,7 @@ const data: MiniatureReference = {
         makeItem(4, { AttackMax: 6 }),
         makeItem(5, { AttackMax: 8 }),
         {
-            ...makeItem(6, { FutureStat: 2, Protect: 1 }),
+            ...makeItem(6, { FutureStat: 2, Protect: 1, AttackMax: 1 }),
             searchable: false,
             description: "<script>세트 설명</script>",
         },
@@ -85,34 +79,18 @@ function mount() {
     );
     return { ...render(element), client, element };
 }
-function openDetails() {
-    fireEvent.click(screen.getAllByRole("button", { name: "상세 비교" })[0]);
-}
-
 beforeEach(() => {
-    query = "";
     localStorage.clear();
     priceFetch.mockReset();
+    priceFetch.mockImplementation(() => new Promise(() => {}));
     window.matchMedia = jest.fn().mockReturnValue({ matches: false });
     Element.prototype.scrollIntoView = jest.fn();
 });
 afterEach(() => jest.restoreAllMocks());
 
-test("preview, comparison, independent filters and installation stay separate; four maximum", () => {
+test("candidate effects and installations stay separate; four maximum", () => {
     localStorage.setItem(MINIATURE_STORAGE_KEY, stored([1, 2, 3]));
     mount();
-    fireEvent.click(row(5).getByRole("button", { name: "미리보기" }));
-    const preview = within(
-        screen.getByRole("region", { name: "구매 후 효과 미리보기" })
-    );
-    expect(preview.getByText(/\+3 증가/)).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("목표 능력치"), {
-        target: { value: "MagicAttack" },
-    });
-    expect(preview.getByText("최대 대미지 +3")).toBeInTheDocument();
-    fireEvent.change(screen.getByLabelText("목표 능력치"), {
-        target: { value: "AttackMax" },
-    });
     expect(
         JSON.parse(localStorage.getItem(MINIATURE_STORAGE_KEY)!).installedIds
     ).toEqual([1, 2, 3]);
@@ -129,31 +107,24 @@ test("preview, comparison, independent filters and installation stay separate; f
     expect(
         screen.getByRole("button", { name: "후보 4 비교 제거" })
     ).toBeInTheDocument();
-    expect(
-        preview.getByText("현재 검색 결과 밖의 후보입니다.")
-    ).toBeInTheDocument();
     fireEvent.change(screen.getByLabelText("미니어처 검색"), {
         target: { value: "" },
     });
     add(1);
     add(2);
     add(3);
-    expect(screen.getByRole("status")).toHaveTextContent("최대 4개");
-    fireEvent.click(screen.getByRole("button", { name: "설치 목록 편집" }));
-    fireEvent.click(screen.getByText("설치된 미니어처 목록"));
+    expect(screen.getByText(/비교 후보는 최대 4개/)).toBeInTheDocument();
     fireEvent.click(
         within(screen.getByRole("group", { name: "설치 목록 종류" })).getByRole(
             "button",
             { name: "엑스트라" }
         )
     );
-    expect(preview.getByText(/\+3 증가/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "설치 목록 초기화" }));
     expect(localStorage.getItem(MINIATURE_STORAGE_KEY)).toBeNull();
-    expect(priceFetch).not.toHaveBeenCalled();
 });
 
-test("explicit bounded deduplicated lookup preserves zero/blank edits and late selection changes", async () => {
+test("automatic bounded deduplicated lookup preserves zero/blank edits and late selection changes", async () => {
     let resolve!: (value: typeof market) => void;
     priceFetch.mockImplementation(
         () =>
@@ -165,9 +136,7 @@ test("explicit bounded deduplicated lookup preserves zero/blank edits and late s
     add(5);
     add(7);
     add(6);
-    openDetails();
-    expect(priceFetch).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole("button", { name: "가격 조회" }));
+    expect(detail(5).getByRole("textbox")).toHaveValue("");
     await waitFor(() => expect(priceFetch).toHaveBeenCalledTimes(1));
     expect(priceFetch).toHaveBeenCalledWith(
         "판매명 5",
@@ -182,7 +151,9 @@ test("explicit bounded deduplicated lookup preserves zero/blank edits and late s
         await Promise.resolve();
     });
     expect(detail(5).getByRole("textbox")).toHaveValue("0");
-    expect(detail(5).getByText(/일부 조회/)).toBeInTheDocument();
+    await waitFor(() =>
+        expect(detail(5).getByText(/일부 조회/)).toBeInTheDocument()
+    );
     expect(detail(5).getByText(/조회 시각/)).toBeInTheDocument();
     expect(detail(6).queryByRole("link")).not.toBeInTheDocument();
     fireEvent.change(detail(5).getByRole("textbox"), { target: { value: "" } });
@@ -210,8 +181,6 @@ test("mixed empty/error quotes remain unknown, manual price budget includes boun
     mount();
     add(4);
     add(5);
-    openDetails();
-    fireEvent.click(screen.getByRole("button", { name: "가격 조회" }));
     await waitFor(() =>
         expect(detail(5).getByRole("alert")).toHaveTextContent("가격 조회 실패")
     );
@@ -239,34 +208,7 @@ test("mixed empty/error quotes remain unknown, manual price budget includes boun
     ).toBeInTheDocument();
 });
 
-test("opening and editing shared baseline never writes the device collection; query changes restore", () => {
-    localStorage.setItem(MINIATURE_STORAGE_KEY, stored([1, 2]));
-    const config = {
-        ...defaultMiniatureConfig(data),
-        candidateIds: [5],
-        installedIds: [3],
-    };
-    query = new URLSearchParams({ s: JSON.stringify(config) }).toString();
-    const app = mount();
-    expect(
-        screen.getByRole("heading", { name: /공유된 설치 기준/ })
-    ).toBeInTheDocument();
-    fireEvent.click(row(4).getByRole("checkbox"));
-    expect(localStorage.getItem(MINIATURE_STORAGE_KEY)).toBe(stored([1, 2]));
-    query = "";
-    app.rerender(
-        <QueryClientProvider client={app.client}>
-            <MiniatureTool data={data} />
-        </QueryClientProvider>
-    );
-    expect(
-        screen.getByRole("heading", { name: /내 설치 현황/ })
-    ).toHaveTextContent("2개");
-    expect(row(4).getByRole("checkbox")).not.toBeChecked();
-    expect(priceFetch).not.toHaveBeenCalled();
-});
-
-test("storage denial, safe descriptions/icon fallback, focus and clipboard fallback", async () => {
+test("storage denial, safe descriptions/icon fallback and focus", () => {
     const get = jest
         .spyOn(Storage.prototype, "getItem")
         .mockImplementation(() => {
@@ -279,7 +221,10 @@ test("storage denial, safe descriptions/icon fallback, focus and clipboard fallb
         });
     mount();
     expect(screen.getByRole("status")).toHaveTextContent("설치 목록");
+    fireEvent.click(screen.getByRole("button", { name: "안내 닫기" }));
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
     fireEvent.click(row(6).getByRole("checkbox"));
+    expect(screen.getByRole("status")).toHaveTextContent("저장하지 못했습니다");
     expect(row(6).getByRole("checkbox")).toBeChecked();
     fireEvent.click(row(6).getByText("효과·설명"));
     expect(row(6).getByText("<script>세트 설명</script>")).toBeInTheDocument();
@@ -287,64 +232,76 @@ test("storage denial, safe descriptions/icon fallback, focus and clipboard fallb
     fireEvent.error(row(6).getByAltText(""));
     expect(row(6).getByLabelText("아이콘 없음")).toBeInTheDocument();
     add(6);
-    openDetails();
-    await waitFor(() =>
-        expect(screen.getByRole("heading", { name: "상세 비교" })).toHaveFocus()
+    fireEvent.click(
+        detail(6).getByRole("button", { name: "후보 6 비교 제거" })
     );
-    fireEvent.click(screen.getByRole("button", { name: "상세 비교 닫기" }));
+    expect(screen.getByLabelText("미니어처 검색")).toHaveFocus();
     expect(
-        screen.getAllByRole("button", { name: "상세 비교" })[0]
-    ).toHaveFocus();
-    Object.defineProperty(navigator, "clipboard", {
-        configurable: true,
-        value: { writeText: jest.fn().mockRejectedValue(new Error("denied")) },
-    });
-    fireEvent.click(screen.getByRole("button", { name: "공유" }));
-    await waitFor(() =>
-        expect(screen.getByText(/직접 복사/)).toBeInTheDocument()
-    );
-    expect(
-        screen.getByLabelText<HTMLInputElement>("공유 링크").value
-    ).toContain("/tools/miniatures?s=");
+        screen.queryByRole("button", { name: "공유" })
+    ).not.toBeInTheDocument();
     get.mockRestore();
     set.mockRestore();
 });
 
-test("failed preview icons recover on item changes; a pending batch cannot overlap", async () => {
-    let resolve!: (value: typeof market) => void;
-    priceFetch.mockImplementation(
-        () =>
-            new Promise(r => {
-                resolve = r;
-            })
-    );
+test("installation notices disappear after six seconds", () => {
+    jest.useFakeTimers();
+    try {
+        localStorage.setItem(MINIATURE_STORAGE_KEY, "invalid");
+        mount();
+        expect(screen.getByRole("status")).toBeInTheDocument();
+        act(() => jest.advanceTimersByTime(6000));
+        expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    } finally {
+        jest.useRealTimers();
+    }
+});
+
+test("automatic lookup fills the price input without overwriting an edit", async () => {
+    priceFetch.mockResolvedValue(market);
     mount();
-    fireEvent.click(row(4).getByRole("button", { name: "미리보기" }));
-    const preview = within(
-        screen.getByRole("region", { name: "구매 후 효과 미리보기" })
-    );
-    fireEvent.error(preview.getByAltText(""));
-    expect(preview.getByLabelText("아이콘 없음")).toBeInTheDocument();
-    fireEvent.click(row(5).getByRole("button", { name: "미리보기" }));
-    expect(preview.getByAltText("")).toHaveAttribute(
-        "src",
-        "/api/item-image?id=105"
-    );
+    expect(priceFetch).not.toHaveBeenCalled();
     add(5);
-    openDetails();
-    fireEvent.click(screen.getByRole("button", { name: "가격 조회" }));
-    await waitFor(() => expect(priceFetch).toHaveBeenCalledTimes(1));
-    fireEvent.click(screen.getByRole("button", { name: "가격 조회 중…" }));
+    await waitFor(() =>
+        expect(detail(5).getByRole("textbox")).toHaveValue("300")
+    );
     fireEvent.change(detail(5).getByRole("textbox"), {
         target: { value: "7" },
     });
-    fireEvent.click(screen.getByRole("button", { name: "전체 해제" }));
-    add(4);
-    await act(async () => {
-        resolve(market);
-        await Promise.resolve();
+    priceFetch.mockResolvedValue({ ...market, minPrice: 500 });
+    fireEvent.click(screen.getByRole("button", { name: "가격 조회" }));
+    await waitFor(() => expect(priceFetch).toHaveBeenCalledTimes(2));
+    expect(detail(5).getByRole("textbox")).toHaveValue("7");
+});
+
+test("Saiv shows its real music effect and the selected stat filters out zero-effect items", () => {
+    render(
+        <QueryClientProvider client={new QueryClient()}>
+            <MiniatureTool data={reference} />
+        </QueryClientProvider>
+    );
+    fireEvent.change(screen.getByLabelText("미니어처 검색"), {
+        target: { value: "사이브" },
     });
-    expect(priceFetch).toHaveBeenCalledTimes(1);
-    expect(detail(4).getByRole("textbox")).toHaveValue("");
-    expect(detail(4).getByText("가격 미확인")).toBeInTheDocument();
+    expect(screen.getByLabelText("목표 능력치")).toHaveValue("all");
+    expect(
+        screen.getByRole("article", { name: "사이브 엑스트라 미니어처" })
+    ).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("목표 능력치"), {
+        target: { value: "AttackMax" },
+    });
+    expect(
+        screen.queryByRole("article", { name: "사이브 엑스트라 미니어처" })
+    ).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("목표 능력치"), {
+        target: { value: "MusicSkill" },
+    });
+    fireEvent.change(screen.getByLabelText("미니어처 검색"), {
+        target: { value: "사이브 음악 버프" },
+    });
+    const saiv = within(
+        screen.getByRole("article", { name: "사이브 엑스트라 미니어처" })
+    );
+    expect(saiv.getByText(/음악 버프 스킬 효과 3/)).toBeInTheDocument();
+    expect(saiv.queryByText(/최대 대미지 0/)).not.toBeInTheDocument();
+    expect(priceFetch).not.toHaveBeenCalled();
 });

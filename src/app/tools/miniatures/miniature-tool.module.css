@@ -8,10 +8,16 @@
     line-height: 1.5;
     text-shadow: 0 1px 1px #111;
 }
-.title {
-    background: #62635e;
-    border: 1px solid #8d8f87;
-    padding: 8px 12px;
+.toast {
+    z-index: 100;
+    bottom: calc(80px + env(safe-area-inset-bottom));
+    max-width: min(440px, 100vw);
+    white-space: normal;
+}
+.toast > div {
+    background: #34382f;
+    color: #fff0a2;
+    border: 1px solid #b9bca9;
 }
 .window h2 {
     font-size: 17px;
@@ -146,31 +152,12 @@
     border: 1px solid #a4a596;
     box-shadow: inset 0 0 0 2px #171a15;
 }
-.slots {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
-    margin: 12px 0;
+.baseline {
+    border-color: #b9bca9;
+    background: rgba(113, 118, 103, 0.45);
 }
-.slot {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    min-height: 178px;
-    border: 1px solid #85877c;
-    box-shadow: inset 0 0 0 3px #2c2f28;
-    background: rgba(135, 136, 127, 0.27);
-    padding: 10px;
-    text-align: center;
-    overflow-wrap: anywhere;
-}
-.slot > button:only-child {
-    width: 100%;
-    flex: 1;
-    background: transparent;
-    border: 0;
-    box-shadow: none;
+.window .baseline h2 {
+    font-size: 21px;
 }
 .entry {
     border: 1px solid #777b6d;
@@ -189,59 +176,22 @@
 .value {
     color: #fff0a2;
 }
-.installList {
-    max-height: 320px;
-    overflow-y: auto;
-    padding: 4px;
-}
-.bar {
-    display: flex;
-    height: 12px;
-    margin: 12px 0;
-    background: #20231e;
-}
-.bar span:nth-child(1) {
-    background: #aaa993;
-}
-.bar span:nth-child(2) {
-    background: #737e6a;
-}
-.bar span:nth-child(3) {
-    background: #f1d78a;
-}
 .comparison {
     display: grid;
     gap: 8px;
 }
-.sticky {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-    position: sticky;
-    bottom: 0;
-    background: #34382f;
-    border: 1px solid #9a9e8e;
-    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
-    margin-top: 12px;
-}
 @media (min-width: 1024px) {
     .columns {
-        grid-template-columns: 55fr 45fr;
+        grid-template-columns: 1fr 1fr;
     }
-    .slots {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
+
     .catalog {
         max-height: 780px;
         overflow-y: auto;
         padding: 3px;
     }
     .comparison {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-    .sticky {
-        display: none;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 @media (max-width: 1023px) {
@@ -261,4 +211,10 @@
 .window [aria-label="설치 기준"] > details[open] {
     display: block;
     width: 100%;
+}
+
+.installedGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
 }
