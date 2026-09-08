@@ -1,8 +1,9 @@
 "use client";
 
 import { useQueries } from "@tanstack/react-query";
+import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { type ReactElement, useEffect, useRef, useState } from "react";
 
 import { fetchItemPriceSummary } from "@/lib/api/auction";
 import { getAuctionSearchPath } from "@/lib/auction-url";
@@ -26,7 +27,39 @@ import {
     parseMiniatureStorage,
 } from "@/lib/miniatures-state";
 
-import styles from "./miniature-tool.module.css";
+const styles = {
+    window: `
+        bg-[rgba(49,51,48,0.94)] text-[#f5f5ef] border border-[#858780] shadow-[inset_0_0_0_3px_#292b28]
+        p-2 text-sm leading-[1.5] [text-shadow:0_1px_1px_#111] max-lg:pb-[calc(12px+env(safe-area-inset-bottom))]
+        [&_h2]:text-[17px] [&_h2]:font-bold [&_h2]:mb-2 [&_h3]:font-bold [&_h3]:[overflow-wrap:anywhere]
+        [&_p]:my-1.5 [&_label]:block [&_label]:my-1 [&_select]:block [&_input::placeholder]:text-[#c2c5bb]
+        [&_input[type=checkbox]]:size-5 [&_input[type=checkbox]]:accent-[#e6d694] [&_a]:underline [&_a]:inline-flex [&_a]:items-center
+        [&_a]:min-h-11 [&_summary]:cursor-pointer [&_summary]:min-h-11 [&_summary]:pt-2.5 [&_dl>div]:flex
+        [&_dl>div]:justify-between [&_dl>div]:gap-3 [&_dl>div]:border-b [&_dl>div]:border-[#66695e] [&_dl>div]:py-1
+        [&_dd]:text-right [&_dd]:text-[#fff0aa] [&_:is(button,select,input:not([type=checkbox]))]:border [&_:is(button,select,input:not([type=checkbox]))]:border-[#a0a29a] [&_:is(button,select,input:not([type=checkbox]))]:rounded-[2px]
+        [&_:is(button,select,input:not([type=checkbox]))]:bg-[#62645e] [&_:is(button,select,input:not([type=checkbox]))]:text-white [&_:is(button,select,input:not([type=checkbox]))]:min-h-11 [&_:is(button,select,input:not([type=checkbox]))]:py-1.5 [&_:is(button,select,input:not([type=checkbox]))]:px-2.5
+        [&_:is(button,select,input:not([type=checkbox]))]:max-w-full [&_:is(button,select,input:not([type=checkbox]))]:[text-shadow:0_1px_1px_#111] [&_button]:cursor-pointer [&_button]:shadow-[inset_0_0_0_1px_#3b3e37] [&_button[aria-pressed=true]]:bg-[#898b82]
+        [&_button[aria-pressed=true]]:shadow-[inset_0_0_0_2px_#deded4] [&_button:hover]:bg-[#74776e] [&_button:disabled]:opacity-60 [&_button:disabled]:cursor-default [&_input:not([type=checkbox])]:block
+        [&_input:not([type=checkbox])]:w-full [&_input:not([type=checkbox])]:bg-[#292c27] [&_:is(button,input,select,a,summary,[tabindex]):focus-visible]:outline-3 [&_:is(button,input,select,a,summary,[tabindex]):focus-visible]:outline-[#ffed9c] [&_:is(button,input,select,a,summary,[tabindex]):focus-visible]:outline-offset-2
+        max-lg:[&_:is(button,input,summary,a,[tabindex])]:scroll-mb-[100px] max-lg:[&_:is(button,input,summary,a,[tabindex])]:scroll-mt-20
+    `,
+    panel: "bg-[rgba(83,85,79,0.36)] border border-[#777a71] shadow-[inset_0_0_0_2px_#333630] p-3 mt-2 min-w-0",
+    columns: "grid gap-2 lg:grid-cols-2",
+    left: "min-w-0",
+    controls: "flex flex-wrap gap-2 items-center",
+    check: "[&&]:inline-flex gap-2 items-center min-h-11",
+    row: "flex gap-2.5 items-center flex-wrap [&>div]:flex-1 [&>div]:min-w-[140px]",
+    icon: "inline-flex size-12 shrink-0 items-center justify-center bg-[#34362f] border border-[#a4a596] shadow-[inset_0_0_0_2px_#171a15]",
+    baseline:
+        "[&&]:border-[#b9bca9] [&&]:bg-[rgba(113,118,103,0.45)] [&&_h2]:text-[21px] [&>details]:inline-block [&>details]:align-top [&>details]:mr-4 [&>details[open]]:block [&>details[open]]:w-full",
+    entry: "border border-[#777b6d] p-2.5 mt-2 bg-[#3c4037] min-w-0 data-[selected=true]:border-[#efe5b7] data-[selected=true]:shadow-[inset_0_0_0_1px_#efe5b7]",
+    description: "whitespace-pre-line",
+    value: "text-[#fff0a2]",
+    comparison: "grid gap-2 lg:grid-cols-2",
+    catalog: "lg:max-h-[780px] lg:overflow-y-auto lg:p-[3px]",
+    installedGrid: "grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-2",
+    toast: "z-100 bottom-[calc(80px+env(safe-area-inset-bottom))] max-w-[min(440px,100vw)] whitespace-normal [&>div]:bg-[#34382f] [&>div]:text-[#fff0a2] [&>div]:border [&>div]:border-[#b9bca9]",
+};
 
 function Icon({ item }: { item: Miniature }) {
     const [failedItemId, setFailedItemId] = useState<number | null>(null);
@@ -36,7 +69,8 @@ function Icon({ item }: { item: Miniature }) {
                 <span aria-label="아이콘 없음">◇</span>
             ) : (
                 // Inventory images already use the shared proxy; preserve a fixed-size fallback.
-                <img
+                <Image
+                    unoptimized
                     src={`/api/item-image?id=${item.itemId}`}
                     alt=""
                     width={40}
@@ -98,7 +132,11 @@ function TypeSelect({
     );
 }
 
-export default function MiniatureTool({ data }: { data: MiniatureReference }) {
+export default function MiniatureTool({
+    data,
+}: {
+    data: MiniatureReference;
+}): ReactElement {
     const [ready, setReady] = useState(false);
     const [localIds, setLocalIds] = useState<number[]>([]);
     const [config, setConfig] = useState<{

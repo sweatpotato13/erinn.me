@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactElement } from "react";
 
 import reference from "@/data/miniature-reference.json";
 import { MINIATURE_PATH } from "@/lib/miniatures-state";
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
     description,
     alternates: { canonical: MINIATURE_PATH },
 };
-export default function MiniaturePage() {
+export default function MiniaturePage(): ReactElement {
     return (
         <div className="mx-auto max-w-7xl px-3 py-8 sm:px-6">
             <h1 className="text-2xl font-bold break-keep text-slate-900 sm:text-3xl">

@@ -17,6 +17,23 @@ export interface MiniatureReference {
     miniatures: Miniature[];
 }
 
+export interface MiniatureTotals {
+    normal: Record<string, number>;
+    extra: Record<string, number>;
+    total: Record<string, number>;
+}
+
+export interface MiniatureDelta {
+    before: MiniatureTotals;
+    after: MiniatureTotals;
+    delta: Record<string, number>;
+}
+
+export interface MiniatureBasketCost {
+    missing: number;
+    subtotal: number | null;
+}
+
 // Units are checked against item descriptions by build-miniature-reference.ts.
 export const MINIATURE_EFFECTS: Record<
     string,
@@ -45,19 +62,22 @@ export const MINIATURE_EFFECTS: Record<
     CriticalRateLimitUp: { label: "크리티컬 상한 증가", unit: "%" },
 };
 
-export const knownEffect = (key: string) =>
+export const knownEffect = (key: string): boolean =>
     Object.hasOwn(MINIATURE_EFFECTS, key);
-export const effectLabel = (key: string) =>
+export const effectLabel = (key: string): string =>
     knownEffect(key) ? MINIATURE_EFFECTS[key].label : key;
-export const miniatureNumber = (n: number) =>
+export const miniatureNumber = (n: number): string =>
     n.toLocaleString("ko-KR", { maximumFractionDigits: 6 });
-export function effectValue(key: string, value = 0, delta = false) {
+export function effectValue(key: string, value = 0, delta = false): string {
     if (!knownEffect(key))
         return `${miniatureNumber(value)} (단위·계산 규칙 미확인)`;
     return `${delta && value > 0 ? "+" : ""}${miniatureNumber(value)}${MINIATURE_EFFECTS[key].unit === "%" ? (delta ? "%p" : "%") : ""}`;
 }
 
-export function miniatureTotals(items: Miniature[], ids: number[]) {
+export function miniatureTotals(
+    items: Miniature[],
+    ids: number[]
+): MiniatureTotals {
     const installed = new Set(ids);
     const normal: Record<string, number> = {};
     const extra: Record<string, number> = {};
@@ -87,7 +107,7 @@ export function miniatureDelta(
     items: Miniature[],
     installed: number[],
     candidates: number[]
-) {
+): MiniatureDelta {
     const before = miniatureTotals(items, installed);
     const after = miniatureTotals(items, [...installed, ...candidates]);
     const delta = Object.fromEntries(
@@ -108,7 +128,7 @@ export function miniatureGold(value: string): number | null {
 export function marketGold(summary?: {
     minPrice: number;
     availableQuantity: number;
-}) {
+}): number | null {
     return summary &&
         summary.availableQuantity > 0 &&
         Number.isSafeInteger(summary.minPrice) &&
@@ -126,7 +146,7 @@ export function benefitCost(
     return Number.isFinite(ratio) ? ratio : null;
 }
 
-export function basketCost(prices: Array<number | null>) {
+export function basketCost(prices: Array<number | null>): MiniatureBasketCost {
     const missing = prices.filter(p => p === null).length;
     const subtotal = prices.reduce<number>((n, p) => n + (p ?? 0), 0);
     return {
@@ -135,13 +155,13 @@ export function basketCost(prices: Array<number | null>) {
     };
 }
 
-export const miniatureSearchText = (text: string) =>
+export const miniatureSearchText = (text: string): string =>
     text.toLocaleLowerCase("ko-KR").replace(/\s/g, "");
 export function matchesMiniature(
     item: Miniature,
     search: string,
     type = "all"
-) {
+): boolean {
     if ((type === "normal" && item.extra) || (type === "extra" && !item.extra))
         return false;
     const text = [
@@ -167,7 +187,7 @@ export function filterMiniatures(
         minimum: number | null;
         auctionOnly: boolean;
     }
-) {
+): Miniature[] {
     return items
         .filter(
             item =>

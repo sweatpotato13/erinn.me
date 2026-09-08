@@ -32,10 +32,15 @@ function reconciliationNotice(removed: number[], changed: boolean) {
         .filter(Boolean)
         .join(" ");
 }
+export interface MiniatureStorageResult {
+    installedIds: number[];
+    notice: string;
+}
+
 export function parseMiniatureStorage(
     raw: string | null,
     data: MiniatureReference
-) {
+): MiniatureStorageResult {
     if (raw === null) return { installedIds: [], notice: "" };
     try {
         if (raw.length > 65536) throw new Error("oversize");

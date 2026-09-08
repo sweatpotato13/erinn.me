@@ -4,8 +4,8 @@ import { resolve } from "node:path";
 
 import {
     knownEffect,
-    MINIATURE_EFFECTS,
     type Miniature,
+    MINIATURE_EFFECTS,
 } from "../src/lib/miniatures";
 import { resolveItems } from "./item-reference";
 import { readSnapshot, sha256, stableJson } from "./reference-data";
