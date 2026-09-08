@@ -106,6 +106,13 @@ test("preview, comparison, independent filters and installation stay separate; f
         screen.getByRole("region", { name: "구매 후 효과 미리보기" })
     );
     expect(preview.getByText(/\+3 증가/)).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("목표 능력치"), {
+        target: { value: "MagicAttack" },
+    });
+    expect(preview.getByText("최대 대미지 +3")).toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("목표 능력치"), {
+        target: { value: "AttackMax" },
+    });
     expect(
         JSON.parse(localStorage.getItem(MINIATURE_STORAGE_KEY)!).installedIds
     ).toEqual([1, 2, 3]);

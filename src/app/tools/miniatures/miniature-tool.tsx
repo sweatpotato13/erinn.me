@@ -650,6 +650,22 @@ export default function MiniatureTool({ data }: { data: MiniatureReference }) {
                                     )}
                                     로 바뀌어요
                                 </p>
+                                {relevant
+                                    .filter(
+                                        key =>
+                                            key !== stat &&
+                                            previewDelta.delta[key] > 0
+                                    )
+                                    .map(key => (
+                                        <p key={key}>
+                                            {effectLabel(key)}{" "}
+                                            {effectValue(
+                                                key,
+                                                previewDelta.delta[key],
+                                                true
+                                            )}
+                                        </p>
+                                    ))}
                                 {previewDelta.after.total[stat] > 0 && (
                                     <div
                                         className={styles.bar}

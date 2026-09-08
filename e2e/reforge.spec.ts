@@ -427,7 +427,7 @@ test("released groups, mobile modal keyboard access, long names and reduced moti
         page
             .getByRole("main")
             .getByRole("heading", { name: "아이템 비교", exact: true })
-    ).toHaveCount(0);
+    ).toBeVisible();
 });
 
 test("help navigation is grouped once and desktop menus close outside", async ({
@@ -445,7 +445,7 @@ test("help navigation is grouped once and desktop menus close outside", async ({
     await expect(nav.getByRole("link", { name: "문의하기" })).toBeVisible();
     await page
         .getByRole("heading", { name: "세공 시뮬레이터", exact: true })
-        .click();
+        .click({ position: { x: 5, y: 5 } });
     await expect(nav.locator("details[open]")).toHaveCount(0);
     await nav.locator("summary", { hasText: "도움" }).click();
     await nav.getByRole("link", { name: "문의하기" }).click();

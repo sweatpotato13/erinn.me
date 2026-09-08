@@ -94,3 +94,46 @@ The user supplied the [traits-window screenshot](assets/miniature-traits-referen
 Match translucent dark gray panels, thin outlines/inset edges, shallow title bar, rectangular gray controls, compact white text and restrained yellow values. Adapt left selection/effects plus right list to four comparison candidates; installations remain separately editable and are not slot-limited. Do not add trait leveling, locked slots, AP gems or set activation. Use real inventory icons, never generated figurines.
 
 Visual verification must compare real desktop/mobile output to this screenshot. Readable contrast, 44px touch controls and mobile stacking are intentional web adaptations. Implementation screenshots and verification results will be recorded after browser checks.
+
+## Implementation verification (2026-09-08)
+
+### Requirements and evidence
+
+| Requirement | Implementation | Verification |
+| --- | --- | --- |
+| R1: local index and joins | `build-miniature-reference.ts`, committed compact JSON, existing collector | Generator and `data:check`: 200 entries, 21 reviewed effects, 0 unknown keys; deterministic 127,503 bytes. Browser bundle contains no raw table loader, `StringTable.json`, or `ItemList.json`. |
+| R2: labels, units, unknown effects, safe descriptions | Reviewed map, React text nodes, expandable source descriptions | Generator checks all 21 source/unit fixtures; component fixture displays an unknown key and literal script-like text without creating script elements; set facility 1207 remains visibly excluded. |
+| R3: independent installation maxima | Shared pure totals/delta functions | Synthetic 7/7 and overlapping +6/+8 cases plus real 485/826/770 and 592/739/789 fixtures. Official installation/group notice and community per-effect guide rechecked on 2026-09-08. |
+| R4: filters, rank, compact catalog | Independent catalog and installed-list filters | Korean search, type/stat/minimum, price boundary and unknown-price group tests; browser journey preserves four candidates through no-results filtering. |
+| R5: four candidates and basket | Separate installation IDs, comparison IDs and transient preview | Fifth-candidate rejection, preview without installation, all-stat detail, removing/clearing candidates, overlapping basket computation. Production fixture 592/739/789/485/826/770 plus candidate 589 shows AttackMax 10 → 13 (+3). |
+| R6: explicit prices | Disabled TanStack queries, name/version identity, manual override map | No price calls until explicit action; same-name aliases deduplicate; pending batch cannot overlap; zero/blank manual edits survive late response/removal; quantity/time/partial/error/empty-market states tested. |
+| R7: bounded local/shared state | Versioned strict schemas, guarded after-mount storage, temporary URL baseline | Corruption/denial/bounds/reconciliation tests; browser reload and history journey preserves saved installations and unrelated favorites; reset removes only this feature key. |
+| R8: discovery and SEO | Shared feature registry, server page and PNG route | Home/menu navigation, one sitemap URL, base canonical for generic/shared URLs, crawler HTML and 1200×630 PNG checks. Existing home sitemap expectation includes the new base route. |
+
+### Visual comparison with the supplied traits window
+
+Compared the production [desktop screen](assets/miniature-desktop.png), [390px mobile screen](assets/miniature-mobile.png), and [mobile detail](assets/miniature-mobile-detail.png) side by side with the [unaltered user reference](assets/miniature-traits-reference.png). The gray title strip, narrow inset panel borders, flat rectangular buttons, small framed inventory images, white text with shadow and yellow numeric emphasis follow that reference. The left four-candidate tray sits above the basket and separately named single-candidate preview; the right catalog scrolls within the desktop window. Installation editing stays above both, with no four-slot installation restriction. Detailed comparison sits below the window columns and uses the same stat rows on desktop/mobile.
+
+Intentional web adaptations: four comparison cards rather than five trait slots; no trait ornaments, locked slots, AP or levels; a higher-opacity gray background against the site's white page for readable contrast; 44px controls and visible keyboard focus; mobile 2×2 candidates and a bottom comparison summary with safe-area padding. The original game scenery is not copied. Icons use actual item IDs through the existing proxy, and load failures retain a fixed-size neutral placeholder. No generated imagery or echostone styling is shipped.
+
+### Production inspection
+
+A task-owned `pnpm start --port 3101` server served the completed build. A JavaScript-disabled browser confirmed the exact H1, rules and base canonical on a shared/invalid query URL. The generated server HTML is 161,996 bytes; the compact feature data is 127,503 bytes versus the 6.5 MB ItemList and 29.8 MB StringTable source tables. A real-data desktop/mobile journey observed 55 browser requests and zero price-summary, browser-direct Prilus, or raw-table requests before explicit price action. Expected image-proxy calls remain enabled. The [PNG](assets/miniature-preview.png) was visually inspected for readable Korean text and has dimensions 1200×630. Local Vercel analytics endpoints return 404 outside Vercel; these are existing site integrations, not miniature errors.
+
+### Review
+
+CodeRabbit round 1 reported three findings. Fixed shared icon failure state surviving a candidate change and the share-link test's input type. Added a regression covering icon replacement and non-overlapping pending price batches. Retained normalized display labels: the documentation column describes Korean UI labels, while the generator fixture tokens intentionally match the original description spelling. Round 2 initially failed with a recoverable WebSocket connection error; its retry completed with zero findings.
+
+The first full browser run exposed two outdated shared-navigation test assumptions in `e2e/reforge.spec.ts`: the newly released 아이템 비교 group was expected to be absent, and a center-of-heading outside-click target now fell beneath the wider dropdown layout. Updated the group expectation and clicked the visible left edge of the same heading, retaining the actual outside-click behavior assertion. No reforge calculation or shared-navigation implementation changed.
+
+### Final gates
+
+- `pnpm miniatures:build` and generator `--check`: passed; deterministic 200-entry output, all source/unit fixtures.
+- `pnpm data:check`: passed, including the existing reference validation, failed-write/promotion and rollback fixtures. Its changed-content warning is an intentional synthetic fixture; committed raw tables are unchanged.
+- Focused miniature Jest suites: passed. Full `pnpm test --runInBand`: 39 suites / 508 tests passed.
+- `pnpm lint`, `pnpm exec next typegen`, `pnpm typecheck`, changed-file Prettier check and `pnpm build`: passed on final application code.
+- Full `pnpm exec playwright test` ran all 340 cases across Chrome, Firefox, mobile Chrome and mobile Safari: 332 passed; eight failures were the same two obsolete navigation tests across four projects. After the documented test corrections, the affected eight cases plus all twelve miniature cases were rerun together: 20/20 passed. No unresolved browser failures remain.
+- Production inspection was repeated after the final preview change: no 390px horizontal overflow, base canonical retained, zero forbidden/automatic price requests, JavaScript-disabled server content present, real candidate inventory icons loaded. PNG and screenshot artifacts are linked above.
+- CodeRabbit rounds 2 and 3 completed with zero findings. Round 3 includes the final preview and navigation test changes. No dependencies, additional data collector, pricing endpoint, cloud/account integration or generated UI artwork were added.
+
+Task progress: plan loaded; four implementation phases completed; CodeRabbit review completed; local CI-equivalent commands and production/browser verification completed. The feature is ready for review; no PR or deployment was requested.
