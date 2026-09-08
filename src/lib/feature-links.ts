@@ -42,6 +42,13 @@ export const FEATURE_LINKS = [
         searchVisible: true,
     },
     {
+        label: "미니어처 비교",
+        url: "/tools/miniatures",
+        description: "설치 효과와 구매 후보의 증가량·가격을 비교하세요",
+        group: "아이템 비교",
+        searchVisible: true,
+    },
+    {
         label: "문의하기",
         url: "/contact",
         description: "문의사항이나 피드백을 보내주세요",
