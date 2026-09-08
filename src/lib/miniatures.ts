@@ -56,3 +56,130 @@ export function effectValue(key: string, value: number, delta = false) {
         return `${miniatureNumber(value)} (단위·계산 규칙 미확인)`;
     return `${delta && value > 0 ? "+" : ""}${miniatureNumber(value)}${MINIATURE_EFFECTS[key].unit === "%" ? (delta ? "%p" : "%") : ""}`;
 }
+
+export function miniatureTotals(items: Miniature[], ids: number[]) {
+    const installed = new Set(ids);
+    const normal: Record<string, number> = {};
+    const extra: Record<string, number> = {};
+    for (const item of items) {
+        if (!installed.has(item.id)) continue;
+        const group = item.extra ? extra : normal;
+        for (const [key, value] of Object.entries(item.effects)) {
+            if (knownEffect(key) && Number.isFinite(value) && value >= 0)
+                group[key] = Math.max(group[key] ?? 0, value);
+        }
+    }
+    const total = Object.fromEntries(
+        Object.keys(MINIATURE_EFFECTS).map(key => [
+            key,
+            (normal[key] ?? 0) + (extra[key] ?? 0),
+        ])
+    );
+    return { normal, extra, total };
+}
+
+export function miniatureDelta(
+    items: Miniature[],
+    installed: number[],
+    candidates: number[]
+) {
+    const before = miniatureTotals(items, installed);
+    const after = miniatureTotals(items, [...installed, ...candidates]);
+    const delta = Object.fromEntries(
+        Object.keys(MINIATURE_EFFECTS).map(key => [
+            key,
+            after.total[key] - before.total[key],
+        ])
+    );
+    return { before, after, delta };
+}
+
+export function miniatureGold(value: string): number | null {
+    if (!/^(0|[1-9]\d{0,15})$/.test(value)) return null;
+    const n = Number(value);
+    return Number.isSafeInteger(n) ? n : null;
+}
+
+export function marketGold(summary?: {
+    minPrice: number;
+    availableQuantity: number;
+}) {
+    return summary &&
+        summary.availableQuantity > 0 &&
+        Number.isSafeInteger(summary.minPrice) &&
+        summary.minPrice > 0
+        ? summary.minPrice
+        : null;
+}
+
+export function benefitCost(
+    price: number | null,
+    benefit: number
+): number | null {
+    if (price === null || price <= 0 || benefit <= 0) return null;
+    const ratio = price / benefit;
+    return Number.isFinite(ratio) ? ratio : null;
+}
+
+export function basketCost(prices: Array<number | null>) {
+    const missing = prices.filter(p => p === null).length;
+    const subtotal = prices.reduce<number>((n, p) => n + (p ?? 0), 0);
+    return {
+        missing,
+        subtotal: Number.isSafeInteger(subtotal) ? subtotal : null,
+    };
+}
+
+export const miniatureSearchText = (text: string) =>
+    text.toLocaleLowerCase("ko-KR").replace(/\s/g, "");
+export function matchesMiniature(
+    item: Miniature,
+    search: string,
+    type = "all"
+) {
+    if ((type === "normal" && item.extra) || (type === "extra" && !item.extra))
+        return false;
+    const text = [
+        item.name,
+        item.itemName,
+        item.description,
+        ...Object.keys(item.effects).map(effectLabel),
+    ].join(" ");
+    return miniatureSearchText(text).includes(miniatureSearchText(search));
+}
+
+export function filterMiniatures(
+    items: Miniature[],
+    installed: number[],
+    options: {
+        search: string;
+        type: string;
+        stat: string;
+        minimum: number | null;
+        auctionOnly: boolean;
+    }
+) {
+    const baseline = miniatureTotals(items, installed);
+    const benefit = (item: Miniature) =>
+        Math.max(
+            0,
+            (item.effects[options.stat] ?? 0) -
+                ((item.extra ? baseline.extra : baseline.normal)[
+                    options.stat
+                ] ?? 0)
+        );
+    return items
+        .filter(
+            item =>
+                matchesMiniature(item, options.search, options.type) &&
+                (!options.auctionOnly || item.searchable) &&
+                (options.minimum === null ||
+                    (item.effects[options.stat] ?? 0) >= options.minimum)
+        )
+        .sort(
+            (a, b) =>
+                benefit(b) - benefit(a) ||
+                a.name.localeCompare(b.name, "ko") ||
+                a.id - b.id
+        );
+}
