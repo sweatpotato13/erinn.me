@@ -94,59 +94,65 @@ export function TotemRangeList({ item }: { item: Totem }) {
         </dl>
     );
 }
-export function TotemInputs({
-    item,
-    values,
-    onChange,
-    label,
-}: {
+interface TotemInputsProps {
     item: Totem;
     values: Record<string, string>;
     onChange: (key: string, value: string) => void;
     label: string;
-}) {
+}
+
+function TotemStatInput({
+    item,
+    values,
+    onChange,
+    label,
+    stat,
+    id,
+}: TotemInputsProps & { stat: string; id: string }) {
+    const raw = values[stat] ?? "";
+    const invalid = !!raw.trim() && totemValue(stat, raw) === null;
+    const range = item.ranges[stat];
+    return (
+        <div>
+            <label htmlFor={id}>
+                {label} {totemStatLabel(stat)}
+                {TOTEM_STATS[stat].unit && ` (${TOTEM_STATS[stat].unit})`}
+                <input
+                    id={id}
+                    inputMode="decimal"
+                    maxLength={64}
+                    value={raw}
+                    onChange={e => onChange(stat, e.target.value)}
+                    placeholder="실제 수치 입력"
+                    aria-invalid={invalid}
+                    aria-describedby={`${id}-help`}
+                />
+            </label>
+            <span id={`${id}-help`} className={invalid ? s.loss : s.muted}>
+                {invalid
+                    ? "옵션값 확인 필요: 단위에 맞는 숫자를 입력해 주세요."
+                    : range
+                      ? `참고 ${formatTotemValue(stat, range.min)} ~ ${formatTotemValue(stat, range.max)}`
+                      : "참고 범위 없음 · 실제 값만 비교합니다."}
+            </span>
+        </div>
+    );
+}
+
+export function TotemInputs(props: TotemInputsProps) {
     const id = useId();
-    const keys = totemEffectKeys(item).filter(knownTotemStat);
+    const keys = totemEffectKeys(props.item).filter(knownTotemStat);
     return (
         <div className={s.inputs}>
             {keys.length ? (
-                keys.map(key => {
-                    const raw = values[key] ?? "";
-                    const invalid =
-                        !!raw.trim() && totemValue(key, raw) === null;
-                    const range = item.ranges[key];
-                    return (
-                        <div key={key}>
-                            <label htmlFor={`${id}-${key}`}>
-                                {label} {totemStatLabel(key)}
-                                {TOTEM_STATS[key].unit &&
-                                    ` (${TOTEM_STATS[key].unit})`}
-                                <input
-                                    id={`${id}-${key}`}
-                                    inputMode="decimal"
-                                    maxLength={64}
-                                    value={raw}
-                                    onChange={e =>
-                                        onChange(key, e.target.value)
-                                    }
-                                    placeholder="실제 수치 입력"
-                                    aria-invalid={invalid}
-                                    aria-describedby={`${id}-${key}-help`}
-                                />
-                            </label>
-                            <span
-                                id={`${id}-${key}-help`}
-                                className={invalid ? s.loss : s.muted}
-                            >
-                                {invalid
-                                    ? "옵션값 확인 필요: 단위에 맞는 숫자를 입력해 주세요."
-                                    : range
-                                      ? `참고 ${formatTotemValue(key, range.min)} ~ ${formatTotemValue(key, range.max)}`
-                                      : "참고 범위 없음 · 실제 값만 비교합니다."}
-                            </span>
-                        </div>
-                    );
-                })
+                keys.map(key => (
+                    <TotemStatInput
+                        key={key}
+                        stat={key}
+                        id={`${id}-${key}`}
+                        {...props}
+                    />
+                ))
             ) : (
                 <p className={s.warning}>
                     이 종류는 수치 입력·교체 규칙을 확인하지 못했습니다. 아이템
@@ -156,23 +162,9 @@ export function TotemInputs({
         </div>
     );
 }
-export function TotemEvaluationCell({
-    evaluation: e,
-}: {
-    evaluation: TotemEvaluation;
-}) {
+function TotemRangeStatus({ evaluation: e }: { evaluation: TotemEvaluation }) {
     return (
-        <div>
-            <strong className={s.value}>
-                {formatTotemValue(e.key, e.value)}
-                {e.absent && " · 해당 효과 없음"}
-            </strong>
-            {e.range && (
-                <p className={s.muted}>
-                    범위 {formatTotemValue(e.key, e.range.min)} ~{" "}
-                    {formatTotemValue(e.key, e.range.max)}
-                </p>
-            )}
+        <>
             {e.rangeStatus === "fixed" && <p>고정 수치</p>}
             {e.rangeStatus === "outside" && (
                 <p className={s.warning}>기준 범위와 다른 값입니다</p>
@@ -189,6 +181,17 @@ export function TotemEvaluationCell({
             {e.rangeStatus === "conflicting" && (
                 <p className={s.warning}>원본과 다른 효과 · 범위 확정 불가</p>
             )}
+        </>
+    );
+}
+
+function TotemRangePosition({
+    evaluation: e,
+}: {
+    evaluation: TotemEvaluation;
+}) {
+    return (
+        <>
             {e.gap !== null && (
                 <p className={s.muted}>
                     {e.gap < 0
@@ -207,11 +210,34 @@ export function TotemEvaluationCell({
                     </div>
                 </>
             )}
+        </>
+    );
+}
+
+export function TotemEvaluationCell({
+    evaluation: e,
+}: {
+    evaluation: TotemEvaluation;
+}) {
+    return (
+        <div>
+            <strong className={s.value}>
+                {formatTotemValue(e.key, e.value)}
+                {e.absent && " · 해당 효과 없음"}
+            </strong>
+            {e.range && (
+                <p className={s.muted}>
+                    범위 {formatTotemValue(e.key, e.range.min)} ~{" "}
+                    {formatTotemValue(e.key, e.range.max)}
+                </p>
+            )}
+            <TotemRangeStatus evaluation={e} />
+            <TotemRangePosition evaluation={e} />
         </div>
     );
 }
 
-export function TotemEvidence({ roll }: { roll: TotemRoll }) {
+function TotemEvidenceStatus({ roll }: { roll: TotemRoll }) {
     return (
         <>
             {roll.status === "missing" && (
@@ -230,12 +256,26 @@ export function TotemEvidence({ roll }: { roll: TotemRoll }) {
                     원본에 없는 효과가 있어 범위·교체 평가를 보류합니다.
                 </p>
             )}
+        </>
+    );
+}
+
+function TotemDuplicateEvidence({ roll }: { roll: TotemRoll }) {
+    return (
+        <>
             {!!roll.duplicateKeys.length && (
                 <p className={s.warning}>
                     같은 능력치가 여러 번 표기됨:{" "}
                     {roll.duplicateKeys.map(totemStatLabel).join(", ")}
                 </p>
             )}
+        </>
+    );
+}
+
+function TotemUnknownEvidence({ roll }: { roll: TotemRoll }) {
+    return (
+        <>
             {!!roll.unknownOptions.length && (
                 <p className={s.warning}>
                     해석하지 못한 효과:{" "}
@@ -249,45 +289,122 @@ export function TotemEvidence({ roll }: { roll: TotemRoll }) {
                     · 수치 평가 제외
                 </p>
             )}
-            <details>
-                <summary>원본 옵션·설명</summary>
-                {roll.rawOptions.length ? (
-                    roll.rawOptions.map((o, index) => (
-                        <div key={index} className={s.entry}>
-                            <strong>
-                                {o.option_type} ·{" "}
-                                {o.option_sub_type ?? "하위 종류 없음"}
-                            </strong>
-                            <p>{o.option_value ?? "값 없음"}</p>
-                            {o.option_value2 != null && (
-                                <p>추가 값: {o.option_value2}</p>
-                            )}
-                            {o.option_desc != null && (
-                                <p className={s.description}>{o.option_desc}</p>
-                            )}
-                        </div>
-                    ))
-                ) : (
-                    <p>실제 옵션 정보가 없습니다.</p>
-                )}
-                {roll.reference && (
-                    <p className={s.description}>
-                        {roll.reference.description}
-                    </p>
-                )}
-                {roll.reference?.bonuses.some(
-                    b =>
-                        !knownTotemStat(b.StatName) &&
-                        !["allstat", "stat_int"].includes(b.StatName)
-                ) && (
-                    <p>
-                        원본 수치:{" "}
-                        {roll.reference.bonuses
-                            .map(b => `${b.StatName} ${b.Min}~${b.Max}`)
-                            .join(" / ")}
-                    </p>
-                )}
-            </details>
+        </>
+    );
+}
+
+function TotemRawEvidence({ roll }: { roll: TotemRoll }) {
+    return (
+        <details>
+            <summary>원본 옵션·설명</summary>
+            {roll.rawOptions.length ? (
+                roll.rawOptions.map((o, index) => (
+                    <TotemRawOption key={index} option={o} />
+                ))
+            ) : (
+                <p>실제 옵션 정보가 없습니다.</p>
+            )}
+            {roll.reference && (
+                <p className={s.description}>{roll.reference.description}</p>
+            )}
+            {roll.reference?.bonuses.some(
+                b =>
+                    !knownTotemStat(b.StatName) &&
+                    !["allstat", "stat_int"].includes(b.StatName)
+            ) && (
+                <p>
+                    원본 수치:{" "}
+                    {roll.reference.bonuses
+                        .map(b => `${b.StatName} ${b.Min}~${b.Max}`)
+                        .join(" / ")}
+                </p>
+            )}
+        </details>
+    );
+}
+
+function TotemRawOption({
+    option: o,
+}: {
+    option: TotemRoll["rawOptions"][number];
+}) {
+    return (
+        <div className={s.entry}>
+            <strong>
+                {o.option_type} · {o.option_sub_type ?? "하위 종류 없음"}
+            </strong>
+            <p>{o.option_value ?? "값 없음"}</p>
+            {o.option_value2 != null && <p>추가 값: {o.option_value2}</p>}
+            {o.option_desc != null && (
+                <p className={s.description}>{o.option_desc}</p>
+            )}
+        </div>
+    );
+}
+
+export function TotemEvidence({ roll }: { roll: TotemRoll }) {
+    return (
+        <>
+            <TotemEvidenceStatus roll={roll} />
+            <TotemDuplicateEvidence roll={roll} />
+            <TotemUnknownEvidence roll={roll} />
+            <TotemRawEvidence roll={roll} />
+        </>
+    );
+}
+
+function TotemListingDetails({
+    listing,
+    price,
+    historical,
+}: {
+    listing: Extract<TotemCandidate, { kind: "listing" }>;
+    price: number | null;
+    historical: boolean;
+}) {
+    const total = totemBundleTotal(price, listing.item.item_count);
+    return (
+        <>
+            <p>
+                수량 {positiveTotemGold(listing.item.item_count) ?? "미확인"}개
+                · 묶음 총액{" "}
+                {total === null
+                    ? "미확인"
+                    : `${BigInt(total).toLocaleString("ko-KR")} 골드`}
+            </p>
+            <p className={s.muted}>
+                {historical ? "공유된 당시 매물 · " : ""}
+                {totemTime(listing.observedAt)} 조회
+            </p>
+            <p className={s.muted}>
+                등록 종료 {totemTime(listing.item.date_auction_expire)}
+            </p>
+            {Date.parse(listing.item.date_auction_expire) <= Date.now() && (
+                <p className={s.warning}>등록 종료 시각이 지난 매물</p>
+            )}
+        </>
+    );
+}
+
+function TotemBudgetStatus({
+    price,
+    budget,
+}: {
+    price: number | null;
+    budget: number | null;
+}) {
+    const budgetState = totemBudgetState(price, budget);
+    return (
+        <>
+            {budgetState !== "unset" && (
+                <p className={budgetState === "over" ? s.loss : s.muted}>
+                    {budgetState === "unknown"
+                        ? "개당 예산 판정 불가"
+                        : budgetState === "over"
+                          ? "개당 예산 초과"
+                          : "개당 예산 이내"}
+                </p>
+            )}
         </>
     );
 }
@@ -302,11 +419,7 @@ export function TotemPrice({
     historical?: boolean;
 }) {
     const price = candidateTotemPrice(candidate);
-    const budgetState = totemBudgetState(price, budget);
     const listing = candidate.kind === "listing" ? candidate : null;
-    const total = listing
-        ? totemBundleTotal(price, listing.item.item_count)
-        : null;
     return (
         <div>
             <p>
@@ -314,37 +427,13 @@ export function TotemPrice({
                 {historical ? " · 당시 등록 가격" : ""}
             </p>
             {listing && (
-                <>
-                    <p>
-                        수량{" "}
-                        {positiveTotemGold(listing.item.item_count) ?? "미확인"}
-                        개 · 묶음 총액{" "}
-                        {total === null
-                            ? "미확인"
-                            : `${BigInt(total).toLocaleString("ko-KR")} 골드`}
-                    </p>
-                    <p className={s.muted}>
-                        {historical ? "공유된 당시 매물 · " : ""}
-                        {totemTime(listing.observedAt)} 조회
-                    </p>
-                    <p className={s.muted}>
-                        등록 종료 {totemTime(listing.item.date_auction_expire)}
-                    </p>
-                    {Date.parse(listing.item.date_auction_expire) <=
-                        Date.now() && (
-                        <p className={s.warning}>등록 종료 시각이 지난 매물</p>
-                    )}
-                </>
+                <TotemListingDetails
+                    listing={listing}
+                    price={price}
+                    historical={historical}
+                />
             )}
-            {budgetState !== "unset" && (
-                <p className={budgetState === "over" ? s.loss : s.muted}>
-                    {budgetState === "unknown"
-                        ? "개당 예산 판정 불가"
-                        : budgetState === "over"
-                          ? "개당 예산 초과"
-                          : "개당 예산 이내"}
-                </p>
-            )}
+            <TotemBudgetStatus price={price} budget={budget} />
         </div>
     );
 }

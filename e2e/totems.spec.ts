@@ -554,3 +554,42 @@ test("fixed, ambiguous and unknown evidence stays visible", async ({
     await page.screenshot({ path: info.outputPath("composite-losses.png") });
     expect(requests).toEqual([]);
 });
+
+test("catalog pagination, responsive disclosure and filter reset preserve selection", async ({
+    page,
+}) => {
+    await observe(page);
+    await page.setViewportSize({ width: 1440, height: 900 });
+    await page.goto(path);
+    const summary = page.locator("summary").filter({ hasText: "토템 찾기 ·" });
+    const catalog = summary.locator("..");
+    const entries = catalog.locator("li button");
+    const previous = catalog.getByRole("button", { name: "이전 토템" });
+    const next = catalog.getByRole("button", { name: "다음 토템" });
+    await expect(entries).toHaveCount(20);
+    const firstName = entries.first().locator("strong");
+    const first = (await firstName.textContent())!;
+    await expect(previous).toBeDisabled();
+    await next.click();
+    await expect(firstName).not.toHaveText(first);
+    await previous.click();
+    await expect(firstName).toHaveText(first);
+    await entries.first().click();
+    await expect(catalog).toHaveAttribute("open", "");
+    await expect(entries.first()).toHaveAttribute("aria-pressed", "true");
+    await next.click();
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(entries).toHaveCount(8);
+    await expect(previous).toBeDisabled();
+    await expect(firstName).toHaveText(first);
+    await entries.first().click();
+    await expect(catalog).not.toHaveAttribute("open");
+    await expect(summary).toBeFocused();
+    await page
+        .getByRole("searchbox", { name: "토템 이름·효과 검색" })
+        .fill("물망초");
+    await expect(catalog).toHaveAttribute("open", "");
+    await expect(entries).toHaveCount(1);
+    await expect(entries.first()).toContainText("물망초");
+    await expect(next).toHaveCount(0);
+});

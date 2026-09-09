@@ -24,13 +24,12 @@ import {
     TotemPrice,
 } from "./totem-ui";
 
-export function TotemComparison({
-    data,
-    state,
-}: {
+interface TotemComparisonProps {
     data: TotemReference;
     state: ReturnType<typeof useTotemConfig>;
-}) {
+}
+
+export function TotemComparison({ data, state }: TotemComparisonProps) {
     const section = useRef<HTMLElement>(null);
     const { config } = state;
     const rows = config.candidates.map(candidate => ({
