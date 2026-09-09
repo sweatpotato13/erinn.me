@@ -9,6 +9,7 @@ import {
 import TotemTool from "@/app/tools/totems/totem-tool";
 import reference from "@/data/totem-reference.json";
 import fixtures from "@/lib/__tests__/fixtures/totem-listings.json";
+import * as totemState from "@/lib/totems-state";
 import {
     buildTotemShare,
     emptyTotemConfig,
@@ -16,6 +17,18 @@ import {
     snapshotTotemListing,
     TOTEM_STORAGE_KEY,
 } from "@/lib/totems-state";
+
+jest.mock("@/lib/totems-state", () => {
+    const actual =
+        jest.requireActual<typeof import("@/lib/totems-state")>(
+            "@/lib/totems-state"
+        );
+    return {
+        ...actual,
+        snapshotTotemListing: jest.fn(actual.snapshotTotemListing),
+        candidateTotemRoll: jest.fn(actual.candidateTotemRoll),
+    };
+});
 
 const painting = reference.totems.find(r => r.id === 5160004)!;
 const handkerchief = reference.totems.find(r => r.id === 52289)!;
@@ -120,6 +133,11 @@ test("four candidates survive a fifth request; unknown prices and source assumpt
             { target: { value } }
         );
         fireEvent.click(button("직접 입력 후보 추가"));
+        const input = screen.queryByRole("textbox", {
+            name: "후보 옵션 보너스 대미지 (%)",
+        });
+        if (value === "0.7") expect(input).toHaveValue(value);
+        else expect(input).toBeNull();
     }
     expect(
         comparison().getByRole("heading", { name: "후보 비교 · 4 / 4" })
@@ -231,4 +249,91 @@ test("a received expired snapshot stays historical and does not replace saved ba
         screen.queryByRole("button", { name: /공유|내 토템으로 설정/ })
     ).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("market derivations are reused while local controls still filter and sort correctly", async () => {
+    const snapshot = jest.mocked(totemState.snapshotTotemListing).mockClear();
+    const roll = jest.mocked(totemState.candidateTotemRoll).mockClear();
+    fetchMock.mockResolvedValue({
+        ok: true,
+        json: () =>
+            Promise.resolve({
+                items: Array.from({ length: 9 }, (_, i) => ({
+                    ...raw,
+                    auction_price_per_unit: 100 + i,
+                })),
+                hasMore: false,
+                nextCursor: null,
+            }),
+    });
+    mount();
+    pick("물망초");
+    fireEvent.click(button("매물 조회"));
+    await waitFor(() => expect(snapshot).toHaveBeenCalledTimes(9));
+    const market = within(screen.getByRole("region", { name: "실제 매물" }));
+    expect(market.getAllByRole("article")).toHaveLength(8);
+    fireEvent.click(button("다음 매물"));
+    expect(market.getAllByRole("article")).toHaveLength(1);
+    fireEvent.change(screen.getByRole("searchbox"), {
+        target: { value: "콜튼" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "목표 스탯" }), {
+        target: { value: "bonusdamage" },
+    });
+    fireEvent.change(screen.getByRole("combobox", { name: "매물 정렬" }), {
+        target: { value: "value" },
+    });
+    fireEvent.change(
+        screen.getByRole("textbox", { name: "목표 스탯 최소값" }),
+        { target: { value: "0.5" } }
+    );
+    expect(market.queryAllByRole("article")).toHaveLength(0);
+    fireEvent.change(
+        screen.getByRole("textbox", { name: "목표 스탯 최소값" }),
+        { target: { value: "0.4" } }
+    );
+    expect(market.getAllByRole("article")).toHaveLength(8);
+    fireEvent.change(
+        screen.getByRole("textbox", { name: "개당 예산 (골드, 선택)" }),
+        { target: { value: "103" } }
+    );
+    fireEvent.click(
+        screen.getByText("불러온 매물 필터", { selector: "summary" })
+    );
+    fireEvent.click(
+        screen.getByRole("checkbox", { name: /개당 예산 초과 제외/ })
+    );
+    expect(market.getAllByRole("article")).toHaveLength(4);
+    expect(snapshot).toHaveBeenCalledTimes(9);
+    expect(roll).toHaveBeenCalledTimes(9);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test("duplicate rejection preserves the manual draft", () => {
+    Object.defineProperty(crypto, "randomUUID", {
+        configurable: true,
+        value: () => "00000000-0000-0000-0000-000000000001",
+    });
+    mount();
+    pick("물망초");
+    fireEvent.click(button("옵션 직접 입력"));
+    fireEvent.change(
+        screen.getByRole("textbox", { name: "후보 옵션 보너스 대미지 (%)" }),
+        { target: { value: "0.4" } }
+    );
+    fireEvent.click(button("직접 입력 후보 추가"));
+    expect(screen.queryByRole("region", { name: "후보 직접 입력" })).toBeNull();
+    fireEvent.click(button("옵션 직접 입력"));
+    const input = screen.getByRole("textbox", {
+        name: "후보 옵션 보너스 대미지 (%)",
+    });
+    fireEvent.change(input, { target: { value: "0.5" } });
+    fireEvent.click(button("직접 입력 후보 추가"));
+    expect(input).toHaveValue("0.5");
+    expect(screen.getByRole("status")).toHaveTextContent(
+        "이미 비교에 담긴 후보"
+    );
+    expect(
+        comparison().getByRole("heading", { name: "후보 비교 · 1 / 4" })
+    ).toBeInTheDocument();
 });

@@ -242,7 +242,9 @@ test("storage has its own contract and corrupt/denied storage does not block cur
     const { result } = renderHook(() => useTotemConfig(reference));
     expect(result.current.ready).toBe(true);
     expect(result.current.config.baseline).toBeNull();
-    act(() => result.current.add(sourceTotemCandidate(painting)));
+    act(() => {
+        result.current.add(sourceTotemCandidate(painting));
+    });
     expect(result.current.config.candidates).toHaveLength(1);
 });
 
@@ -284,7 +286,9 @@ test("same-page anchor navigation never clears unsaved baseline or candidates", 
 test("four independent candidates survive configuration changes; fifth is refused", () => {
     const { result } = renderHook(() => useTotemConfig(reference));
     act(() => result.current.setConfig(config));
-    act(() => result.current.add(sourceTotemCandidate(handkerchief)));
+    act(() => {
+        result.current.add(sourceTotemCandidate(handkerchief));
+    });
     expect(result.current.config.candidates).toEqual(config.candidates);
     expect(result.current.notice).toContain("최대 4개");
     act(() =>
@@ -367,4 +371,23 @@ test("market hook loads only on demand, cancels old targets and preserves previo
     expect(result.current.error).toContain("offline");
     expect(fetchMock).toHaveBeenCalledTimes(3);
     unmount();
+});
+
+test("add reports actual acceptance even for multiple calls in one update batch", () => {
+    const { result } = renderHook(() => useTotemConfig(reference));
+    act(() => {
+        expect(result.current.add(config.candidates[0])).toBe(true);
+        expect(result.current.add(config.candidates[0])).toBe(false);
+        for (const candidate of config.candidates.slice(1))
+            expect(result.current.add(candidate)).toBe(true);
+        expect(result.current.add(sourceTotemCandidate(handkerchief))).toBe(
+            false
+        );
+    });
+    expect(result.current.config.candidates).toEqual(config.candidates);
+    act(() => {
+        result.current.remove();
+        expect(result.current.add(config.candidates[0])).toBe(true);
+    });
+    expect(result.current.config.candidates).toEqual([config.candidates[0]]);
 });

@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+    type SetStateAction,
+    useCallback,
+    useEffect,
+    useRef,
+    useState,
+} from "react";
 
 import type { Totem, TotemReference } from "@/lib/totems";
 import {
@@ -65,7 +71,16 @@ export function useTotemMarket(target?: Totem) {
 }
 
 export function useTotemConfig(data: TotemReference) {
-    const [config, setConfig] = useState(() => emptyTotemConfig(data));
+    const [config, updateConfig] = useState(() => emptyTotemConfig(data));
+    const currentConfig = useRef(config);
+    const setConfig = useCallback((action: SetStateAction<typeof config>) => {
+        const next =
+            typeof action === "function"
+                ? action(currentConfig.current)
+                : action;
+        currentConfig.current = next;
+        updateConfig(next);
+    }, []);
     const [ready, setReady] = useState(false);
     const [notice, setNotice] = useState("");
     const [historicalKeys, setHistoricalKeys] = useState<string[]>([]);
@@ -93,25 +108,22 @@ export function useTotemConfig(data: TotemReference) {
         restore();
         window.addEventListener("popstate", onPopState);
         return () => window.removeEventListener("popstate", onPopState);
-    }, [data]);
-    function add(candidate: TotemCandidate) {
+    }, [data, setConfig]);
+    function add(candidate: TotemCandidate): boolean {
+        const config = currentConfig.current;
         if (config.candidates.some(c => c.key === candidate.key)) {
             setNotice("이미 비교에 담긴 후보입니다.");
-            return;
+            return false;
         }
         if (config.candidates.length >= 4) {
             setNotice("비교 후보는 최대 4개입니다. 기존 후보를 제거해 주세요.");
-            return;
+            return false;
         }
-        setConfig(c =>
-            c.candidates.length >= 4 ||
-            c.candidates.some(r => r.key === candidate.key)
-                ? c
-                : { ...c, candidates: [...c.candidates, candidate] }
-        );
+        setConfig({ ...config, candidates: [...config.candidates, candidate] });
         setNotice(
             "비교에 추가했습니다. 아래 후보 비교에서 확인할 수 있습니다."
         );
+        return true;
     }
     function remove(key?: string) {
         setConfig(c => ({

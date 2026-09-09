@@ -77,28 +77,39 @@ export default function TotemTool({ data }: { data: TotemReference }) {
     const minimumInvalid =
         config.targetStat !== "all" && !!minimum.trim() && minValue === null;
     const effectiveSort = config.targetStat === "all" ? "price" : sort;
-    const loaded =
-        market.result?.listings.map(listing => {
-            const candidate = snapshotTotemListing(listing);
-            return {
-                candidate,
-                roll: candidateTotemRoll(candidate, data),
-                price: listing.item.auction_price_per_unit,
-            };
-        }) ?? [];
-    const filtered = loaded.filter(({ price, roll }) => {
-        if (withinBudget && totemBudgetState(price, budget) === "over")
-            return false;
-        const value = totemContribution(roll, config.targetStat);
-        return minValue === null || value === null || value >= minValue;
-    });
-    const sorted = sortTotemCandidates(
-        filtered,
-        row =>
-            effectiveSort === "price"
-                ? positiveTotemGold(row.price)
-                : evaluateTotem(config.targetStat, row.roll).value,
-        effectiveSort === "value"
+    const loaded = useMemo(
+        () =>
+            market.result?.listings.map(listing => {
+                const candidate = snapshotTotemListing(listing);
+                return {
+                    candidate,
+                    roll: candidateTotemRoll(candidate, data),
+                    price: listing.item.auction_price_per_unit,
+                };
+            }) ?? [],
+        [market.result, data]
+    );
+    const filtered = useMemo(
+        () =>
+            loaded.filter(({ price, roll }) => {
+                if (withinBudget && totemBudgetState(price, budget) === "over")
+                    return false;
+                const value = totemContribution(roll, config.targetStat);
+                return minValue === null || value === null || value >= minValue;
+            }),
+        [loaded, withinBudget, budget, config.targetStat, minValue]
+    );
+    const sorted = useMemo(
+        () =>
+            sortTotemCandidates(
+                filtered,
+                row =>
+                    effectiveSort === "price"
+                        ? positiveTotemGold(row.price)
+                        : evaluateTotem(config.targetStat, row.roll).value,
+                effectiveSort === "value"
+            ),
+        [filtered, effectiveSort, config.targetStat]
     );
     const pages = Math.max(1, Math.ceil(sorted.length / 8));
     const currentPage = Math.min(marketPage, pages - 1);
@@ -116,18 +127,22 @@ export default function TotemTool({ data }: { data: TotemReference }) {
         });
     }
     function addDraft() {
-        if (draft) state.add(draft);
+        if (draft && state.add(draft)) setDraft(null);
     }
-    const unknownCount = loaded.filter(
-        r =>
-            !r.roll.effectSetKnown ||
-            comparisonTotemKeys([r.roll]).some(
-                key =>
-                    !["within", "fixed"].includes(
-                        evaluateTotem(key, r.roll).rangeStatus
+    const unknownCount = useMemo(
+        () =>
+            loaded.filter(
+                r =>
+                    !r.roll.effectSetKnown ||
+                    comparisonTotemKeys([r.roll]).some(
+                        key =>
+                            !["within", "fixed"].includes(
+                                evaluateTotem(key, r.roll).rangeStatus
+                            )
                     )
-            )
-    ).length;
+            ).length,
+        [loaded]
+    );
     return (
         <fieldset
             disabled={!state.ready}
