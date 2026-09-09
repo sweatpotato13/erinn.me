@@ -3,8 +3,6 @@ import { useRef } from "react";
 import {
     comparisonTotemKeys,
     evaluateTotem,
-    formatTotemValue,
-    manualTotemRoll,
     parseTotemGold,
     type TotemReference,
     totemStatLabel,
@@ -35,18 +33,11 @@ export function TotemComparison({
 }) {
     const section = useRef<HTMLElement>(null);
     const { config } = state;
-    const baselineItem = data.totems.find(r => r.id === config.baseline?.id);
-    const baseline = config.baseline
-        ? manualTotemRoll(baselineItem, config.baseline.values)
-        : null;
     const rows = config.candidates.map(candidate => ({
         candidate,
         roll: candidateTotemRoll(candidate, data),
     }));
-    const allKeys = comparisonTotemKeys([
-        ...rows.map(r => r.roll),
-        ...(baseline ? [baseline] : []),
-    ]);
+    const allKeys = comparisonTotemKeys(rows.map(r => r.roll));
     const keys =
         config.targetStat !== "all" && allKeys.includes(config.targetStat)
             ? [
@@ -113,13 +104,6 @@ export function TotemComparison({
                     정보이며, 현재 판매 여부와 가격을 보장하지 않습니다.
                 </p>
             )}
-            <p>
-                내 기준:{" "}
-                {config.baseline
-                    ? (baselineItem?.name ??
-                      `미확인 토템 ID ${config.baseline.id}`)
-                    : "미입력 · 실제 옵션을 입력하면 증감을 볼 수 있습니다."}
-            </p>
             {!rows.length ? (
                 <p>
                     원본 범위, 직접 입력한 토템 또는 실제 매물을 최대 네 개까지
@@ -129,12 +113,11 @@ export function TotemComparison({
                 <>
                     <table className={s.comparisonTable}>
                         <caption className="sr-only">
-                            토템별 실제 옵션, 기준 대비 증감, 참고 범위와 가격
+                            토템별 실제 옵션, 참고 범위와 가격
                         </caption>
                         <thead>
                             <tr>
                                 <th scope="col">능력치</th>
-                                <th scope="col">내 기준</th>
                                 {rows.map(({ candidate }) => (
                                     <th key={candidate.key} scope="col">
                                         {header(candidate)}
@@ -146,31 +129,13 @@ export function TotemComparison({
                             {keys.map(key => (
                                 <tr key={key}>
                                     <th scope="row">{totemStatLabel(key)}</th>
-                                    <td>
-                                        {baseline
-                                            ? formatTotemValue(
-                                                  key,
-                                                  evaluateTotem(key, baseline)
-                                                      .value
-                                              )
-                                            : "미입력"}
-                                    </td>
                                     {rows.map(({ candidate, roll }) => (
                                         <td key={candidate.key}>
                                             <TotemEvaluationCell
                                                 evaluation={evaluateTotem(
                                                     key,
-                                                    roll,
-                                                    baseline
+                                                    roll
                                                 )}
-                                                hasBaseline={!!baseline}
-                                                price={
-                                                    key === config.targetStat
-                                                        ? candidateTotemPrice(
-                                                              candidate
-                                                          )
-                                                        : undefined
-                                                }
                                             />
                                         </td>
                                     ))}
@@ -178,12 +143,6 @@ export function TotemComparison({
                             ))}
                             <tr>
                                 <th scope="row">가격·조회 정보</th>
-                                <td>
-                                    개당 예산{" "}
-                                    {budget === null
-                                        ? "미입력"
-                                        : `${budget.toLocaleString("ko-KR")} 골드`}
-                                </td>
                                 {rows.map(({ candidate }) => (
                                     <td key={candidate.key}>
                                         <TotemPrice
@@ -198,11 +157,6 @@ export function TotemComparison({
                             </tr>
                             <tr>
                                 <th scope="row">확인 근거</th>
-                                <td>
-                                    {baseline && (
-                                        <TotemEvidence roll={baseline} />
-                                    )}
-                                </td>
                                 {rows.map(({ candidate, roll }) => (
                                     <td key={candidate.key}>
                                         <TotemEvidence roll={roll} />
@@ -232,18 +186,8 @@ export function TotemComparison({
                                                 <TotemEvaluationCell
                                                     evaluation={evaluateTotem(
                                                         key,
-                                                        roll,
-                                                        baseline
+                                                        roll
                                                     )}
-                                                    hasBaseline={!!baseline}
-                                                    price={
-                                                        key ===
-                                                        config.targetStat
-                                                            ? candidateTotemPrice(
-                                                                  candidate
-                                                              )
-                                                            : undefined
-                                                    }
                                                 />
                                             </dd>
                                         </div>
@@ -268,37 +212,10 @@ export function TotemComparison({
                 </>
             )}
             <div className={s.actions}>
-                <button
-                    onClick={() => void state.share()}
-                    disabled={!state.ready}
-                >
-                    비교 링크 공유
-                </button>
-                <button
-                    onClick={() => void state.share(true)}
-                    disabled={!state.ready}
-                >
-                    설정만 공유
-                </button>
                 {!!rows.length && (
                     <button onClick={() => remove()}>후보 전체 해제</button>
                 )}
             </div>
-            {state.shareNotice && (
-                <p className={s.notice} role="status">
-                    {state.shareNotice}
-                </p>
-            )}
-            {state.shareUrl && (
-                <label>
-                    복사할 비교 주소
-                    <input
-                        readOnly
-                        value={state.shareUrl}
-                        onFocus={e => e.currentTarget.select()}
-                    />
-                </label>
-            )}
         </section>
     );
 }

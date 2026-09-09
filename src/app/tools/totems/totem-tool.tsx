@@ -6,8 +6,6 @@ import {
     comparisonTotemKeys,
     evaluateTotem,
     filterTotems,
-    formatTotemValue,
-    manualTotemRoll,
     parseTotemGold,
     positiveTotemGold,
     sortTotemCandidates,
@@ -15,9 +13,7 @@ import {
     TOTEM_STATS,
     totemBudgetState,
     totemContribution,
-    totemPricePerGain,
     type TotemReference,
-    type TotemSort,
     totemStatLabel,
     totemValue,
 } from "@/lib/totems";
@@ -53,20 +49,15 @@ export default function TotemTool({ data }: { data: TotemReference }) {
     const [effect, setEffect] = useState("all");
     const [auctionOnly, setAuctionOnly] = useState(false);
     const [selectedId, setSelectedId] = useState<number | null>(null);
-    const [baselineOpen, setBaselineOpen] = useState(false);
     const [draft, setDraft] = useState<Extract<
         TotemCandidate,
         { kind: "manual" }
     > | null>(null);
-    const [sort, setSort] = useState<TotemSort>("price");
+    const [sort, setSort] = useState<"price" | "value">("price");
     const [minimum, setMinimum] = useState("");
     const [withinBudget, setWithinBudget] = useState(false);
     const [marketPage, setMarketPage] = useState(0);
     const selected = data.totems.find(r => r.id === selectedId);
-    const baselineItem = data.totems.find(r => r.id === config.baseline?.id);
-    const baseline = config.baseline
-        ? manualTotemRoll(baselineItem, config.baseline.values)
-        : null;
     const draftItem = data.totems.find(r => r.id === draft?.id);
     const market = useTotemMarket(selected);
     const items = useMemo(
@@ -85,11 +76,7 @@ export default function TotemTool({ data }: { data: TotemReference }) {
     const minValue = totemValue(config.targetStat, minimum);
     const minimumInvalid =
         config.targetStat !== "all" && !!minimum.trim() && minValue === null;
-    const effectiveSort =
-        config.targetStat === "all" ||
-        (!baseline && ["delta", "efficiency"].includes(sort))
-            ? "price"
-            : sort;
+    const effectiveSort = config.targetStat === "all" ? "price" : sort;
     const loaded =
         market.result?.listings.map(listing => {
             const candidate = snapshotTotemListing(listing);
@@ -107,34 +94,17 @@ export default function TotemTool({ data }: { data: TotemReference }) {
     });
     const sorted = sortTotemCandidates(
         filtered,
-        row => {
-            const evaluation = evaluateTotem(
-                config.targetStat,
-                row.roll,
-                baseline
-            );
-            return effectiveSort === "price"
+        row =>
+            effectiveSort === "price"
                 ? positiveTotemGold(row.price)
-                : effectiveSort === "value"
-                  ? evaluation.value
-                  : effectiveSort === "delta"
-                    ? evaluation.delta
-                    : totemPricePerGain(row.price, evaluation);
-        },
-        effectiveSort === "value" || effectiveSort === "delta"
+                : evaluateTotem(config.targetStat, row.roll).value,
+        effectiveSort === "value"
     );
     const pages = Math.max(1, Math.ceil(sorted.length / 8));
     const currentPage = Math.min(marketPage, pages - 1);
     function select(item: Totem) {
         setSelectedId(item.id);
         setMarketPage(0);
-    }
-    function setBaseline(item: Totem) {
-        setConfig(c => ({ ...c, baseline: { id: item.id, values: {} } }));
-        setBaselineOpen(true);
-        state.setNotice(
-            "내 토템 기준으로 선택했습니다. 실제 옵션값을 입력해 주세요."
-        );
     }
     function startManual(item: Totem) {
         setDraft({
@@ -198,8 +168,8 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                     </select>
                 </label>
             </div>
-            <details>
-                <summary>상세 필터</summary>
+            <section aria-label="상세 필터">
+                <h2>상세 필터</h2>
                 <div className={s.toolbar}>
                     <label>
                         찾을 효과
@@ -235,109 +205,8 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                         탐색 조건 초기화
                     </button>
                 </div>
-            </details>
+            </section>
             {selected && <a href="#totem-selected">선택한 토템 보기</a>}
-            <details
-                className={s.panel}
-                open={baselineOpen}
-                onToggle={e => setBaselineOpen(e.currentTarget.open)}
-            >
-                <summary>
-                    <strong>
-                        내 토템 ·{" "}
-                        {config.baseline
-                            ? (baselineItem?.name ??
-                              `미확인 ID ${config.baseline.id}`)
-                            : "미입력"}
-                    </strong>
-                </summary>
-                {!config.baseline ? (
-                    <p>
-                        아래 목록에서 토템을 선택하고 ‘내 토템으로 설정’을 눌러
-                        주세요. 기준 없이도 탐색·매물 조회가 가능합니다.
-                    </p>
-                ) : baselineItem ? (
-                    <TotemInputs
-                        label="내 옵션"
-                        item={baselineItem}
-                        values={config.baseline.values}
-                        onChange={(key, value) =>
-                            setConfig(c => ({
-                                ...c,
-                                baseline: c.baseline
-                                    ? {
-                                          ...c.baseline,
-                                          values: {
-                                              ...c.baseline.values,
-                                              [key]: value,
-                                          },
-                                      }
-                                    : null,
-                            }))
-                        }
-                    />
-                ) : (
-                    <>
-                        <p className={s.warning}>
-                            현재 원본에 없는 토템입니다. 입력값은 유지하지만
-                            교체·범위 평가는 보류합니다.
-                        </p>
-                        <p>
-                            {Object.entries(config.baseline.values)
-                                .map(
-                                    ([key, value]) =>
-                                        `${totemStatLabel(key)} ${value}`
-                                )
-                                .join(" / ")}
-                        </p>
-                    </>
-                )}
-                <div className={s.actions}>
-                    <button
-                        disabled={!state.ready}
-                        onClick={state.saveBaseline}
-                    >
-                        이 기준 저장
-                    </button>
-                    <button
-                        disabled={!state.ready}
-                        onClick={state.useSavedBaseline}
-                    >
-                        내 저장 기준 사용
-                    </button>
-                    {config.baseline && (
-                        <button
-                            onClick={() =>
-                                setConfig(c => ({ ...c, baseline: null }))
-                            }
-                        >
-                            현재 기준 지우기
-                        </button>
-                    )}
-                    <button onClick={() => setBaselineOpen(false)}>
-                        입력 접기
-                    </button>
-                </div>
-            </details>
-            {config.baseline && !baselineOpen && (
-                <p className={s.muted}>
-                    {Object.entries(config.baseline.values)
-                        .map(
-                            ([key, value]) =>
-                                `${totemStatLabel(key)} ${formatTotemValue(key, totemValue(key, value))}`
-                        )
-                        .join(" / ") || "실제 옵션을 아직 입력하지 않았습니다."}
-                </p>
-            )}
-            {state.received && (
-                <p className={s.warning}>
-                    공유받은 비교를 표시합니다. 받은 기준은 ‘이 기준 저장’을
-                    누르기 전까지 기기 저장값을 바꾸지 않습니다.
-                </p>
-            )}
-            {state.storageNotice && (
-                <p className={s.notice}>{state.storageNotice}</p>
-            )}
             {state.notice && (
                 <p className={s.notice} role="status">
                     {state.notice}
@@ -392,11 +261,6 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                                     ) : (
                                         <p>경매장 검색 미지원</p>
                                     )}
-                                    <button
-                                        onClick={() => setBaseline(selected)}
-                                    >
-                                        내 토템으로 설정
-                                    </button>
                                     <button
                                         onClick={() => startManual(selected)}
                                     >
@@ -554,7 +418,9 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                                 <select
                                     value={effectiveSort}
                                     onChange={e => {
-                                        setSort(e.target.value as TotemSort);
+                                        setSort(
+                                            e.target.value as "price" | "value"
+                                        );
                                         setMarketPage(0);
                                     }}
                                 >
@@ -567,27 +433,32 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                                     >
                                         목표 실제값 높은 순
                                     </option>
-                                    <option
-                                        value="delta"
-                                        disabled={
-                                            config.targetStat === "all" ||
-                                            !baseline
-                                        }
-                                    >
-                                        내 것 대비 증가량 높은 순
-                                    </option>
-                                    <option
-                                        value="efficiency"
-                                        disabled={
-                                            config.targetStat === "all" ||
-                                            !baseline
-                                        }
-                                    >
-                                        양수 증가당 가격 낮은 순
-                                    </option>
                                 </select>
                             </label>
+                            <label>
+                                목표 스탯 최소값
+                                <input
+                                    inputMode="decimal"
+                                    maxLength={64}
+                                    disabled={config.targetStat === "all"}
+                                    value={minimum}
+                                    onChange={e => {
+                                        setMinimum(e.target.value);
+                                        setMarketPage(0);
+                                    }}
+                                    aria-invalid={minimumInvalid}
+                                    aria-describedby="totem-minimum-help"
+                                />
+                            </label>
                         </div>
+                        <p
+                            id="totem-minimum-help"
+                            className={minimumInvalid ? s.loss : s.muted}
+                        >
+                            {minimumInvalid
+                                ? "최소값 형식을 확인해 주세요. 조건을 적용하지 않았습니다."
+                                : "값이 미확인인 매물은 제외하지 않습니다."}
+                        </p>
                         <label>
                             개당 예산 (골드, 선택)
                             <input
@@ -615,29 +486,6 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                         </p>
                         <details>
                             <summary>불러온 매물 필터</summary>
-                            <label>
-                                목표 스탯 최소값
-                                <input
-                                    inputMode="decimal"
-                                    maxLength={64}
-                                    disabled={config.targetStat === "all"}
-                                    value={minimum}
-                                    onChange={e => {
-                                        setMinimum(e.target.value);
-                                        setMarketPage(0);
-                                    }}
-                                    aria-invalid={minimumInvalid}
-                                    aria-describedby="totem-minimum-help"
-                                />
-                            </label>
-                            <p
-                                id="totem-minimum-help"
-                                className={minimumInvalid ? s.loss : s.muted}
-                            >
-                                {minimumInvalid
-                                    ? "최소값 형식을 확인해 주세요. 조건을 적용하지 않았습니다."
-                                    : "값이 미확인인 매물은 제외하지 않습니다."}
-                            </p>
                             <label className={s.check}>
                                 <input
                                     type="checkbox"
@@ -699,7 +547,6 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                                                 );
                                             const keys = comparisonTotemKeys([
                                                 roll,
-                                                ...(baseline ? [baseline] : []),
                                             ]);
                                             return (
                                                 <article
@@ -744,20 +591,8 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                                                                     <TotemEvaluationCell
                                                                         evaluation={evaluateTotem(
                                                                             key,
-                                                                            roll,
-                                                                            baseline
+                                                                            roll
                                                                         )}
-                                                                        hasBaseline={
-                                                                            !!baseline
-                                                                        }
-                                                                        price={
-                                                                            key ===
-                                                                            config.targetStat
-                                                                                ? candidate
-                                                                                      .item
-                                                                                      .auction_price_per_unit
-                                                                                : undefined
-                                                                        }
                                                                     />
                                                                 </dd>
                                                             </div>

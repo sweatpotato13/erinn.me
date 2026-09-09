@@ -30,7 +30,7 @@ export async function GET() {
                 토템 옵션 비교·매물 평가
             </span>
             <span style={{ fontSize: 32, marginTop: 30 }}>
-                가능한 범위와 실제 옵션, 내 것 대비 증감을 한눈에
+                가능한 범위와 실제 옵션, 매물 가격을 한눈에
             </span>
             <div
                 style={{

@@ -133,7 +133,7 @@ test("home and shared desktop/mobile menu reach the released page", async ({
     }
 });
 
-test("explicit 500-row partial observation connects rolls, delta, quantity and local filters", async ({
+test("explicit 500-row partial observation connects rolls, quantity and local filters", async ({
     page,
 }, info) => {
     const { requests, errors } = await observe(page);
@@ -149,15 +149,6 @@ test("explicit 500-row partial observation connects rolls, delta, quantity and l
     await page.goto(path);
     await pick(page, "물망초");
     await page
-        .getByRole("button", { name: "내 토템으로 설정", exact: true })
-        .click();
-    await page
-        .getByRole("textbox", {
-            name: "내 옵션 보너스 대미지 (%)",
-            exact: true,
-        })
-        .fill("0.3");
-    await page
         .getByRole("combobox", { name: "목표 스탯", exact: true })
         .selectOption("bonusdamage");
     expect(requests).toEqual([]);
@@ -169,11 +160,9 @@ test("explicit 500-row partial observation connects rolls, delta, quantity and l
     await expect(market(page).getByRole("article")).toHaveCount(8);
     const first = market(page).getByRole("article").first();
     for (const text of [
-        "+0.1%p 증가",
         "최대까지 0.6%p",
         "범위 내 위치 33.3% · 확률 아님",
         "2,400,000 골드",
-        "0.1%p 증가당 1,200,000 골드",
     ])
         await expect(first).toContainText(text);
     // Equal values/prices are separate observations, not a deduplication key.
@@ -200,7 +189,7 @@ test("explicit 500-row partial observation connects rolls, delta, quantity and l
     ).toBeVisible();
     await page
         .getByRole("combobox", { name: "매물 정렬", exact: true })
-        .selectOption("delta");
+        .selectOption("value");
     await search(page).fill("찾을수없는토템");
     await expect(comparison(page)).toContainText("후보 비교 · 2 / 4");
     expect(requests).toHaveLength(1);
@@ -256,15 +245,12 @@ test("four candidates, fifth rejection, empty-range exploration and keyboard rem
     expect(requests).toEqual([]);
 });
 
-test("manual allstat comparison exposes five independent rolls and every loss", async ({
+test("manual allstat comparison exposes five independent rolls without a baseline", async ({
     page,
 }, info) => {
     const { requests } = await observe(page);
     await page.goto(path);
     await pick(page, "콜튼");
-    await page
-        .getByRole("button", { name: "내 토템으로 설정", exact: true })
-        .click();
     const values = [
         ["체력", "9"],
         ["솜씨", "13"],
@@ -272,10 +258,6 @@ test("manual allstat comparison exposes five independent rolls and every loss", 
         ["의지", "13"],
         ["행운", "7"],
     ];
-    for (const [label] of values)
-        await page
-            .getByRole("textbox", { name: `내 옵션 ${label}`, exact: true })
-            .fill("10");
     await page
         .getByRole("button", { name: "옵션 직접 입력", exact: true })
         .click();
@@ -286,7 +268,7 @@ test("manual allstat comparison exposes five independent rolls and every loss", 
     await page
         .getByRole("button", { name: "직접 입력 후보 추가", exact: true })
         .click();
-    for (const text of ["-1 감소", "+3 증가", "-5 감소", "-3 감소"])
+    for (const text of ["체력", "솜씨", "지력", "의지", "행운"])
         await expect(
             comparison(page)
                 .getByText(new RegExp(text.replace("+", "\\+")))
@@ -350,7 +332,7 @@ test("empty, failed and stale market observations preserve manual candidates", a
     expect(requests).toHaveLength(3);
 });
 
-test("expired shares preserve saved input, clipboard fallback and Back/Forward state", async ({
+test("legacy links keep historical candidates and ignore saved baselines", async ({
     page,
 }, info) => {
     const { requests, errors } = await observe(page);
@@ -397,34 +379,16 @@ test("expired shares preserve saved input, clipboard fallback and Back/Forward s
         name: "개당 예산 (골드, 선택)",
         exact: true,
     });
-    for (const value of ["1400000", "1300000"]) {
-        await budget.fill(value);
-        await comparison(page)
-            .getByRole("button", { name: "비교 링크 공유", exact: true })
-            .click();
-        await expect(comparison(page).getByRole("status")).toContainText(
-            "자동 복사하지 못했습니다"
-        );
-        await expect(
-            comparison(page).getByRole("textbox", { name: "복사할 비교 주소" })
-        ).toHaveValue(new RegExp(value));
-    }
-    await page.goBack();
+    await budget.fill("1400000");
     await expect(budget).toHaveValue("1400000");
-    await page.goForward();
-    await expect(budget).toHaveValue("1300000");
-    await page
-        .locator("summary")
-        .filter({ hasText: /^내 토템/ })
-        .click();
-    await page
-        .getByRole("button", { name: "이 기준 저장", exact: true })
-        .click();
+    await expect(
+        page.getByRole("button", {
+            name: /비교 링크 공유|설정만 공유|내 토템으로 설정/,
+        })
+    ).toHaveCount(0);
     expect(
-        JSON.parse(
-            (await page.evaluate(key => localStorage.getItem(key), storageKey))!
-        ).baseline
-    ).toEqual(state.baseline);
+        await page.evaluate(key => localStorage.getItem(key), storageKey)
+    ).toBe(saved);
     expect(requests).toEqual([]);
     expect(errors).toEqual([]);
     await comparison(page).scrollIntoViewIfNeeded();
@@ -450,7 +414,6 @@ test("invalid URLs and unavailable storage recover without requests", async ({
         });
     });
     await page.goto(`${path}?s=invalid&s=duplicate`);
-    await expect(page.getByText(/저장소를 사용할 수 없습니다/)).toBeVisible();
     await expect(comparison(page)).toContainText("후보 비교 · 0 / 4");
     await pick(page, "물망초");
     await manual(page, "0.4");
@@ -494,7 +457,7 @@ test("SSR explanations, base canonical, unique sitemap and PNG preview", async (
     ]);
 });
 
-test("fixed, ambiguous, unknown and incompatible evidence stays visible", async ({
+test("fixed, ambiguous and unknown evidence stays visible", async ({
     page,
 }, info) => {
     const { requests } = await observe(page);
@@ -547,8 +510,6 @@ test("fixed, ambiguous, unknown and incompatible evidence stays visible", async 
         "미확인 효과",
         "가격 미확인",
         "수치 평가 제외",
-        "함께 적용되는 종류",
-        "적용 대상이 다름",
     ])
         await expect(
             comparison(page)
@@ -581,15 +542,7 @@ test("fixed, ambiguous, unknown and incompatible evidence stays visible", async 
             ],
         })
     );
-    for (const text of [
-        "최소 대미지",
-        "최대 대미지",
-        "지력",
-        "마법 공격력",
-        "-10 감소",
-        "+5 증가",
-        "해당 효과 없음",
-    ]) {
+    for (const text of ["지력", "마법 공격력"]) {
         await expect(
             comparison(page)
                 .getByText(text, { exact: false })
@@ -600,65 +553,4 @@ test("fixed, ambiguous, unknown and incompatible evidence stays visible", async 
     await comparison(page).scrollIntoViewIfNeeded();
     await page.screenshot({ path: info.outputPath("composite-losses.png") });
     expect(requests).toEqual([]);
-});
-
-test("oversized raw listings require explicit settings-only sharing", async ({
-    page,
-}) => {
-    const { requests } = await observe(page);
-    await page.route("**/api/auction?**", route =>
-        route.fulfill({
-            json: {
-                items: [
-                    {
-                        ...listing(painting.id),
-                        item_option: [
-                            {
-                                option_type: "토템 효과",
-                                option_sub_type: "보너스 대미지",
-                                option_value: "0.4",
-                                option_value2: null,
-                                option_desc: "원문을 자르지 않습니다 ".repeat(
-                                    100
-                                ),
-                            },
-                        ],
-                    },
-                ],
-                hasMore: false,
-                nextCursor: null,
-            },
-        })
-    );
-    await page.goto(path);
-    await pick(page, "물망초");
-    await page
-        .getByRole("button", { name: "범위 비교에 추가", exact: true })
-        .click();
-    await page.getByRole("button", { name: "매물 조회", exact: true }).click();
-    await market(page)
-        .getByRole("checkbox", { name: "비교에 추가", exact: true })
-        .check();
-    await comparison(page)
-        .getByRole("button", { name: "비교 링크 공유", exact: true })
-        .click();
-    await expect(comparison(page).getByRole("status")).toContainText(
-        "링크에 담을 수 없습니다"
-    );
-    await expect(
-        comparison(page).getByRole("textbox", { name: "복사할 비교 주소" })
-    ).toHaveCount(0);
-    await expect(page).toHaveURL(new RegExp(`${path}$`));
-    await expect(comparison(page)).toContainText("후보 비교 · 2 / 4");
-    await comparison(page)
-        .getByRole("button", { name: "설정만 공유", exact: true })
-        .click();
-    const url = await comparison(page)
-        .getByRole("textbox", { name: "복사할 비교 주소" })
-        .inputValue();
-    const received = JSON.parse(new URL(url).searchParams.get("s")!);
-    expect(received.candidates).toHaveLength(1);
-    expect(received.candidates[0].kind).toBe("source");
-    await expect(comparison(page)).toContainText("후보 비교 · 2 / 4");
-    expect(requests).toHaveLength(1);
 });

@@ -51,7 +51,7 @@ const comparison = () =>
     within(screen.getByRole("region", { name: "후보 비교" }));
 const button = (name: string) => screen.getByRole("button", { name });
 
-test("search, baseline, explicit market loading, exact delta/bundle price and local changes share one observation", async () => {
+test("search, explicit market loading, exact value/bundle price and local changes share one observation", async () => {
     fetchMock.mockResolvedValue({
         ok: true,
         json: () =>
@@ -64,11 +64,6 @@ test("search, baseline, explicit market loading, exact delta/bundle price and lo
     mount();
     pick("물망초");
     expect(fetchMock).not.toHaveBeenCalled();
-    fireEvent.click(button("내 토템으로 설정"));
-    fireEvent.change(
-        screen.getByRole("textbox", { name: "내 옵션 보너스 대미지 (%)" }),
-        { target: { value: "0.3" } }
-    );
     fireEvent.change(screen.getByRole("combobox", { name: "목표 스탯" }), {
         target: { value: "bonusdamage" },
     });
@@ -79,7 +74,7 @@ test("search, baseline, explicit market loading, exact delta/bundle price and lo
     expect(
         comparison().getByRole("heading", { name: "후보 비교 · 1 / 4" })
     ).toBeInTheDocument();
-    expect(comparison().getAllByText(/\+0.1%p 증가/).length).toBeGreaterThan(0);
+    expect(comparison().getAllByText("0.4%").length).toBeGreaterThan(0);
     expect(comparison().getAllByText(/2,400,000 골드/).length).toBeGreaterThan(
         0
     );
@@ -100,7 +95,7 @@ test("search, baseline, explicit market loading, exact delta/bundle price and lo
         screen.getByText("불러온 매물 중 조건에 맞는 결과가 없습니다.")
     ).toBeInTheDocument();
     fireEvent.change(screen.getByRole("combobox", { name: "매물 정렬" }), {
-        target: { value: "delta" },
+        target: { value: "value" },
     });
     fireEvent.change(screen.getByRole("searchbox"), {
         target: { value: "콜튼" },
@@ -149,17 +144,9 @@ test("four candidates survive a fifth request; unknown prices and source assumpt
     expect(fetchMock).not.toHaveBeenCalled();
 });
 
-test("allstat manual inputs show all five independent axes and unhidden losses", () => {
+test("allstat manual inputs show all five independent axes", () => {
     mount();
     pick("콜튼");
-    fireEvent.click(button("내 토템으로 설정"));
-    for (const label of ["체력", "솜씨", "지력", "의지", "행운"])
-        fireEvent.change(
-            screen.getByRole("textbox", {
-                name: `내 옵션 ${label}`,
-            }),
-            { target: { value: "10" } }
-        );
     fireEvent.click(button("옵션 직접 입력"));
     for (const [label, value] of [
         ["체력", "9"],
@@ -175,10 +162,8 @@ test("allstat manual inputs show all five independent axes and unhidden losses",
             { target: { value } }
         );
     fireEvent.click(button("직접 입력 후보 추가"));
-    for (const loss of ["-1 감소", "-5 감소", "-3 감소"])
-        expect(
-            comparison().getAllByText(new RegExp(loss)).length
-        ).toBeGreaterThan(0);
+    for (const loss of ["9", "13", "5", "7"])
+        expect(comparison().getAllByText(loss).length).toBeGreaterThan(0);
     expect(fetchMock).not.toHaveBeenCalled();
 });
 
@@ -239,5 +224,11 @@ test("a received expired snapshot stays historical and does not replace saved ba
         0
     );
     expect(localStorage.getItem(TOTEM_STORAGE_KEY)).toBe(saved);
+    expect(
+        screen.queryByText(/내 기준|내 옵션 입력 필요|증가당 가격/)
+    ).toBeNull();
+    expect(
+        screen.queryByRole("button", { name: /공유|내 토템으로 설정/ })
+    ).toBeNull();
     expect(fetchMock).not.toHaveBeenCalled();
 });

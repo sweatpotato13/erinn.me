@@ -241,25 +241,18 @@ test("storage has its own contract and corrupt/denied storage does not block cur
     });
     const { result } = renderHook(() => useTotemConfig(reference));
     expect(result.current.ready).toBe(true);
-    expect(result.current.storageNotice).toContain("저장소");
+    expect(result.current.config.baseline).toBeNull();
     act(() => result.current.add(sourceTotemCandidate(painting)));
     expect(result.current.config.candidates).toHaveLength(1);
 });
 
-test("shared baseline never overwrites storage until explicit save; back/forward restores snapshots", () => {
-    const savedBaseline = { id: handkerchief.id, values: { strength: "10" } };
-    const saved = serializeTotemStorage(savedBaseline, reference);
+test("legacy links restore candidates but ignore saved and shared baselines", () => {
+    const saved = serializeTotemStorage(config.baseline, reference);
     localStorage.setItem(TOTEM_STORAGE_KEY, saved);
     window.history.replaceState(null, "", buildTotemShare(config).path);
-    const fetchMock = jest.fn();
-    global.fetch = fetchMock;
     const { result } = renderHook(() => useTotemConfig(reference));
-    expect(result.current.config).toEqual(config);
-    expect(result.current.received).toBe(true);
+    expect(result.current.config).toEqual({ ...config, baseline: null });
     expect(result.current.historicalKeys).toEqual([live.key]);
-    expect(localStorage.getItem(TOTEM_STORAGE_KEY)).toBe(saved);
-    act(() => result.current.useSavedBaseline());
-    expect(result.current.config.baseline).toEqual(savedBaseline);
     act(() => {
         window.history.replaceState(
             null,
@@ -268,20 +261,9 @@ test("shared baseline never overwrites storage until explicit save; back/forward
         );
         window.dispatchEvent(new PopStateEvent("popstate"));
     });
-    expect(result.current.config.baseline).toEqual(config.baseline);
-    act(() =>
-        result.current.setConfig(c => ({
-            ...c,
-            baseline: { id: painting.id, values: { bonusdamage: "0.2" } },
-        }))
-    );
+    expect(result.current.config.baseline).toBeNull();
+    expect(result.current.config.budget).toBe("100");
     expect(localStorage.getItem(TOTEM_STORAGE_KEY)).toBe(saved);
-    act(() => result.current.saveBaseline());
-    expect(
-        parseTotemStorage(localStorage.getItem(TOTEM_STORAGE_KEY), reference)
-            .baseline?.values.bonusdamage
-    ).toBe("0.2");
-    expect(fetchMock).not.toHaveBeenCalled();
 });
 
 test("same-page anchor navigation never clears unsaved baseline or candidates", () => {
@@ -299,7 +281,7 @@ test("same-page anchor navigation never clears unsaved baseline or candidates", 
     expect(result.current.config).toEqual(config);
 });
 
-test("four independent candidates survive configuration changes; fifth is refused and clipboard has a fallback", async () => {
+test("four independent candidates survive configuration changes; fifth is refused", () => {
     const { result } = renderHook(() => useTotemConfig(reference));
     act(() => result.current.setConfig(config));
     act(() => result.current.add(sourceTotemCandidate(handkerchief)));
@@ -313,18 +295,6 @@ test("four independent candidates survive configuration changes; fifth is refuse
         }))
     );
     expect(result.current.config.candidates).toHaveLength(4);
-    Object.defineProperty(navigator, "clipboard", {
-        configurable: true,
-        value: { writeText: jest.fn().mockRejectedValue(new Error("Denied")) },
-    });
-    await act(async () => {
-        await result.current.share();
-    });
-    expect(result.current.shareUrl).toContain("/tools/totems?s=");
-    expect(result.current.shareNotice).toContain("직접 복사");
-    expect(
-        parseTotemQuery(window.location.search, reference).config?.budget
-    ).toBe("1");
     act(() => result.current.remove(live.key));
     expect(result.current.config.candidates).toHaveLength(3);
     act(() => result.current.remove());

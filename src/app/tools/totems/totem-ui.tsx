@@ -12,13 +12,11 @@ import {
     knownTotemStat,
     positiveTotemGold,
     type Totem,
-    TOTEM_RELATION_LABELS,
     TOTEM_STATS,
     totemBudgetState,
     totemBundleTotal,
     totemEffectKeys,
     type TotemEvaluation,
-    totemPricePerGain,
     type TotemRoll,
     totemStatLabel,
     totemValue,
@@ -160,39 +158,15 @@ export function TotemInputs({
 }
 export function TotemEvaluationCell({
     evaluation: e,
-    hasBaseline,
-    price,
 }: {
     evaluation: TotemEvaluation;
-    hasBaseline: boolean;
-    price?: number | null;
 }) {
-    const efficiency = price === undefined ? null : totemPricePerGain(price, e);
-    const step = e.key === "bonusdamage" ? 0.1 : 1;
-    const unit =
-        knownTotemStat(e.key) && TOTEM_STATS[e.key].unit === "%" ? "%p" : "";
     return (
         <div>
             <strong className={s.value}>
                 {formatTotemValue(e.key, e.value)}
                 {e.absent && " · 해당 효과 없음"}
             </strong>
-            {hasBaseline ? (
-                <p
-                    className={
-                        e.delta !== null && e.delta < 0 ? s.loss : s.muted
-                    }
-                >
-                    내 것 {formatTotemValue(e.key, e.baseline)} →{" "}
-                    {e.delta === null
-                        ? e.relation === "replaceable"
-                            ? "옵션값 확인 필요"
-                            : TOTEM_RELATION_LABELS[e.relation]
-                        : `${formatTotemValue(e.key, e.delta, true)} ${e.delta < 0 ? "감소" : e.delta > 0 ? "증가" : "변화 없음"}`}
-                </p>
-            ) : (
-                <p className={s.muted}>내 옵션 입력 필요</p>
-            )}
             {e.range && (
                 <p className={s.muted}>
                     범위 {formatTotemValue(e.key, e.range.min)} ~{" "}
@@ -232,13 +206,6 @@ export function TotemEvaluationCell({
                         <span style={{ width: `${e.position * 100}%` }} />
                     </div>
                 </>
-            )}
-            {price !== undefined && (
-                <p>
-                    {efficiency === null
-                        ? "증가당 가격 계산 불가"
-                        : `${step}${unit} 증가당 ${formatAuctionNumber(efficiency * step)} 골드`}
-                </p>
             )}
         </div>
     );

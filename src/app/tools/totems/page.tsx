@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
 import reference from "@/data/totem-reference.json";
 import { TOTEM_PATH } from "@/lib/totems-state";
@@ -8,7 +7,7 @@ import TotemTool from "./totem-tool";
 
 const title = "마비노기 토템 옵션 비교·매물 평가";
 const description =
-    "토템의 가능한 옵션 범위를 찾아보고, 보유 토템의 실제 수치와 경매 매물의 스탯별 증감·개당 가격을 비교하세요. 일반·엑스트라·펫 구분과 미확인 정보도 함께 확인할 수 있습니다.";
+    "토템의 가능한 옵션 범위를 찾아보고, 경매 매물의 실제 옵션·개당 가격을 비교하세요. 일반·엑스트라·펫 구분과 미확인 정보도 함께 확인할 수 있습니다.";
 const preview = `${TOTEM_PATH}/preview`;
 export const metadata: Metadata = {
     title,
@@ -43,7 +42,7 @@ export default function TotemPage() {
                 {title}
             </h1>
             <p className="my-3 text-slate-700">
-                토템을 찾고, 내 실제 옵션과 매물의 증가량·감소량·등록 가격을
+                토템을 찾고, 가능한 옵션 범위와 매물의 실제 옵션·등록 가격을
                 비교하세요.
             </p>
             <TotemTool data={reference} />
@@ -61,14 +60,8 @@ export default function TotemPage() {
                 </p>
                 <p>
                     예를 들어 보너스 대미지 0.1~1.0% 범위의 0.4%는 범위 내 위치
-                    33.3%입니다. 내 옵션이 0.3%라면 교체 증가량은 0.1%p입니다.
-                    올 스탯의 다섯 능력치는 각각의 실제 수치로 비교합니다.
-                </p>
-                <p>
-                    증감은 교체 규칙이 확인된 종류끼리만 계산합니다.
-                    일반·엑스트라 효과의 공존, 캐릭터·펫의 적용 대상, 복합
-                    토템에서 감소하는 능력치를 구분합니다. 알 수 없는 수치나
-                    범위는 0으로 대체하지 않습니다.
+                    33.3%입니다. 올 스탯의 다섯 능력치는 각각의 실제 수치로
+                    비교합니다.
                 </p>
                 <p>
                     매물 조회 버튼을 누를 때만 경매장에 요청합니다. 일부 결과만
@@ -101,23 +94,6 @@ export default function TotemPage() {
                     부족이나 데이터 버전 차이일 수 있습니다. 실제 옵션과 설명을
                     확인해 주세요.
                 </p>
-                <nav
-                    className="flex flex-wrap gap-4 [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center [&_a]:underline"
-                    aria-label="토템 관련 링크"
-                >
-                    <Link prefetch={false} href="/auction">
-                        경매장
-                    </Link>
-                    <Link prefetch={false} href="/tools/miniatures">
-                        미니어처 비교
-                    </Link>
-                    <a href="https://mabinogi.nexon.com/page/archive/guide_view.asp?id=4887001">
-                        공식 토템 가이드
-                    </a>
-                    <a href="https://prilus.gitlab.io/totem">
-                        Prilus 토템 자료
-                    </a>
-                </nav>
             </section>
         </div>
     );

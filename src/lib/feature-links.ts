@@ -51,7 +51,7 @@ export const FEATURE_LINKS = [
     {
         label: "토템 비교",
         url: "/tools/totems",
-        description: "토템의 실제 옵션과 매물별 증가량·가격을 비교하세요",
+        description: "토템의 옵션 범위와 매물별 실제 수치·가격을 비교하세요",
         group: "아이템 비교",
         searchVisible: true,
     },
