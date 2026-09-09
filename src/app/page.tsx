@@ -30,10 +30,10 @@ function NavigationCard({
     return (
         <Link
             href={href}
-            className="group relative rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+            className="group relative flex items-center rounded-lg border border-slate-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
         >
             <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-50 group-hover:bg-slate-100">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-slate-50 group-hover:bg-slate-100">
                     {icon}
                 </div>
                 <div>

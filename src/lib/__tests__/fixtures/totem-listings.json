@@ -1,0 +1,335 @@
+[
+  {
+    "item_name": "저주받은 뱀파이어의 송곳니(최대 생명력 토템)",
+    "item_display_name": "저주받은 뱀파이어의 송곳니(최대 생명력 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "최대생명력",
+        "option_value": "38",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 1200000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "마하의 주화(크리티컬 토템)",
+    "item_display_name": "마하의 주화(크리티컬 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "크리티컬",
+        "option_value": "8",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 1300000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "두근두근 할머니 인형(최대 마나 토템)",
+    "item_display_name": "두근두근 할머니 인형(최대 마나 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "최대마나",
+        "option_value": "130",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 1400000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "그대의 두근두근 사진(최대 스태미나 토템)",
+    "item_display_name": "그대의 두근두근 사진(최대 스태미나 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "최대스태미나",
+        "option_value": "99",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 1500000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "두근두근 엄마 인형(최대 대미지 토템)",
+    "item_display_name": "두근두근 엄마 인형(최대 대미지 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "최대대미지",
+        "option_value": "28",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 1600000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "나는 마법사로 살기로 했다(마법 공격력 토템)",
+    "item_display_name": "나는 마법사로 살기로 했다(마법 공격력 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "마법 공격력",
+        "option_value": "6",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 1700000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "두근두근 스코티시 폴드 냥토템(올 스탯 토템)",
+    "item_display_name": "두근두근 스코티시 폴드 냥토템(올 스탯 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "체력",
+        "option_value": "29",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "솜씨",
+        "option_value": "8",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "지력",
+        "option_value": "3",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "의지",
+        "option_value": "5",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "행운",
+        "option_value": "11",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 1800000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "창공의 깃털(이동 속도 토템)",
+    "item_display_name": "창공의 깃털(이동 속도 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "이동속도 증가",
+        "option_value": "3%",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 1900000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "두근두근 붓 인형(방어 및 마법 방어 토템)",
+    "item_display_name": "두근두근 붓 인형(방어 및 마법 방어 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "방어력",
+        "option_value": "4",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "마법 방어력",
+        "option_value": "24",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 2000000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "두근두근 샴 냥토템(연금술 대미지 토템)",
+    "item_display_name": "두근두근 샴 냥토템(연금술 대미지 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "모든 연금술 대미지",
+        "option_value": "35",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 2100000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "두근두근 리트리버 멍토템(힐링 효과 토템)",
+    "item_display_name": "두근두근 리트리버 멍토템(힐링 효과 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "힐링 효과",
+        "option_value": "6.000000",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 2200000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "왕립 학회 주화(최소/최대 대미지 토템)",
+    "item_display_name": "왕립 학회 주화(최소/최대 대미지 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "최소대미지",
+        "option_value": "5",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "최대대미지",
+        "option_value": "1",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 2300000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "브리 레흐의 주화(지원 토템)",
+    "item_display_name": "브리 레흐의 주화(지원 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "음악 버프 지속 시간",
+        "option_value": "18",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "힐링 효과",
+        "option_value": "7.000000",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 2400000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "신비한 에린 사전(보너스 대미지 토템)",
+    "item_display_name": "신비한 에린 사전(보너스 대미지 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "보너스 대미지",
+        "option_value": "0.1",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 2500000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "콜튼의 손수건(올 스탯 토템)",
+    "item_display_name": "콜튼의 손수건(올 스탯 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "체력",
+        "option_value": "9",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "솜씨",
+        "option_value": "13",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "지력",
+        "option_value": "5",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "의지",
+        "option_value": "13",
+        "option_value2": null,
+        "option_desc": null
+      },
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "행운",
+        "option_value": "7",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 2600000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  },
+  {
+    "item_name": "물망초가 그려진 그림(보너스 대미지 토템)",
+    "item_display_name": "물망초가 그려진 그림(보너스 대미지 토템)",
+    "item_option": [
+      {
+        "option_type": "토템 효과",
+        "option_sub_type": "보너스 대미지",
+        "option_value": "0.4",
+        "option_value2": null,
+        "option_desc": null
+      }
+    ],
+    "auction_price_per_unit": 2700000,
+    "item_count": 2,
+    "date_auction_expire": "2026-09-10T00:00:00+09:00"
+  }
+]
