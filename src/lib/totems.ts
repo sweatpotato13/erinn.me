@@ -380,6 +380,7 @@ export function totemContribution(roll: TotemRoll, key: string): number | null {
 export interface TotemEvaluation {
     key: string;
     value: number | null;
+    absent: boolean;
     baseline: number | null;
     delta: number | null;
     range: TotemRange | null;
@@ -444,6 +445,11 @@ export function evaluateTotem(
     return {
         key,
         value,
+        absent:
+            knownTotemStat(key) &&
+            candidate.effectSetKnown &&
+            !!candidate.reference &&
+            !totemEffectKeys(candidate.reference).includes(key),
         baseline: before,
         delta,
         range,

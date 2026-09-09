@@ -77,8 +77,10 @@ export function useTotemConfig(data: TotemReference) {
     const [shareUrl, setShareUrl] = useState("");
     const [received, setReceived] = useState(false);
     const [historicalKeys, setHistoricalKeys] = useState<string[]>([]);
+    const currentQuery = useRef("");
     useEffect(() => {
         function restore() {
+            currentQuery.current = window.location.search;
             const query = parseTotemQuery(window.location.search, data);
             let saved: ReturnType<typeof parseTotemStorage> = {
                 baseline: null,
@@ -111,9 +113,13 @@ export function useTotemConfig(data: TotemReference) {
             setShareUrl("");
             setReady(true);
         }
+        function onPopState() {
+            // Hash anchors also emit popstate; they must preserve unsaved comparisons.
+            if (window.location.search !== currentQuery.current) restore();
+        }
         restore();
-        window.addEventListener("popstate", restore);
-        return () => window.removeEventListener("popstate", restore);
+        window.addEventListener("popstate", onPopState);
+        return () => window.removeEventListener("popstate", onPopState);
     }, [data]);
     function saveBaseline() {
         try {
@@ -179,6 +185,7 @@ export function useTotemConfig(data: TotemReference) {
         setShareUrl(url);
         try {
             window.history.pushState(null, "", shared.path);
+            currentQuery.current = window.location.search;
             if (!navigator.clipboard) throw new Error("Clipboard unavailable");
             await navigator.clipboard.writeText(url);
             setShareNotice(

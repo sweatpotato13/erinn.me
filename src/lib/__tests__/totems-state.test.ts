@@ -261,6 +261,11 @@ test("shared baseline never overwrites storage until explicit save; back/forward
     act(() => result.current.useSavedBaseline());
     expect(result.current.config.baseline).toEqual(savedBaseline);
     act(() => {
+        window.history.replaceState(
+            null,
+            "",
+            buildTotemShare({ ...config, budget: "100" }).path
+        );
         window.dispatchEvent(new PopStateEvent("popstate"));
     });
     expect(result.current.config.baseline).toEqual(config.baseline);
@@ -277,6 +282,21 @@ test("shared baseline never overwrites storage until explicit save; back/forward
             .baseline?.values.bonusdamage
     ).toBe("0.2");
     expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("same-page anchor navigation never clears unsaved baseline or candidates", () => {
+    const { result } = renderHook(() => useTotemConfig(reference));
+    act(() => result.current.setConfig(config));
+    act(() => {
+        window.history.pushState(null, "", "#totem-comparison");
+        window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(result.current.config).toEqual(config);
+    act(() => {
+        window.history.replaceState(null, "", "#totem-selected");
+        window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(result.current.config).toEqual(config);
 });
 
 test("four independent candidates survive configuration changes; fifth is refused and clipboard has a fallback", async () => {

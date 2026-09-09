@@ -250,6 +250,7 @@ test("explicit compatibility separates normal/extra/pet and retains royal compos
     expect(keys.map(k => evaluateTotem(k, candidate, base).delta)).toEqual([
         15, 5, -10, -8,
     ]);
+    expect(evaluateTotem("intelligence", candidate, base).absent).toBe(true);
     expect(
         evaluateTotem("mindamage", manual(5160005, { maxdamage: "15" }), base)
             .delta
