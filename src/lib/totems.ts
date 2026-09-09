@@ -579,7 +579,7 @@ export function filterTotems(
         auctionOnly: boolean;
     }
 ): Totem[] {
-    return items.filter(item => {
+    const filtered = items.filter(item => {
         if (
             options.type !== "all" &&
             item.isExtra !== (options.type === "extra")
@@ -609,4 +609,19 @@ export function filterTotems(
             .split(/\s+/)
             .every(word => text.includes(miniatureSearchText(word)));
     });
+    const stat =
+        options.stat !== "all"
+            ? options.stat
+            : Object.keys(TOTEM_STATS).find(
+                  key =>
+                      miniatureSearchText(totemStatLabel(key)) ===
+                      miniatureSearchText(options.search)
+              );
+    return stat
+        ? sortTotemCandidates(
+              filtered,
+              item => item.ranges[stat]?.max ?? null,
+              true
+          )
+        : filtered;
 }

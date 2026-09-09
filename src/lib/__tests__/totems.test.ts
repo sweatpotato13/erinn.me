@@ -365,6 +365,36 @@ test("sorting is stable/null-last; ties and incomplete comparisons never prove d
     expect(totemDominated(a, 200, b, 100, ["future"])).toBe(false);
 });
 
+test("catalog sorts every selected effect or exact effect search by maximum, unknowns last", () => {
+    for (const [stat, { label }] of Object.entries(TOTEM_STATS)) {
+        const rows: Totem[] = [10, null, 30, 30, 0].map((max, id) => ({
+            ...items[0],
+            id,
+            name: label,
+            type: stat,
+            ranges: { [stat]: max === null ? undefined : { min: 0, max } },
+        }));
+        const options = {
+            search: "",
+            type: "all",
+            target: "all",
+            stat,
+            auctionOnly: false,
+        };
+        expect(filterTotems(rows, options).map(r => r.id)).toEqual([
+            2, 3, 0, 4, 1,
+        ]);
+        expect(
+            filterTotems(rows, {
+                ...options,
+                stat: "all",
+                search: label.replace(/\s/g, ""),
+            }).map(r => r.id)
+        ).toEqual([2, 3, 0, 4, 1]);
+        expect(rows.map(r => r.id)).toEqual([0, 1, 2, 3, 4]);
+    }
+});
+
 test("catalog filters preserve empty ranges and apply Korean text/type/target independently", () => {
     const options = {
         search: "",
