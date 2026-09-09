@@ -117,7 +117,7 @@ export function TotemCatalog({
                         disabled={currentPage + 1 === pages}
                         onClick={() => setPage(currentPage + 1)}
                     >
-                        결과 더 보기
+                        다음 토템
                     </button>
                 </div>
             )}
