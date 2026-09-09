@@ -103,3 +103,28 @@ test("HTTP/JSON/abort errors do not retry; no results is a valid empty observati
     ).rejects.toThrow("이름");
     expect(fetchMock).toHaveBeenCalledTimes(3);
 });
+
+test("JSON body failures use the localized response error without retrying", async () => {
+    fetchMock.mockResolvedValue({
+        ok: true,
+        json: () => Promise.reject(new SyntaxError("Unexpected token <")),
+    });
+    await expect(
+        fetchTotemListings(row.item_name, signal, "bad-json")
+    ).rejects.toThrow(
+        "매물 응답 형식을 확인할 수 없습니다. 다시 조회해 주세요."
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+test("the documented five-page maximum is accepted without dropping listings", async () => {
+    reply({
+        items: Array.from({ length: 2500 }, () => row),
+        hasMore: true,
+        nextCursor: "page-6",
+    });
+    const result = await fetchTotemListings(row.item_name, signal, "full");
+    expect(result.receivedCount).toBe(2500);
+    expect(result.listings).toHaveLength(2500);
+    expect(result.hasMore).toBe(true);
+});

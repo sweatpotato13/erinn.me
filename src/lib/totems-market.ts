@@ -2,6 +2,8 @@ import { z } from "zod";
 
 import { AuctionListResponseSchema } from "@/lib/schemas/nexon";
 
+// The auction/list cursor contract specifies 500 rows per page; /api/auction reads at most five.
+// https://openapi.nexon.com/static/api/mabinogi/36_ko_script20250410023004.yaml
 const responseSchema = z
     .object({
         items: AuctionListResponseSchema.shape.auction_item.max(2500),
@@ -21,12 +23,12 @@ export interface TotemMarketResult {
     listings: TotemListing[];
 }
 
-export type TotemListing = {
+export interface TotemListing {
     kind: "listing";
     key: string;
     observedAt: string;
     item: z.infer<typeof AuctionListResponseSchema>["auction_item"][number];
-};
+}
 
 /** One browser request; the existing server bounds aggregation to five pages. */
 export async function fetchTotemListings(
@@ -45,7 +47,15 @@ export async function fetchTotemListings(
         throw new Error(
             "매물을 불러오지 못했습니다. 수동 비교는 계속 사용할 수 있습니다."
         );
-    const parsed = responseSchema.safeParse(await response.json());
+    let raw: unknown;
+    try {
+        raw = await response.json();
+    } catch {
+        throw new Error(
+            "매물 응답 형식을 확인할 수 없습니다. 다시 조회해 주세요."
+        );
+    }
+    const parsed = responseSchema.safeParse(raw);
     if (!parsed.success)
         throw new Error(
             "매물 응답 형식을 확인할 수 없습니다. 다시 조회해 주세요."
