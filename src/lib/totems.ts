@@ -1,3 +1,10 @@
+import {
+    benefitCost,
+    miniatureGold,
+    miniatureSearchText,
+} from "@/lib/miniatures";
+import type { ItemOption } from "@/types/item-option";
+
 export interface TotemBonus {
     StatName: string;
     Min: number;
@@ -213,4 +220,387 @@ export function totemRanges(bonuses: TotemBonus[]): Totem["ranges"] {
         }
     }
     return ranges;
+}
+
+export type TotemValues = Partial<Record<string, string>>;
+export type TotemRelation =
+    "replaceable" | "coexist" | "different-target" | "unverified";
+export const TOTEM_RELATION_LABELS: Record<TotemRelation, string> = {
+    replaceable: "교체 비교 가능",
+    coexist: "함께 적용되는 종류",
+    "different-target": "적용 대상이 다름",
+    unverified: "교체 규칙 확인 필요",
+};
+
+export function totemEffectKeys(item: Totem): string[] {
+    return [
+        ...new Set([
+            ...(Object.hasOwn(TOTEM_TYPE_STATS, item.type)
+                ? TOTEM_TYPE_STATS[item.type]
+                : []),
+            ...Object.keys(item.ranges),
+        ]),
+    ];
+}
+
+function verifiedEffectSet(item: Totem): boolean {
+    return (
+        Object.hasOwn(TOTEM_TYPE_STATS, item.type) &&
+        item.bonuses.every(b => Object.hasOwn(TOTEM_SOURCE_KEYS, b.StatName)) &&
+        Object.keys(item.ranges).every(key =>
+            TOTEM_TYPE_STATS[item.type].includes(key)
+        )
+    );
+}
+
+export function totemRelation(
+    a?: Totem | null,
+    b?: Totem | null
+): TotemRelation {
+    if (!a || !b) return "unverified";
+    if (a.isPet !== b.isPet) return "different-target";
+    if (!verifiedEffectSet(a) || !verifiedEffectSet(b)) return "unverified";
+    if ((a.id === 52495 || b.id === 52495) && a.id !== b.id)
+        return "unverified";
+    if (a.isExtra !== b.isExtra) return "coexist";
+    if (
+        a.type === b.type ||
+        (ROYAL_TOTEM_IDS.includes(a.id) && ROYAL_TOTEM_IDS.includes(b.id))
+    )
+        return "replaceable";
+    return "coexist";
+}
+
+export interface TotemRoll {
+    reference: Totem | null;
+    matches: Totem[];
+    status: "matched" | "missing" | "ambiguous" | "conflicting";
+    values: Partial<Record<string, number | null>>;
+    rawOptions: ItemOption[];
+    unknownOptions: ItemOption[];
+    duplicateKeys: string[];
+    effectSetKnown: boolean;
+}
+
+export function resolveTotemName(items: Totem[], name: string): Totem[] {
+    return items.filter(item => item.name === name);
+}
+
+function rollFromOptions(matches: Totem[], options: ItemOption[]): TotemRoll {
+    const reference = matches.length === 1 ? matches[0] : null;
+    const values: TotemRoll["values"] = {};
+    const unknownOptions: ItemOption[] = [];
+    const duplicateKeys: string[] = [];
+    for (const option of options) {
+        if (option.option_type !== "토템 효과") continue;
+        const key = Object.keys(TOTEM_STATS).find(
+            k => TOTEM_STATS[k].subtype === option.option_sub_type
+        );
+        if (!key) {
+            unknownOptions.push(option);
+            continue;
+        }
+        if (Object.hasOwn(values, key)) {
+            values[key] = null;
+            if (!duplicateKeys.includes(key)) duplicateKeys.push(key);
+        } else values[key] = totemValue(key, option.option_value);
+    }
+    const expected = reference ? totemEffectKeys(reference) : [];
+    const conflicting =
+        !!reference &&
+        verifiedEffectSet(reference) &&
+        Object.keys(values).some(key => !expected.includes(key));
+    return {
+        reference,
+        matches,
+        values,
+        rawOptions: options,
+        unknownOptions,
+        duplicateKeys,
+        status: !matches.length
+            ? "missing"
+            : matches.length > 1
+              ? "ambiguous"
+              : conflicting
+                ? "conflicting"
+                : "matched",
+        effectSetKnown:
+            !!reference &&
+            verifiedEffectSet(reference) &&
+            !conflicting &&
+            !unknownOptions.length,
+    };
+}
+
+export function listingTotemRoll(
+    items: Totem[],
+    name: string,
+    options?: ItemOption[] | null
+): TotemRoll {
+    return rollFromOptions(resolveTotemName(items, name), options ?? []);
+}
+
+export function manualTotemRoll(
+    item: Totem | undefined,
+    values: TotemValues
+): TotemRoll {
+    return rollFromOptions(
+        item ? [item] : [],
+        Object.entries(values).map(([key, value]) => ({
+            option_type: "토템 효과",
+            option_sub_type: knownTotemStat(key)
+                ? TOTEM_STATS[key].subtype
+                : key,
+            option_value: value,
+        }))
+    );
+}
+
+export function maximumTotemValues(item: Totem): TotemValues {
+    return Object.fromEntries(
+        Object.entries(item.ranges)
+            .filter((entry): entry is [string, TotemRange] => !!entry[1])
+            .map(([key, range]) => [key, String(range.max)])
+    );
+}
+
+/** Absence in a verified effect set is different from a missing rolled value. */
+export function totemContribution(roll: TotemRoll, key: string): number | null {
+    if (!knownTotemStat(key)) return null;
+    if (Object.hasOwn(roll.values, key)) return roll.values[key] ?? null;
+    if (
+        roll.effectSetKnown &&
+        roll.reference &&
+        !totemEffectKeys(roll.reference).includes(key)
+    )
+        return 0;
+    return null;
+}
+
+export interface TotemEvaluation {
+    key: string;
+    value: number | null;
+    baseline: number | null;
+    delta: number | null;
+    range: TotemRange | null;
+    rangeStatus:
+        | "within"
+        | "fixed"
+        | "outside"
+        | "missing"
+        | "unknown"
+        | "ambiguous"
+        | "conflicting";
+    position: number | null;
+    gap: number | null;
+    relation: TotemRelation;
+}
+
+export function evaluateTotem(
+    key: string,
+    candidate: TotemRoll,
+    baseline?: TotemRoll | null
+): TotemEvaluation {
+    const value = totemContribution(candidate, key);
+    const before = baseline ? totemContribution(baseline, key) : null;
+    const relation =
+        baseline &&
+        candidate.status === "matched" &&
+        baseline.status === "matched"
+            ? totemRelation(candidate.reference, baseline.reference)
+            : "unverified";
+    const factor = knownTotemStat(key) ? 10 ** TOTEM_STATS[key].precision : 1;
+    const difference = (a: number, b: number) =>
+        (Math.round(a * factor) - Math.round(b * factor)) / factor;
+    const delta =
+        relation === "replaceable" && value !== null && before !== null
+            ? difference(value, before)
+            : null;
+    const range =
+        candidate.status === "matched"
+            ? (candidate.reference?.ranges[key] ?? null)
+            : null;
+    let rangeStatus: TotemEvaluation["rangeStatus"] = "missing";
+    let position: number | null = null;
+    let gap: number | null = null;
+    if (candidate.status === "ambiguous" || candidate.status === "conflicting")
+        rangeStatus = candidate.status;
+    else if (value === null) rangeStatus = "unknown";
+    else if (
+        range &&
+        Number.isFinite(range.min) &&
+        Number.isFinite(range.max) &&
+        range.min <= range.max
+    ) {
+        gap = difference(range.max, value);
+        if (value < range.min || value > range.max) rangeStatus = "outside";
+        else if (range.min === range.max) rangeStatus = "fixed";
+        else {
+            rangeStatus = "within";
+            position =
+                difference(value, range.min) / difference(range.max, range.min);
+        }
+    }
+    return {
+        key,
+        value,
+        baseline: before,
+        delta,
+        range,
+        rangeStatus,
+        position,
+        gap,
+        relation,
+    };
+}
+
+export function comparisonTotemKeys(rolls: TotemRoll[]): string[] {
+    const keys = new Set(
+        rolls.flatMap(r => [
+            ...Object.keys(r.values),
+            ...(r.reference ? totemEffectKeys(r.reference) : []),
+        ])
+    );
+    return [
+        ...Object.keys(TOTEM_STATS).filter(k => keys.has(k)),
+        ...[...keys].filter(k => !knownTotemStat(k)),
+    ];
+}
+
+export function formatTotemValue(
+    key: string,
+    value: number | null,
+    delta = false
+): string {
+    if (value === null) return "미확인";
+    if (!knownTotemStat(key))
+        return `${value.toLocaleString("ko-KR")} (단위 미확인)`;
+    const unit = TOTEM_STATS[key].unit;
+    return `${delta && value > 0 ? "+" : ""}${value.toLocaleString("ko-KR", { maximumFractionDigits: TOTEM_STATS[key].precision })}${delta && unit === "%" ? "%p" : unit}`;
+}
+
+export const parseTotemGold = miniatureGold;
+export function positiveTotemGold(value: unknown): number | null {
+    return typeof value === "number" && Number.isSafeInteger(value) && value > 0
+        ? value
+        : null;
+}
+export function totemBundleTotal(
+    price: unknown,
+    quantity: unknown
+): string | null {
+    const p = positiveTotemGold(price);
+    const q = positiveTotemGold(quantity);
+    return p === null || q === null ? null : (BigInt(p) * BigInt(q)).toString();
+}
+export function totemPricePerGain(
+    price: unknown,
+    evaluation: TotemEvaluation
+): number | null {
+    if (evaluation.delta === null || !Number.isFinite(evaluation.delta))
+        return null;
+    return benefitCost(positiveTotemGold(price), evaluation.delta);
+}
+export function totemBudgetState(
+    price: unknown,
+    budget: number | null
+): "within" | "over" | "unknown" | "unset" {
+    if (budget === null || !Number.isSafeInteger(budget) || budget < 0)
+        return "unset";
+    const p = positiveTotemGold(price);
+    return p === null ? "unknown" : p <= budget ? "within" : "over";
+}
+export type TotemSort = "price" | "value" | "delta" | "efficiency";
+export function sortTotemCandidates<T>(
+    items: T[],
+    metric: (item: T) => number | null,
+    descending = false
+): T[] {
+    return items
+        .map((item, index) => ({ item, index, value: metric(item) }))
+        .sort((a, b) => {
+            const av =
+                a.value !== null && Number.isFinite(a.value) ? a.value : null;
+            const bv =
+                b.value !== null && Number.isFinite(b.value) ? b.value : null;
+            return av === null
+                ? bv === null
+                    ? a.index - b.index
+                    : 1
+                : bv === null
+                  ? -1
+                  : (descending ? bv - av : av - bv) || a.index - b.index;
+        })
+        .map(r => r.item);
+}
+
+export function totemDominated(
+    a: TotemRoll,
+    aPrice: unknown,
+    b: TotemRoll,
+    bPrice: unknown,
+    keys: string[]
+): boolean {
+    const ap = positiveTotemGold(aPrice),
+        bp = positiveTotemGold(bPrice);
+    if (
+        !keys.length ||
+        ap === null ||
+        bp === null ||
+        ap < bp ||
+        !a.effectSetKnown ||
+        !b.effectSetKnown ||
+        totemRelation(a.reference, b.reference) !== "replaceable"
+    )
+        return false;
+    let strict = ap > bp;
+    for (const key of keys) {
+        const av = totemContribution(a, key),
+            bv = totemContribution(b, key);
+        if (av === null || bv === null || av > bv) return false;
+        if (av < bv) strict = true;
+    }
+    return strict;
+}
+
+export function filterTotems(
+    items: Totem[],
+    options: {
+        search: string;
+        type: string;
+        target: string;
+        stat: string;
+        auctionOnly: boolean;
+    }
+): Totem[] {
+    return items.filter(item => {
+        if (
+            options.type !== "all" &&
+            item.isExtra !== (options.type === "extra")
+        )
+            return false;
+        if (
+            options.target !== "all" &&
+            item.isPet !== (options.target === "pet")
+        )
+            return false;
+        if (options.auctionOnly && !item.searchable) return false;
+        if (
+            options.stat !== "all" &&
+            !totemEffectKeys(item).includes(options.stat)
+        )
+            return false;
+        const text = miniatureSearchText(
+            [
+                item.name,
+                item.description,
+                item.type,
+                ...totemEffectKeys(item).map(totemStatLabel),
+            ].join(" ")
+        );
+        return options.search
+            .trim()
+            .split(/\s+/)
+            .every(word => text.includes(miniatureSearchText(word)));
+    });
 }
