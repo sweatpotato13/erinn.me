@@ -8,6 +8,7 @@ import {
     parseTotemGold,
     type Totem,
     type TotemReference,
+    type TotemRoll,
 } from "@/lib/totems";
 import type { TotemListing } from "@/lib/totems-market";
 
@@ -142,7 +143,7 @@ export function snapshotTotemListing(listing: TotemListing): TotemCandidate {
 export function candidateTotemRoll(
     candidate: TotemCandidate,
     data: TotemReference
-) {
+): TotemRoll {
     return candidate.kind === "listing"
         ? listingTotemRoll(
               data.totems,

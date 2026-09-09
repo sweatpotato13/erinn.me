@@ -5,33 +5,33 @@ import { TOTEM_PATH } from "@/lib/totems-state";
 
 import TotemTool from "./totem-tool";
 
-const title = "마비노기 토템 옵션 비교·매물 평가";
-const description =
+const TITLE = "마비노기 토템 옵션 비교·매물 평가";
+const DESCRIPTION =
     "토템의 가능한 옵션 범위를 찾아보고, 경매 매물의 실제 옵션·개당 가격을 비교하세요. 일반·엑스트라·펫 구분과 미확인 정보도 함께 확인할 수 있습니다.";
-const preview = `${TOTEM_PATH}/preview`;
+const PREVIEW = `${TOTEM_PATH}/preview`;
 export const metadata: Metadata = {
-    title,
-    description,
+    title: TITLE,
+    description: DESCRIPTION,
     alternates: { canonical: TOTEM_PATH },
     openGraph: {
-        title,
-        description,
+        title: TITLE,
+        description: DESCRIPTION,
         url: TOTEM_PATH,
         images: [
             {
-                url: preview,
+                url: PREVIEW,
                 width: 1200,
                 height: 630,
                 type: "image/png",
-                alt: title,
+                alt: TITLE,
             },
         ],
     },
     twitter: {
         card: "summary_large_image",
-        title,
-        description,
-        images: [{ url: preview, alt: title }],
+        title: TITLE,
+        description: DESCRIPTION,
+        images: [{ url: PREVIEW, alt: TITLE }],
     },
 };
 
@@ -39,7 +39,7 @@ export default function TotemPage() {
     return (
         <div className="mx-auto max-w-7xl px-3 py-6 sm:px-6">
             <h1 className="text-2xl font-bold break-keep text-slate-900 sm:text-3xl">
-                {title}
+                {TITLE}
             </h1>
             <p className="my-3 text-slate-700">
                 토템을 찾고, 가능한 옵션 범위와 매물의 실제 옵션·등록 가격을
