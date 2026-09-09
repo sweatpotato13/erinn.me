@@ -148,6 +148,23 @@ assert.equal(
     }).data.ItemExtendTotemList[0].Bonuses.length,
     0
 );
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            ItemExtendTotemList: [
+                { ...data.ItemExtendTotemList[0], Id: Number.MAX_SAFE_INTEGER },
+            ],
+        }),
+    /ItemExtendTotemList.Id: unresolved reference/
+);
+const totemFlags = validateData({
+    ...data,
+    ItemExtendTotemList: [
+        { ...data.ItemExtendTotemList[0], isExtra: true, isPet: true },
+    ],
+}).data.ItemExtendTotemList[0];
+assert(totemFlags.isExtra && totemFlags.isPet);
 const unknownSkill = {
     ...data.SkillList[0],
     Name: `unknownid:${data.SkillList[0].Id}`,
