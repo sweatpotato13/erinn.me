@@ -178,6 +178,67 @@ describe("API query contracts", () => {
         );
     });
 
+    it("forwards totem names/options and stops after five pages with a remaining cursor", async () => {
+        const name = "물망초가 그려진 그림(보너스 대미지 토템)";
+        const item = auctionItem(name, [
+            {
+                option_type: "토템 효과",
+                option_sub_type: "보너스 대미지",
+                option_value: "0.4",
+            },
+        ]);
+        for (let page = 1; page <= 5; page++) {
+            jest.mocked(fetch).mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({
+                        auction_item: Array.from({ length: 500 }, () => item),
+                        next_cursor: `page-${page}`,
+                    })
+                )
+            );
+        }
+        const query = new URLSearchParams({
+            item_name: name,
+            auction_item_category: "토템",
+        });
+        const response = await getAuction(request(`/api/auction?${query}`));
+        expect(response.status).toBe(200);
+        const body = await response.json();
+        expect(body).toMatchObject({ hasMore: true, nextCursor: "page-5" });
+        expect(body.items).toHaveLength(2500);
+        expect(body.items[0]).toEqual(item);
+        expect(fetch).toHaveBeenCalledTimes(5);
+        for (const [index, call] of jest.mocked(fetch).mock.calls.entries()) {
+            const url = call[0] as URL;
+            expect(url.searchParams.get("item_name")).toBe(name);
+            expect(url.searchParams.get("auction_item_category")).toBe("토템");
+            expect(url.searchParams.get("cursor")).toBe(
+                index ? `page-${index}` : null
+            );
+        }
+    });
+
+    it("does not publish successful totem pages if a later upstream page fails", async () => {
+        jest.mocked(fetch)
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({
+                        auction_item: [auctionItem("토템", [])],
+                        next_cursor: "next",
+                    })
+                )
+            )
+            .mockResolvedValueOnce(new Response("", { status: 500 }));
+        const response = await getAuction(
+            request(
+                `/api/auction?${new URLSearchParams({ item_name: "토템", auction_item_category: "토템" })}`
+            )
+        );
+        expect(response.status).toBe(502);
+        expect(await response.json()).not.toHaveProperty("items");
+        expect(fetch).toHaveBeenCalledTimes(2);
+    });
+
     it.each([
         [getAuction, "/api/auction?item_name=sword"],
         [getKeyword, "/api/auction/keyword-search?keyword=sword"],
@@ -661,38 +722,42 @@ describe("API upstream failure contracts", () => {
         });
     });
 
-    it("returns no partial auction success when the total deadline expires", async () => {
-        const startedAt = Date.now();
-        const clock = jest.spyOn(Date, "now").mockReturnValue(startedAt);
-        jest.mocked(fetch).mockResolvedValue({
-            ok: true,
-            status: 200,
-            json: () => {
-                clock.mockReturnValue(startedAt + 15_001);
-                return Promise.resolve({
-                    auction_item: [
-                        {
-                            item_name: "item",
-                            item_display_name: "item",
-                            item_count: 1,
-                            auction_price_per_unit: 10,
-                            date_auction_expire: "date",
-                        },
-                    ],
-                    next_cursor: "next",
-                });
-            },
-        } as Response);
+    it.each([
+        "/api/auction?item_name=sword",
+        `/api/auction?${new URLSearchParams({ item_name: "토템", auction_item_category: "토템" })}`,
+    ])(
+        "returns no partial auction success when the total deadline expires: %s",
+        async path => {
+            const startedAt = Date.now();
+            const clock = jest.spyOn(Date, "now").mockReturnValue(startedAt);
+            jest.mocked(fetch).mockResolvedValue({
+                ok: true,
+                status: 200,
+                json: () => {
+                    clock.mockReturnValue(startedAt + 15_001);
+                    return Promise.resolve({
+                        auction_item: [
+                            {
+                                item_name: "item",
+                                item_display_name: "item",
+                                item_count: 1,
+                                auction_price_per_unit: 10,
+                                date_auction_expire: "date",
+                            },
+                        ],
+                        next_cursor: "next",
+                    });
+                },
+            } as Response);
 
-        const response = await getAuction(
-            request("/api/auction?item_name=sword")
-        );
-        expect(response.status).toBe(504);
-        expect(await response.json()).toEqual({
-            error: "Upstream request timed out",
-        });
-        clock.mockRestore();
-    });
+            const response = await getAuction(request(path));
+            expect(response.status).toBe(504);
+            expect(await response.json()).toEqual({
+                error: "Upstream request timed out",
+            });
+            clock.mockRestore();
+        }
+    );
 
     it.each([
         new Response(JSON.stringify({ wrong: [] }), { status: 200 }),

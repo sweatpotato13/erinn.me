@@ -356,7 +356,7 @@ export function manualTotemRoll(
     );
 }
 
-export function maximumTotemValues(item: Totem): TotemValues {
+export function maximumTotemValues(item: Totem): Record<string, string> {
     return Object.fromEntries(
         Object.entries(item.ranges)
             .filter((entry): entry is [string, TotemRange] => !!entry[1])
