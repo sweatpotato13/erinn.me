@@ -1,4 +1,5 @@
 .tool {
+    min-inline-size: 0;
     background: #313330;
     color: #f5f5ef;
     border: 1px solid #858780;

@@ -159,7 +159,9 @@ export default function TotemTool({ data }: { data: TotemReference }) {
             )
     ).length;
     return (
-        <div
+        <fieldset
+            disabled={!state.ready}
+            aria-label="토템 비교 설정"
             className={`${s.tool} ${config.candidates.length ? s.hasCandidates : ""}`}
         >
             <div className={s.toolbar}>
@@ -824,6 +826,6 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                     <a href="#totem-comparison">후보 비교 보기</a>
                 </div>
             )}
-        </div>
+        </fieldset>
     );
 }
