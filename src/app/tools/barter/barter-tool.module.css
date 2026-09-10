@@ -1,95 +1,140 @@
-.page {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 24px 24px 64px;
-    color: var(--color-base-content);
-    font-family: inherit;
-    font-size: 14px;
-    line-height: 1.6;
+.mobileJump {
+    composes: mobileJump from "../../../components/tools/preparation.module.css";
 }
-.page * {
-    box-sizing: border-box;
+.guide {
+    composes: guide from "../../../components/tools/preparation.module.css";
 }
-.page :is(button, input, select, textarea, a, summary):focus-visible {
-    outline: 3px solid var(--color-primary);
-    outline-offset: 3px;
+.error {
+    composes: error from "../../../components/tools/preparation.module.css";
 }
-.page button {
-    cursor: pointer;
+.warning {
+    composes: warning from "../../../components/tools/preparation.module.css";
 }
-.page button:disabled {
-    cursor: not-allowed;
-    opacity: 0.45;
+.notice {
+    composes: notice from "../../../components/tools/preparation.module.css";
 }
-.page input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: var(--color-primary);
-    flex-shrink: 0;
-    cursor: pointer;
+.exports {
+    composes: exports from "../../../components/tools/preparation.module.css";
+}
+.costValue {
+    composes: costValue from "../../../components/tools/preparation.module.css";
+}
+.costLabel {
+    composes: costLabel from "../../../components/tools/preparation.module.css";
+}
+.cost {
+    composes: cost from "../../../components/tools/preparation.module.css";
+}
+.priceLine {
+    composes: priceLine from "../../../components/tools/preparation.module.css";
+}
+.materialDetails {
+    composes: materialDetails from "../../../components/tools/preparation.module.css";
+}
+.deficit {
+    composes: deficit from "../../../components/tools/preparation.module.css";
+}
+.materialNumbers {
+    composes: materialNumbers from "../../../components/tools/preparation.module.css";
+}
+.materialTop {
+    composes: materialTop from "../../../components/tools/preparation.module.css";
+}
+.material {
+    composes: material from "../../../components/tools/preparation.module.css";
+}
+.empty {
+    composes: empty from "../../../components/tools/preparation.module.css";
+}
+.shopping {
+    composes: shopping from "../../../components/tools/preparation.module.css";
+}
+.summaryStats {
+    composes: summaryStats from "../../../components/tools/preparation.module.css";
+}
+.progress {
+    composes: progress from "../../../components/tools/preparation.module.css";
+}
+.summaryHeading {
+    composes: summaryHeading from "../../../components/tools/preparation.module.css";
+}
+.summary {
+    composes: summary from "../../../components/tools/preparation.module.css";
+}
+.sidebar {
+    composes: sidebar from "../../../components/tools/preparation.module.css";
+}
+.input {
+    composes: input from "../../../components/tools/preparation.module.css";
+}
+.detail {
+    composes: detail from "../../../components/tools/preparation.module.css";
+}
+.stepper {
+    composes: stepper from "../../../components/tools/preparation.module.css";
+}
+.quantityLine {
+    composes: quantityLine from "../../../components/tools/preparation.module.css";
+}
+.icon {
+    composes: icon from "../../../components/tools/preparation.module.css";
+}
+.ingredient {
+    composes: ingredient from "../../../components/tools/preparation.module.css";
+}
+.ingredients {
+    composes: ingredients from "../../../components/tools/preparation.module.css";
+}
+.badge {
+    composes: badge from "../../../components/tools/preparation.module.css";
+}
+.goodTitle {
+    composes: goodTitle from "../../../components/tools/preparation.module.css";
+}
+.goodTop {
+    composes: goodTop from "../../../components/tools/preparation.module.css";
+}
+.good {
+    composes: good from "../../../components/tools/preparation.module.css";
+}
+.muted {
+    composes: muted from "../../../components/tools/preparation.module.css";
+}
+.panelHead {
+    composes: panelHead from "../../../components/tools/preparation.module.css";
+}
+.panel {
+    composes: panel from "../../../components/tools/preparation.module.css";
+}
+.catalog {
+    composes: catalog from "../../../components/tools/preparation.module.css";
+}
+.layout {
+    composes: layout from "../../../components/tools/preparation.module.css";
+}
+.quiet {
+    composes: quiet from "../../../components/tools/preparation.module.css";
+}
+.primary {
+    composes: primary from "../../../components/tools/preparation.module.css";
+}
+.button {
+    composes: button from "../../../components/tools/preparation.module.css";
+}
+.actions {
+    composes: actions from "../../../components/tools/preparation.module.css";
 }
 .toolbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
+    composes: toolbar from "../../../components/tools/preparation.module.css";
+}
+.page {
+    composes: page from "../../../components/tools/preparation.module.css";
 }
 .week {
     display: flex;
     align-items: center;
     gap: 9px;
     color: var(--color-base-content);
-    font-size: 12px;
-}
-.actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-}
-.button,
-.primary,
-.quiet {
-    gap: 6px;
-}
-.layout {
-    display: grid;
-    grid-template-columns: minmax(0, 1.35fr) minmax(340px, 1fr);
-    gap: 24px;
-    align-items: start;
-}
-.catalog {
-    min-width: 0;
-    display: grid;
-    gap: 22px;
-}
-.panel {
-    min-width: 0;
-    border: 1px solid var(--color-base-300);
-    border-radius: 12px;
-    background: var(--color-base-100);
-    overflow: clip;
-}
-.panelHead {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 20px 20px 14px;
-}
-.panelHead h2 {
-    font-size: 16px;
-    font-weight: 700;
-
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.muted {
-    color: color-mix(in oklab, var(--color-base-content) 65%, transparent);
     font-size: 12px;
 }
 .season {
@@ -102,129 +147,10 @@
     gap: 10px;
     padding: 0 16px 16px;
 }
-.good {
-    min-width: 0;
-    background: var(--color-base-100);
-    border: 1px solid var(--color-base-300);
-    border-radius: 8px;
-    padding: 13px;
-}
-.good[data-selected="true"] {
-    border-color: var(--color-primary);
-    background: color-mix(
-        in oklab,
-        var(--color-primary) 5%,
-        var(--color-base-100)
-    );
-    box-shadow: inset 0 0 0 1px transparent;
-}
-.goodTop {
-    display: flex;
-    align-items: flex-start;
-    gap: 9px;
-}
-.goodTop input {
-    margin-top: 5px;
-}
-.goodTitle {
-    min-width: 0;
-    flex: 1;
-}
-.goodTitle h3 {
-    font-size: 14px;
-    font-weight: 700;
-    overflow-wrap: anywhere;
-    line-height: 1.45;
-}
-.goodTitle label {
-    cursor: pointer;
-}
-.badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    background: color-mix(
-        in oklab,
-        var(--color-primary) 8%,
-        var(--color-base-100)
-    );
-    color: var(--color-primary);
-    font-size: 10px;
-    font-weight: 700;
-    border-radius: 5px;
-    padding: 2px 6px;
-    white-space: nowrap;
-}
 .limit {
     font-size: 11px;
     color: color-mix(in oklab, var(--color-base-content) 65%, transparent);
     white-space: nowrap;
-}
-.ingredients {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-wrap: wrap;
-    margin: 11px 0;
-    min-height: 28px;
-}
-.ingredient {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    border-radius: 6px;
-    background: var(--color-base-200);
-    padding: 2px 5px;
-    font-size: 11px;
-    color: var(--color-base-content);
-}
-.icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-    color: var(--color-base-content);
-}
-.icon img {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-.quantityLine {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-}
-.stepper {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid var(--color-base-300);
-    background: var(--color-base-100);
-    border-radius: 7px;
-    overflow: hidden;
-    flex-shrink: 0;
-}
-.stepper button {
-    width: 32px;
-    min-height: 34px;
-    display: grid;
-    place-items: center;
-    color: var(--color-base-content);
-}
-.stepper button:hover {
-    background: var(--color-base-200);
-}
-.stepper input {
-    width: 42px;
-    height: 34px;
-    text-align: center;
-    font-size: 13px;
-    font-weight: 600;
-    outline-offset: -3px;
-    font-variant-numeric: tabular-nums;
 }
 .tabs {
     display: flex;
@@ -268,19 +194,6 @@
 .fixedList .error {
     grid-column: 1 / -1;
 }
-.detail {
-    border-top: 1px solid var(--color-base-300);
-    padding: 13px 20px;
-}
-.detail summary {
-    cursor: pointer;
-    color: var(--color-base-content);
-    font-size: 12px;
-    padding: 4px 0;
-}
-.detail[open] summary {
-    margin-bottom: 12px;
-}
 .usageRow {
     display: flex;
     align-items: center;
@@ -289,335 +202,23 @@
     padding: 7px 0;
     font-size: 12px;
 }
-.input {
-    min-width: 0;
-    width: 100%;
-    border: 1px solid var(--color-base-300);
-    border-radius: 7px;
-    background: var(--color-base-100);
-    padding: 7px 9px;
-    color: var(--color-base-content);
-}
 .usageRow input {
     width: 70px;
     text-align: right;
 }
-.sidebar {
-    min-width: 0;
-}
-.summary {
-    background: var(--color-base-200);
-    color: var(--color-base-content);
-    border: 1px solid var(--color-base-300);
-    padding: 22px;
-    border-radius: 12px 12px 0 0;
-}
-.summaryHeading {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 15px;
-    font-weight: 700;
-}
-.summaryHeading span {
-    font-size: 11px;
-    font-weight: 400;
-    color: color-mix(in oklab, var(--color-base-content) 65%, transparent);
-}
-.progress {
-    width: 100%;
-    height: 5px;
-    accent-color: var(--color-primary);
-    margin: 12px 0 4px;
-    border: 0;
-    border-radius: 10px;
-    overflow: hidden;
-    background: var(--color-base-300);
-}
-.progress::-webkit-progress-bar {
-    background: var(--color-base-300);
-}
-.progress::-webkit-progress-value {
-    background: var(--color-primary);
-}
-.progress::-moz-progress-bar {
-    background: var(--color-primary);
-}
-.summaryStats {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-top: 14px;
-}
-.summaryStats p {
-    color: var(--color-base-content);
-    font-size: 11px;
-}
-.summaryStats strong {
-    display: block;
-    color: var(--color-base-content);
-    font-size: 24px;
-    font-weight: 600;
-    font-variant-numeric: tabular-nums;
-}
-.shopping {
-    border: 1px solid var(--color-base-300);
-    border-top: 0;
-    border-radius: 0 0 12px 12px;
-    background: var(--color-base-100);
-}
-.empty {
-    text-align: center;
-    padding: 42px 24px;
-    color: color-mix(in oklab, var(--color-base-content) 65%, transparent);
-}
-.empty svg {
-    margin: 0 auto 16px;
-    color: var(--color-base-300);
-}
-.empty strong {
-    display: block;
-    color: var(--color-base-content);
-    font-size: 14px;
-    margin-bottom: 7px;
-}
-.empty p {
-    font-size: 12px;
-}
-.material {
-    padding: 15px 18px;
-    border-bottom: 1px solid var(--color-base-300);
-}
-.material[data-checked="true"] {
-    background: var(--color-base-200);
-}
-.material[data-checked="true"] h3 {
-    color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
-    text-decoration: line-through;
-}
-.materialTop {
-    display: flex;
-    gap: 9px;
-    align-items: center;
-}
-.materialTop h3 {
-    font-size: 13px;
-    font-weight: 700;
-    flex: 1;
-    min-width: 0;
-    overflow-wrap: anywhere;
-}
-.materialNumbers {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
-    margin: 12px 0;
-    text-align: center;
-    align-items: end;
-}
-.materialNumbers label,
-.materialNumbers dt {
-    font-size: 11px;
-    color: var(--color-base-content);
-}
-.materialNumbers strong {
-    display: block;
-    font-size: 18px;
-    line-height: 36px;
-    font-variant-numeric: tabular-nums;
-    font-weight: 600;
-}
-.materialNumbers input {
-    display: block;
-    text-align: center;
-    margin-top: 4px;
-    height: 36px;
-    font-size: 14px;
-    font-weight: 600;
-}
-.deficit {
-    color: var(--color-primary);
-    background: color-mix(
-        in oklab,
-        var(--color-primary) 8%,
-        var(--color-base-100)
-    );
-    border-radius: 7px;
-}
-.materialDetails summary {
-    font-size: 11px;
-    color: var(--color-base-content);
-    cursor: pointer;
-}
-.materialDetails[open] summary {
-    margin-bottom: 10px;
-}
-.materialDetails p,
-.materialDetails li {
-    font-size: 11px;
-    color: var(--color-base-content);
-    margin-top: 6px;
-}
-.materialDetails label {
-    font-size: 12px;
-}
-.materialDetails a {
-    color: var(--color-primary);
-    text-decoration: underline;
-}
-.priceLine {
-    display: flex;
-    gap: 8px;
-    align-items: end;
-}
-.priceLine label {
-    flex: 1;
-    min-width: 0;
-}
-.cost {
-    padding: 18px;
-    background: var(--color-base-200);
-    border-radius: 0 0 12px 12px;
-}
-.costLabel {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-.costValue {
-    display: block;
-    font-size: 24px;
-    font-weight: 700;
-    margin: 5px 0;
-    color: var(--color-base-content);
-    overflow-wrap: anywhere;
-}
-.cost .primary {
-    width: 100%;
-    margin-top: 12px;
-}
-.exports {
-    display: flex;
-    gap: 8px;
-    padding: 16px 0 0;
-    flex-wrap: wrap;
-}
-.exports .button {
-    flex: 1;
-}
-.notice {
-    padding: 12px 16px;
-    border: 1px solid var(--color-base-300);
-    background: var(--color-base-200);
-    border-radius: 10px;
-    margin-bottom: 16px;
-    font-size: 13px;
-}
-.warning {
-    padding: 12px 16px;
-    border: 1px solid #edcf87;
-    background: #fffaed;
-    border-radius: 10px;
-    margin-bottom: 16px;
-    color: #775321;
-    font-size: 12px;
-}
-.error {
-    font-size: 12px;
-    color: #a5392b;
-    margin-top: 7px;
-    overflow-wrap: anywhere;
-}
-.guide {
-    margin-top: 32px;
-    padding-top: 18px;
-    border-top: 1px solid var(--color-base-300);
-    color: var(--color-base-content);
-    font-size: 12px;
-}
-.guide summary {
-    cursor: pointer;
-    font-weight: 600;
-}
-.guide p {
-    margin-top: 10px;
-    max-width: 85ch;
-}
-.guide a {
-    text-decoration: underline;
-}
-.mobileJump {
-    display: none;
-}
-@media (max-width: 900px) {
-    .page {
-        padding: 24px 16px 100px;
-    }
-    .layout {
-        grid-template-columns: 1fr;
-    }
-    .sidebar {
-        scroll-margin-top: 80px;
-    }
-    .mobileJump {
-        display: flex;
-        position: fixed;
-        z-index: 30;
-        bottom: 16px;
-        left: 16px;
-        right: 16px;
-        justify-content: space-between;
-        align-items: center;
-        background: var(--color-base-content);
-        color: white;
-        border-radius: 12px;
-        padding: 14px 18px;
-        box-shadow: 0 5px 20px #00000020;
-        font-weight: 600;
-        font-size: 13px;
-    }
-    .summaryStats strong {
-        font-size: 21px;
-    }
-}
 @media (max-width: 420px) {
-    .page {
-        padding-inline: 12px;
-    }
     .seasonGrid {
         gap: 8px;
         padding: 0 10px 12px;
     }
-    .good {
-        padding: 10px;
-    }
-    .goodTitle h3 {
-        font-size: 12px;
-    }
     .seasonGrid .quantityLine {
         flex-wrap: wrap;
-    }
-    .panelHead {
-        padding: 16px 14px 12px;
     }
     .fixedList {
         padding-inline: 10px;
     }
     .fixedList .ingredients {
         margin-left: 0;
-    }
-    .stepper button {
-        width: 30px;
-    }
-    .stepper input {
-        width: 34px;
-    }
-}
-@media (prefers-reduced-motion: reduce) {
-    .page * {
-        scroll-behavior: auto;
-        transition: none;
     }
 }
 @media (max-width: 420px) {
@@ -636,8 +237,5 @@
     }
     .seasonGrid .ingredients {
         min-height: 26px;
-    }
-    .mobileJump {
-        bottom: 70px;
     }
 }

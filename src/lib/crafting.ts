@@ -543,8 +543,7 @@ export function calculateCrafting(
     return {
         nodes: result,
         shopping: result.filter(
-            node =>
-                node.mode === "buy" && (node.missing !== 0 || !node.complete)
+            node => node.mode === "buy" && (node.required > 0 || !node.complete)
         ),
         issues: [...new Set(issues)],
         complete: input.targets.length > 0 && issues.length === 0,
