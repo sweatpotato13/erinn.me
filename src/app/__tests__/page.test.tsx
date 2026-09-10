@@ -95,6 +95,11 @@ describe("Homepage Component", () => {
         });
         const hornLink = hornHeading.closest("a");
         expect(hornLink).toHaveAttribute("href", "/horn");
+        expect(
+            screen
+                .getByRole("heading", { name: "물물교환 준비 계산기" })
+                .closest("a")
+        ).toHaveAttribute("href", "/tools/barter");
     });
 
     test("Retired feature links should not render", () => {

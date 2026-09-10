@@ -226,3 +226,92 @@ test("weekly rollover and monthly expiry are independent and keep owned stock", 
         page.getByRole("textbox", { name: "실리엔 보유 수량", exact: true })
     ).toHaveValue("1");
 });
+
+test("released navigation, SSR metadata, base sitemap and Korean preview", async ({
+    page,
+    request,
+}) => {
+    await page.goto("/");
+    await page.locator('main a[href="/tools/barter"]').click();
+    await expect(
+        page.getByRole("heading", {
+            level: 1,
+            name: "마비노기 물물교환 준비 계산기",
+        })
+    ).toBeVisible();
+    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+        "href",
+        "https://erinn.me/tools/barter"
+    );
+    const html = (
+        await (await request.get(`${path}?week=old&season=old`)).text()
+    ).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
+    expect(html).toContain("지원 범위·데이터 안내");
+    expect(html).toContain("1788405829");
+    expect(html).toContain("캐릭터 인벤토리");
+    expect(html).toContain('content="summary_large_image"');
+    expect(html).toContain("https://erinn.me/tools/barter/preview");
+    expect(html).toContain('href="https://erinn.me/tools/barter"');
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    expect([
+        ...sitemap.matchAll(/<loc>https:\/\/erinn.me\/tools\/barter<\/loc>/g),
+    ]).toHaveLength(1);
+    expect(sitemap).not.toContain("barter/preview");
+    const preview = await request.get(`${path}/preview`);
+    expect(preview.status()).toBe(200);
+    expect(preview.headers()["content-type"]).toContain("image/png");
+    const png = await preview.body();
+    expect(png.readUInt32BE(16)).toBe(1200);
+    expect(png.readUInt32BE(20)).toBe(630);
+    await expect(page.locator('a[href="/tools/crafting"]')).toHaveCount(0);
+    const menu = page.getByRole("button", { name: "전체 메뉴", exact: true });
+    if (await menu.isVisible()) {
+        await menu.click();
+        await expect(
+            page
+                .getByRole("dialog")
+                .getByRole("link", {
+                    name: "물물교환 준비 계산기",
+                    exact: true,
+                })
+        ).toBeVisible();
+        await page.keyboard.press("Escape");
+        await expect(menu).toBeFocused();
+    } else {
+        const nav = page.getByRole("navigation", { name: "카테고리 탐색" });
+        const group = nav.getByText("생활·파티 계산", { exact: true });
+        await group.click();
+        await expect(
+            nav.getByRole("link", { name: "물물교환 준비 계산기", exact: true })
+        ).toBeVisible();
+        await group.press("Escape");
+        await expect(group).toBeFocused();
+    }
+});
+
+test("saved plans wait for hydration before accepting changes", async ({
+    page,
+}) => {
+    let release!: () => void;
+    const ready = new Promise<void>(resolve => {
+        release = resolve;
+    });
+    await page.route("**/_next/static/chunks/**", async route => {
+        if (route.request().resourceType() === "script") await ready;
+        await route.continue();
+    });
+    await page.goto(path, { waitUntil: "commit" });
+    try {
+        await expect(
+            page.getByRole("button", {
+                name: "지원 교역품 전체 준비",
+                exact: true,
+            })
+        ).toBeDisabled();
+    } finally {
+        release();
+    }
+    await expect(
+        page.getByRole("button", { name: "지원 교역품 전체 준비", exact: true })
+    ).toBeEnabled();
+});
