@@ -6,9 +6,9 @@ import { z } from "zod";
 
 import rules from "../src/data/crafting-rules.json";
 import {
+    CraftingGroupSchema,
     type CraftingItem,
     type CraftingRecipe,
-    CraftingGroupSchema,
 } from "../src/lib/crafting";
 import { resolveItems } from "./item-reference";
 import { readSnapshot, sha256, stableJson } from "./reference-data";
@@ -34,11 +34,13 @@ const { data, manifest } = readSnapshot(resolve(root, "reference"));
 const strings = new Map(data.StringTable.map(r => [r.Id, r.Str]));
 const resolved = resolveItems(data.ItemList, data.StringTable);
 const names = new Map(resolved.items.map(r => [Number(r.id), r.name]));
-const nameCounts = new Map<string, number>();
-for (const name of names.values())
-    nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
-const skills = new Map(data.SkillList.map(r => [r.Id, strings.get(r.Name)]));
 const rawItems = new Map(data.ItemList.map(r => [r.Id, r]));
+const nameCounts = new Map<string, number>();
+for (const [id, name] of names) {
+    if (!rawItems.get(id)?.IsAuctionSearchable) continue;
+    nameCounts.set(name, (nameCounts.get(name) ?? 0) + 1);
+}
+const skills = new Map(data.SkillList.map(r => [r.Id, strings.get(r.Name)]));
 const skillIds: Record<string, number> = rules.skills;
 const suffixes: Record<string, string> = rules.suffixes;
 
@@ -132,6 +134,14 @@ function derive(input: unknown[], hash = sha256) {
 }
 
 const catalog = derive(data.ProductionList);
+// A non-auction variant must not block the ordinary item's market quote.
+assert.equal(catalog.items.find(item => item.id === 60050)?.ambiguous, false);
+assert.equal(catalog.items.find(item => item.id === 60050)?.searchable, true);
+assert.equal(
+    catalog.items.find(item => item.id === 5100235)?.searchable,
+    false
+);
+
 assert.equal(
     catalog.recipes.reduce((n, r) => n + r.occurrences, 0),
     data.ProductionList.length

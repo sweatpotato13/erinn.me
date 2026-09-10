@@ -431,3 +431,48 @@ test("only tailoring and blacksmithing ask for passes; multiple recipes still ne
         page.getByLabel("미스릴괴 제작법", { exact: true })
     ).toHaveValue("");
 });
+
+test("a non-auction duplicate does not hide thick thread lookup or its price", async ({
+    page,
+}) => {
+    const data = reference as CraftingReference;
+    const recipe = data.recipes.find(recipe => recipe.itemId === 81116)!;
+    const plan = emptyCraftingPlan(data);
+    plan.targets = [{ itemId: recipe.itemId, count: "1" }];
+    plan.choices[recipe.itemId] = {
+        ...selectCraftingRecipe(recipe),
+        yield: "1",
+        passes: "1",
+        processChoices: recipe.process.map(group =>
+            group.itemIds.includes(60050) ? 60050 : group.itemIds[0]
+        ),
+    };
+    const requests: string[] = [];
+    await page.route("**/api/auction/price-summary?*", async route => {
+        requests.push(
+            new URL(route.request().url()).searchParams.get("item_name")!
+        );
+        await route.fulfill({
+            json: {
+                minPrice: 123,
+                averagePrice: 150,
+                availableQuantity: 999,
+                isComplete: true,
+                fetchedAt: "2026-09-10T00:00:00Z",
+            },
+        });
+    });
+    await page.goto(buildCraftingShare(plan));
+    const row = page.getByRole("article", {
+        name: "질긴 실 재료",
+        exact: true,
+    });
+    await row
+        .getByRole("button", { name: "질긴 실 시세 조회", exact: true })
+        .click();
+    await expect(
+        row.getByLabel("질긴 실 단가 (Gold)", { exact: true })
+    ).toHaveValue("123");
+    expect(requests).toEqual(["질긴 실"]);
+    await expect(row).not.toContainText("재료 비용: 단가·수량 확인 필요");
+});
