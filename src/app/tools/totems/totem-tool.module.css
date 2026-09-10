@@ -1,11 +1,10 @@
 .tool {
     min-inline-size: 0;
-    background: #313330;
-    color: #f5f5ef;
-    border: 1px solid #858780;
-    box-shadow: inset 0 0 0 3px #292b28;
-    padding: 12px;
-    font-size: 15px;
+    background: transparent;
+    color: var(--color-base-content);
+    border: 0;
+    padding: 0;
+    font-size: 14px;
     line-height: 1.6;
     overflow-wrap: anywhere;
 }
@@ -16,7 +15,7 @@
     font-weight: 700;
 }
 .tool h2 {
-    font-size: 18px;
+    font-size: 16px;
     margin-bottom: 8px;
 }
 .tool p {
@@ -27,27 +26,31 @@
     min-height: 44px;
 }
 .tool :is(button, input, select) {
-    border: 1px solid #a0a29a;
-    border-radius: 2px;
+    border: 1px solid var(--color-base-300);
+    border-radius: 8px;
     padding: 8px 10px;
-    color: #fff;
-    background: #62645e;
+    color: var(--color-base-content);
+    background: var(--color-base-100);
     max-width: 100%;
     font: inherit;
 }
 .tool button {
     cursor: pointer;
 }
-.tool button:hover {
-    background: #74776e;
+.tool button:not(:disabled):hover {
+    background: var(--color-base-200);
 }
 .tool button:disabled {
     opacity: 0.6;
     cursor: default;
 }
 .tool button[aria-pressed="true"] {
-    border-color: #fff0aa;
-    background: #4f5348;
+    border-color: var(--color-primary);
+    background: color-mix(
+        in oklab,
+        var(--color-primary) 8%,
+        var(--color-base-100)
+    );
 }
 .tool label {
     display: block;
@@ -58,28 +61,29 @@
     width: 100%;
 }
 .tool input:not([type="checkbox"]) {
-    background: #292c27;
+    background: var(--color-base-100);
     font-size: 16px;
 }
 .tool input::placeholder {
-    color: #c2c5bb;
+    color: color-mix(in oklab, var(--color-base-content) 60%, transparent);
 }
 .tool input[type="checkbox"] {
     width: 20px;
     min-height: 20px;
-    accent-color: #e6d694;
+    accent-color: var(--color-primary);
 }
 .tool summary {
     cursor: pointer;
     padding: 8px 0;
 }
 .tool a {
+    color: var(--color-primary);
     display: inline-flex;
     align-items: center;
     text-decoration: underline;
 }
 .tool :is(button, input, select, a, summary, [tabindex]):focus-visible {
-    outline: 3px solid #ffed9c;
+    outline: 3px solid var(--color-primary);
     outline-offset: 3px;
 }
 .tool :is(button, input, select, a, summary, [tabindex]) {
@@ -109,23 +113,30 @@
     min-height: 44px;
 }
 .panel {
-    margin-top: 12px;
-    padding: 12px;
-    background: #3c4037;
-    border: 1px solid #85897b;
+    border-radius: 12px;
+    margin-top: 16px;
+    padding: 20px;
+    background: var(--color-base-100);
+    border: 1px solid var(--color-base-300);
 }
 .entry {
-    border: 1px solid #777b6d;
+    border-radius: 8px;
+    border: 1px solid var(--color-base-300);
     padding: 10px;
     margin-top: 10px;
-    background: #34382f;
+    background: var(--color-base-100);
 }
 .entry[data-selected="true"] {
-    border-color: #fff0aa;
+    background: color-mix(
+        in oklab,
+        var(--color-primary) 5%,
+        var(--color-base-100)
+    );
+    border-color: var(--color-primary);
 }
 .columns {
     display: grid;
-    gap: 12px;
+    gap: 24px;
 }
 .catalogList {
     list-style: none;
@@ -135,9 +146,10 @@
     margin-top: 8px;
 }
 .tool .catalogButton {
+    padding: 12px;
     text-align: left;
     width: 100%;
-    background: #3c4037;
+    background: var(--color-base-100);
 }
 .titleRow {
     display: flex;
@@ -145,14 +157,15 @@
     gap: 10px;
 }
 .icon {
+    border-radius: 8px;
     display: inline-flex;
     width: 44px;
     height: 44px;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    border: 1px solid #a4a596;
-    background: #292c27;
+    border: 1px solid var(--color-base-300);
+    background: var(--color-base-100);
 }
 .badges {
     display: flex;
@@ -161,37 +174,30 @@
     margin: 4px 0;
 }
 .badge {
-    font-size: 13px;
-    border: 1px solid #a0a29a;
-    padding: 1px 6px;
+    composes: badge from "../../../components/tools/preparation.module.css";
 }
 .value {
-    color: #fff0aa;
+    color: var(--color-primary);
     font-variant-numeric: tabular-nums;
 }
 strong.value {
     font-size: 17px;
 }
 .muted {
-    color: #d0d3c8;
+    color: color-mix(in oklab, var(--color-base-content) 65%, transparent);
     font-size: 14px;
 }
 .catalogButton > .muted {
     display: block;
 }
 .warning {
-    border-left: 3px solid #ffe39a;
-    padding: 4px 10px;
-    color: #ffe9b4;
+    composes: warning from "../../../components/tools/preparation.module.css";
 }
 .loss {
-    color: #ffcab8;
+    color: var(--color-error);
 }
 .notice {
-    margin: 10px 0;
-    padding: 8px;
-    border: 1px solid #b9bca9;
-    background: #34382f;
+    composes: notice from "../../../components/tools/preparation.module.css";
 }
 .inputs {
     display: grid;
@@ -204,7 +210,7 @@ strong.value {
     grid-template-columns: minmax(90px, 1fr) minmax(110px, 1.5fr);
     gap: 12px;
     padding: 6px 0;
-    border-bottom: 1px solid #777b6d;
+    border-bottom: 1px solid var(--color-base-300);
 }
 .statList dd {
     text-align: right;
@@ -213,22 +219,25 @@ strong.value {
     white-space: pre-line;
 }
 .rangeBar {
+    border-radius: 4px;
+    overflow: hidden;
     height: 4px;
     margin-top: 6px;
-    background: #74776e;
+    background: var(--color-base-200);
 }
 .rangeBar > span {
     display: block;
     height: 4px;
-    background: #d7c880;
+    background: var(--color-primary);
 }
 .tool .primary {
-    background: #786d45;
-    border-color: #fff0aa;
+    color: var(--color-primary-content);
+    background: var(--color-primary);
+    border-color: var(--color-primary);
     font-weight: bold;
 }
 .tool .primary:hover {
-    background: #655b36;
+    background: color-mix(in oklab, var(--color-primary) 85%, black);
 }
 .comparison {
     scroll-margin-top: 100px;
@@ -251,8 +260,8 @@ strong.value {
     justify-content: space-between;
     align-items: center;
     gap: 10px;
-    background: #292c27;
-    border: 1px solid #b9bca9;
+    background: var(--color-base-100);
+    border: 1px solid var(--color-base-300);
     padding: 8px 16px calc(8px + env(safe-area-inset-bottom));
 }
 .hasCandidates {
@@ -270,7 +279,7 @@ strong.value {
         border-collapse: collapse;
     }
     .comparisonTable :is(th, td) {
-        border: 1px solid #85897b;
+        border: 1px solid var(--color-base-300);
         padding: 10px;
         vertical-align: top;
         text-align: right;
@@ -284,6 +293,11 @@ strong.value {
     }
     .mobileCards {
         display: none;
+    }
+}
+@media (max-width: 600px) {
+    .panel {
+        padding: 14px;
     }
 }
 @media (max-width: 360px) {

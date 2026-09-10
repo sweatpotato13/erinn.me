@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import s from "@/components/tools/preparation.module.css";
 import reference from "@/data/totem-reference.json";
 import { TOTEM_PATH } from "@/lib/totems-state";
 
@@ -37,19 +38,16 @@ export const metadata: Metadata = {
 
 export default function TotemPage() {
     return (
-        <div className="mx-auto max-w-7xl px-3 py-6 sm:px-6">
-            <h1 className="text-2xl font-bold break-keep text-slate-900 sm:text-3xl">
+        <div className={s.page}>
+            <h1 className="text-2xl font-bold break-keep sm:text-3xl">
                 {TITLE}
             </h1>
-            <p className="my-3 text-slate-700">
+            <p className="my-4">
                 토템을 찾고, 가능한 옵션 범위와 매물의 실제 옵션·등록 가격을
                 비교하세요.
             </p>
             <TotemTool data={reference} />
-            <section
-                className="mt-8 space-y-3 border-t border-slate-300 pt-6 text-sm leading-6 text-slate-700"
-                aria-labelledby="totem-guide"
-            >
+            <section className={s.guide} aria-labelledby="totem-guide">
                 <h2 id="totem-guide" className="text-lg font-bold">
                     비교·데이터 안내
                 </h2>
