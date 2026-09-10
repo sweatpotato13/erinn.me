@@ -155,7 +155,14 @@ export function updateBarterRow(plan: BarterPlan, row: BarterRow): BarterPlan {
     const rows = plan.rows.some(r => r.good.key === row.good.key)
         ? plan.rows.map(r => (r.good.key === row.good.key ? row : r))
         : [...plan.rows, row];
-    return BarterPlanSchema.parse({ ...plan, rows, checked: [] });
+    return BarterPlanSchema.parse({
+        ...plan,
+        rows,
+        seasonChoices: row.good.period
+            ? { ...plan.seasonChoices, [row.good.postId]: row.good.key }
+            : plan.seasonChoices,
+        checked: [],
+    });
 }
 
 export function addManualGood(plan: BarterPlan, input: BarterGood): BarterPlan {
