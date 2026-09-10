@@ -5,13 +5,20 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { fetchItemPriceSummary } from "@/lib/api/auction";
 import type { MaterialQuote } from "@/lib/material-cost";
 
+export interface MaterialMarket {
+    loading: boolean;
+    errors: Record<string, string>;
+    load: (requestedNames?: string[]) => Promise<void>;
+    cancel: () => void;
+}
+
 /** A click captures its name list; edits never launch or restart market requests. */
 export function useMaterialMarket(
     names: string[],
     onQuote: (name: string, quote: MaterialQuote) => void,
     epoch: number,
     enabled = true
-) {
+): MaterialMarket {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const active = useRef<AbortController | null>(null);

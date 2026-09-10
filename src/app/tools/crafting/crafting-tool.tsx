@@ -1,7 +1,7 @@
 "use client";
 
 import { Package, ShoppingBasket } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { MaterialIcon } from "@/app/tools/barter/barter-ui";
 import s from "@/components/tools/preparation.module.css";
@@ -25,11 +25,28 @@ export default function CraftingTool({ data }: { data: CraftingReference }) {
     const state = useCraftingPlan(data);
     const { plan, update, ready } = state;
     const catalog = useCraftingItems(data, plan, state.epoch);
-    const reference = { ...data, items: [...data.items, ...catalog.items] };
-    const calculated = calculateCrafting(plan, reference);
+    const reference = useMemo(
+        () => ({ ...data, items: [...data.items, ...catalog.items] }),
+        [data, catalog.items]
+    );
+    const calculated = useMemo(
+        () => calculateCrafting(plan, reference),
+        [plan, reference]
+    );
+    const planIssues = useMemo(
+        () => craftingPlanIssues(plan, reference),
+        [plan, reference]
+    );
+    const targetResults = useMemo(
+        () =>
+            plan.targets.map(target =>
+                calculateCrafting({ ...plan, targets: [target] }, reference)
+            ),
+        [plan, reference]
+    );
     const issues = [
         ...calculated.issues,
-        ...craftingPlanIssues(plan, reference),
+        ...planIssues,
         ...(catalog.error ? [catalog.error] : []),
         ...(catalog.pending ? ["아이템을 확인하고 있습니다."] : []),
     ];
@@ -143,85 +160,80 @@ export default function CraftingTool({ data }: { data: CraftingReference }) {
                     원가를 계산합니다.
                 </p>
             )}
-            {craftingPlanIssues(plan, reference).length > 0 &&
-                !catalog.pending && (
-                    <details className={s.notice}>
-                        <summary>변경된 제작법·아이템 입력 관리</summary>
-                        <p>제작법을 초기화하면 조건을 다시 입력해야 합니다.</p>
-                        {Object.entries(plan.choices)
-                            .filter(([, choice]) => choice.mode === "craft")
-                            .map(([id]) => (
-                                <button
-                                    key={id}
-                                    type="button"
-                                    className="btn btn-sm"
-                                    onClick={() =>
-                                        update(p => ({
+            {planIssues.length > 0 && !catalog.pending && (
+                <details className={s.notice}>
+                    <summary>변경된 제작법·아이템 입력 관리</summary>
+                    <p>제작법을 초기화하면 조건을 다시 입력해야 합니다.</p>
+                    {Object.entries(plan.choices)
+                        .filter(([, choice]) => choice.mode === "craft")
+                        .map(([id]) => (
+                            <button
+                                key={id}
+                                type="button"
+                                className="btn btn-sm"
+                                onClick={() =>
+                                    update(p => ({
+                                        ...p,
+                                        choices: {
+                                            ...p.choices,
+                                            [id]: resolveCraftingChoice(
+                                                undefined,
+                                                reference.recipes.filter(
+                                                    recipe =>
+                                                        recipe.itemId ===
+                                                        Number(id)
+                                                ),
+                                                true
+                                            ),
+                                        },
+                                    }))
+                                }
+                            >
+                                #{id} 제작법 선택 초기화
+                            </button>
+                        ))}
+                    {[
+                        ...new Set([
+                            ...plan.targets.map(target => target.itemId),
+                            ...Object.keys(plan.choices).map(Number),
+                            ...Object.keys(plan.prices).map(Number),
+                        ]),
+                    ]
+                        .filter(
+                            id => !reference.items.some(item => item.id === id)
+                        )
+                        .map(id => (
+                            <button
+                                key={id}
+                                type="button"
+                                className="btn btn-sm"
+                                onClick={() =>
+                                    update(p => {
+                                        const omit = <T,>(
+                                            map: Record<string, T>
+                                        ) =>
+                                            Object.fromEntries(
+                                                Object.entries(map).filter(
+                                                    ([key]) =>
+                                                        Number(key) !== id
+                                                )
+                                            );
+                                        return {
                                             ...p,
-                                            choices: {
-                                                ...p.choices,
-                                                [id]: resolveCraftingChoice(
-                                                    undefined,
-                                                    reference.recipes.filter(
-                                                        recipe =>
-                                                            recipe.itemId ===
-                                                            Number(id)
-                                                    ),
-                                                    true
-                                                ),
-                                            },
-                                        }))
-                                    }
-                                >
-                                    #{id} 제작법 선택 초기화
-                                </button>
-                            ))}
-                        {[
-                            ...new Set([
-                                ...plan.targets.map(target => target.itemId),
-                                ...Object.keys(plan.choices).map(Number),
-                                ...Object.keys(plan.prices).map(Number),
-                            ]),
-                        ]
-                            .filter(
-                                id =>
-                                    !reference.items.some(
-                                        item => item.id === id
-                                    )
-                            )
-                            .map(id => (
-                                <button
-                                    key={id}
-                                    type="button"
-                                    className="btn btn-sm"
-                                    onClick={() =>
-                                        update(p => {
-                                            const omit = <T,>(
-                                                map: Record<string, T>
-                                            ) =>
-                                                Object.fromEntries(
-                                                    Object.entries(map).filter(
-                                                        ([key]) =>
-                                                            Number(key) !== id
-                                                    )
-                                                );
-                                            return {
-                                                ...p,
-                                                targets: p.targets.filter(
-                                                    target =>
-                                                        target.itemId !== id
-                                                ),
-                                                choices: omit(p.choices),
-                                                prices: omit(p.prices),
-                                            };
-                                        })
-                                    }
-                                >
-                                    알 수 없는 아이템 #{id} 입력 제거
-                                </button>
-                            ))}
-                    </details>
-                )}
+                                            targets: p.targets.filter(
+                                                target => target.itemId !== id
+                                            ),
+                                            choices: omit(p.choices),
+                                            prices: omit(p.prices),
+                                        };
+                                    })
+                                }
+                            >
+                                알 수 없는 아이템 #{id} 입력 제거
+                            </button>
+                        ))}
+                </details>
+            )}
             <fieldset disabled={!ready} className="min-w-0">
                 <div className={s.layout}>
                     <div className={s.catalog}>
@@ -375,10 +387,7 @@ export default function CraftingTool({ data }: { data: CraftingReference }) {
                         </section>
                         <div className={c.targets}>
                             {plan.targets.map((target, index) => {
-                                const targetResult = calculateCrafting(
-                                    { ...plan, targets: [target] },
-                                    reference
-                                );
+                                const targetResult = targetResults[index];
                                 const node = targetResult.nodes.find(
                                     node => node.item.id === target.itemId
                                 );

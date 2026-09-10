@@ -401,13 +401,16 @@ test("finished market total stays available before recipe inputs and rejects mis
         isComplete: false,
         observedAt: "2026-09-10T00:00:00Z",
     };
+    const data = reference(recipes);
     const costs = () =>
-        calculateCraftingCosts(
-            plan,
-            calculateCrafting(plan, reference(recipes))
-        );
+        calculateCraftingCosts(plan, calculateCrafting(plan, data));
     expect(costs().direct).toMatchObject({ known: 200, complete: true });
     expect(costs().difference).toBeNull();
+    data.items[0].ambiguous = true;
+    expect(costs().direct).toMatchObject({ known: 200, complete: true });
+    data.items[0].searchable = false;
+    expect(costs().direct).toMatchObject({ known: 0, complete: false });
+    data.items[0].searchable = true;
     plan.quotes.item1.minPrice = 0;
     expect(costs().direct).toMatchObject({ known: 0, complete: true });
     delete plan.quotes.item1;

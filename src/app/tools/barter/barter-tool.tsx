@@ -197,7 +197,10 @@ export default function BarterTool({ data }: { data: BarterReference }) {
     return (
         <div>
             {market.errors.request && (
-                <p role="status" className={s.error}>
+                <p
+                    role="status"
+                    className="mt-[7px] text-xs text-error [overflow-wrap:anywhere]"
+                >
                     {market.errors.request}
                 </p>
             )}
@@ -341,7 +344,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                         />
                                         이달의 6티어
                                     </h2>
-                                    <p className={s.muted}>
+                                    <p className="text-xs text-base-content/65">
                                         교역품을 체크하면 주간 한도만큼
                                         담깁니다.
                                     </p>
@@ -372,7 +375,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                         <MapPin size={18} aria-hidden="true" />
                                         교역소별 물품
                                     </h2>
-                                    <p className={s.muted}>
+                                    <p className="text-xs text-base-content/65">
                                         이리아 1~5티어 · 스카하 고정 교역품
                                     </p>
                                 </div>
@@ -415,7 +418,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                 <summary>
                                     이미 교환했다면 · 교환 횟수 조정
                                 </summary>
-                                <p className={s.muted}>
+                                <p className="text-xs text-base-content/65">
                                     주간 한도는 정해져 있습니다. 이번 주에 이미
                                     교환한 물품만 횟수를 입력하세요. 처음
                                     준비한다면 모두 0으로 두면 됩니다.
@@ -429,7 +432,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                         >
                                             <span>
                                                 {row.good.name}{" "}
-                                                <span className={s.muted}>
+                                                <span className="text-xs text-base-content/65">
                                                     / 주 {row.good.limit}회
                                                 </span>
                                             </span>
@@ -459,7 +462,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                 }
                             >
                                 <summary>시즌·저장 자료 관리</summary>
-                                <p className={s.muted}>
+                                <p className="text-xs text-base-content/65">
                                     시즌이 바뀌었거나 직접 입력한 자료가 있을
                                     때만 확인하세요. 같은 교역소의 시즌 출처는
                                     하나만 사용합니다.
@@ -542,7 +545,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                                 key={row.good.key}
                                             >
                                                 <strong>{row.good.name}</strong>
-                                                <p className={s.muted}>
+                                                <p className="text-xs text-base-content/65">
                                                     {row.good.period &&
                                                         `${date(row.good.period.startAt)} — ${date(row.good.period.endAt)}`}
                                                 </p>
@@ -708,7 +711,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                 >
                                     부족 재료 제작 준비
                                 </button>
-                                <p className={s.muted}>
+                                <p className="text-xs text-base-content/65">
                                     보유분을 차감한 부족 수량만 제작 계산기로
                                     가져갑니다.
                                 </p>
@@ -766,7 +769,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                             <div className={s.cost} aria-label="준비 비용">
                                 <div className={s.costLabel}>
                                     <span>추가 구매 예상액</span>
-                                    <span className={s.muted}>
+                                    <span className="text-xs text-base-content/65">
                                         {result.purchase.complete
                                             ? "재료 가격 기준"
                                             : `가격 미확인 ${result.purchase.unknown}종`}
@@ -785,11 +788,11 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                           : `${formatGold(result.purchase.known)} Gold`}
                                 </strong>
                                 {!result.purchase.complete && (
-                                    <p className={s.muted}>
+                                    <p className="text-xs text-base-content/65">
                                         알려진 가격의 소계입니다.
                                     </p>
                                 )}
-                                <p className={s.muted}>
+                                <p className="text-xs text-base-content/65">
                                     전체 재료 가치:{" "}
                                     {formatGold(result.replacement.known)} Gold
                                     {result.replacement.complete
@@ -820,7 +823,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                                         조회 취소
                                     </button>
                                 )}
-                                <p className={`${s.muted} mt-2`}>
+                                <p className="mt-2 text-xs text-base-content/65">
                                     시세는 버튼을 누를 때만 조회합니다. 실제
                                     구매액은 매물 수량·묶음 가격에 따라 달라질
                                     수 있습니다.
@@ -846,7 +849,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                             </button>
                         </div>
                         {exported && (
-                            <label className={s.muted}>
+                            <label className="text-xs text-base-content/65">
                                 복사할 텍스트
                                 <textarea
                                     className={s.input}

@@ -11,6 +11,7 @@ import {
     CRAFTING_QUERY_LIMIT,
     CRAFTING_STORAGE_LIMIT,
     craftingBytes,
+    type CraftingPlan,
     craftingPlanIssues,
     craftingText,
     emptyCraftingPlan,
@@ -91,7 +92,7 @@ test("barter handoff contains net quantities and no original inventory", () => {
         { itemId: 1, count: "6" },
         { itemId: 2, count: "3" },
     ]);
-    expect(plan.owned).toBeUndefined();
+    expect(plan).not.toHaveProperty("owned");
     expect(plan.origin).toBe("barter-net-deficit");
     expect(plan.choices[1].mode).toBe("craft");
     expect(plan.choices[2].mode).toBe("buy");
@@ -239,4 +240,20 @@ test("old per-batch fees are discarded without losing the saved plan", () => {
         ).total.known
     ).toBe(200);
     expect(serializeCraftingStorage(restored.plan!)).not.toContain("batchFee");
+});
+
+test("plan output types omit all discarded legacy fields", () => {
+    const noLegacyPlanKeys: Extract<
+        keyof CraftingPlan,
+        "owned" | "checked" | "comparisons" | "fee"
+    > extends never
+        ? true
+        : false = true;
+    const noLegacyChoiceKeys: Extract<
+        keyof CraftingPlan["choices"][string],
+        "batchFee"
+    > extends never
+        ? true
+        : false = true;
+    expect([noLegacyPlanKeys, noLegacyChoiceKeys]).toEqual([true, true]);
 });

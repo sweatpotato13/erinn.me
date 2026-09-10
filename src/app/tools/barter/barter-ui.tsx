@@ -122,16 +122,24 @@ export function GoodCard({
                                 대체 재료 선택 필요
                             </span>
                         );
-                    const name =
-                        materials.find(m => m.id === option.itemId)?.name ??
-                        `#${option.itemId}`;
+                    const material = materials.find(
+                        m => m.id === option.itemId
+                    );
+                    const name = material?.name ?? `#${option.itemId}`;
                     return (
                         <span
                             className={s.ingredient}
                             key={i}
                             title={`${name} × ${option.count}`}
                         >
-                            <MaterialIcon id={option.itemId} />
+                            <MaterialIcon
+                                id={option.itemId}
+                                name={
+                                    material?.searchable && !material.ambiguous
+                                        ? material.name
+                                        : undefined
+                                }
+                            />
                             <span className="sr-only">{name}</span>×
                             {option.count}
                         </span>
@@ -261,7 +269,10 @@ export function MaterialRow({
                         }))
                     }
                 />
-                <MaterialIcon id={m.id} />
+                <MaterialIcon
+                    id={m.id}
+                    name={m.searchable && !m.ambiguous ? m.name : undefined}
+                />
                 <h3>{m.name}</h3>
                 {row.missing === 0 && (
                     <span className={s.badge}>보유분으로 충분</span>

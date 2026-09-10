@@ -1,7 +1,7 @@
 import { act, render, renderHook, screen } from "@testing-library/react";
 
 import { useCraftingPlan } from "@/app/tools/crafting/crafting-hooks";
-import { PriceEditor } from "@/app/tools/crafting/crafting-ui";
+import { PriceEditor, Quantity } from "@/app/tools/crafting/crafting-ui";
 import type { CraftingReference } from "@/lib/crafting";
 import { calculateCrafting } from "@/lib/crafting";
 import {
@@ -36,7 +36,7 @@ test("temporary shares and barter imports never reapply saved inventory or overw
         buildCraftingHandoff([{ itemId: 1, count: 6 }], 1)
     );
     const { result } = renderHook(() => useCraftingPlan(data));
-    expect(result.current.plan.owned).toBeUndefined();
+    expect(result.current.plan).not.toHaveProperty("owned");
     expect(result.current.plan.targets[0].count).toBe("6");
     act(() => result.current.update(p => ({ ...p, prices: { 1: "10" } })));
     expect(localStorage.getItem(CRAFTING_STORAGE_KEY)).toBe(raw);
@@ -127,3 +127,22 @@ test("restoring a plan immediately rejects callbacks from the previous plan", ()
     act(() => result.current.update(p => ({ ...p, prices: { 1: "30" } })));
     expect(result.current.plan.prices[1]).toBe("30");
 });
+
+test.each([
+    ["1", true, false],
+    [String(Number.MAX_SAFE_INTEGER), false, true],
+    ["abc", true, true],
+])(
+    "quantity %s disables decrement=%s and increment=%s",
+    (value, decrementDisabled, incrementDisabled) => {
+        render(
+            <Quantity label="만들 수량" value={value} onChange={jest.fn()} />
+        );
+        expect(
+            screen.getByRole("button", { name: "만들 수량 줄이기" })
+        ).toHaveProperty("disabled", decrementDisabled);
+        expect(
+            screen.getByRole("button", { name: "만들 수량 늘리기" })
+        ).toHaveProperty("disabled", incrementDisabled);
+    }
+);

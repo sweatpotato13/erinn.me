@@ -26,7 +26,7 @@ const materials: BarterMaterial[] = resolved.map(item =>
         id: Number(item.id),
         name: item.name,
         searchable: rawItems.get(Number(item.id))!.IsAuctionSearchable,
-        ambiguous: nameCounts.get(item.name)! > 1,
+        ambiguous: (nameCounts.get(item.name) ?? 0) > 1,
     })
 );
 const byId = new Map(materials.map(item => [item.id, item]));

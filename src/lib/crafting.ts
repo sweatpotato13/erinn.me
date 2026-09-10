@@ -98,10 +98,16 @@ export interface CraftingCost {
     unresolved: string[];
 }
 
+export interface CraftingCostSummary {
+    total: CraftingCost;
+    direct: CraftingCost;
+    difference: number | null;
+}
+
 export function calculateCraftingCosts(
     input: CraftingInput,
     result: CraftingResult
-) {
+): CraftingCostSummary {
     const cost = (): CraftingCost => ({
         known: 0,
         complete: result.complete,
@@ -145,7 +151,8 @@ export function calculateCraftingCosts(
         const item = result.nodes.find(
             node => node.item.id === target.itemId
         )?.item;
-        const quote = item ? input.quotes[item.name] : undefined;
+        // Finished products intentionally compare name-level minima across variants.
+        const quote = item?.searchable ? input.quotes[item.name] : undefined;
         const count = parseMaterialInteger(target.count);
         const price =
             quote && quote.availableQuantity > 0
@@ -184,7 +191,9 @@ export function emptyCraftingChoice(
     };
 }
 
-export function hasCraftingPasses(recipe: Pick<CraftingRecipe, "type">) {
+export function hasCraftingPasses(
+    recipe: Pick<CraftingRecipe, "type">
+): boolean {
     return recipe.type === 65537 || recipe.type === 65538;
 }
 

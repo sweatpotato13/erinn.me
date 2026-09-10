@@ -12,7 +12,10 @@ export function safeMaterialInteger(value: number): number {
     return value;
 }
 
-export function allocateMaterialStock(required: number, owned: number) {
+export function allocateMaterialStock(
+    required: number,
+    owned: number
+): { usedOwned: number; missing: number } {
     safeMaterialInteger(required);
     safeMaterialInteger(owned);
     return {

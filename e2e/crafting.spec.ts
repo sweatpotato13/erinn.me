@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 
+import barterReference from "../src/data/barter-reference.json";
 import reference from "../src/data/crafting-reference.json";
+import { type BarterReference, emptyBarterRow } from "../src/lib/barter";
+import {
+    BARTER_STORAGE_KEY,
+    emptyBarterPlan,
+    serializeBarterStorage,
+    updateBarterRow,
+} from "../src/lib/barter-state";
 import {
     type CraftingReference,
     selectCraftingRecipe,
@@ -9,14 +17,6 @@ import {
     buildCraftingShare,
     emptyCraftingPlan,
 } from "../src/lib/crafting-state";
-import {
-    BARTER_STORAGE_KEY,
-    emptyBarterPlan,
-    serializeBarterStorage,
-    updateBarterRow,
-} from "../src/lib/barter-state";
-import { type BarterReference, emptyBarterRow } from "../src/lib/barter";
-import barterReference from "../src/data/barter-reference.json";
 
 const material = reference.items.find(item => item.id === 67200)!;
 

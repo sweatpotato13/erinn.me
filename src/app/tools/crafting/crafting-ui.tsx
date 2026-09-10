@@ -25,6 +25,15 @@ export type UpdateCrafting = (
     change: (plan: CraftingPlan) => CraftingPlan
 ) => void;
 
+interface NumberFieldProps {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    positive?: boolean;
+    optional?: boolean;
+    compact?: boolean;
+}
+
 export function NumberField({
     label,
     value,
@@ -32,14 +41,7 @@ export function NumberField({
     positive = false,
     optional = false,
     compact = false,
-}: {
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-    positive?: boolean;
-    optional?: boolean;
-    compact?: boolean;
-}) {
+}: NumberFieldProps) {
     const id = useId();
     const number = parseMaterialInteger(value);
     const invalid =
@@ -68,15 +70,13 @@ export function NumberField({
     );
 }
 
-export function Quantity({
-    label,
-    value,
-    onChange,
-}: {
+interface QuantityProps {
     label: string;
     value: string;
     onChange: (value: string) => void;
-}) {
+}
+
+export function Quantity({ label, value, onChange }: QuantityProps) {
     const number = parseMaterialInteger(value);
     return (
         <div className={`${s.stepper} ${c.quantity}`}>
@@ -108,6 +108,15 @@ export function Quantity({
     );
 }
 
+interface GroupsProps {
+    groups: CraftingGroup[];
+    hasPasses?: boolean;
+    stage: "p" | "f";
+    choice: CraftingChoice;
+    change: (patch: Partial<CraftingChoice>) => void;
+    reference: CraftingReference;
+}
+
 function Groups({
     groups,
     stage,
@@ -115,14 +124,7 @@ function Groups({
     change,
     reference,
     hasPasses = false,
-}: {
-    groups: CraftingGroup[];
-    hasPasses?: boolean;
-    stage: "p" | "f";
-    choice: CraftingChoice;
-    change: (patch: Partial<CraftingChoice>) => void;
-    reference: CraftingReference;
-}) {
+}: GroupsProps) {
     const choices =
         stage === "p" ? choice.processChoices : choice.finishChoices;
     const key = stage === "p" ? "processChoices" : "finishChoices";
@@ -277,17 +279,19 @@ function Groups({
     );
 }
 
+interface RecipeEditorProps {
+    id: number;
+    plan: CraftingPlan;
+    update: UpdateCrafting;
+    reference: CraftingReference;
+}
+
 export function RecipeEditor({
     id,
     plan,
     update,
     reference,
-}: {
-    id: number;
-    plan: CraftingPlan;
-    update: UpdateCrafting;
-    reference: CraftingReference;
-}) {
+}: RecipeEditorProps) {
     const recipes = reference.recipes.filter(recipe => recipe.itemId === id);
     const isTarget = plan.targets.some(target => target.itemId === id);
     const choice = resolveCraftingChoice(plan.choices[id], recipes, isTarget);
@@ -538,19 +542,21 @@ export function RecipeEditor({
     );
 }
 
+interface PriceEditorProps {
+    node: CraftingNode;
+    plan: CraftingPlan;
+    update: UpdateCrafting;
+    error?: string;
+    reference: CraftingReference;
+}
+
 export function PriceEditor({
     node,
     plan,
     update,
     error,
     reference,
-}: {
-    node: CraftingNode;
-    plan: CraftingPlan;
-    update: UpdateCrafting;
-    error?: string;
-    reference: CraftingReference;
-}) {
+}: PriceEditorProps) {
     const item = node.item;
     const manual = Object.hasOwn(plan.prices, item.id);
     const quote = plan.quotes[item.name];
@@ -651,6 +657,16 @@ export function PriceEditor({
     );
 }
 
+interface ShoppingRowProps {
+    node: CraftingNode;
+    plan: CraftingPlan;
+    update: UpdateCrafting;
+    error?: string;
+    reference: CraftingReference;
+    onLookup: () => void;
+    lookupDisabled: boolean;
+}
+
 export function ShoppingRow({
     node,
     plan,
@@ -659,15 +675,7 @@ export function ShoppingRow({
     reference,
     onLookup,
     lookupDisabled,
-}: {
-    node: CraftingNode;
-    plan: CraftingPlan;
-    update: UpdateCrafting;
-    error?: string;
-    reference: CraftingReference;
-    onLookup: () => void;
-    lookupDisabled: boolean;
-}) {
+}: ShoppingRowProps) {
     const quote = plan.quotes[node.item.name];
     return (
         <article className={s.material} aria-label={`${node.item.name} 재료`}>

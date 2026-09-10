@@ -45,8 +45,8 @@ const choiceSchema = z
         batchFee: draft.optional(),
     })
     .strict()
-    .transform(choice => {
-        delete choice.batchFee;
+    .transform(({ batchFee, ...choice }) => {
+        void batchFee;
         return choice;
     });
 
@@ -83,11 +83,11 @@ export const CraftingPlanSchema = z
             .optional(),
     })
     .strict()
-    .transform(plan => {
-        delete plan.owned;
-        delete plan.checked;
-        delete plan.comparisons;
-        delete plan.fee;
+    .transform(({ owned, checked, comparisons, fee, ...plan }) => {
+        void owned;
+        void checked;
+        void comparisons;
+        void fee;
         return plan;
     });
 export type CraftingPlan = z.infer<typeof CraftingPlanSchema>;
@@ -177,10 +177,10 @@ export function craftingPlanIssues(
     return [...new Set(issues)];
 }
 
-export function craftingBytes(text: string) {
+export function craftingBytes(text: string): number {
     return encodeURIComponent(text).replace(/%[A-F\d]{2}/g, "x").length;
 }
-export function serializeCraftingStorage(plan: CraftingPlan) {
+export function serializeCraftingStorage(plan: CraftingPlan): string {
     const raw = JSON.stringify(CraftingPlanSchema.parse(plan));
     if (craftingBytes(raw) > CRAFTING_STORAGE_LIMIT)
         throw new Error(
@@ -220,7 +220,7 @@ function shareQuery(key: "s" | "b", value: unknown) {
         );
     return `${CRAFTING_PATH}?${query}`;
 }
-export function buildCraftingShare(plan: CraftingPlan) {
+export function buildCraftingShare(plan: CraftingPlan): string {
     return shareQuery("s", { ...CraftingPlanSchema.parse(plan), quotes: {} });
 }
 const handoffSchema = z
@@ -237,7 +237,7 @@ const handoffSchema = z
 export function buildCraftingHandoff(
     targets: { itemId: number; count: number }[],
     sourceVersion: number
-) {
+): string {
     return shareQuery(
         "b",
         handoffSchema.parse({
@@ -301,7 +301,7 @@ export function craftingText(
     plan: CraftingPlan,
     result: CraftingResult,
     prices: CraftingInput["prices"] = plan.prices
-) {
+): string {
     const costs = calculateCraftingCosts({ ...plan, prices }, result);
     const total = (label: string, cost: typeof costs.total) =>
         `${label}: ${cost.known} Gold${cost.complete ? "" : " (확인된 소계)"}`;

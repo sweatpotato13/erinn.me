@@ -200,6 +200,19 @@ test("manual empty and zero prices override market observations, and unavailable
     expect(
         barterPrices(observed, { materials: [{ ...m, ambiguous: true }] })[m.id]
     ).toBe("");
+    expect(
+        barterPrices(observed, { materials: [{ ...m, searchable: false }] })[
+            m.id
+        ]
+    ).toBe("");
+    for (const minPrice of [1.5, Number.MAX_SAFE_INTEGER + 1]) {
+        expect(
+            barterPrices(
+                { ...observed, quotes: { [m.name]: { ...quote, minPrice } } },
+                data
+            )[m.id]
+        ).toBe("");
+    }
 });
 
 test("invalid seasonal selections and newly maintained seasons never silently discard saved demand", () => {
