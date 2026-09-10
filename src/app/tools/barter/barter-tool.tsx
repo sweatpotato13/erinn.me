@@ -194,6 +194,11 @@ export default function BarterTool({ data }: { data: BarterReference }) {
 
     return (
         <div>
+            {market.errors.request && (
+                <p role="status" className={s.error}>
+                    {market.errors.request}
+                </p>
+            )}
             {!ready && (
                 <p role="status" className={s.notice}>
                     저장된 계획을 확인하고 있습니다.

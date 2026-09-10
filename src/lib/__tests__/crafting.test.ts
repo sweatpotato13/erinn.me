@@ -1,5 +1,6 @@
 import {
     calculateCrafting,
+    calculateCraftingCosts,
     type CraftingInput,
     type CraftingRecipe,
     type CraftingReference,
@@ -299,4 +300,74 @@ test("node and edge bounds reject expansion rather than truncate a valid result"
             reference(manyEdges)
         ).issues.join()
     ).toContain("5,000개");
+});
+
+test("cash outlay, owned value and comparable buying stay distinct", () => {
+    const recipes = [recipe(1, [{ itemIds: [2], count: 10 }])];
+    const plan = input(recipes);
+    plan.owned[2] = "4";
+    plan.prices[2] = "100";
+    plan.fee = "50";
+    plan.comparisons[1] = {
+        price: "1200",
+        comparable: true,
+        note: "동일 조건",
+    };
+    let result = calculateCraftingCosts(
+        plan,
+        calculateCrafting(plan, reference(recipes))
+    );
+    expect([
+        result.purchase.known,
+        result.owned.known,
+        result.materialValue.known,
+        result.cashDifference,
+        result.valueDifference,
+    ]).toEqual([650, 400, 1050, 550, 150]);
+    plan.prices[2] = "";
+    result = calculateCraftingCosts(
+        plan,
+        calculateCrafting(plan, reference(recipes))
+    );
+    expect(result.purchase.complete).toBe(false);
+    expect(result.cashDifference).toBeNull();
+    plan.prices[2] = "0";
+    result = calculateCraftingCosts(
+        plan,
+        calculateCrafting(plan, reference(recipes))
+    );
+    expect(result.purchase).toMatchObject({ known: 50, complete: true });
+    plan.comparisons[1].comparable = false;
+    expect(
+        calculateCraftingCosts(
+            plan,
+            calculateCrafting(plan, reference(recipes))
+        ).direct.complete
+    ).toBe(false);
+});
+
+test("owned finished targets are common to both comparisons; an owned intermediate is valued once", () => {
+    const recipes = [
+        recipe(1, [{ itemIds: [2], count: 1 }]),
+        recipe(2, [{ itemIds: [3], count: 10 }]),
+    ];
+    const plan = input(recipes, [{ itemId: 1, count: "2" }]);
+    plan.owned = { 1: "1", 2: "1" };
+    plan.prices = { 1: "1200", 2: "100", 3: "9999" };
+    plan.comparisons[1] = { price: "1200", comparable: true, note: "" };
+    const result = calculateCraftingCosts(
+        plan,
+        calculateCrafting(plan, reference(recipes))
+    );
+    expect(result.owned).toMatchObject({ known: 100, complete: true });
+    expect(result.purchase.known).toBe(0);
+    expect(result.direct.known).toBe(1200);
+    expect(result.comparisonRows[0].count).toBe(1);
+    plan.prices[2] = "";
+    const unknownOwned = calculateCraftingCosts(
+        plan,
+        calculateCrafting(plan, reference(recipes))
+    );
+    expect(unknownOwned.purchase.complete).toBe(true);
+    expect(unknownOwned.owned.complete).toBe(false);
 });

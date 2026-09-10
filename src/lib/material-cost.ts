@@ -20,3 +20,31 @@ export function allocateMaterialStock(required: number, owned: number) {
         missing: Math.max(0, required - owned),
     };
 }
+import { z } from "zod";
+
+export const MaterialQuoteSchema = z
+    .object({
+        minPrice: z.number().finite().nonnegative(),
+        averagePrice: z.number().finite().nonnegative(),
+        availableQuantity: z.number().finite().nonnegative(),
+        isComplete: z.boolean(),
+        fetchedAt: z.iso.datetime({ offset: true }).optional(),
+        observedAt: z.iso.datetime({ offset: true }),
+    })
+    .strict();
+export type MaterialQuote = z.infer<typeof MaterialQuoteSchema>;
+
+export function materialPrice(
+    item: { id: number; name: string; searchable: boolean; ambiguous: boolean },
+    manual: Record<string, string>,
+    quotes: Record<string, MaterialQuote>
+): string {
+    if (Object.hasOwn(manual, item.id)) return manual[item.id];
+    const quote =
+        item.searchable && !item.ambiguous ? quotes[item.name] : undefined;
+    return quote &&
+        quote.availableQuantity > 0 &&
+        Number.isSafeInteger(quote.minPrice)
+        ? String(quote.minPrice)
+        : "";
+}

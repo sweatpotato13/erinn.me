@@ -101,6 +101,116 @@ export interface CraftingResult {
     complete: boolean;
 }
 
+export interface CraftingCost {
+    known: number;
+    complete: boolean;
+    unresolved: string[];
+}
+
+export function calculateCraftingCosts(
+    input: CraftingInput,
+    result: CraftingResult
+) {
+    const cost = (): CraftingCost => ({
+        known: 0,
+        complete: result.complete,
+        unresolved: [],
+    });
+    const purchase = cost();
+    const owned = cost();
+    const direct = cost();
+    const add = (
+        total: CraftingCost,
+        count: number | null,
+        price: number | null,
+        label: string
+    ) => {
+        if (count === 0) return;
+        try {
+            if (count === null || price === null) throw new Error(label);
+            total.known = safeMaterialInteger(
+                total.known + safeMaterialInteger(count * price)
+            );
+        } catch {
+            total.complete = false;
+            total.unresolved.push(label);
+        }
+    };
+    add(
+        purchase,
+        1,
+        parseMaterialInteger(input.fee),
+        "계획 일회성 비용 확인 필요"
+    );
+    const comparisonRows: {
+        itemId: number;
+        count: number | null;
+        price: number | null;
+    }[] = [];
+    for (const node of result.nodes) {
+        const unitPrice = parseMaterialInteger(
+            input.prices[node.item.id] ?? ""
+        );
+        if (node.mode === "buy")
+            add(
+                purchase,
+                node.complete ? node.missing : null,
+                unitPrice,
+                `${node.item.name} 구매 수량·단가 확인 필요`
+            );
+        else
+            add(
+                purchase,
+                node.complete ? 1 : null,
+                node.batchCost,
+                `${node.item.name} 배치 비용 확인 필요`
+            );
+        add(
+            owned,
+            node.complete && node.usedOwned !== null
+                ? node.usedOwned - node.ownedTarget
+                : null,
+            unitPrice,
+            `${node.item.name} 보유 재료 가치 확인 필요`
+        );
+        if (node.target > 0) {
+            const comparison = input.comparisons[node.item.id];
+            const count = node.complete ? node.target - node.ownedTarget : null;
+            const price = comparison?.comparable
+                ? parseMaterialInteger(comparison.price)
+                : null;
+            comparisonRows.push({ itemId: node.item.id, count, price });
+            add(
+                direct,
+                count,
+                price,
+                `${node.item.name} 동일 조건 완제품 가격 확인 필요`
+            );
+        }
+    }
+    const materialValue = cost();
+    add(materialValue, 1, purchase.known, "추가 구매 비용 범위 확인 필요");
+    add(materialValue, 1, owned.known, "보유 재료 가치 범위 확인 필요");
+    materialValue.complete &&= purchase.complete && owned.complete;
+    materialValue.unresolved.push(...purchase.unresolved, ...owned.unresolved);
+    // Safe nonnegative operands have a difference within the signed safe range.
+    return {
+        purchase,
+        owned,
+        materialValue,
+        direct,
+        comparisonRows,
+        cashDifference:
+            direct.complete && purchase.complete
+                ? direct.known - purchase.known
+                : null,
+        valueDifference:
+            direct.complete && materialValue.complete
+                ? direct.known - materialValue.known
+                : null,
+    };
+}
+
 export function emptyCraftingChoice(
     mode: "buy" | "craft" = "buy"
 ): CraftingChoice {

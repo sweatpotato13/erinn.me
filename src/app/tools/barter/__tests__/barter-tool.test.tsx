@@ -11,6 +11,7 @@ import {
 import { useBarterMaterials } from "@/app/tools/barter/barter-hooks";
 import BarterTool from "@/app/tools/barter/barter-tool";
 import raw from "@/data/barter-reference.json";
+import { useMaterialMarket } from "@/hooks/use-material-market";
 import { fetchItemPriceSummary } from "@/lib/api/auction";
 import { type BarterReference, emptyBarterRow } from "@/lib/barter";
 import {
@@ -24,6 +25,14 @@ import {
 jest.mock("@/lib/api/auction", () => ({ fetchItemPriceSummary: jest.fn() }));
 const prices = jest.mocked(fetchItemPriceSummary);
 const data = raw as BarterReference;
+
+test("shared market lookup rejects an oversized click without launching requests", async () => {
+    const names = Array.from({ length: 101 }, (_, i) => `item-${i}`);
+    const { result } = renderHook(() => useMaterialMarket(names, jest.fn(), 0));
+    await act(() => result.current.load());
+    expect(result.current.errors.request).toContain("100종");
+    expect(prices).not.toHaveBeenCalled();
+});
 const now = Date.parse("2026-09-10T08:00:00+09:00");
 const good = data.goods.find(g => g.key === "fixed:201:20101")!;
 const quote = {
