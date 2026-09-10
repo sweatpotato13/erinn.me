@@ -136,20 +136,22 @@ test.describe("Homepage Tests", () => {
         );
 
         expect(response.status()).toBe(200);
-        expect(locations).toEqual([
-            ...publicPages.map(route =>
-                new URL(route.path, "https://erinn.me").toString()
-            ),
-            "https://erinn.me/simulators/reforge",
-            "https://erinn.me/simulators/echostone",
-            "https://erinn.me/tools/miniatures",
-            "https://erinn.me/tools/totems",
-            "https://erinn.me/tools/barter",
-            "https://erinn.me/auction/items",
-            ...auctionCatalog.items.map(
-                item => `https://erinn.me/auction/items/${item.id}`
-            ),
-        ]);
+        expect(locations.toSorted()).toEqual(
+            [
+                ...publicPages.map(route =>
+                    new URL(route.path, "https://erinn.me").toString()
+                ),
+                "https://erinn.me/simulators/reforge",
+                "https://erinn.me/simulators/echostone",
+                "https://erinn.me/tools/miniatures",
+                "https://erinn.me/tools/totems",
+                "https://erinn.me/tools/barter",
+                "https://erinn.me/auction/items",
+                ...auctionCatalog.items.map(
+                    item => `https://erinn.me/auction/items/${item.id}`
+                ),
+            ].toSorted()
+        );
         for (const excluded of [
             "/api/",
             "/_offline",

@@ -224,6 +224,16 @@ async function expectResponsiveResultFilterDialog(
     trigger: Locator
 ) {
     await trigger.scrollIntoViewIfNeeded();
+    // Image aspect ratios can settle after the mocked search response.
+    await expect
+        .poll(() =>
+            table
+                .locator("img:visible")
+                .evaluateAll(images =>
+                    images.every(image => (image as HTMLImageElement).complete)
+                )
+        )
+        .toBe(true);
     const tableBefore = await table.boundingBox();
     const triggerBox = await trigger.boundingBox();
     await trigger.click();
