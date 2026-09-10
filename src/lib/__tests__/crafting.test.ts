@@ -67,37 +67,31 @@ function input(
                 { ...selectCraftingRecipe(r), yield: "1", passes: "1" },
             ])
         ),
-        owned: {},
         prices: {},
-        fee: "0",
-        comparisons: {},
+        quotes: {},
     };
 }
 
-test("synthetic yield rounds the remaining demand, preserves inventory and exposes surplus", () => {
+test("target quantity ignores saved finished stock and still rounds batches", () => {
     const recipes = [recipe(1, [{ itemIds: [2], count: 2 }])];
     const plan = input(recipes, [{ itemId: 1, count: "5" }]);
-    plan.owned[1] = "1";
     plan.choices[1].yield = "3";
     const original = JSON.stringify(plan);
     const result = calculateCrafting(plan, reference(recipes));
     expect(result.complete).toBe(true);
     expect(result.nodes[0]).toMatchObject({
         required: 5,
-        usedOwned: 1,
-        missing: 4,
+        missing: 5,
         batches: 2,
         produced: 6,
-        surplus: 2,
+        surplus: 1,
     });
     expect(result.shopping[0]).toMatchObject({ required: 4, missing: 4 });
     expect(JSON.stringify(plan)).toBe(original);
-    plan.owned[1] = "9";
     plan.choices[1].yield = "";
     expect(calculateCrafting(plan, reference(recipes)).nodes[0]).toMatchObject({
-        batches: 0,
-        produced: 0,
-        complete: true,
+        missing: 5,
+        complete: false,
     });
 });
 
@@ -119,13 +113,10 @@ test("shared intermediates and a final/intermediate item combine before batching
     });
     expect(result.shopping[0].required).toBe(5);
     plan.targets.push({ itemId: 3, count: "1" });
-    plan.owned[3] = "1";
     result = calculateCrafting(plan, reference(recipes));
     expect(result.nodes.find(n => n.item.id === 3)).toMatchObject({
         required: 3,
-        usedOwned: 1,
-        ownedTarget: 1,
-        batches: 1,
+        batches: 2,
     });
     expect(
         calculateCrafting(
@@ -133,6 +124,13 @@ test("shared intermediates and a final/intermediate item combine before batching
             reference(recipes)
         )
     ).toEqual(result);
+    result = calculateCrafting(plan, reference(recipes));
+    expect(result.nodes.find(n => n.item.id === 3)).toMatchObject({
+        required: 3,
+        missing: 3,
+        batches: 2,
+    });
+    plan.targets = plan.targets.filter(target => target.itemId !== 3);
     plan.choices[3] = emptyCraftingChoice();
     result = calculateCrafting(plan, reference(recipes));
     expect(result.shopping.map(n => n.item.id)).toEqual([3]);
@@ -142,6 +140,7 @@ test("shared intermediates and a final/intermediate item combine before batching
 test("chosen process and finish alternatives are consumed at their own stage frequency", () => {
     const recipes = [
         recipe(1, [{ itemIds: [2, 3], count: 3 }], {
+            type: 65538,
             finishes: Array.from({ length: 4 }, (_, i) => ({
                 groups: [{ itemIds: [4 + i], count: 2 }],
                 extraData: `color${i}`,
@@ -302,42 +301,37 @@ test("node and edge bounds reject expansion rather than truncate a valid result"
     ).toContain("5,000개");
 });
 
-test("cash outlay, owned value and comparable buying stay distinct", () => {
+test("full material cost and auction minimum use the same target quantity", () => {
     const recipes = [recipe(1, [{ itemIds: [2], count: 10 }])];
     const plan = input(recipes);
-    plan.owned[2] = "4";
     plan.prices[2] = "100";
-    plan.fee = "50";
-    plan.comparisons[1] = {
-        price: "1200",
-        comparable: true,
-        note: "동일 조건",
+    plan.quotes.item1 = {
+        minPrice: 1200,
+        averagePrice: 1300,
+        availableQuantity: 10,
+        isComplete: true,
+        observedAt: "2026-09-10T00:00:00Z",
     };
     let result = calculateCraftingCosts(
         plan,
         calculateCrafting(plan, reference(recipes))
     );
-    expect([
-        result.purchase.known,
-        result.owned.known,
-        result.materialValue.known,
-        result.cashDifference,
-        result.valueDifference,
-    ]).toEqual([650, 400, 1050, 550, 150]);
+    expect(result.total.known).toBe(1000);
+    expect(result.difference).toBe(200);
     plan.prices[2] = "";
     result = calculateCraftingCosts(
         plan,
         calculateCrafting(plan, reference(recipes))
     );
-    expect(result.purchase.complete).toBe(false);
-    expect(result.cashDifference).toBeNull();
+    expect(result.total.complete).toBe(false);
+    expect(result.difference).toBeNull();
     plan.prices[2] = "0";
     result = calculateCraftingCosts(
         plan,
         calculateCrafting(plan, reference(recipes))
     );
-    expect(result.purchase).toMatchObject({ known: 50, complete: true });
-    plan.comparisons[1].comparable = false;
+    expect(result.total).toMatchObject({ known: 0, complete: true });
+    plan.quotes.item1.availableQuantity = 0;
     expect(
         calculateCraftingCosts(
             plan,
@@ -346,43 +340,78 @@ test("cash outlay, owned value and comparable buying stay distinct", () => {
     ).toBe(false);
 });
 
-test("owned finished targets are common to both comparisons; an owned intermediate is valued once", () => {
+test("legacy inventory never reduces raw or intermediate demand or cost", () => {
     const recipes = [
         recipe(1, [{ itemIds: [2], count: 1 }]),
         recipe(2, [{ itemIds: [3], count: 10 }]),
     ];
     const plan = input(recipes, [{ itemId: 1, count: "2" }]);
-    plan.owned = { 1: "1", 2: "1" };
-    plan.prices = { 1: "1200", 2: "100", 3: "9999" };
-    plan.comparisons[1] = { price: "1200", comparable: true, note: "" };
-    const result = calculateCraftingCosts(
-        plan,
-        calculateCrafting(plan, reference(recipes))
-    );
-    expect(result.owned).toMatchObject({ known: 100, complete: true });
-    expect(result.purchase.known).toBe(0);
-    expect(result.direct.known).toBe(1200);
-    expect(result.comparisonRows[0].count).toBe(1);
-    plan.prices[2] = "";
-    const unknownOwned = calculateCraftingCosts(
-        plan,
-        calculateCrafting(plan, reference(recipes))
-    );
-    expect(unknownOwned.purchase.complete).toBe(true);
-    expect(unknownOwned.owned.complete).toBe(false);
+    plan.prices[3] = "100";
+    plan.quotes.item1 = {
+        minPrice: 1200,
+        averagePrice: 1300,
+        availableQuantity: 10,
+        isComplete: true,
+        observedAt: "2026-09-10T00:00:00Z",
+    };
+    const legacy = { ...plan, owned: { 1: "10", 2: "99", 3: "999" } };
+    const result = calculateCrafting(legacy, reference(recipes));
+    expect(result).toEqual(calculateCrafting(plan, reference(recipes)));
+    expect(result.shopping[0].required).toBe(20);
+    const costs = calculateCraftingCosts(legacy, result);
+    expect(costs.total).toMatchObject({ known: 2000, complete: true });
+    expect(costs.direct.known).toBe(2400);
+    expect(costs.difference).toBe(400);
 });
 
-test("fully owned outputs do not validate or price unconsumed ingredients", () => {
-    const recipes = [recipe(1, [{ itemIds: [2], count: 10 }])];
-    const plan = input(recipes);
-    plan.owned = { 1: "1", 2: "invalid" };
-    const data = reference(recipes);
-    data.items[1].unresolved = "unused unknown item";
-    const result = calculateCrafting(plan, data);
+test("single recipes auto-select and ordinary skills ignore legacy pass counts and target buying", () => {
+    const recipes = [recipe(1, [{ itemIds: [2], count: 3 }])];
+    const plan = input(recipes, [{ itemId: 1, count: "2" }]);
+    plan.choices[1] = {
+        ...emptyCraftingChoice("buy"),
+        yield: "1",
+        passes: "99",
+    };
+    const result = calculateCrafting(plan, reference(recipes));
     expect(result.complete).toBe(true);
-    expect(result.nodes.map(node => node.item.id)).toEqual([1]);
-    expect(calculateCraftingCosts(plan, result).purchase).toMatchObject({
-        known: 0,
-        complete: true,
-    });
+    expect(result.nodes[0].mode).toBe("craft");
+    expect(result.nodes[0].recipe?.fingerprint).toBe("recipe-1");
+    expect(result.shopping[0].required).toBe(6);
+    for (const type of [65537, 65538]) {
+        recipes[0].type = type;
+        plan.choices[1].passes = "";
+        expect(calculateCrafting(plan, reference(recipes)).complete).toBe(
+            false
+        );
+        plan.choices[1].passes = "4";
+        expect(
+            calculateCrafting(plan, reference(recipes)).shopping[0].required
+        ).toBe(24);
+    }
+});
+
+test("finished market total stays available before recipe inputs and rejects missing quotes", () => {
+    const recipes = [recipe(1, [{ itemIds: [2], count: 10 }])];
+    const plan = input(recipes, [{ itemId: 1, count: "2" }]);
+    plan.choices[1].yield = "";
+    plan.quotes.item1 = {
+        minPrice: 100,
+        averagePrice: 120,
+        availableQuantity: 1,
+        isComplete: false,
+        observedAt: "2026-09-10T00:00:00Z",
+    };
+    const costs = () =>
+        calculateCraftingCosts(
+            plan,
+            calculateCrafting(plan, reference(recipes))
+        );
+    expect(costs().direct).toMatchObject({ known: 200, complete: true });
+    expect(costs().difference).toBeNull();
+    plan.quotes.item1.minPrice = 0;
+    expect(costs().direct).toMatchObject({ known: 0, complete: true });
+    delete plan.quotes.item1;
+    expect(costs().direct.complete).toBe(false);
+    plan.targets = [{ itemId: 999, count: "1" }];
+    expect(costs().direct.complete).toBe(false);
 });

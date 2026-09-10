@@ -36,23 +36,23 @@ test("temporary shares and barter imports never reapply saved inventory or overw
         buildCraftingHandoff([{ itemId: 1, count: 6 }], 1)
     );
     const { result } = renderHook(() => useCraftingPlan(data));
-    expect(result.current.plan.owned).toEqual({});
+    expect(result.current.plan.owned).toBeUndefined();
     expect(result.current.plan.targets[0].count).toBe("6");
-    act(() => result.current.update(p => ({ ...p, fee: "10" })));
+    act(() => result.current.update(p => ({ ...p, prices: { 1: "10" } })));
     expect(localStorage.getItem(CRAFTING_STORAGE_KEY)).toBe(raw);
     act(() => result.current.adopt(data));
     expect(result.current.temporary).toBe(false);
     expect(
         JSON.parse(localStorage.getItem(CRAFTING_STORAGE_KEY)!).owned
-    ).toEqual({});
+    ).toBeUndefined();
 });
 
 test("corruption and unavailable storage preserve user input and the original saved bytes", () => {
     localStorage.setItem(CRAFTING_STORAGE_KEY, "broken");
     const { result } = renderHook(() => useCraftingPlan(data));
     expect(result.current.backup).toBe("broken");
-    act(() => result.current.update(p => ({ ...p, fee: "20" })));
-    expect(result.current.plan.fee).toBe("20");
+    act(() => result.current.update(p => ({ ...p, prices: { 1: "20" } })));
+    expect(result.current.plan.prices[1]).toBe("20");
     expect(localStorage.getItem(CRAFTING_STORAGE_KEY)).toBe("broken");
     const set = jest
         .spyOn(Storage.prototype, "setItem")
@@ -61,22 +61,22 @@ test("corruption and unavailable storage preserve user input and the original sa
         });
     act(() => result.current.adopt(data));
     expect(result.current.notice).toContain("저장하지 못했습니다");
-    expect(result.current.plan.fee).toBe("20");
+    expect(result.current.plan.prices[1]).toBe("20");
     set.mockRestore();
 });
 
 test("history restores the original local plan after an isolated shared draft", () => {
-    const saved = { ...emptyCraftingPlan(data), fee: "50" };
+    const saved = { ...emptyCraftingPlan(data), prices: { 1: "50" } };
     localStorage.setItem(CRAFTING_STORAGE_KEY, serializeCraftingStorage(saved));
     window.history.replaceState(
         null,
         "",
-        buildCraftingShare({ ...saved, fee: "10" })
+        buildCraftingShare({ ...saved, prices: { 1: "10" } })
     );
     const { result } = renderHook(() => useCraftingPlan(data));
-    expect(result.current.plan.fee).toBe("10");
+    expect(result.current.plan.prices[1]).toBe("10");
     act(() => result.current.openSaved());
-    expect(result.current.plan.fee).toBe("50");
+    expect(result.current.plan.prices[1]).toBe("50");
     expect(result.current.temporary).toBe(false);
 });
 
@@ -88,36 +88,42 @@ test("invalid price drafts remain editable without a NaN or unsafe summary amoun
     };
     const node = calculateCrafting(plan, data).nodes[0];
     const { container, rerender } = render(
-        <PriceEditor node={node} plan={plan} update={jest.fn()} />
+        <PriceEditor
+            reference={data}
+            node={node}
+            plan={plan}
+            update={jest.fn()}
+        />
     );
-    expect(container.querySelector("summary")).not.toHaveTextContent("NaN");
+    expect(container).not.toHaveTextContent("NaN");
     expect(screen.getByLabelText("재료 단가 (Gold)")).toHaveAttribute(
         "aria-invalid",
         "true"
     );
     rerender(
         <PriceEditor
+            reference={data}
             node={node}
             plan={{ ...plan, prices: { 1: "0" } }}
             update={jest.fn()}
         />
     );
-    expect(container.querySelector("summary")).toHaveTextContent("개당 0 Gold");
+    expect(container).toHaveTextContent("재료 비용: 0 Gold");
 });
 
 test("restoring a plan immediately rejects callbacks from the previous plan", () => {
     const { result } = renderHook(() => useCraftingPlan(data));
     const staleUpdate = result.current.update;
-    const saved = { ...emptyCraftingPlan(data), fee: "20" };
+    const saved = { ...emptyCraftingPlan(data), prices: { 1: "20" } };
     localStorage.setItem(CRAFTING_STORAGE_KEY, serializeCraftingStorage(saved));
     act(() => {
         result.current.openSaved();
-        staleUpdate(p => ({ ...p, fee: "999" }));
+        staleUpdate(p => ({ ...p, prices: { 1: "999" } }));
     });
-    expect(result.current.plan.fee).toBe("20");
-    expect(JSON.parse(localStorage.getItem(CRAFTING_STORAGE_KEY)!).fee).toBe(
-        "20"
-    );
-    act(() => result.current.update(p => ({ ...p, fee: "30" })));
-    expect(result.current.plan.fee).toBe("30");
+    expect(result.current.plan.prices[1]).toBe("20");
+    expect(
+        JSON.parse(localStorage.getItem(CRAFTING_STORAGE_KEY)!).prices[1]
+    ).toBe("20");
+    act(() => result.current.update(p => ({ ...p, prices: { 1: "30" } })));
+    expect(result.current.plan.prices[1]).toBe("30");
 });

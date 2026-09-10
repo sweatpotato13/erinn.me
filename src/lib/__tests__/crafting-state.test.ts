@@ -1,5 +1,6 @@
 import {
     calculateCrafting,
+    calculateCraftingCosts,
     type CraftingReference,
     emptyCraftingChoice,
     selectCraftingRecipe,
@@ -90,7 +91,7 @@ test("barter handoff contains net quantities and no original inventory", () => {
         { itemId: 1, count: "6" },
         { itemId: 2, count: "3" },
     ]);
-    expect(plan.owned).toEqual({});
+    expect(plan.owned).toBeUndefined();
     expect(plan.origin).toBe("barter-net-deficit");
     expect(plan.choices[1].mode).toBe("craft");
     expect(plan.choices[2].mode).toBe("buy");
@@ -165,18 +166,24 @@ test("corrupt, duplicated, unexpected and oversized payloads are rejected", () =
         ).error
     ).toBeTruthy();
     const big = example();
-    big.comparisons = Object.fromEntries(
-        Array.from({ length: 100 }, (_, i) => [
-            i + 1,
-            { price: "1", comparable: true, note: "한".repeat(200) },
-        ])
-    );
-    expect(() => buildCraftingShare(big)).toThrow(/텍스트/);
     big.choices = Object.fromEntries(
         Array.from({ length: 1000 }, (_, i) => [i + 1, emptyCraftingChoice()])
     );
-    big.owned = Object.fromEntries(
+    expect(() => buildCraftingShare(big)).toThrow(/텍스트/);
+    big.prices = Object.fromEntries(
         Array.from({ length: 1000 }, (_, i) => [i + 1, "1".repeat(64)])
+    );
+    big.quotes = Object.fromEntries(
+        Array.from({ length: 100 }, (_, i) => [
+            "한".repeat(90) + i,
+            {
+                minPrice: 1,
+                averagePrice: 1,
+                availableQuantity: 1,
+                isComplete: true,
+                observedAt: "2026-09-10T00:00:00Z",
+            },
+        ])
     );
     expect(craftingBytes(JSON.stringify(big))).toBeGreaterThan(
         CRAFTING_STORAGE_LIMIT
@@ -200,8 +207,36 @@ test("text export retains assumptions, identity, subtotals and complete material
     const result = calculateCrafting(plan, data);
     const text = craftingText(plan, result);
     expect(text).toContain("recipe-1");
-    expect(text).toContain("산출량 1 / 공정 1회");
+    expect(text).toContain("산출량 1");
+    expect(text).not.toContain(" / 공정 ");
     expect(text).toContain("재료2 (#2)");
     expect(text).toContain("확인된 소계");
     expect(text).toContain("입력한 제작 조건 기준");
+});
+
+test("old per-batch fees are discarded without losing the saved plan", () => {
+    const plan = example();
+    plan.prices[2] = "100";
+    const legacy = {
+        ...plan,
+        owned: { 1: "99", 2: "99" },
+        checked: [2],
+        fee: "9999",
+        choices: { 1: { ...plan.choices[1], batchFee: "9999" } },
+        comparisons: { 1: { price: "999", comparable: true, note: "legacy" } },
+    };
+    const restored = parseCraftingStorage(JSON.stringify(legacy));
+    expect(restored.error).toBe("");
+    expect(restored.plan).not.toHaveProperty("owned");
+    expect(restored.plan).not.toHaveProperty("checked");
+    expect(restored.plan!.choices[1]).not.toHaveProperty("batchFee");
+    expect(restored.plan).not.toHaveProperty("comparisons");
+    expect(restored.plan).not.toHaveProperty("fee");
+    expect(
+        calculateCraftingCosts(
+            restored.plan!,
+            calculateCrafting(restored.plan!, data)
+        ).total.known
+    ).toBe(200);
+    expect(serializeCraftingStorage(restored.plan!)).not.toContain("batchFee");
 });

@@ -5,7 +5,8 @@ import {
     type CraftingInput,
     type CraftingReference,
     type CraftingResult,
-    emptyCraftingChoice,
+    hasCraftingPasses,
+    resolveCraftingChoice,
 } from "@/lib/crafting";
 import { MaterialQuoteSchema } from "@/lib/material-cost";
 
@@ -40,9 +41,14 @@ const choiceSchema = z
                     .max(100)
             )
             .refine(map => Object.keys(map).length <= 100),
-        batchFee: draft,
+        // Accept old drafts, but discard the removed per-batch fee.
+        batchFee: draft.optional(),
     })
-    .strict();
+    .strict()
+    .transform(choice => {
+        delete choice.batchFee;
+        return choice;
+    });
 
 export const CraftingPlanSchema = z
     .object({
@@ -55,9 +61,9 @@ export const CraftingPlanSchema = z
             .array(z.object({ itemId: id, count: draft }).strict())
             .max(100),
         choices: boundedMap(choiceSchema),
-        owned: boundedMap(draft),
+        owned: boundedMap(draft).optional(),
         prices: boundedMap(draft),
-        fee: draft,
+        fee: draft.optional(),
         comparisons: boundedMap(
             z
                 .object({
@@ -66,16 +72,24 @@ export const CraftingPlanSchema = z
                     note: z.string().max(200),
                 })
                 .strict()
-        ),
+        ).optional(),
         quotes: z
             .record(z.string().min(1).max(100), MaterialQuoteSchema)
             .refine(map => Object.keys(map).length <= 1000),
         checked: z
             .array(id)
             .max(1000)
-            .refine(ids => new Set(ids).size === ids.length),
+            .refine(ids => new Set(ids).size === ids.length)
+            .optional(),
     })
-    .strict();
+    .strict()
+    .transform(plan => {
+        delete plan.owned;
+        delete plan.checked;
+        delete plan.comparisons;
+        delete plan.fee;
+        return plan;
+    });
 export type CraftingPlan = z.infer<typeof CraftingPlanSchema>;
 
 export function emptyCraftingPlan(reference: CraftingReference): CraftingPlan {
@@ -87,12 +101,8 @@ export function emptyCraftingPlan(reference: CraftingReference): CraftingPlan {
         origin: "local",
         targets: [],
         choices: {},
-        owned: {},
         prices: {},
-        fee: "0",
-        comparisons: {},
         quotes: {},
-        checked: [],
     };
 }
 
@@ -117,10 +127,7 @@ export function craftingPlanIssues(
     const ids = new Set([
         ...plan.targets.map(target => target.itemId),
         ...Object.keys(plan.choices).map(Number),
-        ...Object.keys(plan.owned).map(Number),
         ...Object.keys(plan.prices).map(Number),
-        ...Object.keys(plan.comparisons).map(Number),
-        ...plan.checked,
     ]);
     for (const id of ids)
         if (!items.has(id)) issues.push(`아이템 확인 필요 #${id}`);
@@ -177,7 +184,7 @@ export function serializeCraftingStorage(plan: CraftingPlan) {
     const raw = JSON.stringify(CraftingPlanSchema.parse(plan));
     if (craftingBytes(raw) > CRAFTING_STORAGE_LIMIT)
         throw new Error(
-            "저장 용량 256KiB를 넘었습니다. 텍스트로 내보내 주세요."
+            "저장 용량 256KiB를 넘었습니다. 제작품 수를 줄여 주세요."
         );
     return raw;
 }
@@ -272,8 +279,12 @@ export function parseCraftingShare(
         plan.choices = Object.fromEntries(
             plan.targets.map(target => [
                 target.itemId,
-                emptyCraftingChoice(
-                    reference.byOutput[target.itemId]?.length ? "craft" : "buy"
+                resolveCraftingChoice(
+                    undefined,
+                    reference.recipes.filter(
+                        recipe => recipe.itemId === target.itemId
+                    ),
+                    true
                 ),
             ])
         );
@@ -292,35 +303,37 @@ export function craftingText(
     prices: CraftingInput["prices"] = plan.prices
 ) {
     const costs = calculateCraftingCosts({ ...plan, prices }, result);
-    const total = (label: string, cost: typeof costs.purchase) =>
+    const total = (label: string, cost: typeof costs.total) =>
         `${label}: ${cost.known} Gold${cost.complete ? "" : " (확인된 소계)"}`;
     return [
-        "마비노기 제작 준비 목록",
+        "마비노기 제작 원가 계산",
         `자료: ${plan.sourceVersion} / ${plan.referenceVersion} / 규칙 ${plan.ruleVersion}`,
         `출처: ${plan.origin === "barter-net-deficit" ? "물물교환 순부족분 (원래 보유분 차감 완료)" : "직접 계획"}`,
         ...plan.targets.map(
             target => `목표 #${target.itemId}: ${target.count}개`
         ),
-        ...Object.entries(plan.choices)
-            .filter(([, choice]) => choice.mode === "craft")
-            .map(
-                ([id, choice]) =>
-                    `제작 #${id}: ${choice.recipe || "미선택"} / 산출량 ${choice.yield || "미입력"} / 공정 ${choice.passes || "미입력"}회 (실패 소비 ${choice.includesFailures ? "포함" : "미포함"}) / 마감 ${choice.finish ?? "없음·미선택"} / 공정 재료 ${choice.processChoices.join(",")} / 마감 재료 ${choice.finishChoices.join(",")} / 혼합 ${JSON.stringify(choice.allocations)} / 배치 비용 ${choice.batchFee} Gold`
-            ),
+        ...result.nodes
+            .filter(node => node.mode === "craft")
+            .map(node => {
+                const id = node.item.id;
+                const choice = resolveCraftingChoice(
+                    plan.choices[id],
+                    node.recipe ? [node.recipe] : [],
+                    node.target > 0
+                );
+                const passes =
+                    node.recipe && hasCraftingPasses(node.recipe)
+                        ? ` / 공정 ${choice.passes || "미입력"}회 (실패 소비 ${choice.includesFailures ? "포함" : "미포함"})`
+                        : "";
+                return `제작 #${id}: ${choice.recipe || "미선택"} / 산출량 ${choice.yield || "미입력"}${passes} / 마감 ${choice.finish ?? "없음·미선택"} / 제작 재료 ${choice.processChoices.join(",")} / 마감 재료 ${choice.finishChoices.join(",")} / 혼합 ${JSON.stringify(choice.allocations)}`;
+            }),
         ...result.nodes.map(
             node =>
-                `${node.item.name} (#${node.item.id}): ${node.mode === "buy" ? "구매" : "제작"} / 필요 ${node.complete ? node.required : "미확인"} / 보유분 사용 ${node.usedOwned ?? "미확인"} / 부족 ${node.missing ?? "미확인"} / 제작 ${node.batches ?? "미확인"}회 / 잉여 ${node.surplus ?? "미확인"} / 단가 ${prices[node.item.id] || "미입력"} Gold`
+                `${node.item.name} (#${node.item.id}): ${node.mode === "buy" ? "구매" : "제작"} / 필요 ${node.complete ? node.required : "미확인"} / 제작 ${node.batches ?? "미확인"}회 / 잉여 ${node.surplus ?? "미확인"} / 단가 ${prices[node.item.id] || "미입력"} Gold`
         ),
-        `계획 일회성 비용: ${plan.fee} Gold`,
-        total("추가 구매 비용", costs.purchase),
-        total("보유 재료 사용 가치", costs.owned),
-        total("재료 가치 기준 원가", costs.materialValue),
-        total("동일 조건 완제품 구매", costs.direct),
-        `구매 대비 추가 지출 차이: ${costs.cashDifference ?? "미확인"} Gold / 재료 가치 차이: ${costs.valueDifference ?? "미확인"} Gold`,
-        ...Object.entries(plan.comparisons).map(
-            ([id, comparison]) =>
-                `비교 #${id}: ${comparison.price || "미입력"} Gold / 동일 조건 ${comparison.comparable ? "확인" : "미확인"} / ${comparison.note}`
-        ),
+        total("제작 원가", costs.total),
+        total("완제품 경매장 최저가", costs.direct),
+        `구매 대비 원가 차이: ${costs.difference ?? "미확인"} Gold`,
         ...Object.entries(plan.prices).map(
             ([id, price]) => `수동 단가 #${id}: ${price || "미입력"} Gold`
         ),
@@ -329,8 +342,8 @@ export function craftingText(
                 `${name} 관측: ${quote.minPrice} Gold / ${quote.fetchedAt ?? quote.observedAt} / ${quote.isComplete ? "전체" : "부분"} 조회 / 매물 ${quote.availableQuantity}`
         ),
         ...result.issues,
-        ...costs.materialValue.unresolved,
+        ...costs.total.unresolved,
         ...costs.direct.unresolved,
-        "입력한 제작 조건 기준입니다. 시세는 등록 호가이며 체결이나 완제품 품질 일치를 보장하지 않습니다. 재계산과 준비 체크는 재고를 소모하지 않습니다.",
+        "입력한 제작 조건 기준입니다. 시세는 경매장 등록 최저가 기준입니다.",
     ].join("\n");
 }

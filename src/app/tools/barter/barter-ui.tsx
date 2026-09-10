@@ -17,18 +17,24 @@ import {
     seoulDateInput,
 } from "@/lib/barter";
 import { type BarterPlan } from "@/lib/barter-state";
+import { getItemImageUrl } from "@/lib/utils";
 
 import s from "./barter-tool.module.css";
 
 const localIcons = new Set(reference.materials.map(m => m.id));
-export function MaterialIcon({ id }: { id: number }) {
+export function MaterialIcon({ id, name }: { id: number; name?: string }) {
     const [failed, setFailed] = useState(false);
+    const src = localIcons.has(id)
+        ? `/images/barter/${id}.png`
+        : name
+          ? getItemImageUrl(name)
+          : undefined;
     return (
         <span className={s.icon}>
-            {localIcons.has(id) && !failed ? (
+            {src && !failed ? (
                 <Image
                     unoptimized
-                    src={`/images/barter/${id}.png`}
+                    src={src}
                     width={28}
                     height={28}
                     alt=""

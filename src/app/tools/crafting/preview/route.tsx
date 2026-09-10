@@ -42,10 +42,10 @@ export async function GET() {
                     fontSize: 28,
                 }}
             >
-                재료 합산 · 보유분 차감 · 구매·제작 비교
+                필요 재료 합산 · 제작 원가 계산
             </div>
             <span style={{ fontSize: 24, marginTop: 34, color: "#d0d3c8" }}>
-                추가 지출과 보유 재료 사용 가치를 구분합니다
+                완제품 경매장 최저가와 제작 원가를 비교하세요
             </span>
         </div>,
         {

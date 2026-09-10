@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import {
-    allocateMaterialStock,
+    type MaterialQuote,
     parseMaterialInteger,
     safeMaterialInteger,
 } from "@/lib/material-cost";
@@ -63,18 +63,12 @@ export interface CraftingChoice {
     processChoices: number[];
     finishChoices: number[];
     allocations: Record<string, { itemId: number; count: string }[]>;
-    batchFee: string;
 }
 export interface CraftingInput {
     targets: { itemId: number; count: string }[];
     choices: Record<string, CraftingChoice>;
-    owned: Record<string, string>;
     prices: Record<string, string>;
-    fee: string;
-    comparisons: Record<
-        string,
-        { price: string; comparable: boolean; note: string }
-    >;
+    quotes: Record<string, MaterialQuote>;
 }
 export interface CraftingNode {
     item: CraftingItem;
@@ -82,13 +76,10 @@ export interface CraftingNode {
     recipe?: CraftingRecipe;
     target: number;
     required: number;
-    usedOwned: number | null;
-    ownedTarget: number;
     missing: number | null;
     batches: number | null;
     produced: number | null;
     surplus: number | null;
-    batchCost: number | null;
     children: number[];
     contributions: { itemId: number; count: number }[];
     issues: string[];
@@ -116,9 +107,11 @@ export function calculateCraftingCosts(
         complete: result.complete,
         unresolved: [],
     });
-    const purchase = cost();
-    const owned = cost();
+    const total = cost();
     const direct = cost();
+    direct.complete = input.targets.every(
+        target => (parseMaterialInteger(target.count) ?? 0) > 0
+    );
     const add = (
         total: CraftingCost,
         count: number | null,
@@ -136,77 +129,41 @@ export function calculateCraftingCosts(
             total.unresolved.push(label);
         }
     };
-    add(
-        purchase,
-        1,
-        parseMaterialInteger(input.fee),
-        "계획 일회성 비용 확인 필요"
-    );
-    const comparisonRows: {
-        itemId: number;
-        count: number | null;
-        price: number | null;
-    }[] = [];
     for (const node of result.nodes) {
         const unitPrice = parseMaterialInteger(
             input.prices[node.item.id] ?? ""
         );
         if (node.mode === "buy")
             add(
-                purchase,
+                total,
                 node.complete ? node.missing : null,
                 unitPrice,
                 `${node.item.name} 구매 수량·단가 확인 필요`
             );
-        else
-            add(
-                purchase,
-                node.complete ? 1 : null,
-                node.batchCost,
-                `${node.item.name} 배치 비용 확인 필요`
-            );
-        add(
-            owned,
-            node.complete && node.usedOwned !== null
-                ? node.usedOwned - node.ownedTarget
-                : null,
-            unitPrice,
-            `${node.item.name} 보유 재료 가치 확인 필요`
-        );
-        if (node.target > 0) {
-            const comparison = input.comparisons[node.item.id];
-            const count = node.complete ? node.target - node.ownedTarget : null;
-            const price = comparison?.comparable
-                ? parseMaterialInteger(comparison.price)
-                : null;
-            comparisonRows.push({ itemId: node.item.id, count, price });
-            add(
-                direct,
-                count,
-                price,
-                `${node.item.name} 동일 조건 완제품 가격 확인 필요`
-            );
-        }
     }
-    const materialValue = cost();
-    add(materialValue, 1, purchase.known, "추가 구매 비용 범위 확인 필요");
-    add(materialValue, 1, owned.known, "보유 재료 가치 범위 확인 필요");
-    materialValue.complete &&= purchase.complete && owned.complete;
-    materialValue.unresolved.push(...purchase.unresolved, ...owned.unresolved);
-    // Safe nonnegative operands have a difference within the signed safe range.
+    for (const target of input.targets) {
+        const item = result.nodes.find(
+            node => node.item.id === target.itemId
+        )?.item;
+        const quote = item ? input.quotes[item.name] : undefined;
+        const count = parseMaterialInteger(target.count);
+        const price =
+            quote && quote.availableQuantity > 0
+                ? parseMaterialInteger(String(quote.minPrice))
+                : null;
+        add(
+            direct,
+            count,
+            price,
+            `${item?.name ?? `#${target.itemId}`} 완제품 경매장 최저가 조회 필요`
+        );
+    }
     return {
-        purchase,
-        owned,
-        materialValue,
+        total,
         direct,
-        comparisonRows,
-        cashDifference:
-            direct.complete && purchase.complete
-                ? direct.known - purchase.known
-                : null,
-        valueDifference:
-            direct.complete && materialValue.complete
-                ? direct.known - materialValue.known
+        difference:
+            direct.complete && total.complete
+                ? direct.known - total.known
                 : null,
     };
 }
@@ -224,14 +181,18 @@ export function emptyCraftingChoice(
         processChoices: [],
         finishChoices: [],
         allocations: {},
-        batchFee: "0",
     };
+}
+
+export function hasCraftingPasses(recipe: Pick<CraftingRecipe, "type">) {
+    return recipe.type === 65537 || recipe.type === 65538;
 }
 
 export function selectCraftingRecipe(recipe: CraftingRecipe): CraftingChoice {
     return {
         ...emptyCraftingChoice("craft"),
         recipe: recipe.fingerprint,
+        passes: hasCraftingPasses(recipe) ? "" : "1",
         finish: recipe.finishes.length === 1 ? 0 : null,
         processChoices: recipe.process.map(g =>
             g.itemIds.length === 1 ? g.itemIds[0] : 0
@@ -243,6 +204,26 @@ export function selectCraftingRecipe(recipe: CraftingRecipe): CraftingChoice {
                   )
                 : [],
     };
+}
+
+/** Targets always craft; a single recipe needs no manual selection. */
+export function resolveCraftingChoice(
+    saved: CraftingChoice | undefined,
+    recipes: CraftingRecipe[],
+    isTarget = false
+): CraftingChoice {
+    const choice = saved ?? emptyCraftingChoice();
+    const mode = isTarget ? (recipes.length ? "craft" : "buy") : choice.mode;
+    if (mode === "craft" && !choice.recipe && recipes.length === 1) {
+        const selected = selectCraftingRecipe(recipes[0]);
+        return {
+            ...selected,
+            yield: choice.yield,
+            passes: choice.passes || selected.passes,
+            includesFailures: choice.includesFailures,
+        };
+    }
+    return { ...choice, mode };
 }
 
 function positive(value: string, label: string) {
@@ -308,6 +289,8 @@ export function calculateCrafting(
     const recipes = new Map(
         reference.recipes.map(recipe => [recipe.fingerprint, recipe])
     );
+    const choices = new Map<number, CraftingChoice>();
+    const targetIds = new Set(input.targets.map(target => target.itemId));
     const process = new Map<number, { itemId: number; count: number }[]>();
     const finish = new Map<number, { itemId: number; count: number }[]>();
     const selectionIssues = new Map<number, string>();
@@ -329,18 +312,23 @@ export function calculateCrafting(
             ambiguous: false,
             unresolved: `아이템 확인 필요 #${id}`,
         };
+        const choice = resolveCraftingChoice(
+            input.choices[id],
+            (reference.byOutput[id] ?? []).flatMap(
+                key => recipes.get(key) ?? []
+            ),
+            targetIds.has(id)
+        );
+        choices.set(id, choice);
         const node: CraftingNode = {
             item,
-            mode: input.choices[id]?.mode ?? "buy",
+            mode: choice.mode,
             target: 0,
             required: 0,
-            usedOwned: null,
-            ownedTarget: 0,
             missing: null,
             batches: null,
             produced: null,
             surplus: null,
-            batchCost: null,
             children: [],
             contributions: [],
             issues: [],
@@ -372,7 +360,7 @@ export function calculateCrafting(
     // Map iteration includes newly discovered materials, without recursive expansion.
     for (const [id, node] of nodes) {
         if (node.mode === "buy") continue;
-        const choice = input.choices[id];
+        const choice = choices.get(id)!;
         const recipe = recipes.get(choice.recipe);
         if (!recipe || recipe.itemId !== id) {
             selectionIssues.set(
@@ -386,7 +374,7 @@ export function calculateCrafting(
             const p = selectedMaterials(
                 recipe.process,
                 choice.processChoices,
-                "공정",
+                hasCraftingPasses(recipe) ? "공정" : "제작",
                 choice.allocations,
                 "p"
             );
@@ -425,7 +413,6 @@ export function calculateCrafting(
         .filter(id => incoming.get(id) === 0)
         .sort((a, b) => a - b);
     const processed = new Set<number>();
-    const targetIds = new Set(input.targets.map(target => target.itemId));
     const uncertainDemand = new Set<number>();
     for (let cursor = 0; cursor < queue.length; cursor++) {
         const id = queue[cursor];
@@ -445,42 +432,27 @@ export function calculateCrafting(
                 "제작 단계가 32단계를 넘었습니다. 중간재를 구매로 바꿔 주세요."
             );
         try {
-            const stock = inactive
-                ? 0
-                : parseMaterialInteger(input.owned[id] ?? "0");
-            if (stock === null)
-                throw new Error("보유 수량은 0 이상의 정수로 입력해 주세요.");
             if (!node.complete)
                 throw new Error("확인되지 않은 수요·제작 조건이 있습니다.");
-            const { usedOwned, missing } = allocateMaterialStock(
-                node.required,
-                stock
-            );
-            node.usedOwned = usedOwned;
-            node.ownedTarget = Math.min(node.target, usedOwned);
+            const missing = node.required;
             node.missing = missing;
-            node.batches = node.produced = node.surplus = node.batchCost = 0;
+            node.batches = node.produced = node.surplus = 0;
             if (node.mode === "craft" && missing > 0) {
                 if (selectionIssues.has(id))
                     throw new Error(selectionIssues.get(id));
-                const choice = input.choices[id];
+                const choice = choices.get(id)!;
                 const yieldCount = positive(
                     choice.yield,
                     "성공한 제작 1회당 완성 수량"
                 );
-                const passes = positive(
-                    choice.passes,
-                    "완성 1회까지 공정 횟수"
-                );
-                const fee = parseMaterialInteger(choice.batchFee);
-                if (fee === null)
-                    throw new Error("완성 1회당 부가 비용을 확인해 주세요.");
+                const passes = hasCraftingPasses(node.recipe!)
+                    ? positive(choice.passes, "완성 1회까지 공정 횟수")
+                    : 1;
                 const batches = Number(
                     (BigInt(missing) + BigInt(yieldCount) - BigInt(1)) /
                         BigInt(yieldCount)
                 );
                 const produced = safeMaterialInteger(batches * yieldCount);
-                const batchCost = safeMaterialInteger(batches * fee);
                 const demands = new Map<number, number>();
                 for (const [materials, repeats] of [
                     [process.get(id) ?? [], passes],
@@ -510,11 +482,10 @@ export function calculateCrafting(
                 node.batches = batches;
                 node.produced = produced;
                 node.surplus = produced - missing;
-                node.batchCost = batchCost;
             }
         } catch (error) {
             issue(node, (error as Error).message);
-            node.batches = node.produced = node.surplus = node.batchCost = null;
+            node.batches = node.produced = node.surplus = null;
         }
         for (const child of node.children) {
             const next = nodes.get(child)!;

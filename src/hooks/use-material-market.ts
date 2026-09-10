@@ -28,9 +28,9 @@ export function useMaterialMarket(
         setErrors({});
         return cancel;
     }, [epoch, cancel]);
-    async function load() {
+    async function load(requestedNames = names) {
         if (busy.current || !enabled) return;
-        const selected = [...new Set(names)];
+        const selected = [...new Set(requestedNames)];
         if (!selected.length) return;
         if (selected.length > 100) {
             setErrors({
@@ -41,7 +41,13 @@ export function useMaterialMarket(
         }
         busy.current = true;
         setLoading(true);
-        setErrors({});
+        setErrors(old =>
+            Object.fromEntries(
+                Object.entries(old).filter(
+                    ([name]) => name !== "request" && !selected.includes(name)
+                )
+            )
+        );
         const request = ++generation.current;
         const controller = new AbortController();
         active.current = controller;

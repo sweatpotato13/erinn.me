@@ -18,13 +18,13 @@ import {
 import { type BarterReference, emptyBarterRow } from "../src/lib/barter";
 import barterReference from "../src/data/barter-reference.json";
 
-const recipe = reference.recipes.find(recipe => recipe.itemId === 67201)!;
 const material = reference.items.find(item => item.id === 67200)!;
 
-test("crafting selection, batch stock, explicit prices and sharing use the preparation layout", async ({
+test("crafting selection, visible material costs and finished auction minima", async ({
     page,
 }, testInfo) => {
     let marketRequests = 0;
+    const requestedNames: string[] = [];
     const forbidden: string[] = [];
     page.on("request", request => {
         if (/prilus|StringTable\.json|ItemList\.json/.test(request.url()))
@@ -32,9 +32,16 @@ test("crafting selection, batch stock, explicit prices and sharing use the prepa
     });
     await page.route("**/api/auction/price-summary?*", async route => {
         marketRequests++;
+        requestedNames.push(
+            new URL(route.request().url()).searchParams.get("item_name")!
+        );
         await route.fulfill({
             json: {
-                minPrice: 100,
+                minPrice: decodeURIComponent(route.request().url()).includes(
+                    "실리엔"
+                )
+                    ? 300
+                    : 100,
                 averagePrice: 100,
                 availableQuantity: 999,
                 isComplete: true,
@@ -56,83 +63,92 @@ test("crafting selection, batch stock, explicit prices and sharing use the prepa
         exact: true,
     });
     await target.getByLabel("실리엔 만들 수량", { exact: true }).fill("5");
-    await target.getByLabel("실리엔 보유 수량", { exact: true }).fill("1");
-    await target
-        .getByLabel("실리엔 제작법", { exact: true })
-        .selectOption(recipe.fingerprint);
+    await expect(
+        target.getByLabel("실리엔 보유 수량", { exact: true })
+    ).toHaveCount(0);
+    await expect(
+        target.getByLabel("실리엔 제작법", { exact: true })
+    ).toHaveCount(0);
+    await expect(
+        target.getByRole("button", { name: "구매", exact: true })
+    ).toHaveCount(0);
+    await expect(
+        target.getByText("아래 항목은 모두 필요한 재료입니다.", {
+            exact: false,
+        })
+    ).toBeVisible();
     await expect(target).toContainText("입력한 제작 조건 기준");
+    await expect(target).not.toContainText("추가 비용·제작법 정보");
+    await expect(target.getByLabel(/완성 1회당 부가 비용/)).toHaveCount(0);
     await target
         .getByLabel("실리엔 성공한 제작 1회당 완성 수량", { exact: true })
         .fill("3");
-    await target
-        .getByLabel("실리엔 완성 1회까지 공정 횟수", { exact: true })
-        .fill("1");
-    await target
-        .getByLabel("공정 재료 1", { exact: true })
-        .selectOption("67200");
-    await expect(target).toContainText("제작 2회 · 완성 6개 · 남음 2개");
+    await expect(
+        target.getByLabel("실리엔 완성 1회까지 공정 횟수", { exact: true })
+    ).toHaveCount(0);
+    await target.getByLabel("재료 1", { exact: true }).selectOption("67200");
+    await expect(target).toContainText("제작 2회 · 완성 6개 · 남음 1개");
     const shopping = page.getByRole("region", {
-        name: "나의 준비 목록",
+        name: "제작 재료 및 원가",
         exact: true,
     });
     const row = shopping.getByRole("article", {
         name: `${material.name} 재료`,
         exact: true,
     });
-    await row
-        .getByLabel(`${material.name} 보유 수량`, { exact: true })
-        .fill("4");
-    await row.locator("summary").click();
+    await expect(page.getByLabel(/보유 수량/)).toHaveCount(0);
+    await row.getByText("가격 출처·사용처", { exact: true }).click();
+    await expect(row).toContainText("실리엔에서 10개 필요");
+    await expect(row).not.toContainText("제작품 #");
+    await expect(
+        row.getByLabel(`${material.name} 단가 (Gold)`, { exact: true })
+    ).toBeVisible();
     await row
         .getByLabel(`${material.name} 단가 (Gold)`, { exact: true })
         .fill("100");
-    await shopping
-        .getByText("추가 비용·보유 재료 가치", { exact: true })
-        .click();
-    await shopping
-        .getByLabel("계획 전체 일회성 비용 (Gold)", { exact: true })
-        .fill("50");
-    await expect(shopping.locator("dl").first()).toContainText("650 Gold");
-    await expect(shopping.locator("dl").first()).toContainText("400 Gold");
-    await expect(shopping.locator("dl").first()).toContainText("1,050 Gold");
+    await expect(shopping.getByText("추가 비용", { exact: true })).toHaveCount(
+        0
+    );
+    await expect(shopping.locator("dl").first()).toContainText("1,000 Gold");
     expect(marketRequests).toBe(0);
-    await page
-        .getByRole("button", { name: "선택한 항목 시세 조회", exact: true })
+    await row
+        .getByRole("button", {
+            name: `${material.name} 시세 조회`,
+            exact: true,
+        })
         .click();
-    await expect.poll(() => marketRequests).toBe(2);
+    await expect.poll(() => marketRequests).toBe(1);
+    expect(requestedNames[0]).toContain(material.name);
+    await expect(
+        row.getByRole("button", {
+            name: `${material.name} 시세 조회`,
+            exact: true,
+        })
+    ).toBeEnabled();
+    await expect(shopping.locator("dl").first()).toContainText(
+        "시세 조회 필요"
+    );
+
+    await page
+        .getByRole("button", { name: "전체 항목 시세 조회", exact: true })
+        .click();
+    await expect.poll(() => marketRequests).toBe(3);
     await expect(
         row.getByLabel(`${material.name} 단가 (Gold)`, { exact: true })
     ).toHaveValue("100");
-    await shopping.getByText("완제품 구매와 비교", { exact: true }).click();
-    await shopping
-        .getByLabel("실리엔 동일 조건 완제품 단가 (Gold)", { exact: true })
-        .fill("300");
-    await shopping.getByLabel("제작 결과와 동일한 조건의 가격이에요").check();
-    await expect(shopping).toContainText("구매보다 적게 필요 550 Gold");
-    await expect(shopping).toContainText("구매보다 적게 필요 150 Gold");
-    const before = await page.evaluate(
-        () => JSON.parse(localStorage.getItem("erinn-crafting-v1")!).owned
-    );
-    await row.getByLabel(`${material.name} 준비 완료`, { exact: true }).check();
-    expect(
-        await page.evaluate(
-            () => JSON.parse(localStorage.getItem("erinn-crafting-v1")!).owned
-        )
-    ).toEqual(before);
-    await page.getByRole("button", { name: "목록 복사", exact: true }).click();
-    await expect(page.getByLabel("내보낸 계획")).toContainText(
-        "보유 재료 사용 가치: 400 Gold"
-    );
-    await page
-        .getByRole("button", { name: "공유 링크 복사", exact: true })
-        .click();
-    const share = await page.getByLabel("내보낸 계획").inputValue();
-    await page.goto(share);
     await expect(
-        page.getByText("공유·가져온 계획을 임시로 열었습니다.", {
-            exact: false,
-        })
+        shopping.getByText("완제품 경매장 최저가", { exact: true })
     ).toBeVisible();
+    await expect(shopping.getByLabel(/동일 조건|비교 조건/)).toHaveCount(0);
+    await expect(shopping.locator("dl").first()).toContainText("1,500 Gold");
+    await expect(shopping).toContainText("구매보다 적게 필요 500 Gold");
+    await expect(page.getByLabel(/준비 완료/)).toHaveCount(0);
+    await expect(
+        page.getByRole("button", {
+            name: /^(목록 복사|다운로드|공유 링크 복사)$/,
+        })
+    ).toHaveCount(0);
+    await page.reload();
     await expect(
         page.getByLabel("실리엔 만들 수량", { exact: true })
     ).toHaveValue("5");
@@ -196,7 +212,7 @@ test("barter passes net deficits without merging the saved crafting inventory", 
         page.getByLabel("실리엔 물물교환 배정 후 남은 보유 수량", {
             exact: true,
         })
-    ).toHaveValue("0");
+    ).toHaveCount(0);
     expect(
         await page.evaluate(() => localStorage.getItem("erinn-crafting-v1"))
     ).toBe("previous crafting plan with original stock");
@@ -223,10 +239,7 @@ test("released navigation, server context, base canonical and Korean preview", a
     );
     for (const text of [
         "마비노기 제작 원가 계산기",
-        "계산 기준과 지원 범위",
-        "보유분은 한 번만",
-        String(reference.sourceVersion),
-        reference.ruleVersion,
+        "만들 물품을 고르면, 필요한 재료와 구매·제작 비용을 비교할 수",
         "https://erinn.me/tools/crafting/preview",
         'href="https://erinn.me/tools/crafting"',
         'content="summary_large_image"',
@@ -238,6 +251,7 @@ test("released navigation, server context, base canonical and Korean preview", a
     ]).toHaveLength(1);
     expect(sitemap).not.toContain("crafting/preview");
     expect(sitemap).not.toContain("?s=");
+    expect(html).not.toContain("계산 기준과 지원 범위");
     const preview = await request.get("/tools/crafting/preview");
     expect(preview.ok()).toBe(true);
     expect(preview.headers()["content-type"]).toContain("image/png");
@@ -282,15 +296,44 @@ test("shared intermediate settings, keyboard controls and narrow themed layouts"
     }
     await page.setViewportSize({ width: 320, height: 844 });
     await page.goto(buildCraftingShare(plan));
-    const summary = page.getByText("실리엔 · 전체 필요 2개 · 직접 제작", {
+    const firstTarget = page.getByRole("article", {
+        name: "마력탄 제작 목표",
         exact: true,
     });
-    await expect(summary).toBeVisible();
-    await summary.click();
+    const secondTarget = page.getByRole("article", {
+        name: `${data.items.find(item => item.id === 67209)!.name} 제작 목표`,
+        exact: true,
+    });
+    const firstIntermediate = firstTarget.getByRole("article", {
+        name: "실리엔 중간재",
+        exact: true,
+    });
+    const secondIntermediate = secondTarget.getByRole("article", {
+        name: "실리엔 중간재",
+        exact: true,
+    });
+    await expect(firstIntermediate).toBeVisible();
+    await expect(secondIntermediate).toBeVisible();
     await expect(
-        page.getByLabel("실리엔 성공한 제작 1회당 완성 수량", { exact: true })
-    ).toHaveCount(1);
-    await expect(page.locator("#craft-node-67201")).toContainText("제작 1회");
+        page.getByText(/설정을 함께 적용합니다|공통 설정|전체 제작품 합산 필요/)
+    ).toHaveCount(0);
+    await expect(firstIntermediate).toContainText("필요 수량 1개");
+    await expect(secondIntermediate).toContainText("필요 수량 1개");
+    await expect(firstIntermediate).toContainText("제작 1회");
+    await expect(
+        page.getByText("필요한 재료 보기 · 전체 계획에서 합산")
+    ).toHaveCount(0);
+    await firstIntermediate
+        .getByLabel("실리엔 성공한 제작 1회당 완성 수량", { exact: true })
+        .fill("3");
+    await expect(
+        secondIntermediate.getByLabel("실리엔 성공한 제작 1회당 완성 수량", {
+            exact: true,
+        })
+    ).toHaveValue("3");
+    await firstIntermediate
+        .getByLabel("실리엔 성공한 제작 1회당 완성 수량", { exact: true })
+        .fill("2");
     const increase = page.getByRole("button", {
         name: "마력탄 만들 수량 늘리기",
         exact: true,
@@ -300,10 +343,9 @@ test("shared intermediate settings, keyboard controls and narrow themed layouts"
     await expect(
         page.getByLabel("마력탄 만들 수량", { exact: true })
     ).toHaveValue("2");
-    await expect(page.locator("#craft-node-67201")).toContainText(
-        "전체 필요 3개"
-    );
-    await expect(page.locator("#craft-node-67201")).toContainText("제작 2회");
+    await expect(firstIntermediate).toContainText("필요 수량 2개");
+    await expect(secondIntermediate).toContainText("필요 수량 1개");
+    await expect(firstIntermediate).toContainText("제작 1회");
     for (const theme of ["light", "dark"]) {
         await page
             .locator("html")
@@ -317,10 +359,13 @@ test("shared intermediate settings, keyboard controls and narrow themed layouts"
             )
         ).toBe(true);
         await page
-            .getByRole("link", { name: /준비 목록 · .*확인하기/ })
+            .getByRole("link", { name: /필요 재료 · .*확인하기/ })
             .click();
         await expect(
-            page.getByRole("heading", { name: "나의 준비 목록", exact: true })
+            page.getByRole("heading", {
+                name: "제작 재료 및 원가",
+                exact: true,
+            })
         ).toBeInViewport();
         await page.screenshot({
             path: testInfo.outputPath(`crafting-320-${theme}.png`),
@@ -337,4 +382,52 @@ test("shared intermediate settings, keyboard controls and narrow themed layouts"
             () => document.documentElement.scrollWidth <= innerWidth
         )
     ).toBe(true);
+});
+
+test("only tailoring and blacksmithing ask for passes; multiple recipes still need selection", async ({
+    page,
+}) => {
+    await page.goto("/tools/crafting");
+    for (const type of [65537, 65538]) {
+        const recipe = reference.recipes.find(
+            recipe =>
+                recipe.type === type &&
+                !recipe.issues.length &&
+                reference.recipes.filter(
+                    candidate => candidate.itemId === recipe.itemId
+                ).length === 1
+        )!;
+        const name = reference.items.find(
+            item => item.id === recipe.itemId
+        )!.name;
+        await page
+            .getByLabel("아이템 검색", { exact: true })
+            .fill(String(recipe.itemId));
+        await page
+            .getByRole("button", {
+                name: new RegExp(`#${recipe.itemId}.*담기`),
+            })
+            .click();
+        const target = page.getByRole("article", {
+            name: `${name} 제작 목표`,
+            exact: true,
+        });
+        await expect(
+            target.getByLabel(`${name} 제작법`, { exact: true })
+        ).toHaveCount(0);
+        await expect(
+            target.getByRole("button", { name: "구매", exact: true })
+        ).toHaveCount(0);
+        await expect(
+            target.getByLabel(`${name} 완성 1회까지 공정 횟수`, { exact: true })
+        ).toBeVisible();
+        await target
+            .getByLabel(`${name} 완성 1회까지 공정 횟수`, { exact: true })
+            .fill("3");
+    }
+    await page.getByLabel("아이템 검색", { exact: true }).fill("64009");
+    await page.getByRole("button", { name: /미스릴괴 #64009.*담기/ }).click();
+    await expect(
+        page.getByLabel("미스릴괴 제작법", { exact: true })
+    ).toHaveValue("");
 });

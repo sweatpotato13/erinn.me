@@ -7,7 +7,7 @@ const publicPages = [
         path: "/tools/crafting",
         title: "마비노기 제작 원가 계산기 | Erinn.me",
         description:
-            "만들 물품의 재료와 보유 수량을 합산하고, 추가 구매 비용과 보유 재료 가치를 완제품 구매 가격과 비교하세요.",
+            "만들 물품에 필요한 전체 재료와 제작 원가를 계산하고, 완제품 구매 가격과 비교하세요.",
         canonical: "https://erinn.me/tools/crafting",
         heading: "마비노기 제작 원가 계산기",
         summary:

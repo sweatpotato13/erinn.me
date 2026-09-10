@@ -448,3 +448,22 @@ test("restoring barter rejects a late callback before effects cancel requests", 
         { 1: "20" }
     );
 });
+
+test("single material lookup requests only its name and preserves unrelated errors", async () => {
+    const onQuote = jest.fn();
+    const { result } = renderHook(() =>
+        useMaterialMarket(["a", "b"], onQuote, 0)
+    );
+    prices.mockRejectedValue(new Error("offline"));
+    await act(() => result.current.load());
+    expect(Object.keys(result.current.errors)).toEqual(["a", "b"]);
+    prices.mockClear().mockResolvedValue(quote);
+    await act(() => result.current.load(["a", "a"]));
+    expect(prices).toHaveBeenCalledTimes(1);
+    expect(prices).toHaveBeenCalledWith("a", expect.any(AbortSignal));
+    expect(onQuote).toHaveBeenCalledWith(
+        "a",
+        expect.objectContaining({ minPrice: 100 })
+    );
+    expect(Object.keys(result.current.errors)).toEqual(["b"]);
+});

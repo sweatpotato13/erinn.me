@@ -35,7 +35,9 @@ as a consumed ItemList ID. Facilities and reusable tools are requirements, not
 automatically priced ingredients. The raw table does not supply output quantity,
 success probability, progress passes, partial failure loss, recovery or bonus yield.
 The mechanics supplement is deliberately empty until separately attributed evidence
-exists. Users must enter output and consumption-pass assumptions; these are an
+exists. Users enter output assumptions; only tailoring (Type65537) and blacksmithing
+(Type65538) use an explicit consumption-pass count. Other production skills consume
+the recipe inputs once per batch, as clarified by the product owner. These are an
 input-based estimate, never a verified stochastic expected cost. An unsupported
 mechanic must leave the full total incomplete with the specific missing condition.
 Alternative arrays do not prove that mixed stock is interchangeable within a pass;
@@ -67,20 +69,18 @@ the same offline checks. Never stamp old data with a new collection date.
 
 `calculateCrafting` resolves a selected graph with at most 100 targets, 1,000 items,
 5,000 edges and depth 32. Purchases stop expansion. A topological pass aggregates
-every parent's contribution before applying stock and rounding each item's batch
-count. The same item uses one production choice throughout a plan. Required final
-outputs and intermediate demand share one ledger; existing final outputs are
-allocated to the target portion first. Recalculation never writes inventory.
-Process consumption is passes × inputs × batches; selected finishing consumption
-is inputs × batches. Owned intermediate products stop their own ingredient demand.
-Extra production is shown as surplus without automatic resale credit.
+every parent's contribution before rounding each item's batch count. The same item
+uses one production choice throughout a plan. Targets with recipes always craft;
+buy/craft controls apply to intermediate materials. Sole recipes select automatically.
+All required materials are costed without inventory deductions or preparation checklists.
+Process consumption uses passes only for tailoring and blacksmithing. Finishing
+consumption is inputs × batches. Surplus receives no resale credit.
 
-`calculateCraftingCosts` separates purchase outlay (including explicit fees),
-consumed-owned-material value, and their sum. Owned final products are common to
-both scenarios and excluded from the additional quantity being compared. Comparable
-finished prices require a manual price and explicit same-condition acknowledgement.
-Item-wide market minima remain reference observations. Missing values differ from
-zero; unsafe arithmetic and incomplete branches cannot produce a complete total.
+`calculateCraftingCosts` sums all required purchased materials.
+Finished-product comparison uses target quantity × observed auction minimum, independent
+of whether recipe inputs are complete. It has no manual finished price or quality gate.
+Missing quotes/listings differ from zero; unsafe arithmetic stays incomplete.
+Legacy inventory, checklist, comparison and all extra fee fields are accepted and discarded.
 
 The common `material-cost.ts` and `useMaterialMarket` preserve barter's existing
 integer/stock/manual-price rules. Price refresh is a click-only snapshot of unique
@@ -100,14 +100,17 @@ against the current catalog. Invalid saved bytes remain available for inspection
 Rule changes clear production assumptions on explicit adoption, and removed
 variants require a new selection. No historical recipe definition is trusted from
 a URL. Limits are 8,192 encoded query characters, 16,384 decoded UTF-8 bytes, and
-256KiB storage. Oversized shares fall back to the full readable text export.
+256KiB storage. Legacy share parsing remains supported; the calculator no longer exposes copy, download or share actions.
 
-Barter sends validated net deficits without inventory. The receiver never merges
-saved crafting stock into that imported plan. Any additional stock input is labeled
-as stock left after the barter allocation. Checklist state is only a preparation
-memo; neither checking nor recalculating consumes stock.
+Barter sends validated net deficits without inventory. Crafting calculates the full
+cost of those imported quantities.
+
+The material layout draws on [Itsmabi](https://itsmabi.com/crafting)'s quantity,
+unit price and total columns and [Teamcraft layouts](https://wiki.ffxivteamcraft.com/korean/general-features/undefined-3/layout-system)'s
+separation of crafting materials. Intermediate choices and required material prices
+remain visible; only secondary price provenance is collapsible.
 
 The two preparation screens share the neutral CSS module, site font and button
 tokens. Season-specific barter selectors remain local to barter. Source details are
-server rendered below the new crafting form, while necessary assumptions and errors
-remain visible in the form. `/crafting` and `/dungeon` remain retired URLs.
+maintained in this document; necessary assumptions and errors remain visible in
+the form. `/crafting` and `/dungeon` remain retired URLs.
