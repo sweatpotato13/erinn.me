@@ -1,6 +1,14 @@
 import { expect, test } from "@playwright/test";
 
 import reference from "../src/data/crafting-reference.json";
+import {
+    BARTER_STORAGE_KEY,
+    emptyBarterPlan,
+    serializeBarterStorage,
+    updateBarterRow,
+} from "../src/lib/barter-state";
+import { type BarterReference, emptyBarterRow } from "../src/lib/barter";
+import barterReference from "../src/data/barter-reference.json";
 
 const recipe = reference.recipes.find(recipe => recipe.itemId === 67201)!;
 const material = reference.items.find(item => item.id === 67200)!;
@@ -138,4 +146,105 @@ test("crafting selection, batch stock, explicit prices and sharing use the prepa
         path: testInfo.outputPath("crafting-plan.png"),
         fullPage: true,
     });
+});
+
+test("barter passes net deficits without merging the saved crafting inventory", async ({
+    page,
+}) => {
+    const data = barterReference as BarterReference;
+    const now = Date.parse("2026-09-10T08:00:00+09:00");
+    const good = data.goods.find(good => good.key === "fixed:201:20101")!;
+    const plan = updateBarterRow(emptyBarterPlan(data, now), {
+        ...emptyBarterRow(good),
+        q: "5",
+    });
+    plan.owned[67201] = "4";
+    await page.clock.install({ time: now });
+    await page.goto("/tools/barter");
+    await page.evaluate(
+        ({ key, value }) => {
+            localStorage.setItem(key, value);
+            localStorage.setItem(
+                "erinn-crafting-v1",
+                "previous crafting plan with original stock"
+            );
+        },
+        { key: BARTER_STORAGE_KEY, value: serializeBarterStorage(plan) }
+    );
+    await page.reload();
+    await page
+        .getByRole("button", { name: "부족 재료 제작 준비", exact: true })
+        .click();
+    await expect(page).toHaveURL(/\/tools\/crafting\?b=/);
+    await expect(
+        page.getByText("물물교환에서 부족한 재료를 가져왔어요.", {
+            exact: false,
+        })
+    ).toBeVisible();
+    await expect(
+        page.getByLabel("실리엔 만들 수량", { exact: true })
+    ).toHaveValue("6");
+    await expect(
+        page.getByLabel("실리엔 물물교환 배정 후 남은 보유 수량", {
+            exact: true,
+        })
+    ).toHaveValue("0");
+    expect(
+        await page.evaluate(() => localStorage.getItem("erinn-crafting-v1"))
+    ).toBe("previous crafting plan with original stock");
+});
+
+test("released navigation, server context, base canonical and Korean preview", async ({
+    page,
+    request,
+}) => {
+    await page.goto("/");
+    await page.locator('main a[href="/tools/crafting"]').click();
+    await expect(
+        page.getByRole("heading", {
+            level: 1,
+            name: "마비노기 제작 원가 계산기",
+        })
+    ).toBeVisible();
+    const response = await request.get("/tools/crafting?s=invalid", {
+        headers: { "User-Agent": "Twitterbot" },
+    });
+    const html = (await response.text()).replace(
+        /<script\b[^>]*>[\s\S]*?<\/script>/gi,
+        ""
+    );
+    for (const text of [
+        "마비노기 제작 원가 계산기",
+        "계산 기준과 지원 범위",
+        "보유분은 한 번만",
+        String(reference.sourceVersion),
+        reference.ruleVersion,
+        "https://erinn.me/tools/crafting/preview",
+        'href="https://erinn.me/tools/crafting"',
+        'content="summary_large_image"',
+    ])
+        expect(html).toContain(text);
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    expect([
+        ...sitemap.matchAll(/<loc>https:\/\/erinn.me\/tools\/crafting<\/loc>/g),
+    ]).toHaveLength(1);
+    expect(sitemap).not.toContain("crafting/preview");
+    expect(sitemap).not.toContain("?s=");
+    const preview = await request.get("/tools/crafting/preview");
+    expect(preview.ok()).toBe(true);
+    expect(preview.headers()["content-type"]).toContain("image/png");
+    const image = await preview.body();
+    expect(image.readUInt32BE(16)).toBe(1200);
+    expect(image.readUInt32BE(20)).toBe(630);
+    const menu = page.getByRole("button", { name: "전체 메뉴", exact: true });
+    if (await menu.isVisible()) {
+        await menu.click();
+        await expect(
+            page
+                .getByRole("dialog")
+                .getByRole("link", { name: "제작 원가 계산기", exact: true })
+        ).toBeVisible();
+        await page.keyboard.press("Escape");
+        await expect(menu).toBeFocused();
+    }
 });

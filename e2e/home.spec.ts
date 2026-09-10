@@ -4,6 +4,16 @@ import auctionCatalog from "../src/data/auction-item-catalog.json";
 
 const publicPages = [
     {
+        path: "/tools/crafting",
+        title: "마비노기 제작 원가 계산기 | Erinn.me",
+        description:
+            "만들 물품의 재료와 보유 수량을 합산하고, 추가 구매 비용과 보유 재료 가치를 완제품 구매 가격과 비교하세요.",
+        canonical: "https://erinn.me/tools/crafting",
+        heading: "마비노기 제작 원가 계산기",
+        summary:
+            "만들 물품을 고르면, 필요한 재료와 구매·제작 비용을 비교할 수 있어요.",
+    },
+    {
         path: "/",
         title: "Erinn.me - 마비노기 도우미",
         description:

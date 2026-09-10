@@ -16,6 +16,7 @@ import { useEffect, useState } from "react";
 
 import { formatGold } from "@/lib/auction-calculator";
 import {
+    barterDeficits,
     type BarterReference,
     type BarterRow,
     barterWeek,
@@ -35,6 +36,7 @@ import {
     recordBarterExchanges,
     updateBarterRow,
 } from "@/lib/barter-state";
+import { buildCraftingHandoff } from "@/lib/crafting-state";
 
 import {
     useBarterMarket,
@@ -674,6 +676,43 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                             </div>
                         </div>
                         <div className={s.shopping}>
+                            <div className="p-4">
+                                <button
+                                    type="button"
+                                    className="btn btn-sm"
+                                    disabled={
+                                        oldWeek ||
+                                        !result.valid ||
+                                        !result.materials.some(
+                                            material =>
+                                                (material.missing ?? 0) > 0
+                                        )
+                                    }
+                                    onClick={() => {
+                                        try {
+                                            window.location.assign(
+                                                buildCraftingHandoff(
+                                                    barterDeficits(result),
+                                                    data.sourceVersion
+                                                )
+                                            );
+                                        } catch (error) {
+                                            setNotice(
+                                                error instanceof Error
+                                                    ? error.message
+                                                    : "제작 계획을 만들지 못했습니다. 목록을 텍스트로 내보내 주세요."
+                                            );
+                                            setExported(text());
+                                        }
+                                    }}
+                                >
+                                    부족 재료 제작 준비
+                                </button>
+                                <p className={s.muted}>
+                                    보유분을 차감한 부족 수량만 제작 계산기로
+                                    가져갑니다.
+                                </p>
+                            </div>
                             {result.errors.length > 0 && (
                                 <div role="alert" className={s.warning}>
                                     <strong>입력을 확인해 주세요</strong>

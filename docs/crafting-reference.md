@@ -62,3 +62,52 @@ before adding or changing mechanics defaults. Do not insert assumptions into raw
 Prilus records. If a refresh fails, retain the previous committed catalog. Roll back
 the snapshot/manifest/rules/derived consumers together to a reviewed commit and run
 the same offline checks. Never stamp old data with a new collection date.
+
+## Material and money accounting
+
+`calculateCrafting` resolves a selected graph with at most 100 targets, 1,000 items,
+5,000 edges and depth 32. Purchases stop expansion. A topological pass aggregates
+every parent's contribution before applying stock and rounding each item's batch
+count. The same item uses one production choice throughout a plan. Required final
+outputs and intermediate demand share one ledger; existing final outputs are
+allocated to the target portion first. Recalculation never writes inventory.
+Process consumption is passes × inputs × batches; selected finishing consumption
+is inputs × batches. Owned intermediate products stop their own ingredient demand.
+Extra production is shown as surplus without automatic resale credit.
+
+`calculateCraftingCosts` separates purchase outlay (including explicit fees),
+consumed-owned-material value, and their sum. Owned final products are common to
+both scenarios and excluded from the additional quantity being compared. Comparable
+finished prices require a manual price and explicit same-condition acknowledgement.
+Item-wide market minima remain reference observations. Missing values differ from
+zero; unsafe arithmetic and incomplete branches cannot produce a complete total.
+
+The common `material-cost.ts` and `useMaterialMarket` preserve barter's existing
+integer/stock/manual-price rules. Price refresh is a click-only snapshot of unique
+eligible names, at most 100 per click and three concurrent requests. Manual blank
+or zero prices override observations. Failed or obsolete requests do not overwrite
+manual values or a newly opened plan. Browsing, quantity changes and disclosures
+never trigger market requests. The existing server price endpoint retains upstream
+validation and credentials. Only missing imported target IDs use the existing
+bounded local `/api/barter/materials` endpoint; full source tables stay server-side.
+
+## Local drafts and barter boundary
+
+`erinn-crafting-v1` stores versioned editable drafts. Shared `s` URLs and barter `b`
+URLs open temporary plans; only the explicit save action replaces the local plan.
+The source/reference/rule versions and recipe ownership/alternatives are checked
+against the current catalog. Invalid saved bytes remain available for inspection.
+Rule changes clear production assumptions on explicit adoption, and removed
+variants require a new selection. No historical recipe definition is trusted from
+a URL. Limits are 8,192 encoded query characters, 16,384 decoded UTF-8 bytes, and
+256KiB storage. Oversized shares fall back to the full readable text export.
+
+Barter sends validated net deficits without inventory. The receiver never merges
+saved crafting stock into that imported plan. Any additional stock input is labeled
+as stock left after the barter allocation. Checklist state is only a preparation
+memo; neither checking nor recalculating consumes stock.
+
+The two preparation screens share the neutral CSS module, site font and button
+tokens. Season-specific barter selectors remain local to barter. Source details are
+server rendered below the new crafting form, while necessary assumptions and errors
+remain visible in the form. `/crafting` and `/dungeon` remain retired URLs.
