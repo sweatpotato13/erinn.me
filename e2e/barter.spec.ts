@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
+import { buildBarterShare } from "../src/lib/barter-state";
+
 const path = "/tools/barter";
 const key = "erinn-barter-v1";
 test.use({ timezoneId: "America/Los_Angeles" });
@@ -75,18 +77,14 @@ test("preparation quantities, explicit market lookup, export and shared import",
     expect(await readFile((await download.path())!, "utf8")).toContain(
         "부족 7"
     );
-    await page
-        .getByRole("button", { name: "공유 링크 복사", exact: true })
-        .click();
-    const link = await page
-        .getByRole("textbox", { name: "복사·공유할 텍스트" })
-        .inputValue();
-    expect(link).toContain("/tools/barter?s=");
+    await expect(
+        page.getByRole("button", { name: "공유 링크 복사", exact: true })
+    ).toHaveCount(0);
     const before = await page.evaluate(
         storageKey => localStorage.getItem(storageKey),
         key
     );
-    await page.goto(link);
+    await page.goto(buildBarterShare(JSON.parse(before!)));
     await expect(
         page.getByText("공유 링크는 임시 계획입니다.", { exact: false })
     ).toBeVisible();
@@ -103,7 +101,7 @@ test("preparation quantities, explicit market lookup, export and shared import",
         .getByRole("button", { name: "준비 목록 복사", exact: true })
         .click();
     await expect(
-        page.getByRole("textbox", { name: "복사·공유할 텍스트" })
+        page.getByRole("textbox", { name: "복사할 텍스트" })
     ).toContainText("서울");
     expect(unexpected).toEqual([]);
     expect(
@@ -255,9 +253,11 @@ test("released navigation, SSR metadata, base sitemap and Korean preview", async
     ).toBeVisible();
     await expect
         .poll(() =>
-            page.locator('link[rel="canonical"]').evaluateAll(links =>
-                links.map(link => link.getAttribute("href"))
-            )
+            page
+                .locator('link[rel="canonical"]')
+                .evaluateAll(links =>
+                    links.map(link => link.getAttribute("href"))
+                )
         )
         .toEqual(["https://erinn.me/tools/barter"]);
     const html = (

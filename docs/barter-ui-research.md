@@ -29,7 +29,7 @@ weekly-limit and inventory rules; it does not copy their branding or assets.
    exchanges, defaults to zero and never changes the source's weekly limit.
 3. Enter owned materials in the preparation list; read the highlighted deficit.
    Prices and contribution detail are optional disclosures. Lookup stays explicit.
-4. Check prepared materials or copy/share/download the list. Mobile has a direct
+4. Check prepared materials or copy/download the list. Mobile has a direct
    link to the result without duplicating the form or adding a second UI state.
 
 All four sixth-tier goods are visible without opening a trading-post disclosure.

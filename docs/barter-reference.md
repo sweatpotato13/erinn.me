@@ -123,8 +123,8 @@ claims the current revision. Removed IDs remain visible for review.
 
 Shares are limited to 8,192 encoded query characters and 16,384 decoded UTF-8
 bytes; local storage to 256KiB. A plan has at most 100 rows, each with at most
-20 groups of 20 alternatives, and maps have at most 1,000 item keys. Oversized
-shares offer text export instead of truncation. Text includes counts, deficits,
+20 groups of 20 alternatives, and maps have at most 1,000 item keys. The share-link
+copy button was removed; existing links remain readable. Text export includes counts, deficits,
 coverage, period, prices and assumptions. Clipboard failure leaves selectable text.
 
 Issue #196 owns the future live crafting link. `barterDeficits` produces validated

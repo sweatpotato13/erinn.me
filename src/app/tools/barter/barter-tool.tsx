@@ -30,7 +30,6 @@ import {
     barterRows,
     barterSelectionIssues,
     barterText,
-    buildBarterShare,
     changedBarterRows,
     moveBarterWeek,
     recordBarterExchanges,
@@ -155,20 +154,6 @@ export default function BarterTool({ data }: { data: BarterReference }) {
         }
     }
     const text = () => barterText(plan, result, now);
-    function share() {
-        try {
-            void copy(
-                new URL(buildBarterShare(plan), window.location.origin).href
-            );
-        } catch (error) {
-            setExported(text());
-            setNotice(
-                error instanceof Error
-                    ? error.message
-                    : "공유 링크를 만들지 못했습니다."
-            );
-        }
-    }
     function download() {
         const url = URL.createObjectURL(
             new Blob([text()], { type: "text/plain;charset=utf-8" })
@@ -809,14 +794,6 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                             <button
                                 type="button"
                                 className={`btn btn-sm ${s.button}`}
-                                disabled={!result.valid}
-                                onClick={share}
-                            >
-                                공유 링크 복사
-                            </button>
-                            <button
-                                type="button"
-                                className={`btn btn-sm ${s.button}`}
                                 onClick={download}
                                 aria-label="텍스트 다운로드"
                             >
@@ -825,7 +802,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                         </div>
                         {exported && (
                             <label className={s.muted}>
-                                복사·공유할 텍스트
+                                복사할 텍스트
                                 <textarea
                                     className={s.input}
                                     readOnly
