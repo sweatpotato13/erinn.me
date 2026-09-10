@@ -116,11 +116,15 @@ export default function BarterTool({ data }: { data: BarterReference }) {
             })
         );
     }
-    function prepare(postId?: number) {
+    function prepare(postId?: number | "without-skaha") {
         update(p => {
             let next = p;
             for (const row of activeBarterRows(p, data, Date.now())) {
-                if (postId !== undefined && row.good.postId !== postId)
+                if (postId === "without-skaha" && row.good.postId === 9) {
+                    next = updateBarterRow(next, { ...row, q: "0" });
+                    continue;
+                }
+                if (typeof postId === "number" && row.good.postId !== postId)
                     continue;
                 const used = parseBarterInteger(row.used);
                 if (
@@ -303,6 +307,14 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                         >
                             <CheckCheck size={16} aria-hidden="true" />
                             이번 주 전체 담기
+                        </button>
+                        <button
+                            type="button"
+                            className={`btn btn-sm ${s.button}`}
+                            disabled={oldWeek}
+                            onClick={() => prepare("without-skaha")}
+                        >
+                            스카하 제외 담기
                         </button>
                         <button
                             type="button"

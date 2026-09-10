@@ -314,5 +314,24 @@ test("one-click weekly selection includes all four sixth-tier goods while prior 
     expect(
         saved().rows.filter((row: { q: string }) => Number(row.q) > 0)
     ).toHaveLength(32);
+    fireEvent.click(screen.getByRole("button", { name: "스카하 제외 담기" }));
+    const selected = saved().rows.filter(
+        (row: { q: string }) => Number(row.q) > 0
+    );
+    expect(selected).toHaveLength(24);
+    expect(
+        selected.every(
+            (row: { good: { postId: number } }) => row.good.postId !== 9
+        )
+    ).toBe(true);
+    for (const good of data.season!.goods) {
+        expect(selected).toContainEqual(
+            expect.objectContaining({
+                good: expect.objectContaining({ key: good.key }),
+                q: String(good.limit),
+            })
+        );
+    }
+    expect(screen.getByLabelText("우드 테이블 준비할 횟수")).toHaveValue("20");
     expect(prices).not.toHaveBeenCalled();
 });
