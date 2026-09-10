@@ -14,6 +14,7 @@ import {
     goodIssue,
     parseBarterInteger,
     rowIssue,
+    seoulDateInput,
 } from "@/lib/barter";
 import {
     activeBarterRows,
@@ -39,11 +40,7 @@ import SeasonEditor from "./season-editor";
 const inputClass =
     "mt-1 w-full rounded border border-slate-400 bg-white px-3 py-2 text-slate-900 disabled:bg-slate-100";
 const date = (time: number) =>
-    new Intl.DateTimeFormat("ko-KR", {
-        dateStyle: "short",
-        timeStyle: "short",
-        timeZone: "Asia/Seoul",
-    }).format(time);
+    `${seoulDateInput(time).replace("T", " ")} (서울)`;
 
 export default function BarterTool({ data }: { data: BarterReference }) {
     const state = useBarterPlan(data);

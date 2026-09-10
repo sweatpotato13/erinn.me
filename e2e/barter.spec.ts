@@ -301,6 +301,8 @@ test("released navigation, SSR metadata, base sitemap and Korean preview", async
 test("saved plans wait for hydration before accepting changes", async ({
     page,
 }) => {
+    const errors: string[] = [];
+    page.on("pageerror", error => errors.push(error.message));
     let release!: () => void;
     const ready = new Promise<void>(resolve => {
         release = resolve;
@@ -323,4 +325,5 @@ test("saved plans wait for hydration before accepting changes", async ({
     await expect(
         page.getByRole("button", { name: "지원 교역품 전체 준비", exact: true })
     ).toBeEnabled();
+    expect(errors).toEqual([]);
 });
