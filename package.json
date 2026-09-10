@@ -5,11 +5,11 @@
   "packageManager": "pnpm@11.25.0",
   "scripts": {
     "data:collect": "pnpm exec tsx scripts/collect-reference-data.ts",
-    "data:check": "pnpm exec tsx scripts/check-reference-data.ts && pnpm exec tsx scripts/check-item-reference.ts && pnpm exec tsx scripts/check-enchant-reference.ts && pnpm exec tsx scripts/build-reforge-reference.ts --check && pnpm exec tsx scripts/build-echostone-reference.ts --check && pnpm exec tsx scripts/build-miniature-reference.ts --check && pnpm exec tsx scripts/build-totem-reference.ts --check",
+    "data:check": "pnpm exec tsx scripts/check-reference-data.ts && pnpm exec tsx scripts/check-item-reference.ts && pnpm exec tsx scripts/check-enchant-reference.ts && pnpm exec tsx scripts/build-reforge-reference.ts --check && pnpm exec tsx scripts/build-echostone-reference.ts --check && pnpm exec tsx scripts/build-miniature-reference.ts --check && pnpm exec tsx scripts/build-totem-reference.ts --check && pnpm exec tsx scripts/check-barter-season.ts && pnpm exec tsx scripts/build-barter-reference.ts --check",
     "items:build": "pnpm exec tsx scripts/build-suggest-index.ts && pnpm exec tsx scripts/build-item-id-map.ts",
     "catalog:collect": "pnpm exec tsx scripts/collect-auction-item-candidates.ts",
     "catalog:validate": "pnpm exec tsx scripts/validate-auction-item-catalog.ts",
-    "prebuild": "pnpm catalog:validate && pnpm items:build && pnpm enchants:build && pnpm reforge:build && pnpm echostone:build && pnpm miniatures:build && pnpm totems:build",
+    "prebuild": "pnpm catalog:validate && pnpm items:build && pnpm enchants:build && pnpm reforge:build && pnpm echostone:build && pnpm miniatures:build && pnpm totems:build && pnpm barter:build",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -26,7 +26,8 @@
     "echostone:build": "pnpm exec tsx scripts/build-echostone-reference.ts",
     "miniatures:build": "pnpm exec tsx scripts/build-miniature-reference.ts",
     "totems:build": "pnpm exec tsx scripts/build-totem-reference.ts",
-    "barter:build": "pnpm exec tsx scripts/build-barter-reference.ts"
+    "barter:build": "pnpm exec tsx scripts/build-barter-reference.ts",
+    "barter:season:collect": "pnpm exec tsx scripts/collect-barter-season.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
