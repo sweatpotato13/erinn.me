@@ -35,7 +35,7 @@ test("preparation quantities, explicit market lookup, export and shared import",
     });
     await page.goto(path);
     await page
-        .getByRole("textbox", { name: "우드 테이블 추가 교환", exact: true })
+        .getByRole("textbox", { name: "우드 테이블 준비할 횟수", exact: true })
         .fill("3");
     await page
         .getByRole("textbox", { name: "새우 조련 미끼 보유 수량", exact: true })
@@ -59,11 +59,13 @@ test("preparation quantities, explicit market lookup, export and shared import",
     await expect(shrimp).toContainText("관측 수량 부족");
     expect(requests).toHaveLength(2);
     await page
+        .getByRole("article", { name: "실리엔 재료", exact: true })
+        .getByText(/^가격·필요한 교역품 보기/)
+        .click();
+    await page
         .getByRole("textbox", { name: "실리엔 단가 (Gold)", exact: true })
         .fill("200");
-    await expect(page.getByLabel("준비 비용")).toContainText(
-        "추가 구매 예상액: 1,500 Gold"
-    );
+    await expect(page.getByLabel("준비 비용")).toContainText("1,500 Gold");
     const downloading = page.waitForEvent("download");
     await page
         .getByRole("button", { name: "텍스트 다운로드", exact: true })
@@ -89,7 +91,7 @@ test("preparation quantities, explicit market lookup, export and shared import",
         page.getByText("공유 링크는 임시 계획입니다.", { exact: false })
     ).toBeVisible();
     await page
-        .getByRole("textbox", { name: "우드 테이블 추가 교환", exact: true })
+        .getByRole("textbox", { name: "우드 테이블 준비할 횟수", exact: true })
         .fill("4");
     expect(
         await page.evaluate(storageKey => localStorage.getItem(storageKey), key)
@@ -111,76 +113,71 @@ test("preparation quantities, explicit market lookup, export and shared import",
     ).toBe(true);
 });
 
-test("manual seasonal alternatives use real IDs and preserve a rejected draft", async ({
+test("weekly selection exposes four sixth-tier goods and uses the shared site style", async ({
     page,
 }) => {
     await page.goto(path);
-    await page
-        .getByRole("button", { name: "시즌 교역품 직접 입력", exact: true })
-        .click();
-    await page
-        .getByRole("textbox", { name: "교역품 이름", exact: true })
-        .fill("직접 입력 교역품");
-    await page
-        .getByRole("button", { name: "직접 입력 적용", exact: true })
-        .click();
+    const seasonal = page.getByRole("region", { name: "이달의 6티어" });
+    for (const [name, limit] of [
+        ["나무 조각 퍼즐", "3"],
+        ["유적 탐사 개론", "2"],
+        ["대형 해먹", "2"],
+        ["불의 수정구", "2"],
+    ]) {
+        await seasonal
+            .getByRole("checkbox", { name: `${name} 주간분 담기` })
+            .check();
+        await expect(
+            seasonal.getByRole("textbox", { name: `${name} 준비할 횟수` })
+        ).toHaveValue(limit);
+    }
+    await expect(page.getByRole("article", { name: /재료$/ })).toHaveCount(9);
     await expect(
-        page.getByRole("textbox", { name: "교역품 이름", exact: true })
-    ).toHaveValue("직접 입력 교역품");
-    await page
-        .getByRole("textbox", { name: "주간 교환 한도", exact: true })
-        .fill("2");
-    await page
-        .getByRole("textbox", {
-            name: "새 재료 검색 (이름 2자 또는 실제 ID)",
-            exact: true,
-        })
-        .fill("67201");
-    await page
-        .getByRole("button", { name: "실리엔 (#67201)", exact: true })
-        .click();
-    await page
-        .getByRole("button", { name: "그룹 1의 대체 재료 검색", exact: true })
-        .click();
-    await page
-        .getByRole("textbox", { name: "그룹 1 대체 재료 검색", exact: true })
-        .fill("50664");
-    await page
-        .getByRole("button", { name: "새우 조련 미끼 (#50664)", exact: true })
-        .click();
-    await page
-        .getByRole("button", { name: "직접 입력 적용", exact: true })
-        .click();
-    await page
-        .getByRole("textbox", {
-            name: "직접 입력 교역품 추가 교환",
-            exact: true,
-        })
-        .fill("2");
-    await expect(
-        page.getByText("각 그룹의 대체 재료를 하나씩 선택해 주세요.", {
-            exact: true,
-        })
-    ).toBeVisible();
-    await page
-        .getByRole("combobox", {
-            name: "직접 입력 교역품 대체 재료 1",
-            exact: true,
-        })
-        .selectOption("67201");
-    await expect(
-        page.getByRole("article", { name: "실리엔 재료" })
-    ).toContainText("필요 2");
-    await expect(
-        page.getByRole("article", { name: "새우 조련 미끼 재료" })
+        page.getByRole("button", { name: "시즌 교역품 직접 입력" })
     ).toHaveCount(0);
-    await page.reload();
     await expect(
-        page.getByRole("textbox", {
-            name: "직접 입력 교역품 추가 교환",
-            exact: true,
-        })
-    ).toHaveValue("2");
+        page.getByText("계산 방법·데이터 출처", { exact: true })
+    ).toHaveCount(0);
+    const fonts = await page.evaluate(() => [
+        getComputedStyle(document.querySelector("h1")!).fontFamily,
+        getComputedStyle(document.documentElement).fontFamily,
+    ]);
+    expect(fonts[0]).toBe(fonts[1]);
+    await expect(
+        page.getByRole("button", { name: "이번 주 전체 담기" })
+    ).toHaveClass(/btn-primary/);
+    await page
+        .getByRole("checkbox", { name: "우드 테이블 주간분 담기" })
+        .check();
+    await expect(
+        page.getByRole("textbox", { name: "우드 테이블 준비할 횟수" })
+    ).toHaveValue("25");
+    await expect(
+        page.getByRole("textbox", { name: "우드 테이블 이미 교환한 횟수" })
+    ).toBeHidden();
+    await page
+        .getByText("이미 교환했다면 · 교환 횟수 조정", { exact: true })
+        .click();
+    await page
+        .getByRole("textbox", { name: "우드 테이블 이미 교환한 횟수" })
+        .fill("5");
+    await expect(
+        page.getByRole("article", { name: "우드 테이블 교역품" })
+    ).toContainText("주간 한도 25회");
+    await page
+        .getByRole("checkbox", { name: "우드 테이블 주간분 담기" })
+        .uncheck();
+    await page
+        .getByRole("checkbox", { name: "우드 테이블 주간분 담기" })
+        .check();
+    await expect(
+        page.getByRole("textbox", { name: "우드 테이블 준비할 횟수" })
+    ).toHaveValue("20");
+    expect(
+        await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth
+        )
+    ).toBe(true);
 });
 
 test("weekly rollover and monthly expiry are independent and keep owned stock", async ({
@@ -188,10 +185,16 @@ test("weekly rollover and monthly expiry are independent and keep owned stock", 
 }) => {
     await page.goto(path);
     await page
-        .getByRole("textbox", { name: "우드 테이블 추가 교환", exact: true })
+        .getByRole("textbox", { name: "우드 테이블 준비할 횟수", exact: true })
         .fill("1");
     await page
-        .getByRole("textbox", { name: "우드 테이블 이번 주 사용", exact: true })
+        .getByText("이미 교환했다면 · 교환 횟수 조정", { exact: true })
+        .click();
+    await page
+        .getByRole("textbox", {
+            name: "우드 테이블 이미 교환한 횟수",
+            exact: true,
+        })
         .fill("10");
     await page
         .getByRole("textbox", { name: "실리엔 보유 수량", exact: true })
@@ -203,7 +206,7 @@ test("weekly rollover and monthly expiry are independent and keep owned stock", 
         .click();
     await expect(
         page.getByRole("textbox", {
-            name: "우드 테이블 이번 주 사용",
+            name: "우드 테이블 이미 교환한 횟수",
             exact: true,
         })
     ).toHaveValue("0");
@@ -212,7 +215,7 @@ test("weekly rollover and monthly expiry are independent and keep owned stock", 
     ).toHaveValue("1");
     await expect(
         page.getByRole("textbox", {
-            name: "나무 조각 퍼즐 추가 교환",
+            name: "나무 조각 퍼즐 준비할 횟수",
             exact: true,
         })
     ).toBeEnabled();
@@ -223,13 +226,13 @@ test("weekly rollover and monthly expiry are independent and keep owned stock", 
         .click();
     await expect(
         page.getByRole("textbox", {
-            name: "나무 조각 퍼즐 추가 교환",
+            name: "나무 조각 퍼즐 준비할 횟수",
             exact: true,
         })
     ).toBeDisabled();
     await expect(
         page.getByRole("textbox", {
-            name: "우드 테이블 추가 교환",
+            name: "우드 테이블 준비할 횟수",
             exact: true,
         })
     ).toBeEnabled();
@@ -250,16 +253,19 @@ test("released navigation, SSR metadata, base sitemap and Korean preview", async
             name: "마비노기 물물교환 준비 계산기",
         })
     ).toBeVisible();
-    await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
-        "href",
-        "https://erinn.me/tools/barter"
-    );
+    await expect
+        .poll(() =>
+            page.locator('link[rel="canonical"]').evaluateAll(links =>
+                links.map(link => link.getAttribute("href"))
+            )
+        )
+        .toEqual(["https://erinn.me/tools/barter"]);
     const html = (
         await (await request.get(`${path}?week=old&season=old`)).text()
     ).replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, "");
-    expect(html).toContain("지원 범위·데이터 안내");
-    expect(html).toContain("1788405829");
-    expect(html).toContain("캐릭터 인벤토리");
+    expect(html).toContain("이달의 6티어");
+    expect(html).toContain("교환할 물품을 고르면");
+    expect(html).not.toContain("계산 방법·데이터 출처");
     expect(html).toContain('content="summary_large_image"');
     expect(html).toContain("https://erinn.me/tools/barter/preview");
     expect(html).toContain('href="https://erinn.me/tools/barter"');
@@ -315,7 +321,7 @@ test("saved plans wait for hydration before accepting changes", async ({
     try {
         await expect(
             page.getByRole("button", {
-                name: "지원 교역품 전체 준비",
+                name: "이번 주 전체 담기",
                 exact: true,
             })
         ).toBeDisabled();
@@ -323,7 +329,7 @@ test("saved plans wait for hydration before accepting changes", async ({
         release();
     }
     await expect(
-        page.getByRole("button", { name: "지원 교역품 전체 준비", exact: true })
+        page.getByRole("button", { name: "이번 주 전체 담기", exact: true })
     ).toBeEnabled();
     expect(errors).toEqual([]);
 });

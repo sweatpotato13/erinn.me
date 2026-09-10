@@ -63,8 +63,8 @@ pnpm data:collect
 # Regenerate the existing consumers affected by any common snapshot refresh.
 
 # Independently collect the current seasonal supplement:
-pnpm barter:season:collect
-pnpm barter:build
+pnpm barter:refresh
+# This runs barter:season:collect, barter:build and barter:icons:collect.
 pnpm data:check
 pnpm exec jest --runInBand src/lib/__tests__/barter.test.ts src/lib/__tests__/barter-state.test.ts
 pnpm typecheck
@@ -84,7 +84,7 @@ changing the old file's date. To roll back, restore the reviewed supplement and
 derived files from the same known-good commit, regenerate and check before
 committing the rollback. Do not change raw Prilus barter rows to fill season gaps.
 Expired files remain valid historical build inputs; the UI disables expired goods
-and offers **시즌 교역품 직접 입력**. Unknown future rotations are never inferred.
+until the maintained supplement is refreshed. Unknown future rotations are never inferred.
 
 ## Input and inventory semantics
 
@@ -101,9 +101,9 @@ and offers **시즌 교역품 직접 입력**. Unknown future rotations are neve
   The visible carry-forward action resets only usage. Monthly effective periods
   invalidate seasonal entries separately. Open pages recheck at the next boundary
   and on focus/visibility return; there is no background service.
-- Manual seasons use verified item IDs and their own effective period, limit and
-  ingredient alternatives. One source is selected per post, so a local override
-  does not duplicate a maintained entry. Failed edits retain their draft.
+- Existing shared/saved manual seasons remain readable with verified material IDs
+  and explicit source selection. The creation/editing form was removed at user
+  request; new plans use maintained seasonal data.
 - Replacement value uses required units; additional purchase cost uses deficits.
   Unknown price differs from explicit zero. Price lookup is explicit, deduplicated,
   limited to three concurrent requests, and calls existing validated
@@ -141,6 +141,25 @@ HTTP/internal failures, malformed data, missing/duplicate posts, quantities,
 name/ID ambiguity, expiry, secret exclusion and write/rename rollback. Unit and
 component tests cover the documented 12/6 → 7/4 material example, 2,400/1,500 Gold,
 cross-post allocation, alternatives, bounds, independent periods, sharing, storage,
-explicit market concurrency/cancellation and manual-edit races. `e2e/barter.spec.ts`
-exercises browser preparation, manual fallback, export/import, rollover, metadata
+explicit market concurrency/cancellation and legacy manual data. `e2e/barter.spec.ts`
+exercises browser preparation, weekly selection, export/import, rollover, metadata
 and navigation; existing home and auction calculator regressions remain active.
+
+## Planner presentation
+
+Goods are selected at their remaining weekly limit by default. The limit is a
+read-only label; partial plans use a compact quantity control. Prior exchanges
+are optional adjustments under **이미 교환했다면**. Four monthly sixth-tier goods
+appear together above the fixed post selector. Material rows show required, owned
+and missing counts; price and contribution details are secondary disclosures.
+See [UI research and decisions](barter-ui-research.md) for the sources reviewed.
+
+`barter:icons:collect` saves the 65 currently referenced material PNGs under
+`public/images/barter`. These are local assets at runtime, with a neutral fallback
+for custom materials. Refreshing icons is a separate maintainer command and is
+never part of prebuild or page rendering.
+
+The visible data-explanation section and manual season entry form were removed
+at user request. Attribution, refresh procedures and calculation details remain
+in this maintainer document. The page uses the shared MabinogiClassic font and
+DaisyUI theme/button tokens, matching the existing calculator.
