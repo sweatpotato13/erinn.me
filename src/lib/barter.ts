@@ -223,22 +223,65 @@ function safe(value: number): number {
     return value;
 }
 
-export function calculateBarter(
-    rows: BarterRow[],
-    owned: Record<string, string>,
-    prices: Record<string, string>,
-    materials: BarterMaterial[],
+interface BarterCost {
+    known: number;
+    unknown: number;
+    complete: boolean;
+}
+
+export interface BarterResult {
+    materials: BarterMaterialTotal[];
+    errors: string[];
+    valid: boolean;
+    replacement: BarterCost;
+    purchase: BarterCost;
+}
+
+type MaterialDemand = Pick<BarterMaterialTotal, "required" | "contributions">;
+
+function rowContribution(
+    row: BarterRow,
+    seasonal: BarterRow[],
+    byId: Map<number, BarterMaterial>,
     now: number
-) {
-    const errors: string[] = [];
-    const totals = new Map<
-        number,
-        {
-            required: number;
-            contributions: BarterMaterialTotal["contributions"];
-        }
-    >();
-    const byId = new Map(materials.map(m => [m.id, m]));
+): Map<number, number> {
+    const issue = rowIssue(row, now);
+    if (issue) throw new Error(issue);
+    const q = parseBarterInteger(row.q)!;
+    const contribution = new Map<number, number>();
+    if (!q) return contribution;
+    if (
+        row.good.period &&
+        seasonal.some(
+            other =>
+                other !== row &&
+                other.good.postId === row.good.postId &&
+                other.good.period!.startAt < row.good.period!.endAt &&
+                row.good.period!.startAt < other.good.period!.endAt
+        )
+    )
+        throw new Error("같은 교역소의 시즌 출처를 하나만 선택해 주세요.");
+    row.good.groups.forEach((options, i) => {
+        const option = options.find(o => o.itemId === row.choices[i])!;
+        if (!byId.has(option.itemId))
+            throw new Error(`확인되지 않은 재료 ID ${option.itemId}`);
+        contribution.set(
+            option.itemId,
+            safe(
+                (contribution.get(option.itemId) ?? 0) + safe(q * option.count)
+            )
+        );
+    });
+    return contribution;
+}
+
+function aggregateMaterials(
+    rows: BarterRow[],
+    byId: Map<number, BarterMaterial>,
+    now: number,
+    errors: string[]
+): Map<number, MaterialDemand> {
+    const totals = new Map<number, MaterialDemand>();
     const keys = new Set<string>();
     const seasonal = rows.filter(
         r => r.good.period && parseBarterInteger(r.q) !== 0
@@ -248,36 +291,7 @@ export function calculateBarter(
             if (keys.has(row.good.key))
                 throw new Error("같은 교역품이 중복되었습니다.");
             keys.add(row.good.key);
-            const issue = rowIssue(row, now);
-            if (issue) throw new Error(issue);
-            const q = parseBarterInteger(row.q)!;
-            if (!q) continue;
-            if (
-                row.good.period &&
-                seasonal.some(
-                    other =>
-                        other !== row &&
-                        other.good.postId === row.good.postId &&
-                        other.good.period!.startAt < row.good.period!.endAt &&
-                        row.good.period!.startAt < other.good.period!.endAt
-                )
-            )
-                throw new Error(
-                    "같은 교역소의 시즌 출처를 하나만 선택해 주세요."
-                );
-            const contribution = new Map<number, number>();
-            row.good.groups.forEach((options, i) => {
-                const option = options.find(o => o.itemId === row.choices[i])!;
-                if (!byId.has(option.itemId))
-                    throw new Error(`확인되지 않은 재료 ID ${option.itemId}`);
-                contribution.set(
-                    option.itemId,
-                    safe(
-                        (contribution.get(option.itemId) ?? 0) +
-                            safe(q * option.count)
-                    )
-                );
-            });
+            const contribution = rowContribution(row, seasonal, byId, now);
             // Validate the whole row before adding any of it to the known subtotal.
             for (const [id, count] of contribution)
                 safe((totals.get(id)?.required ?? 0) + count);
@@ -300,6 +314,42 @@ export function calculateBarter(
             );
         }
     }
+    return totals;
+}
+
+function calculateCost(
+    materials: BarterMaterialTotal[],
+    kind: "required" | "missing",
+    valid: boolean
+): BarterCost {
+    let known = 0;
+    let unknown = 0;
+    for (const row of materials) {
+        const count = row[kind];
+        if (count === 0) continue;
+        if (count === null || row.unitPrice === null) {
+            unknown++;
+            continue;
+        }
+        try {
+            known = safe(known + safe(count * row.unitPrice));
+        } catch {
+            unknown++;
+        }
+    }
+    return { known, unknown, complete: valid && unknown === 0 };
+}
+
+export function calculateBarter(
+    rows: BarterRow[],
+    owned: Record<string, string>,
+    prices: Record<string, string>,
+    materials: BarterMaterial[],
+    now: number
+): BarterResult {
+    const errors: string[] = [];
+    const byId = new Map(materials.map(m => [m.id, m]));
+    const totals = aggregateMaterials(rows, byId, now, errors);
     const result: BarterMaterialTotal[] = [...totals]
         .sort(([a], [b]) => a - b)
         .map(([id, total]) => {
@@ -319,37 +369,15 @@ export function calculateBarter(
                 unitPrice: parseBarterInteger(prices[id] ?? ""),
             };
         });
-    function cost(kind: "required" | "missing") {
-        let known = 0;
-        let unknown = 0;
-        for (const row of result) {
-            const count = row[kind];
-            if (count === 0) continue;
-            if (count === null || row.unitPrice === null) {
-                unknown++;
-                continue;
-            }
-            try {
-                known = safe(known + safe(count * row.unitPrice));
-            } catch {
-                unknown++;
-            }
-        }
-        return {
-            known,
-            unknown,
-            complete: errors.length === 0 && unknown === 0,
-        };
-    }
+    const valid = errors.length === 0;
     return {
         materials: result,
         errors,
-        valid: errors.length === 0,
-        replacement: cost("required"),
-        purchase: cost("missing"),
+        valid,
+        replacement: calculateCost(result, "required", valid),
+        purchase: calculateCost(result, "missing", valid),
     };
 }
-export type BarterResult = ReturnType<typeof calculateBarter>;
 
 /** These targets are net deficits; receivers must not reapply the original stock. */
 export function barterDeficits(result: BarterResult) {
