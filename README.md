@@ -81,12 +81,6 @@ Review, commit and roll back the generated indexes together with their source.
 See [enchantment reference data](docs/enchant-reference.md) for supported effects,
 identity matching and migration notes.
 
-The barter planner derives fixed goods with `pnpm barter:build`. Its separate
-`pnpm barter:season:collect` command refreshes the reviewed Labanyu seasonal
-supplement locally; builds and page requests never run either source collector.
-See [barter reference data](docs/barter-reference.md) for the monthly refresh,
-manual fallback, verification and review/commit workflow.
-
 1. Install Chromium once with `pnpm exec playwright install chromium` after
    installing the project dependencies.
 2. Start with a clean `src/data/reference` directory in Git, then run
@@ -102,6 +96,12 @@ manual fallback, verification and review/commit workflow.
    commit, run `pnpm data:check`, and commit the restored manifest and tables
    together. Inspect `git status` for new, untracked files; restore does not
    remove those.
+
+The barter planner derives fixed goods with `pnpm barter:build`. Its separate
+`pnpm barter:season:collect` command refreshes the reviewed Labanyu seasonal
+supplement locally; builds and page requests never run either source collector.
+See [barter reference data](docs/barter-reference.md) for the monthly refresh,
+manual fallback, verification and review/commit workflow.
 
 Downstream scripts can call
 `readSnapshot(resolve("src/data/reference"))` from `scripts/reference-data.ts`

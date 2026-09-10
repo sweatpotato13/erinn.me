@@ -87,7 +87,7 @@ test("corrupt/unavailable formats, duplicate identity, unknown queries and huge 
     expect(
         BarterPlanSchema.safeParse({
             ...plan(),
-            owned: { __proto__: "1", invalid: "2" },
+            owned: JSON.parse('{"__proto__":"1","invalid":"2"}'),
         }).success
     ).toBe(false);
     expect(() =>

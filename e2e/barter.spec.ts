@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { readFile } from "node:fs/promises";
 
 const path = "/tools/barter";
 const key = "erinn-barter-v1";
@@ -62,6 +63,15 @@ test("preparation quantities, explicit market lookup, export and shared import",
         .fill("200");
     await expect(page.getByLabel("준비 비용")).toContainText(
         "추가 구매 예상액: 1,500 Gold"
+    );
+    const downloading = page.waitForEvent("download");
+    await page
+        .getByRole("button", { name: "텍스트 다운로드", exact: true })
+        .click();
+    const download = await downloading;
+    expect(download.suggestedFilename()).toBe("barter-preparation.txt");
+    expect(await readFile((await download.path())!, "utf8")).toContain(
+        "부족 7"
     );
     await page
         .getByRole("button", { name: "공유 링크 복사", exact: true })

@@ -165,8 +165,10 @@ export default function BarterTool({ data }: { data: BarterReference }) {
         const link = document.createElement("a");
         link.href = url;
         link.download = "barter-preparation.txt";
+        document.body.append(link);
         link.click();
-        URL.revokeObjectURL(url);
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 0);
     }
     const postIds = [...new Set(allRows.map(r => r.good.postId))];
     const canLookup = result.materials.some(
