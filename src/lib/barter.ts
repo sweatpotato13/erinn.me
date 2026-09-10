@@ -2,7 +2,11 @@ import { z } from "zod";
 
 const integer = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const positive = integer.positive();
-const name = z.string().trim().min(1).max(100);
+const name = z
+    .string()
+    .min(1)
+    .max(100)
+    .refine(value => value.trim().length > 0);
 
 export const BarterMaterialSchema = z
     .object({
