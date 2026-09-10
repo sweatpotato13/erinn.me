@@ -27,6 +27,8 @@
     "miniatures:build": "pnpm exec tsx scripts/build-miniature-reference.ts",
     "totems:build": "pnpm exec tsx scripts/build-totem-reference.ts",
     "barter:build": "pnpm exec tsx scripts/build-barter-reference.ts",
+    "barter:icons:collect": "pnpm exec tsx scripts/collect-barter-icons.ts",
+    "barter:refresh": "pnpm barter:season:collect && pnpm barter:build && pnpm barter:icons:collect",
     "barter:season:collect": "pnpm exec tsx scripts/collect-barter-season.ts"
   },
   "dependencies": {

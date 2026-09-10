@@ -97,11 +97,13 @@ identity matching and migration notes.
    together. Inspect `git status` for new, untracked files; restore does not
    remove those.
 
-The barter planner derives fixed goods with `pnpm barter:build`. Its separate
-`pnpm barter:season:collect` command refreshes the reviewed Labanyu seasonal
-supplement locally; builds and page requests never run either source collector.
+The barter planner derives fixed goods with `pnpm barter:build`. Run
+`pnpm barter:refresh` to collect the season, rebuild the catalog and save local
+material icons together. Its separate `pnpm barter:season:collect` command
+refreshes the reviewed Labanyu seasonal supplement locally; builds and page
+requests never run source collectors.
 See [barter reference data](docs/barter-reference.md) for the monthly refresh,
-manual fallback, verification and review/commit workflow.
+verification and review/commit workflow.
 
 Downstream scripts can call
 `readSnapshot(resolve("src/data/reference"))` from `scripts/reference-data.ts`
