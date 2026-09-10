@@ -1,5 +1,6 @@
 /** @jest-environment node */
 import { GET } from "@/app/api/barter/materials/route";
+import materialIndex from "@/data/barter-material-index.json";
 
 const request = (query: string) =>
     new Request(`http://localhost/api/barter/materials?${query}`);
@@ -13,7 +14,7 @@ test("bounded local ID/name search preserves actual identities without external 
         expect(byId.materials.map((m: { id: number }) => m.id)).toEqual([
             50664, 67201,
         ]);
-        expect(byId.sourceVersion).toBe(1788405829);
+        expect(byId.sourceVersion).toBe(materialIndex.sourceVersion);
         const names = await GET(
             request(new URLSearchParams({ q: "포션" }).toString())
         ).json();

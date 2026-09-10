@@ -4,6 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { mock } from "node:test";
 
+import postNameMap from "../src/data/reference/snapshots/CommercePostNameMap.json";
+
 import {
     collectBarterSeason,
     publishBarterSeason,
@@ -12,6 +14,24 @@ import {
 
 async function main() {
     const reference = seasonReference();
+    const originalGet = Map.prototype.get;
+    const missingPostName = mock.method(
+        Map.prototype,
+        "get",
+        function (this: Map<unknown, unknown>, key: unknown) {
+            return key === postNameMap["201"]
+                ? undefined
+                : originalGet.call(this, key);
+        }
+    );
+    try {
+        assert.throws(
+            () => seasonReference(),
+            /Missing trade post name for ID 201/
+        );
+    } finally {
+        missingPostName.mock.restore();
+    }
     const now = Date.parse("2026-09-10T12:00:00+09:00");
     const season = {
         id: 16,

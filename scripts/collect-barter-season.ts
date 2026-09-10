@@ -79,10 +79,14 @@ export function seasonReference(): Reference {
         sourceVersion: manifest.sourceVersion.CreatedAt,
         items: resolveItems(data.ItemList, data.StringTable).items,
         postNames: Object.fromEntries(
-            IRIA_POSTS.map(id => [
-                id,
-                strings.get(data.CommercePostNameMap[String(id)])!,
-            ])
+            IRIA_POSTS.map(id => {
+                const name = strings.get(data.CommercePostNameMap[String(id)]);
+                assert(
+                    name !== undefined,
+                    `Missing trade post name for ID ${id}`
+                );
+                return [id, name];
+            })
         ),
     };
 }

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdir, rename, writeFile } from "node:fs/promises";
+import { mkdir, rename, rm, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
 import reference from "../src/data/barter-reference.json";
@@ -36,8 +36,13 @@ async function main() {
                     directory,
                     `${id}.${process.pid}.tmp`
                 );
-                await writeFile(temporary, bytes);
-                await rename(temporary, resolve(directory, `${id}.png`));
+                try {
+                    await writeFile(temporary, bytes);
+                    await rename(temporary, resolve(directory, `${id}.png`));
+                } catch (error) {
+                    await rm(temporary, { force: true }).catch(() => {});
+                    throw error;
+                }
             })
         );
     }
