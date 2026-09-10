@@ -224,6 +224,24 @@ async function expectResponsiveResultFilterDialog(
     trigger: Locator
 ) {
     await trigger.scrollIntoViewIfNeeded();
+    // The image column is deliberately hidden below md.
+    if (
+        await table.locator("tbody tr:first-child td:first-child").isVisible()
+    ) {
+        await expect
+            .poll(() =>
+                table
+                    .locator("img:visible")
+                    .evaluateAll(
+                        images =>
+                            images.length > 0 &&
+                            images.every(
+                                image => (image as HTMLImageElement).complete
+                            )
+                    )
+            )
+            .toBe(true);
+    }
     const tableBefore = await table.boundingBox();
     const triggerBox = await trigger.boundingBox();
     await trigger.click();

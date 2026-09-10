@@ -46,7 +46,7 @@ function Topbar() {
                 <Link
                     href={link.url}
                     aria-current={current(link.url) ? "page" : undefined}
-                    className={`block min-h-11 rounded-lg px-3 py-3 hover:bg-slate-100 ${current(link.url) ? "bg-slate-100 font-bold text-slate-950" : "text-slate-700"}`}
+                    className={`block min-h-11 rounded-lg px-3 py-3 hover:bg-base-200 ${current(link.url) ? "bg-base-200 font-bold text-base-content" : "text-base-content"}`}
                     onClick={e => {
                         const details = e.currentTarget.closest("details");
                         if (details) details.open = false;
@@ -59,7 +59,7 @@ function Topbar() {
         ));
     return (
         <header
-            className="fixed top-0 left-0 z-50 flex h-[calc(4rem+env(safe-area-inset-top))] w-full items-center justify-between gap-2 bg-white px-3 pt-[env(safe-area-inset-top)] shadow-sm"
+            className="fixed top-0 left-0 z-50 flex h-[calc(4rem+env(safe-area-inset-top))] w-full items-center justify-between gap-2 bg-base-100 px-3 pt-[env(safe-area-inset-top)] shadow-sm"
             onKeyDown={e => {
                 if (e.key !== "Escape") return;
                 const details = (e.target as HTMLElement).closest("details");
@@ -79,10 +79,10 @@ function Topbar() {
             >
                 {FEATURE_GROUPS.map(group => (
                     <details key={group} className="relative">
-                        <summary className="cursor-pointer rounded-lg px-4 py-3 font-semibold hover:bg-slate-100">
+                        <summary className="cursor-pointer rounded-lg px-4 py-3 font-semibold hover:bg-base-200">
                             {group}
                         </summary>
-                        <ul className="absolute top-full right-0 mt-2 w-64 rounded-xl border border-slate-200 bg-white p-2 shadow-lg">
+                        <ul className="absolute top-full right-0 mt-2 w-64 rounded-xl border border-base-300 bg-base-100 p-2 shadow-lg">
                             {links(group)}
                         </ul>
                     </details>
@@ -105,7 +105,7 @@ function Topbar() {
                 id="full-menu"
                 ref={dialog}
                 aria-labelledby="full-menu-title"
-                className="fixed inset-0 m-auto max-h-[calc(100dvh-env(safe-area-inset-top)-2rem)] w-[calc(100%-2rem)] max-w-xl overflow-y-auto overscroll-contain rounded-2xl border border-slate-200 bg-white p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-slate-900 shadow-xl backdrop:bg-black/40"
+                className="fixed inset-0 m-auto max-h-[calc(100dvh-env(safe-area-inset-top)-2rem)] w-[calc(100%-2rem)] max-w-xl overflow-y-auto overscroll-contain rounded-2xl border border-base-300 bg-base-100 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] text-base-content shadow-xl backdrop:bg-black/40"
                 onClose={() => {
                     setOpen(false);
                     trigger.current?.focus();
@@ -134,7 +134,7 @@ function Topbar() {
                 <nav aria-label="전체 기능">
                     {FEATURE_GROUPS.map(group => (
                         <section key={group} className="mb-4">
-                            <h3 className="border-b border-slate-200 pb-2 text-sm font-bold text-slate-600">
+                            <h3 className="border-b border-base-300 pb-2 text-sm font-bold text-base-content/70">
                                 {group}
                             </h3>
                             <ul>{links(group)}</ul>

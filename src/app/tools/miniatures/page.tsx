@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactElement } from "react";
 
+import s from "@/components/tools/preparation.module.css";
 import reference from "@/data/miniature-reference.json";
 import { MINIATURE_PATH } from "@/lib/miniatures-state";
 
@@ -16,16 +17,13 @@ export const metadata: Metadata = {
 };
 export default function MiniaturePage(): ReactElement {
     return (
-        <div className="mx-auto max-w-7xl px-3 py-8 sm:px-6">
-            <h1 className="text-2xl font-bold break-keep text-slate-900 sm:text-3xl">
+        <div className={s.page}>
+            <h1 className="text-2xl font-bold break-keep sm:text-3xl">
                 {title}
             </h1>
-            <p className="my-4 text-slate-700">{description}</p>
+            <p className="my-4">{description}</p>
             <MiniatureTool data={reference} />
-            <section
-                className="mt-8 space-y-3 border-t border-slate-300 pt-6 text-sm text-slate-700"
-                aria-labelledby="miniature-rules"
-            >
+            <section className={s.guide} aria-labelledby="miniature-rules">
                 <h2 id="miniature-rules" className="text-lg font-bold">
                     계산 안내
                 </h2>

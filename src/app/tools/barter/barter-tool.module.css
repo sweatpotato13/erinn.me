@@ -1,0 +1,241 @@
+.mobileJump {
+    composes: mobileJump from "../../../components/tools/preparation.module.css";
+}
+.guide {
+    composes: guide from "../../../components/tools/preparation.module.css";
+}
+.error {
+    composes: error from "../../../components/tools/preparation.module.css";
+}
+.warning {
+    composes: warning from "../../../components/tools/preparation.module.css";
+}
+.notice {
+    composes: notice from "../../../components/tools/preparation.module.css";
+}
+.exports {
+    composes: exports from "../../../components/tools/preparation.module.css";
+}
+.costValue {
+    composes: costValue from "../../../components/tools/preparation.module.css";
+}
+.costLabel {
+    composes: costLabel from "../../../components/tools/preparation.module.css";
+}
+.cost {
+    composes: cost from "../../../components/tools/preparation.module.css";
+}
+.priceLine {
+    composes: priceLine from "../../../components/tools/preparation.module.css";
+}
+.materialDetails {
+    composes: materialDetails from "../../../components/tools/preparation.module.css";
+}
+.deficit {
+    composes: deficit from "../../../components/tools/preparation.module.css";
+}
+.materialNumbers {
+    composes: materialNumbers from "../../../components/tools/preparation.module.css";
+}
+.materialTop {
+    composes: materialTop from "../../../components/tools/preparation.module.css";
+}
+.material {
+    composes: material from "../../../components/tools/preparation.module.css";
+}
+.empty {
+    composes: empty from "../../../components/tools/preparation.module.css";
+}
+.shopping {
+    composes: shopping from "../../../components/tools/preparation.module.css";
+}
+.summaryStats {
+    composes: summaryStats from "../../../components/tools/preparation.module.css";
+}
+.progress {
+    composes: progress from "../../../components/tools/preparation.module.css";
+}
+.summaryHeading {
+    composes: summaryHeading from "../../../components/tools/preparation.module.css";
+}
+.summary {
+    composes: summary from "../../../components/tools/preparation.module.css";
+}
+.sidebar {
+    composes: sidebar from "../../../components/tools/preparation.module.css";
+}
+.input {
+    composes: input from "../../../components/tools/preparation.module.css";
+}
+.detail {
+    composes: detail from "../../../components/tools/preparation.module.css";
+}
+.stepper {
+    composes: stepper from "../../../components/tools/preparation.module.css";
+}
+.quantityLine {
+    composes: quantityLine from "../../../components/tools/preparation.module.css";
+}
+.icon {
+    composes: icon from "../../../components/tools/preparation.module.css";
+}
+.ingredient {
+    composes: ingredient from "../../../components/tools/preparation.module.css";
+}
+.ingredients {
+    composes: ingredients from "../../../components/tools/preparation.module.css";
+}
+.badge {
+    composes: badge from "../../../components/tools/preparation.module.css";
+}
+.goodTitle {
+    composes: goodTitle from "../../../components/tools/preparation.module.css";
+}
+.goodTop {
+    composes: goodTop from "../../../components/tools/preparation.module.css";
+}
+.good {
+    composes: good from "../../../components/tools/preparation.module.css";
+}
+.muted {
+    composes: muted from "../../../components/tools/preparation.module.css";
+}
+.panelHead {
+    composes: panelHead from "../../../components/tools/preparation.module.css";
+}
+.panel {
+    composes: panel from "../../../components/tools/preparation.module.css";
+}
+.catalog {
+    composes: catalog from "../../../components/tools/preparation.module.css";
+}
+.layout {
+    composes: layout from "../../../components/tools/preparation.module.css";
+}
+.quiet {
+    composes: quiet from "../../../components/tools/preparation.module.css";
+}
+.primary {
+    composes: primary from "../../../components/tools/preparation.module.css";
+}
+.button {
+    composes: button from "../../../components/tools/preparation.module.css";
+}
+.actions {
+    composes: actions from "../../../components/tools/preparation.module.css";
+}
+.toolbar {
+    composes: toolbar from "../../../components/tools/preparation.module.css";
+}
+.page {
+    composes: page from "../../../components/tools/preparation.module.css";
+}
+.week {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--color-base-content);
+    font-size: 12px;
+}
+.season {
+    border-color: var(--color-base-300);
+    background: var(--color-base-100);
+}
+.seasonGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 16px 16px;
+}
+.limit {
+    font-size: 11px;
+    color: color-mix(in oklab, var(--color-base-content) 65%, transparent);
+    white-space: nowrap;
+}
+.tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 0 16px 14px;
+}
+.tabs button {
+    min-height: 36px;
+    padding: 6px 11px;
+    border-radius: 7px;
+    color: var(--color-base-content);
+    font-size: 12px;
+}
+.tabs button[aria-pressed="true"] {
+    background: var(--color-primary);
+    color: white;
+    font-weight: 600;
+}
+.fixedList {
+    display: grid;
+    gap: 8px;
+    padding: 0 16px 16px;
+}
+.fixedList .good {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 14px;
+}
+.fixedList .ingredients {
+    grid-column: 1;
+    margin: 0 0 0 27px;
+}
+.fixedList .quantityLine {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    flex-direction: column;
+    justify-content: center;
+    gap: 3px;
+}
+.fixedList .error {
+    grid-column: 1 / -1;
+}
+.usageRow {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 7px 0;
+    font-size: 12px;
+}
+.usageRow input {
+    width: 70px;
+    text-align: right;
+}
+@media (max-width: 420px) {
+    .seasonGrid {
+        gap: 8px;
+        padding: 0 10px 12px;
+    }
+    .seasonGrid .quantityLine {
+        flex-wrap: wrap;
+    }
+    .fixedList {
+        padding-inline: 10px;
+    }
+    .fixedList .ingredients {
+        margin-left: 0;
+    }
+}
+@media (max-width: 420px) {
+    .seasonGrid .icon {
+        width: 20px;
+        height: 20px;
+    }
+    .seasonGrid .ingredient {
+        gap: 2px;
+        padding: 3px;
+        font-size: 10px;
+    }
+    .seasonGrid .quantityLine {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+    .seasonGrid .ingredients {
+        min-height: 26px;
+    }
+}
