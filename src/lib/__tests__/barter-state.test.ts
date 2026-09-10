@@ -11,6 +11,7 @@ import {
     addManualGood,
     BarterPlanSchema,
     barterPrices,
+    barterSelectionIssues,
     barterText,
     buildBarterShare,
     changedBarterRows,
@@ -199,4 +200,30 @@ test("manual empty and zero prices override market observations, and unavailable
     expect(
         barterPrices(observed, { materials: [{ ...m, ambiguous: true }] })[m.id]
     ).toBe("");
+});
+
+test("invalid seasonal selections and newly maintained seasons never silently discard saved demand", () => {
+    const old = data.season!.goods[0];
+    const saved = updateBarterRow(emptyBarterPlan(data, now), {
+        ...emptyBarterRow(old),
+        q: "1",
+    });
+    const invalid = { ...saved, seasonChoices: { "201": "unknown" } };
+    expect(barterSelectionIssues(invalid, data)).toHaveLength(1);
+    expect(
+        activeBarterRows(invalid, data, now).find(r => r.good.key === old.key)
+            ?.q
+    ).toBe("1");
+    expect(() => recordBarterExchanges(invalid, data, now)).toThrow();
+    const next = {
+        ...data,
+        goods: data.goods.map(g =>
+            g.key === old.key ? { ...g, key: "season:201:17" } : g
+        ),
+    };
+    expect(
+        activeBarterRows({ ...saved, seasonChoices: {} }, next, now).find(
+            r => r.good.period && r.good.postId === 201
+        )?.good.key
+    ).toBe(old.key);
 });

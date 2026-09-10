@@ -212,7 +212,13 @@ export function publishBarterSeason(
         });
         fs.renameSync(candidate, path);
     } finally {
-        fs.rmSync(temporary, { recursive: true, force: true });
+        try {
+            fs.rmSync(temporary, { recursive: true, force: true });
+        } catch {
+            console.warn(
+                "Could not remove the temporary season directory; inspect local .barter-season-* directories."
+            );
+        }
     }
 }
 

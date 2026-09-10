@@ -20,6 +20,7 @@ import {
     addManualGood,
     barterPrices,
     barterRows,
+    barterSelectionIssues,
     barterText,
     buildBarterShare,
     changedBarterRows,
@@ -60,6 +61,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
         now
     );
     const extraErrors = [
+        ...barterSelectionIssues(plan, data),
         ...rows
             .filter(
                 r =>

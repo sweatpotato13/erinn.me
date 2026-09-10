@@ -120,7 +120,23 @@ export function activeBarterRows(
         const good = row.good;
         if (!good.period) return true;
         const selected = plan.seasonChoices[String(good.postId)];
-        if (selected) return selected === good.key;
+        if (selected) {
+            const valid = rows.some(
+                r =>
+                    r.good.key === selected &&
+                    r.good.postId === good.postId &&
+                    r.good.period
+            );
+            return !valid || selected === good.key;
+        }
+        const saved = plan.rows.filter(
+            r =>
+                r.good.postId === good.postId &&
+                r.good.period &&
+                (parseBarterInteger(r.q) !== 0 ||
+                    parseBarterInteger(r.used) !== 0)
+        );
+        if (saved.length) return saved.some(r => r.good.key === good.key);
         const current = data.goods.find(
             g =>
                 g.source === "season" &&
@@ -131,6 +147,27 @@ export function activeBarterRows(
         // Keep the previous selection visible when it expires; never silently drop demand.
         return good.source === "season" || good.source === "manual";
     });
+}
+
+export function barterSelectionIssues(
+    plan: BarterPlan,
+    data: BarterReference
+): string[] {
+    const rows = barterRows(plan, data);
+    return Object.entries(plan.seasonChoices)
+        .filter(
+            ([postId, key]) =>
+                !rows.some(
+                    r =>
+                        r.good.key === key &&
+                        r.good.postId === Number(postId) &&
+                        r.good.period
+                )
+        )
+        .map(
+            ([postId]) =>
+                `교역소 ${postId}의 시즌 출처를 다시 선택해 주세요. 이전 입력은 보존했습니다.`
+        );
 }
 
 export function changedBarterRows(
@@ -210,7 +247,8 @@ export function recordBarterExchanges(
 ): BarterPlan {
     if (
         plan.weekKey !== barterWeek(now) ||
-        changedBarterRows(plan, data).length
+        changedBarterRows(plan, data).length ||
+        barterSelectionIssues(plan, data).length
     )
         throw new Error("주간 기간과 변경된 데이터를 먼저 확인해 주세요.");
     const rows = activeBarterRows(plan, data, now);
@@ -360,11 +398,24 @@ export function barterText(
         `데이터: ${plan.snapshotVersion}`,
         "지원: 스카하 및 이리아 고정 교역품 / 유효 기간을 확인한 시즌 직접 입력·수집 자료",
         ...plan.rows
-            .filter(r => r.q !== "0")
-            .map(
+            .filter(
                 r =>
-                    `${r.good.postName} · ${r.good.name} [${r.good.source}]: 추가 ${r.q}회, 사용 ${r.used}/${r.good.limit}${r.good.period ? ` / ${date.format(r.good.period.startAt)}~${date.format(r.good.period.endAt)}` : ""}`
-            ),
+                    r.q !== "0" &&
+                    (!r.good.period ||
+                        !plan.seasonChoices[r.good.postId] ||
+                        plan.seasonChoices[r.good.postId] === r.good.key)
+            )
+            .flatMap(r => [
+                `${r.good.postName} · ${r.good.name} [${r.good.source}]: 추가 ${r.q}회, 사용 ${r.used}/${r.good.limit}${r.good.period ? ` / ${date.format(r.good.period.startAt)}~${date.format(r.good.period.endAt)}` : ""}`,
+                ...r.good.groups.map((options, i) => {
+                    const selected = options.find(
+                        o => o.itemId === r.choices[i]
+                    );
+                    return selected
+                        ? `  교환 1회당 재료 #${selected.itemId} ×${selected.count}`
+                        : `  재료 그룹 ${i + 1}: 대안 미선택`;
+                }),
+            ]),
         ...result.materials.map(
             r =>
                 `${r.material.name} (#${r.material.id}): 필요 ${r.required} / 보유 ${r.owned ?? "오류"} / 부족 ${r.missing ?? "미확인"} / 단가 ${r.unitPrice ?? "미입력"} Gold`
