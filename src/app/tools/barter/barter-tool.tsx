@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { formatGold } from "@/lib/auction-calculator";
 import { getAuctionSearchPath } from "@/lib/auction-url";
@@ -99,6 +99,13 @@ export default function BarterTool({ data }: { data: BarterReference }) {
         week: number;
         rows: BarterRow[];
     } | null>(null);
+
+    useEffect(() => {
+        setEditing(undefined);
+        setExported("");
+        setRecording(false);
+        setUndo(null);
+    }, [state.epoch]);
 
     function editRow(row: BarterRow, patch: Partial<BarterRow>) {
         setUndo(null);

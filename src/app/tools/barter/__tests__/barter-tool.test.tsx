@@ -202,6 +202,32 @@ test("week rollover is explicit and preserves quantities and prices", () => {
     expect(saved().prices).toEqual(previous.prices);
 });
 
+test("history restoration clears exchange undo from the previous plan", () => {
+    render(<BarterTool data={data} />);
+    input("우드 테이블 추가 교환", "3");
+    fireEvent.click(screen.getByRole("button", { name: "실제 교환으로 기록" }));
+    fireEvent.click(screen.getByRole("button", { name: "교환 기록 확인" }));
+    expect(
+        screen.getByRole("button", { name: "교환 기록 되돌리기" })
+    ).toBeEnabled();
+    const shared = updateBarterRow(emptyBarterPlan(data, now), {
+        ...emptyBarterRow(good),
+        q: "7",
+        used: "2",
+    });
+    act(() => {
+        window.history.pushState(null, "", buildBarterShare(shared));
+        window.dispatchEvent(new PopStateEvent("popstate"));
+    });
+    expect(
+        screen.getByRole("textbox", { name: "우드 테이블 추가 교환" })
+    ).toHaveValue("7");
+    expect(
+        screen.queryByRole("button", { name: "교환 기록 되돌리기" })
+    ).not.toBeInTheDocument();
+    expect(saved().rows[0]).toMatchObject({ q: "0", used: "3" });
+});
+
 test("corrupt storage and invalid drafts are preserved, and unavailable storage stays usable", () => {
     localStorage.setItem(BARTER_STORAGE_KEY, "broken original");
     const { unmount } = render(<BarterTool data={data} />);
