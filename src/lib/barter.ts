@@ -2,6 +2,9 @@ import { z } from "zod";
 
 const integer = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const positive = integer.positive();
+export const BarterTimestampSchema = positive.max(
+    Date.parse("9999-12-31T23:59:59+09:00")
+);
 const name = z
     .string()
     .min(1)
@@ -20,8 +23,8 @@ export type BarterMaterial = z.infer<typeof BarterMaterialSchema>;
 
 export const BarterPeriodSchema = z
     .object({
-        startAt: positive,
-        endAt: positive,
+        startAt: BarterTimestampSchema,
+        endAt: BarterTimestampSchema,
     })
     .strict()
     .refine(p => p.startAt < p.endAt, "기간의 시작은 종료보다 빨라야 합니다.");

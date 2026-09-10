@@ -227,3 +227,31 @@ test("invalid seasonal selections and newly maintained seasons never silently di
         )?.good.key
     ).toBe(old.key);
 });
+
+test("untrusted timestamps and oversized material sets fail before rendering or lookup", () => {
+    expect(
+        parseBarterStorage(
+            JSON.stringify({ ...plan(), weekKey: Number.MAX_SAFE_INTEGER })
+        ).plan
+    ).toBeNull();
+    expect(
+        parseBarterStorage(JSON.stringify({ ...plan(), weekKey: now })).plan
+    ).toBeNull();
+    expect(
+        BarterGoodSchema.safeParse({
+            ...manual(),
+            period: { startAt: now, endAt: Number.MAX_SAFE_INTEGER },
+        }).success
+    ).toBe(false);
+    const rows = Array.from({ length: 51 }, (_, i) => ({
+        ...plan().rows[0],
+        good: {
+            ...wood,
+            key: `fixed:${i}`,
+            groups: Array.from({ length: 20 }, (_, j) => [
+                { itemId: i * 20 + j + 1, count: 1 },
+            ]),
+        },
+    }));
+    expect(BarterPlanSchema.safeParse({ ...plan(), rows }).success).toBe(false);
+});

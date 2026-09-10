@@ -6,6 +6,7 @@ import {
     type BarterReference,
     type BarterResult,
     type BarterRow,
+    BarterTimestampSchema,
     barterWeek,
     emptyBarterRow,
     goodIssue,
@@ -60,12 +61,20 @@ export const BarterPlanSchema = z
     .object({
         formatVersion: z.literal(1),
         snapshotVersion: z.string().min(1).max(100),
-        weekKey: id.positive(),
+        weekKey: BarterTimestampSchema.refine(
+            value => barterWeek(value) === value
+        ),
         rows: z
             .array(rowSchema)
             .max(100)
             .refine(
-                rows => new Set(rows.map(r => r.good.key)).size === rows.length
+                rows =>
+                    new Set(rows.map(r => r.good.key)).size === rows.length &&
+                    new Set(
+                        rows.flatMap(r =>
+                            r.good.groups.flat().map(o => o.itemId)
+                        )
+                    ).size <= 1000
             ),
         seasonChoices: z.record(
             z.string().regex(/^(201|202|203|204)$/),

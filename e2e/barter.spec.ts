@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const path = "/tools/barter";
 const key = "erinn-barter-v1";
+test.use({ timezoneId: "America/Los_Angeles" });
 test.beforeEach(async ({ page }) => {
     await page.clock.setFixedTime(new Date("2026-09-10T08:00:00+09:00"));
 });
@@ -268,12 +269,10 @@ test("released navigation, SSR metadata, base sitemap and Korean preview", async
     if (await menu.isVisible()) {
         await menu.click();
         await expect(
-            page
-                .getByRole("dialog")
-                .getByRole("link", {
-                    name: "물물교환 준비 계산기",
-                    exact: true,
-                })
+            page.getByRole("dialog").getByRole("link", {
+                name: "물물교환 준비 계산기",
+                exact: true,
+            })
         ).toBeVisible();
         await page.keyboard.press("Escape");
         await expect(menu).toBeFocused();
