@@ -25,7 +25,8 @@
     "reforge:build": "pnpm exec tsx scripts/build-reforge-reference.ts",
     "echostone:build": "pnpm exec tsx scripts/build-echostone-reference.ts",
     "miniatures:build": "pnpm exec tsx scripts/build-miniature-reference.ts",
-    "totems:build": "pnpm exec tsx scripts/build-totem-reference.ts"
+    "totems:build": "pnpm exec tsx scripts/build-totem-reference.ts",
+    "barter:build": "pnpm exec tsx scripts/build-barter-reference.ts"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.3.3",
