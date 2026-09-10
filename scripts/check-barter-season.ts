@@ -66,16 +66,14 @@ async function main() {
                 ],
             })),
             itemListDict: Object.fromEntries(
-                materialIds
-                    .flat()
-                    .map(id => [
-                        `source-${id}`,
-                        {
-                            name: reference.items.find(
-                                item => item.id === String(id)
-                            )!.name,
-                        },
-                    ])
+                materialIds.flat().map(id => [
+                    `source-${id}`,
+                    {
+                        name: reference.items.find(
+                            item => item.id === String(id)
+                        )!.name,
+                    },
+                ])
             ),
         },
     };
