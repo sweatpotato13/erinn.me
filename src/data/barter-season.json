@@ -1,0 +1,132 @@
+{
+  "formatVersion": 1,
+  "source": "https://labanyu.com/trade",
+  "collectedAt": "2026-09-10T01:15:44.954Z",
+  "sourceVersion": 1788405829,
+  "seasonId": 16,
+  "seasonVersion": 2,
+  "period": {
+    "startAt": 1788386400000,
+    "endAt": 1790805600000
+  },
+  "goods": [
+    {
+      "key": "season:201:16",
+      "source": "season",
+      "revision": "9d54cbcbe22c170a36ec2c1fe2f8e9fc3e8cfdc3402af5bf4f237abe5c1fa2d7",
+      "postId": 201,
+      "postName": "카루 숲",
+      "name": "나무 조각 퍼즐",
+      "limit": 3,
+      "reset": "weekly",
+      "period": {
+        "startAt": 1788386400000,
+        "endAt": 1790805600000
+      },
+      "groups": [
+        [
+          {
+            "itemId": 5041005,
+            "count": 1
+          }
+        ],
+        [
+          {
+            "itemId": 5041008,
+            "count": 1
+          }
+        ],
+        [
+          {
+            "itemId": 5041013,
+            "count": 1
+          }
+        ]
+      ]
+    },
+    {
+      "key": "season:202:16",
+      "source": "season",
+      "revision": "f2301d16c8ff24ec8fd50ec7d3ebd7aa32e30e38303f17329b60db2e0c6927ef",
+      "postId": 202,
+      "postName": "오아시스",
+      "name": "유적 탐사 개론",
+      "limit": 2,
+      "reset": "weekly",
+      "period": {
+        "startAt": 1788386400000,
+        "endAt": 1790805600000
+      },
+      "groups": [
+        [
+          {
+            "itemId": 5041016,
+            "count": 1
+          }
+        ],
+        [
+          {
+            "itemId": 5041022,
+            "count": 1
+          }
+        ]
+      ]
+    },
+    {
+      "key": "season:203:16",
+      "source": "season",
+      "revision": "9e7dbb90ea73c3be4146713b2315d674f74bd8ccada2ef33d69c10975af582b1",
+      "postId": 203,
+      "postName": "칼리다",
+      "name": "대형 해먹",
+      "limit": 2,
+      "reset": "weekly",
+      "period": {
+        "startAt": 1788386400000,
+        "endAt": 1790805600000
+      },
+      "groups": [
+        [
+          {
+            "itemId": 5100409,
+            "count": 1
+          }
+        ],
+        [
+          {
+            "itemId": 5100405,
+            "count": 1
+          }
+        ]
+      ]
+    },
+    {
+      "key": "season:204:16",
+      "source": "season",
+      "revision": "ad5f7972460cc962d3829f53b4533698a272ba5250a233c08817eee0b97b0b83",
+      "postId": 204,
+      "postName": "페라",
+      "name": "불의 수정구",
+      "limit": 2,
+      "reset": "weekly",
+      "period": {
+        "startAt": 1788386400000,
+        "endAt": 1790805600000
+      },
+      "groups": [
+        [
+          {
+            "itemId": 5000318,
+            "count": 1
+          }
+        ],
+        [
+          {
+            "itemId": 5100404,
+            "count": 1
+          }
+        ]
+      ]
+    }
+  ]
+}

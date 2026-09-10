@@ -56,6 +56,14 @@ export const FEATURE_LINKS = [
         searchVisible: true,
     },
     {
+        label: "물물교환 준비 계산기",
+        url: "/tools/barter",
+        description:
+            "보유 재료를 차감한 교역 준비 목록과 구매 예상액을 계산하세요",
+        group: "생활·파티 계산",
+        searchVisible: true,
+    },
+    {
         label: "문의하기",
         url: "/contact",
         description: "문의사항이나 피드백을 보내주세요",

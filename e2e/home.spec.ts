@@ -134,6 +134,7 @@ test.describe("Homepage Tests", () => {
             "https://erinn.me/simulators/echostone",
             "https://erinn.me/tools/miniatures",
             "https://erinn.me/tools/totems",
+            "https://erinn.me/tools/barter",
             "https://erinn.me/auction/items",
             ...auctionCatalog.items.map(
                 item => `https://erinn.me/auction/items/${item.id}`
