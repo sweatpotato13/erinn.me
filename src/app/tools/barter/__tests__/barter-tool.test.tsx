@@ -2,11 +2,13 @@ import {
     act,
     fireEvent,
     render,
+    renderHook,
     screen,
     waitFor,
     within,
 } from "@testing-library/react";
 
+import { useBarterMaterials } from "@/app/tools/barter/barter-hooks";
 import BarterTool from "@/app/tools/barter/barter-tool";
 import raw from "@/data/barter-reference.json";
 import { fetchItemPriceSummary } from "@/lib/api/auction";
@@ -49,6 +51,90 @@ beforeEach(() => {
     prices.mockResolvedValue(quote);
 });
 afterEach(() => jest.restoreAllMocks());
+
+test.each([
+    ["network", "재료 확인 실패"],
+    ["schema", "재료 확인 실패"],
+    ["http", "재료 목록을 불러오지 못했습니다."],
+    ["version", "참조 데이터가 변경되었습니다. 페이지를 새로 열어 주세요."],
+    ["batch", "한 계획의 재료 ID는 1,000개까지 확인할 수 있습니다."],
+])(
+    "material lookup exposes only domain messages: %s",
+    async (failure, message) => {
+        const originalFetch = global.fetch;
+        const request = jest.fn(() => {
+            if (failure === "network")
+                return Promise.reject(
+                    new TypeError("Failed to fetch internal URL")
+                );
+            return Promise.resolve({
+                ok: failure !== "http",
+                json: () =>
+                    Promise.resolve(
+                        failure === "schema"
+                            ? { unexpected: "raw schema data" }
+                            : {
+                                  version: "fixture",
+                                  sourceVersion: data.sourceVersion + 1,
+                                  materials: [],
+                                  hasMore: false,
+                              }
+                    ),
+            } as Response);
+        });
+        global.fetch = request;
+        try {
+            const plan = {
+                ...emptyBarterPlan(data, now),
+                rows: [
+                    {
+                        ...emptyBarterRow(good),
+                        good: {
+                            ...good,
+                            groups: Array.from(
+                                { length: failure === "batch" ? 1001 : 1 },
+                                (_, i) => [{ itemId: 9000000 + i, count: 1 }]
+                            ),
+                        },
+                    },
+                ],
+            };
+            const { result, unmount } = renderHook(() =>
+                useBarterMaterials(data, plan)
+            );
+            await waitFor(() => expect(result.current.error).toBe(message));
+            expect(result.current.pending).toBe(false);
+            if (failure === "batch") expect(request).not.toHaveBeenCalled();
+            unmount();
+        } finally {
+            global.fetch = originalFetch;
+        }
+    }
+);
+
+test("weekly selection uses its action time when a season expires mid-action", () => {
+    const period = { ...data.season!.period, endAt: now + 1 };
+    const seasonalData = {
+        ...data,
+        season: {
+            ...data.season!,
+            period,
+            goods: data.season!.goods.map(good => ({ ...good, period })),
+        },
+    };
+    render(<BarterTool data={seasonalData} />);
+    jest.mocked(Date.now)
+        .mockReturnValue(now + 1)
+        .mockReturnValueOnce(now);
+    fireEvent.click(screen.getByRole("button", { name: "이번 주 전체 담기" }));
+    for (const good of seasonalData.season.goods)
+        expect(saved().rows).toContainEqual(
+            expect.objectContaining({
+                good: expect.objectContaining({ key: good.key }),
+                q: String(good.limit),
+            })
+        );
+});
 
 test("preparation is local, stock is allocated once, and checks never consume inventory", () => {
     render(<BarterTool data={data} />);

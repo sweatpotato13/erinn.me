@@ -177,16 +177,19 @@ const materialResponse = z
     })
     .strict();
 
+class BarterMaterialError extends Error {}
+
 export async function fetchBarterMaterials(
     params: URLSearchParams,
     sourceVersion: number,
     signal?: AbortSignal
 ) {
     const response = await fetch(`/api/barter/materials?${params}`, { signal });
-    if (!response.ok) throw new Error("재료 목록을 불러오지 못했습니다.");
+    if (!response.ok)
+        throw new BarterMaterialError("재료 목록을 불러오지 못했습니다.");
     const result = materialResponse.parse(await response.json());
     if (result.sourceVersion !== sourceVersion)
-        throw new Error(
+        throw new BarterMaterialError(
             "참조 데이터가 변경되었습니다. 페이지를 새로 열어 주세요."
         );
     return result;
@@ -230,7 +233,7 @@ export function useBarterMaterials(data: BarterReference, plan: BarterPlan) {
         void (async () => {
             try {
                 if (missing.length > 1000)
-                    throw new Error(
+                    throw new BarterMaterialError(
                         "한 계획의 재료 ID는 1,000개까지 확인할 수 있습니다."
                     );
                 const items: BarterMaterial[] = [];
@@ -256,7 +259,7 @@ export function useBarterMaterials(data: BarterReference, plan: BarterPlan) {
             } catch (cause) {
                 if (!controller.signal.aborted)
                     setError(
-                        cause instanceof Error
+                        cause instanceof BarterMaterialError
                             ? cause.message
                             : "재료 확인 실패"
                     );

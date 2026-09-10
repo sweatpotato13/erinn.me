@@ -116,9 +116,10 @@ export default function BarterTool({ data }: { data: BarterReference }) {
         );
     }
     function prepare(postId?: number | "without-skaha") {
+        const actionTime = Date.now();
         update(p => {
             let next = p;
-            for (const row of activeBarterRows(p, data, Date.now())) {
+            for (const row of activeBarterRows(p, data, actionTime)) {
                 if (postId === "without-skaha" && row.good.postId === 9) {
                     next = updateBarterRow(next, { ...row, q: "0" });
                     continue;
@@ -129,7 +130,7 @@ export default function BarterTool({ data }: { data: BarterReference }) {
                 if (
                     used === null ||
                     used > row.good.limit ||
-                    goodIssue(row.good, Date.now()) ||
+                    goodIssue(row.good, actionTime) ||
                     changed.includes(row.good.key)
                 )
                     continue;

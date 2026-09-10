@@ -74,9 +74,7 @@ test("preparation quantities, explicit market lookup, export and shared import",
         .click();
     const download = await downloading;
     expect(download.suggestedFilename()).toBe("barter-preparation.txt");
-    expect(await readFile((await download.path())!, "utf8")).toContain(
-        "부족 7"
-    );
+    expect(await readFile(await download.path(), "utf8")).toContain("부족 7");
     await expect(
         page.getByRole("button", { name: "공유 링크 복사", exact: true })
     ).toHaveCount(0);
