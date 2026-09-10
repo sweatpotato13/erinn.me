@@ -4,6 +4,16 @@ import auctionCatalog from "../src/data/auction-item-catalog.json";
 
 const publicPages = [
     {
+        path: "/tools/crafting",
+        title: "마비노기 제작 원가 계산기 | Erinn.me",
+        description:
+            "만들 물품에 필요한 전체 재료와 제작 원가를 계산하고, 완제품 구매 가격과 비교하세요.",
+        canonical: "https://erinn.me/tools/crafting",
+        heading: "마비노기 제작 원가 계산기",
+        summary:
+            "만들 물품을 고르면, 필요한 재료와 구매·제작 비용을 비교할 수 있어요.",
+    },
+    {
         path: "/",
         title: "Erinn.me - 마비노기 도우미",
         description:
@@ -126,20 +136,22 @@ test.describe("Homepage Tests", () => {
         );
 
         expect(response.status()).toBe(200);
-        expect(locations).toEqual([
-            ...publicPages.map(route =>
-                new URL(route.path, "https://erinn.me").toString()
-            ),
-            "https://erinn.me/simulators/reforge",
-            "https://erinn.me/simulators/echostone",
-            "https://erinn.me/tools/miniatures",
-            "https://erinn.me/tools/totems",
-            "https://erinn.me/tools/barter",
-            "https://erinn.me/auction/items",
-            ...auctionCatalog.items.map(
-                item => `https://erinn.me/auction/items/${item.id}`
-            ),
-        ]);
+        expect(locations.toSorted()).toEqual(
+            [
+                ...publicPages.map(route =>
+                    new URL(route.path, "https://erinn.me").toString()
+                ),
+                "https://erinn.me/simulators/reforge",
+                "https://erinn.me/simulators/echostone",
+                "https://erinn.me/tools/miniatures",
+                "https://erinn.me/tools/totems",
+                "https://erinn.me/tools/barter",
+                "https://erinn.me/auction/items",
+                ...auctionCatalog.items.map(
+                    item => `https://erinn.me/auction/items/${item.id}`
+                ),
+            ].toSorted()
+        );
         for (const excluded of [
             "/api/",
             "/_offline",

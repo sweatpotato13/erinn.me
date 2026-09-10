@@ -1,0 +1,197 @@
+.body {
+    padding: 0 20px 20px;
+    display: grid;
+    gap: 14px;
+}
+.search {
+    display: flex;
+    gap: 8px;
+}
+.results {
+    display: grid;
+    gap: 8px;
+    margin: 12px 0;
+}
+.result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+}
+.result span {
+    flex: 1;
+}
+.targets {
+    display: grid;
+    gap: 16px;
+}
+.target {
+    border-color: var(--color-primary);
+    background: color-mix(
+        in oklab,
+        var(--color-primary) 5%,
+        var(--color-base-100)
+    );
+}
+.heading {
+    justify-content: flex-start;
+    gap: 8px;
+}
+.tool :is(input, button, select, summary, a) {
+    scroll-margin-block: 90px 150px;
+}
+.conditions {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+}
+.fields {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+.fields label {
+    min-width: 0;
+}
+.field {
+    display: grid;
+    gap: 4px;
+    font-size: 12px;
+}
+.field input,
+.conditions select {
+    min-height: 44px;
+}
+.quantity {
+    display: flex;
+    gap: 0;
+    align-items: center;
+}
+.quantity button {
+    min-width: 44px;
+    min-height: 44px;
+}
+.quantity input {
+    width: 64px;
+    min-height: 44px;
+    text-align: center;
+}
+.row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.row strong {
+    flex: 1;
+}
+.errors {
+    padding-left: 20px;
+}
+.errors a {
+    text-decoration: underline;
+}
+.totals {
+    display: grid;
+    gap: 12px;
+}
+.totals dd {
+    font-size: 20px;
+    font-weight: bold;
+    overflow-wrap: anywhere;
+}
+.totals dt {
+    font-size: 12px;
+}
+.mobile {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+@media (max-width: 900px) {
+    .mobile {
+        bottom: calc(76px + env(safe-area-inset-bottom));
+    }
+}
+@media (max-width: 420px) {
+    .body {
+        padding: 0 12px 16px;
+    }
+    .fields {
+        grid-template-columns: 1fr;
+    }
+}
+
+.field input.compact {
+    width: 96px;
+}
+.ingredients {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+.ingredient {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--color-base-200);
+    font-size: 12px;
+}
+.ingredientName {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+.ingredient strong {
+    white-space: nowrap;
+}
+.alternative {
+    grid-column: 1 / -1;
+}
+.ingredientSelect {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.ingredientSelect select {
+    flex: 1;
+    min-width: 0;
+}
+
+.materialPrice {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px 12px;
+    align-items: end;
+}
+.materialPrice input {
+    width: 100%;
+}
+.materialPrice > p {
+    overflow-wrap: anywhere;
+}
+.materialPrice > details {
+    grid-column: 1 / -1;
+}
+
+.auctionLink {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 8px;
+    font-size: 12px;
+}
+
+.intermediates {
+    border-top: 1px solid var(--color-base-300);
+    padding-top: 16px;
+}
+.intermediates article {
+    padding-inline: 0;
+}
+.intermediates h4 {
+    font-size: 13px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}

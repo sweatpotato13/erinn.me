@@ -278,10 +278,14 @@ test("released navigation, SSR metadata, base sitemap and Korean preview", async
     const png = await preview.body();
     expect(png.readUInt32BE(16)).toBe(1200);
     expect(png.readUInt32BE(20)).toBe(630);
-    await expect(page.locator('a[href="/tools/crafting"]')).toHaveCount(0);
     const menu = page.getByRole("button", { name: "전체 메뉴", exact: true });
     if (await menu.isVisible()) {
         await menu.click();
+        await expect(
+            page
+                .getByRole("dialog")
+                .getByRole("link", { name: "제작 원가 계산기", exact: true })
+        ).toHaveAttribute("href", "/tools/crafting");
         await expect(
             page.getByRole("dialog").getByRole("link", {
                 name: "물물교환 준비 계산기",
@@ -294,6 +298,9 @@ test("released navigation, SSR metadata, base sitemap and Korean preview", async
         const nav = page.getByRole("navigation", { name: "카테고리 탐색" });
         const group = nav.getByText("생활·파티 계산", { exact: true });
         await group.click();
+        await expect(
+            nav.getByRole("link", { name: "제작 원가 계산기", exact: true })
+        ).toBeVisible();
         await expect(
             nav.getByRole("link", { name: "물물교환 준비 계산기", exact: true })
         ).toBeVisible();

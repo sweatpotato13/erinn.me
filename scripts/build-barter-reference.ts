@@ -17,14 +17,16 @@ const strings = new Map(data.StringTable.map(r => [r.Id, r.Str]));
 const rawItems = new Map(data.ItemList.map(r => [r.Id, r]));
 const resolved = resolveItems(data.ItemList, data.StringTable).items;
 const nameCounts = new Map<string, number>();
-for (const item of resolved)
+for (const item of resolved) {
+    if (!rawItems.get(Number(item.id))?.IsAuctionSearchable) continue;
     nameCounts.set(item.name, (nameCounts.get(item.name) ?? 0) + 1);
+}
 const materials: BarterMaterial[] = resolved.map(item =>
     BarterMaterialSchema.parse({
         id: Number(item.id),
         name: item.name,
         searchable: rawItems.get(Number(item.id))!.IsAuctionSearchable,
-        ambiguous: nameCounts.get(item.name)! > 1,
+        ambiguous: (nameCounts.get(item.name) ?? 0) > 1,
     })
 );
 const byId = new Map(materials.map(item => [item.id, item]));

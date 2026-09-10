@@ -64,6 +64,14 @@ export const FEATURE_LINKS = [
         searchVisible: true,
     },
     {
+        label: "제작 원가 계산기",
+        url: "/tools/crafting",
+        description:
+            "필요 재료와 보유분을 합산하고 구매·제작 비용을 비교하세요",
+        group: "생활·파티 계산",
+        searchVisible: true,
+    },
+    {
         label: "문의하기",
         url: "/contact",
         description: "문의사항이나 피드백을 보내주세요",

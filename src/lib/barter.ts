@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+import {
+    allocateMaterialStock,
+    parseMaterialInteger,
+} from "@/lib/material-cost";
+
 const integer = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const positive = integer.positive();
 export const BarterTimestampSchema = positive.max(
@@ -128,11 +133,7 @@ export function emptyBarterRow(good: BarterGood): BarterRow {
     };
 }
 
-export function parseBarterInteger(value: string): number | null {
-    if (!/^\d{1,16}$/.test(value)) return null;
-    const number = Number(value);
-    return Number.isSafeInteger(number) ? number : null;
-}
+export const parseBarterInteger = parseMaterialInteger;
 
 const DAY = 86_400_000;
 const SEOUL_OFFSET = 9 * 60 * 60 * 1000;
@@ -363,9 +364,14 @@ export function calculateBarter(
                 ...total,
                 owned: stock,
                 usedOwned:
-                    stock === null ? null : Math.min(total.required, stock),
+                    stock === null
+                        ? null
+                        : allocateMaterialStock(total.required, stock)
+                              .usedOwned,
                 missing:
-                    stock === null ? null : Math.max(0, total.required - stock),
+                    stock === null
+                        ? null
+                        : allocateMaterialStock(total.required, stock).missing,
                 unitPrice: parseBarterInteger(prices[id] ?? ""),
             };
         });

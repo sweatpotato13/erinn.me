@@ -43,12 +43,12 @@ unrelated production data and source market observations are never published.
 Initial live implementation check on 2026-09-10 succeeded for season 16/version 2,
 effective **2026-09-03 07:00 through 2026-10-01 07:00 Asia/Seoul** (end exclusive):
 
-| Post | Good | Material IDs (one each) | Weekly exchanges |
-|---|---|---|---|
-| Karu | 나무 조각 퍼즐 | 5041005, 5041008, 5041013 | 3 |
-| Oasis | 유적 탐사 개론 | 5041016, 5041022 | 2 |
-| Calida | 대형 해먹 | 5100409, 5100405 | 2 |
-| Pera | 불의 수정구 | 5000318, 5100404 | 2 |
+| Post   | Good           | Material IDs (one each)   | Weekly exchanges |
+| ------ | -------------- | ------------------------- | ---------------- |
+| Karu   | 나무 조각 퍼즐 | 5041005, 5041008, 5041013 | 3                |
+| Oasis  | 유적 탐사 개론 | 5041016, 5041022          | 2                |
+| Calida | 대형 해먹      | 5100409, 5100405          | 2                |
+| Pera   | 불의 수정구    | 5000318, 5100404          | 2                |
 
 This is dated evidence and a deterministic test fixture, not a future-season
 default. The exact live collection timestamp is stored in the committed file.
@@ -127,12 +127,14 @@ bytes; local storage to 256KiB. A plan has at most 100 rows, each with at most
 copy button was removed; existing links remain readable. Text export includes counts, deficits,
 coverage, period, prices and assumptions. Clipboard failure leaves selectable text.
 
-Issue #196 owns the future live crafting link. `barterDeficits` produces validated
-`{itemId,count}` targets **after** barter inventory allocation. The receiver must
-mark these as net barter deficits and must not reapply the original local stock.
-No inventory is transferred by default; if required later, transfer only
-`owned-usedOwned`. Keep the crafting link hidden until `/tools/crafting` ships.
-This feature does not perform recursive production, route or profit optimization.
+The released **부족 재료 제작 준비** button sends `barterDeficits` through
+`buildCraftingHandoff`: bounded `{itemId,count}` net targets with source version and
+`barter-net-deficit` origin. Invalid, expired-week or zero-deficit plans cannot send.
+No inventory is transferred. `/tools/crafting` opens a temporary plan without
+merging previously saved crafting stock, so the original barter allocation is never
+subtracted twice. Any additionally entered stock must be residual stock after the
+barter allocation. Oversized links offer the complete text export. Preparation
+checks and recalculations never mutate either planner's stored inventory.
 
 ## Verification
 

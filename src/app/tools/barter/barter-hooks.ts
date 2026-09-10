@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { z } from "zod";
 
-import { fetchItemPriceSummary } from "@/lib/api/auction";
+import { useMaterialMarket } from "@/hooks/use-material-market";
 import {
     type BarterMaterial,
     BarterMaterialSchema,
@@ -33,6 +33,7 @@ export function useBarterPlan(data: BarterReference) {
     const [notice, setNotice] = useState("");
     const [backup, setBackup] = useState("");
     const [epoch, setEpoch] = useState(0);
+    const epochRef = useRef(0);
     const [now, setNow] = useState(Date.parse(data.collectedAt));
     const [needsSaveReview, setNeedsSaveReview] = useState(false);
     const query = useRef("");
@@ -66,7 +67,7 @@ export function useBarterPlan(data: BarterReference) {
             [shared.error, saved.error, readError].filter(Boolean).join(" ")
         );
         setNow(time);
-        setEpoch(v => v + 1);
+        setEpoch(++epochRef.current);
         setReady(true);
     }, [data]);
 
@@ -119,7 +120,7 @@ export function useBarterPlan(data: BarterReference) {
     }
     const update = useCallback(
         (change: (p: BarterPlan) => BarterPlan) => {
-            if (!ready) return;
+            if (!ready || epoch !== epochRef.current) return;
             try {
                 const next = BarterPlanSchema.parse(change(current.current));
                 current.current = next;
@@ -132,7 +133,7 @@ export function useBarterPlan(data: BarterReference) {
                 );
             }
         },
-        [ready]
+        [ready, epoch]
     );
 
     function adopt() {
@@ -287,90 +288,18 @@ export function useBarterMarket(
     update: (change: (p: BarterPlan) => BarterPlan) => void,
     epoch: number
 ) {
-    const [loading, setLoading] = useState(false);
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const active = useRef<AbortController | null>(null);
-    const generation = useRef(0);
-    const busy = useRef(false);
-    const cancel = useCallback(() => {
-        generation.current++;
-        active.current?.abort();
-        busy.current = false;
-        setLoading(false);
-    }, []);
-    useEffect(() => {
-        cancel();
-        setErrors({});
-        return cancel;
-    }, [epoch, cancel]);
-    async function load() {
-        if (busy.current || !result.valid) return;
-        const names = [
-            ...new Set(
-                result.materials
-                    .filter(
-                        r =>
-                            r.missing! > 0 &&
-                            r.material.searchable &&
-                            !r.material.ambiguous
-                    )
-                    .map(r => r.material.name)
-            ),
-        ];
-        if (!names.length) return;
-        busy.current = true;
-        setLoading(true);
-        setErrors({});
-        const request = ++generation.current;
-        const controller = new AbortController();
-        active.current = controller;
-        try {
-            for (
-                let i = 0;
-                i < names.length && !controller.signal.aborted;
-                i += 3
-            ) {
-                await Promise.allSettled(
-                    names.slice(i, i + 3).map(async name => {
-                        try {
-                            const quote = await fetchItemPriceSummary(
-                                name,
-                                controller.signal
-                            );
-                            if (
-                                request === generation.current &&
-                                !controller.signal.aborted
-                            )
-                                update(p => ({
-                                    ...p,
-                                    quotes: {
-                                        ...p.quotes,
-                                        [name]: {
-                                            ...quote,
-                                            observedAt:
-                                                new Date().toISOString(),
-                                        },
-                                    },
-                                }));
-                        } catch {
-                            if (
-                                request === generation.current &&
-                                !controller.signal.aborted
-                            )
-                                setErrors(old => ({
-                                    ...old,
-                                    [name]: "조회 실패. 이전 시세와 수동 가격은 유지했습니다.",
-                                }));
-                        }
-                    })
-                );
-            }
-        } finally {
-            if (request === generation.current) {
-                busy.current = false;
-                setLoading(false);
-            }
-        }
-    }
-    return { loading, errors, load, cancel };
+    return useMaterialMarket(
+        result.materials
+            .filter(
+                r =>
+                    r.missing! > 0 &&
+                    r.material.searchable &&
+                    !r.material.ambiguous
+            )
+            .map(r => r.material.name),
+        (name, quote) =>
+            update(p => ({ ...p, quotes: { ...p.quotes, [name]: quote } })),
+        epoch,
+        result.valid
+    );
 }

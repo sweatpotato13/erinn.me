@@ -8,9 +8,13 @@ import {
     within,
 } from "@testing-library/react";
 
-import { useBarterMaterials } from "@/app/tools/barter/barter-hooks";
+import {
+    useBarterMaterials,
+    useBarterPlan,
+} from "@/app/tools/barter/barter-hooks";
 import BarterTool from "@/app/tools/barter/barter-tool";
 import raw from "@/data/barter-reference.json";
+import { useMaterialMarket } from "@/hooks/use-material-market";
 import { fetchItemPriceSummary } from "@/lib/api/auction";
 import { type BarterReference, emptyBarterRow } from "@/lib/barter";
 import {
@@ -24,6 +28,14 @@ import {
 jest.mock("@/lib/api/auction", () => ({ fetchItemPriceSummary: jest.fn() }));
 const prices = jest.mocked(fetchItemPriceSummary);
 const data = raw as BarterReference;
+
+test("shared market lookup rejects an oversized click without launching requests", async () => {
+    const names = Array.from({ length: 101 }, (_, i) => `item-${i}`);
+    const { result } = renderHook(() => useMaterialMarket(names, jest.fn(), 0));
+    await act(() => result.current.load());
+    expect(result.current.errors.request).toContain("100종");
+    expect(prices).not.toHaveBeenCalled();
+});
 const now = Date.parse("2026-09-10T08:00:00+09:00");
 const good = data.goods.find(g => g.key === "fixed:201:20101")!;
 const quote = {
@@ -420,4 +432,38 @@ test("one-click weekly selection includes all four sixth-tier goods while prior 
     }
     expect(screen.getByLabelText("우드 테이블 준비할 횟수")).toHaveValue("20");
     expect(prices).not.toHaveBeenCalled();
+});
+
+test("restoring barter rejects a late callback before effects cancel requests", () => {
+    const { result } = renderHook(() => useBarterPlan(data));
+    const staleUpdate = result.current.update;
+    const saved = { ...emptyBarterPlan(data, now), owned: { 1: "20" } };
+    localStorage.setItem(BARTER_STORAGE_KEY, serializeBarterStorage(saved));
+    act(() => {
+        result.current.openSaved();
+        staleUpdate(p => ({ ...p, owned: { 1: "999" } }));
+    });
+    expect(result.current.plan.owned).toEqual({ 1: "20" });
+    expect(JSON.parse(localStorage.getItem(BARTER_STORAGE_KEY)!).owned).toEqual(
+        { 1: "20" }
+    );
+});
+
+test("single material lookup requests only its name and preserves unrelated errors", async () => {
+    const onQuote = jest.fn();
+    const { result } = renderHook(() =>
+        useMaterialMarket(["a", "b"], onQuote, 0)
+    );
+    prices.mockRejectedValue(new Error("offline"));
+    await act(() => result.current.load());
+    expect(Object.keys(result.current.errors)).toEqual(["a", "b"]);
+    prices.mockClear().mockResolvedValue(quote);
+    await act(() => result.current.load(["a", "a"]));
+    expect(prices).toHaveBeenCalledTimes(1);
+    expect(prices).toHaveBeenCalledWith("a", expect.any(AbortSignal));
+    expect(onQuote).toHaveBeenCalledWith(
+        "a",
+        expect.objectContaining({ minPrice: 100 })
+    );
+    expect(Object.keys(result.current.errors)).toEqual(["b"]);
 });

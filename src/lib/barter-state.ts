@@ -1,3 +1,9 @@
+import {
+    materialPrice,
+    MaterialQuoteSchema as BarterQuoteSchema,
+} from "@/lib/material-cost";
+export { MaterialQuoteSchema as BarterQuoteSchema } from "@/lib/material-cost";
+
 import { z } from "zod";
 
 import {
@@ -45,16 +51,6 @@ const rowSchema = z
                 r.good.key.startsWith("manual:"))
     );
 
-export const BarterQuoteSchema = z
-    .object({
-        minPrice: z.number().finite().nonnegative(),
-        averagePrice: z.number().finite().nonnegative(),
-        availableQuantity: z.number().finite().nonnegative(),
-        isComplete: z.boolean(),
-        fetchedAt: z.iso.datetime({ offset: true }).optional(),
-        observedAt: z.iso.datetime({ offset: true }),
-    })
-    .strict();
 export type BarterQuote = z.infer<typeof BarterQuoteSchema>;
 
 export const BarterPlanSchema = z
@@ -289,20 +285,10 @@ export function barterPrices(
     data: Pick<BarterReference, "materials">
 ): Record<string, string> {
     return Object.fromEntries(
-        data.materials.map(m => {
-            if (Object.hasOwn(plan.prices, m.id))
-                return [m.id, plan.prices[m.id]];
-            const quote =
-                m.searchable && !m.ambiguous ? plan.quotes[m.name] : undefined;
-            return [
-                m.id,
-                quote &&
-                quote.availableQuantity > 0 &&
-                Number.isSafeInteger(quote.minPrice)
-                    ? String(quote.minPrice)
-                    : "",
-            ];
-        })
+        data.materials.map(m => [
+            m.id,
+            materialPrice(m, plan.prices, plan.quotes),
+        ])
     );
 }
 

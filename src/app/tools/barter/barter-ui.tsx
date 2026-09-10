@@ -17,18 +17,24 @@ import {
     seoulDateInput,
 } from "@/lib/barter";
 import { type BarterPlan } from "@/lib/barter-state";
+import { getItemImageUrl } from "@/lib/utils";
 
 import s from "./barter-tool.module.css";
 
 const localIcons = new Set(reference.materials.map(m => m.id));
-export function MaterialIcon({ id }: { id: number }) {
+export function MaterialIcon({ id, name }: { id: number; name?: string }) {
     const [failed, setFailed] = useState(false);
+    const src = localIcons.has(id)
+        ? `/images/barter/${id}.png`
+        : name
+          ? getItemImageUrl(name)
+          : undefined;
     return (
         <span className={s.icon}>
-            {localIcons.has(id) && !failed ? (
+            {src && !failed ? (
                 <Image
                     unoptimized
-                    src={`/images/barter/${id}.png`}
+                    src={src}
                     width={28}
                     height={28}
                     alt=""
@@ -116,16 +122,24 @@ export function GoodCard({
                                 대체 재료 선택 필요
                             </span>
                         );
-                    const name =
-                        materials.find(m => m.id === option.itemId)?.name ??
-                        `#${option.itemId}`;
+                    const material = materials.find(
+                        m => m.id === option.itemId
+                    );
+                    const name = material?.name ?? `#${option.itemId}`;
                     return (
                         <span
                             className={s.ingredient}
                             key={i}
                             title={`${name} × ${option.count}`}
                         >
-                            <MaterialIcon id={option.itemId} />
+                            <MaterialIcon
+                                id={option.itemId}
+                                name={
+                                    material?.searchable && !material.ambiguous
+                                        ? material.name
+                                        : undefined
+                                }
+                            />
                             <span className="sr-only">{name}</span>×
                             {option.count}
                         </span>
@@ -255,7 +269,10 @@ export function MaterialRow({
                         }))
                     }
                 />
-                <MaterialIcon id={m.id} />
+                <MaterialIcon
+                    id={m.id}
+                    name={m.searchable && !m.ambiguous ? m.name : undefined}
+                />
                 <h3>{m.name}</h3>
                 {row.missing === 0 && (
                     <span className={s.badge}>보유분으로 충분</span>
