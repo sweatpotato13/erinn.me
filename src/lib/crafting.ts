@@ -425,17 +425,29 @@ export function calculateCrafting(
         .filter(id => incoming.get(id) === 0)
         .sort((a, b) => a - b);
     const processed = new Set<number>();
+    const targetIds = new Set(input.targets.map(target => target.itemId));
+    const uncertainDemand = new Set<number>();
     for (let cursor = 0; cursor < queue.length; cursor++) {
         const id = queue[cursor];
         const node = nodes.get(id)!;
         processed.add(id);
+        const inactive =
+            node.required === 0 &&
+            !targetIds.has(id) &&
+            !uncertainDemand.has(id);
+        if (inactive) {
+            node.complete = true;
+            node.issues = [];
+        }
         if ((depth.get(id) ?? 0) > CRAFTING_LIMITS.depth)
             issue(
                 node,
                 "제작 단계가 32단계를 넘었습니다. 중간재를 구매로 바꿔 주세요."
             );
         try {
-            const stock = parseMaterialInteger(input.owned[id] ?? "0");
+            const stock = inactive
+                ? 0
+                : parseMaterialInteger(input.owned[id] ?? "0");
             if (stock === null)
                 throw new Error("보유 수량은 0 이상의 정수로 입력해 주세요.");
             if (!node.complete)
@@ -506,11 +518,13 @@ export function calculateCrafting(
         }
         for (const child of node.children) {
             const next = nodes.get(child)!;
-            if (!node.complete)
+            if (!node.complete) {
+                uncertainDemand.add(child);
                 issue(
                     next,
                     `${node.item.name}의 필요 수량을 먼저 확인해 주세요.`
                 );
+            }
             depth.set(
                 child,
                 Math.max(depth.get(child) ?? 0, (depth.get(id) ?? 0) + 1)
@@ -521,6 +535,7 @@ export function calculateCrafting(
     }
     const blocked = [...nodes.keys()].filter(id => !processed.has(id));
     if (blocked.length) {
+        // ponytail: scan is bounded at 1,000 nodes; use reverse adjacency if this limit grows.
         // Follow parents within the blocked graph to find a real cycle, not its tail.
         const path: number[] = [];
         let id = blocked[0];
@@ -535,7 +550,15 @@ export function calculateCrafting(
         issues.push(message);
         for (const key of blocked) issue(nodes.get(key)!, message);
     }
-    const result = [...nodes.values()].sort((a, b) => a.item.id - b.item.id);
+    const result = [...nodes.values()]
+        .filter(
+            node =>
+                targetIds.has(node.item.id) ||
+                node.required > 0 ||
+                uncertainDemand.has(node.item.id) ||
+                !node.complete
+        )
+        .sort((a, b) => a.item.id - b.item.id);
     for (const node of result)
         issues.push(
             ...node.issues.map(message => `${node.item.name}: ${message}`)

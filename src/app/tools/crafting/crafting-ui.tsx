@@ -485,12 +485,13 @@ export function PriceEditor({
     const manual = Object.hasOwn(plan.prices, item.id);
     const quote = plan.quotes[item.name];
     const value = materialPrice(item, plan.prices, plan.quotes);
+    const numericPrice = parseMaterialInteger(value);
     return (
         <details className={s.materialDetails}>
             <summary>
                 단가·가격 출처·사용처
-                {value !== ""
-                    ? ` · 개당 ${Number(value).toLocaleString("ko-KR")} Gold`
+                {numericPrice !== null
+                    ? ` · 개당 ${numericPrice.toLocaleString("ko-KR")} Gold`
                     : ""}
             </summary>
             <NumberField

@@ -449,7 +449,7 @@
 }
 .error {
     font-size: 12px;
-    color: #a5392b;
+    color: var(--color-error);
     margin-top: 7px;
     overflow-wrap: anywhere;
 }
@@ -494,7 +494,7 @@
         justify-content: space-between;
         align-items: center;
         background: var(--color-base-content);
-        color: white;
+        color: var(--color-base-100);
         border-radius: 12px;
         padding: 14px 18px;
         box-shadow: 0 5px 20px #00000020;

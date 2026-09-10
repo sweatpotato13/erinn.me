@@ -2,6 +2,14 @@ import { expect, test } from "@playwright/test";
 
 import reference from "../src/data/crafting-reference.json";
 import {
+    type CraftingReference,
+    selectCraftingRecipe,
+} from "../src/lib/crafting";
+import {
+    buildCraftingShare,
+    emptyCraftingPlan,
+} from "../src/lib/crafting-state";
+import {
     BARTER_STORAGE_KEY,
     emptyBarterPlan,
     serializeBarterStorage,
@@ -247,4 +255,86 @@ test("released navigation, server context, base canonical and Korean preview", a
         await page.keyboard.press("Escape");
         await expect(menu).toBeFocused();
     }
+});
+
+test("shared intermediate settings, keyboard controls and narrow themed layouts", async ({
+    page,
+}, testInfo) => {
+    const data = reference as CraftingReference;
+    const plan = emptyCraftingPlan(data);
+    plan.targets = [
+        { itemId: 45037, count: "1" },
+        { itemId: 67209, count: "1" },
+    ];
+    for (const id of [45037, 67209, 67201]) {
+        const recipe = data.recipes.find(
+            recipe =>
+                recipe.itemId === id &&
+                (id !== 67209 ||
+                    recipe.process.some(group => group.itemIds.includes(67201)))
+        )!;
+        plan.choices[id] = {
+            ...selectCraftingRecipe(recipe),
+            yield: id === 67201 ? "2" : "1",
+            passes: "1",
+            processChoices: recipe.process.map(group => group.itemIds[0]),
+        };
+    }
+    await page.setViewportSize({ width: 320, height: 844 });
+    await page.goto(buildCraftingShare(plan));
+    const summary = page.getByText("실리엔 · 전체 필요 2개 · 직접 제작", {
+        exact: true,
+    });
+    await expect(summary).toBeVisible();
+    await summary.click();
+    await expect(
+        page.getByLabel("실리엔 성공한 제작 1회당 완성 수량", { exact: true })
+    ).toHaveCount(1);
+    await expect(page.locator("#craft-node-67201")).toContainText("제작 1회");
+    const increase = page.getByRole("button", {
+        name: "마력탄 만들 수량 늘리기",
+        exact: true,
+    });
+    await increase.focus();
+    await page.keyboard.press("Enter");
+    await expect(
+        page.getByLabel("마력탄 만들 수량", { exact: true })
+    ).toHaveValue("2");
+    await expect(page.locator("#craft-node-67201")).toContainText(
+        "전체 필요 3개"
+    );
+    await expect(page.locator("#craft-node-67201")).toContainText("제작 2회");
+    for (const theme of ["light", "dark"]) {
+        await page
+            .locator("html")
+            .evaluate(
+                (el, theme) => el.setAttribute("data-theme", theme),
+                theme
+            );
+        expect(
+            await page.evaluate(
+                () => document.documentElement.scrollWidth <= innerWidth
+            )
+        ).toBe(true);
+        await page
+            .getByRole("link", { name: /준비 목록 · .*확인하기/ })
+            .click();
+        await expect(
+            page.getByRole("heading", { name: "나의 준비 목록", exact: true })
+        ).toBeInViewport();
+        await page.screenshot({
+            path: testInfo.outputPath(`crafting-320-${theme}.png`),
+            fullPage: true,
+        });
+    }
+    // A 640px window at 200% exercises the supported 320px content width.
+    await page.setViewportSize({ width: 640, height: 900 });
+    await page.locator("html").evaluate(el => {
+        el.style.zoom = "2";
+    });
+    expect(
+        await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth
+        )
+    ).toBe(true);
 });

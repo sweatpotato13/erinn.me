@@ -142,8 +142,13 @@ const mithril = catalog.recipes.filter(
 );
 assert.equal(mithril.length, 2);
 assert.equal(new Set(mithril.map(r => r.fingerprint)).size, 2);
+const collisionFirst = data.ProductionList[0];
+const collisionSecond = data.ProductionList.find(
+    row => stableJson(row) !== stableJson(collisionFirst)
+);
+assert(collisionSecond, "Collision fixture requires different records");
 assert.throws(
-    () => derive(data.ProductionList.slice(0, 2), () => "collision"),
+    () => derive([collisionFirst, collisionSecond], () => "collision"),
     /collision/
 );
 assert.equal(

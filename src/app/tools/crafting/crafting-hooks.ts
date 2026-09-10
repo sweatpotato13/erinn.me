@@ -25,6 +25,7 @@ export function useCraftingPlan(reference: CraftingReference) {
     const [backup, setBackup] = useState("");
     const [needsReview, setNeedsReview] = useState(false);
     const [epoch, setEpoch] = useState(0);
+    const epochRef = useRef(0);
 
     const restore = useCallback(() => {
         let raw: string | null = null;
@@ -53,7 +54,7 @@ export function useCraftingPlan(reference: CraftingReference) {
         setNotice(
             [shared.error, saved.error, readError].filter(Boolean).join(" ")
         );
-        setEpoch(value => value + 1);
+        setEpoch(++epochRef.current);
         setReady(true);
     }, [reference]);
     useEffect(() => {
@@ -78,7 +79,7 @@ export function useCraftingPlan(reference: CraftingReference) {
     }, []);
     const update = useCallback(
         (change: (plan: CraftingPlan) => CraftingPlan) => {
-            if (!ready) return;
+            if (!ready || epoch !== epochRef.current) return;
             try {
                 const next = CraftingPlanSchema.parse(change(current.current));
                 current.current = next;
@@ -90,7 +91,7 @@ export function useCraftingPlan(reference: CraftingReference) {
                 );
             }
         },
-        [ready, persist]
+        [ready, persist, epoch]
     );
 
     function adopt(data: CraftingReference) {

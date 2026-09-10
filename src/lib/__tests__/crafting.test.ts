@@ -371,3 +371,18 @@ test("owned finished targets are common to both comparisons; an owned intermedia
     expect(unknownOwned.purchase.complete).toBe(true);
     expect(unknownOwned.owned.complete).toBe(false);
 });
+
+test("fully owned outputs do not validate or price unconsumed ingredients", () => {
+    const recipes = [recipe(1, [{ itemIds: [2], count: 10 }])];
+    const plan = input(recipes);
+    plan.owned = { 1: "1", 2: "invalid" };
+    const data = reference(recipes);
+    data.items[1].unresolved = "unused unknown item";
+    const result = calculateCrafting(plan, data);
+    expect(result.complete).toBe(true);
+    expect(result.nodes.map(node => node.item.id)).toEqual([1]);
+    expect(calculateCraftingCosts(plan, result).purchase).toMatchObject({
+        known: 0,
+        complete: true,
+    });
+});

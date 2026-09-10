@@ -33,6 +33,7 @@ export function useBarterPlan(data: BarterReference) {
     const [notice, setNotice] = useState("");
     const [backup, setBackup] = useState("");
     const [epoch, setEpoch] = useState(0);
+    const epochRef = useRef(0);
     const [now, setNow] = useState(Date.parse(data.collectedAt));
     const [needsSaveReview, setNeedsSaveReview] = useState(false);
     const query = useRef("");
@@ -66,7 +67,7 @@ export function useBarterPlan(data: BarterReference) {
             [shared.error, saved.error, readError].filter(Boolean).join(" ")
         );
         setNow(time);
-        setEpoch(v => v + 1);
+        setEpoch(++epochRef.current);
         setReady(true);
     }, [data]);
 
@@ -119,7 +120,7 @@ export function useBarterPlan(data: BarterReference) {
     }
     const update = useCallback(
         (change: (p: BarterPlan) => BarterPlan) => {
-            if (!ready) return;
+            if (!ready || epoch !== epochRef.current) return;
             try {
                 const next = BarterPlanSchema.parse(change(current.current));
                 current.current = next;
@@ -132,7 +133,7 @@ export function useBarterPlan(data: BarterReference) {
                 );
             }
         },
-        [ready]
+        [ready, epoch]
     );
 
     function adopt() {

@@ -1,7 +1,9 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, render, renderHook, screen } from "@testing-library/react";
 
 import { useCraftingPlan } from "@/app/tools/crafting/crafting-hooks";
+import { PriceEditor } from "@/app/tools/crafting/crafting-ui";
 import type { CraftingReference } from "@/lib/crafting";
+import { calculateCrafting } from "@/lib/crafting";
 import {
     buildCraftingHandoff,
     buildCraftingShare,
@@ -76,4 +78,46 @@ test("history restores the original local plan after an isolated shared draft", 
     act(() => result.current.openSaved());
     expect(result.current.plan.fee).toBe("50");
     expect(result.current.temporary).toBe(false);
+});
+
+test("invalid price drafts remain editable without a NaN or unsafe summary amount", () => {
+    const plan = {
+        ...emptyCraftingPlan(data),
+        targets: [{ itemId: 1, count: "1" }],
+        prices: { 1: "abc" },
+    };
+    const node = calculateCrafting(plan, data).nodes[0];
+    const { container, rerender } = render(
+        <PriceEditor node={node} plan={plan} update={jest.fn()} />
+    );
+    expect(container.querySelector("summary")).not.toHaveTextContent("NaN");
+    expect(screen.getByLabelText("재료 단가 (Gold)")).toHaveAttribute(
+        "aria-invalid",
+        "true"
+    );
+    rerender(
+        <PriceEditor
+            node={node}
+            plan={{ ...plan, prices: { 1: "0" } }}
+            update={jest.fn()}
+        />
+    );
+    expect(container.querySelector("summary")).toHaveTextContent("개당 0 Gold");
+});
+
+test("restoring a plan immediately rejects callbacks from the previous plan", () => {
+    const { result } = renderHook(() => useCraftingPlan(data));
+    const staleUpdate = result.current.update;
+    const saved = { ...emptyCraftingPlan(data), fee: "20" };
+    localStorage.setItem(CRAFTING_STORAGE_KEY, serializeCraftingStorage(saved));
+    act(() => {
+        result.current.openSaved();
+        staleUpdate(p => ({ ...p, fee: "999" }));
+    });
+    expect(result.current.plan.fee).toBe("20");
+    expect(JSON.parse(localStorage.getItem(CRAFTING_STORAGE_KEY)!).fee).toBe(
+        "20"
+    );
+    act(() => result.current.update(p => ({ ...p, fee: "30" })));
+    expect(result.current.plan.fee).toBe("30");
 });
