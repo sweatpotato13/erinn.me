@@ -1,7 +1,7 @@
 {
     "status": "source-backed",
-    "checkedAt": "2026-09-07",
-    "sourceVersion": "1788405829",
+    "checkedAt": "2026-09-11",
+    "sourceVersion": "1789022199",
     "agentId": 53940,
     "basis": "The user confirmed Prilus is extracted from actual game data. Combine that accepted source with the official rule that polishing uses the probabilities of 에코스톤 각성제 (item 53940). These are source-derived fixtures, not independently observed reroll trials.",
     "rule": "Use RandomTableList 10000 + option.Max, the normal agent 53940 exclusive lower bound, and the current grade inclusive upper bound. Renormalize retained weights. Preserve max(currentLevel, sampledLevel); previous premium-agent adjustments do not carry over.",

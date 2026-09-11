@@ -7,6 +7,17 @@ The fixed coverage is currently 28 goods: eight at Skatha and five at each of
 Karu/Oasis/Calida/Pera. Empty entries from the 17-name post map are not catalogs.
 `BarterList.Id` identifies a trade good; only `Prices[].Id` joins to an item.
 
+The 2026-09-11 refresh to Prilus version `1789022199` (2026-09-10 15:36:39
+Asia/Seoul) contains 128 raw barter rows, including legacy definitions and
+rotating candidates. Matched names, weekly limits and ingredient names/counts
+against the live Labanyu season 16/version 2 response: current fixed IDs are
+901–908 and 21001–21005/22001–22005/23001–23005/24001–24005. The builder
+selects these 28 rows and retains the previous `fixed:post:id` plan keys for the
+renumbered Iria goods; raw source IDs remain untouched in the snapshot.
+Do not publish every raw row as a fixed good. Review this selection when the
+upstream catalog changes. The four active tier-six goods below are unchanged;
+they also match Prilus IDs 21008/22007/23007/24008 and remain season-bound.
+
 `scripts/build-barter-reference.ts` uses `readSnapshot` and `resolveItems` to
 generate `src/data/barter-reference.json`. The page receives only selected
 material metadata. The full, minimal ID/name/searchability index is imported

@@ -5,37 +5,37 @@
         "site": "https://prilus.gitlab.io/",
         "region": "kr",
         "language": "kr",
-        "resourceUrl": "https://mabires2.pril.cc/resourcedata/kr/kr_resourcedata.bin.br",
-        "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
+        "resourceUrl": "https://mabires3.pril.cc/resourcedata/kr/kr_resourcedata.bin.br",
+        "versionUrl": "https://mabires3.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-indexeddb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-CZYUf-Rr.js"
+            "https://prilus.gitlab.io/assets/index-CMk2Tl6z.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1788405829
+        "CreatedAt": 1789022199
     },
-    "collectedAt": "2026-09-05T08:29:58.696Z",
+    "collectedAt": "2026-09-11T00:04:59.417Z",
     "tables": {
         "ItemList": {
-            "count": 43064,
-            "bytes": 6467666,
-            "sha256": "a33c860ad3e7b05549a895579932057e35089f5ff0170f80d6dd196630cb4011"
+            "count": 43243,
+            "bytes": 7404651,
+            "sha256": "c010696161ef9288709e9260fa5fdeb4671823c24bf47c7492168ab1de291ef5"
         },
         "OptionSetList": {
-            "count": 1730,
-            "bytes": 187838,
-            "sha256": "d0226b8e1e97d93bf3e016b1d770184da9b43c35114345c2845f42c87e8aef72"
+            "count": 1762,
+            "bytes": 191390,
+            "sha256": "6d261dbb8527f15e036e8d879e056755874def71760ad4d7324d150f95105938"
         },
         "StringTable": {
-            "count": 222033,
-            "bytes": 29765187,
-            "sha256": "1d88b56e1eed304879d13d143f288d49cbca4b3e77e2676cb4c3321023ee8da7"
+            "count": 224209,
+            "bytes": 30085712,
+            "sha256": "9bd298a71b2f218cb349cc74294ee4218788d09fdfa034b71a818a5bc9f69736"
         },
         "ItemExtendMetalWareList": {
-            "count": 11500,
-            "bytes": 861924,
-            "sha256": "340ace147f5cf0e0a455ea60c372d7697739b6daaeaa39b7eb2e83c22f1e07c8"
+            "count": 11555,
+            "bytes": 866067,
+            "sha256": "f10c1c9394acc166c54c4e6f863c6449b72ac92dd5eca3f3d793baf9ebae5c1e"
         },
         "MetalWareAbilityList": {
             "count": 528,
@@ -75,37 +75,37 @@
         "RandomTableList": {
             "count": 19,
             "bytes": 150841,
-            "sha256": "2417f4f4267ae321fb135986cadecd8b42a080372f06747178e8f905ba9886f0"
+            "sha256": "49b69fd24da1c606121a51e3126ed8ef625d722e4a4efe3887467d578e384a07"
         },
         "ProductionList": {
-            "count": 1883,
-            "bytes": 569420,
-            "sha256": "73bdf1aa504e4ef5f3d25bb729a18d7d506d719d5fd1ed4ef278f490aef28577"
+            "count": 1899,
+            "bytes": 575545,
+            "sha256": "e206d096192465d4e13b0e1e562eda56db7407906f3fcb7bac0fc027fa0067ed"
         },
         "ItemExtendUpgradeList": {
-            "count": 4722,
-            "bytes": 672644,
-            "sha256": "a7c9993df1416b2c1b7cf4fed6ae946145510e52e3f4edff9adee9c65154a8d0"
+            "count": 4758,
+            "bytes": 679922,
+            "sha256": "0627430181757237ac2cc727d2f74c8441d75ad7d419e4de723f9f3972fca008"
         },
         "ItemUpgradeList": {
-            "count": 3637,
-            "bytes": 1369032,
-            "sha256": "e9a987d0df2d1436d55efcf03652ab06b2d7b11cdf396687c410ef0533b9fc1d"
+            "count": 3668,
+            "bytes": 1695263,
+            "sha256": "a2fa52d446657d8676af627f79a99d69160f9ad4ce707da4f92c325c2327d7bf"
         },
         "MiniatureList": {
             "count": 200,
             "bytes": 35726,
-            "sha256": "fe86558a32c8e7ace6c9b37de4aceec966a9071537ecc6d5673322d27e7bc90c"
+            "sha256": "36dcc76de780d36213effc08c85e509d76e242e6f84cfe63970b25e55ef3931f"
         },
         "ItemExtendTotemList": {
             "count": 271,
             "bytes": 33188,
-            "sha256": "d6d07101d08f3d2bc0ca2ef2fbf4d33050b68b1675d38a5948c1f21f31c637d7"
+            "sha256": "448f8dd26e174914ccf1f1b0a500bcf26d670162431c8736ce4d9c1f97edf947"
         },
         "BarterList": {
-            "count": 28,
-            "bytes": 4009,
-            "sha256": "b4cc74ed43965cf4c3e45089fb15da7081bea0c3571cf7ccf644472b69edefb8"
+            "count": 128,
+            "bytes": 19733,
+            "sha256": "3f46e1cd5f7ca0223f01ff5e3721b15c5f7015acd618390a1b9f51eb51ce05d1"
         },
         "CommercePostNameMap": {
             "count": 17,
@@ -113,36 +113,36 @@
             "sha256": "5c4e4c3dbf7b7b0ba8c8035d4db22fda9e644768499e9e28c55e64f982d5f971"
         },
         "SkillList": {
-            "count": 1171,
-            "bytes": 602436,
-            "sha256": "a7381abdb2f307da7709b7458ecbab6186ad96ae62326a4783732a8f4d593cd2"
+            "count": 1194,
+            "bytes": 612480,
+            "sha256": "7874d207ec94cb4121b1642418792058ced6f49611794e79b9f739f1ab9d5d37"
         }
     },
     "warnings": {
-        "ItemList.Desc: placeholder": {
-            "count": 1402,
-            "examples": [
-                "<nil>"
-            ]
-        },
         "ItemList.Name: known missing string": {
             "count": 577,
             "examples": [
-                "itemdb.9397",
-                "itemdb.9586",
-                "itemdb.2231",
-                "itemdb.9480",
-                "itemdb.12084"
+                "itemdb.9406",
+                "itemdb.2417",
+                "itemdb.9421",
+                "itemdb.9550",
+                "itemdb.9502"
             ]
         },
         "ItemList.Desc: known missing string": {
             "count": 674,
             "examples": [
-                "itemdb.9721",
-                "itemdb.9916",
-                "itemdb.17046",
-                "itemdb.9809",
-                "itemdb.12079"
+                "itemdb.9730",
+                "itemdb.9653",
+                "itemdb.9745",
+                "itemdb.34989",
+                "itemdb.9880"
+            ]
+        },
+        "ItemList.Desc: placeholder": {
+            "count": 1402,
+            "examples": [
+                "<nil>"
             ]
         },
         "RandomTableList.Name: placeholder": {
@@ -151,20 +151,20 @@
                 "<nil>"
             ]
         },
+        "SkillList.Desc: placeholder": {
+            "count": 407,
+            "examples": [
+                "<nil>"
+            ]
+        },
         "SkillList.Name: placeholder": {
             "count": 10,
             "examples": [
                 "unknownid:35020",
-                "unknownid:50148",
                 "unknownid:20015",
-                "unknownid:23015",
-                "unknownid:10035"
-            ]
-        },
-        "SkillList.Desc: placeholder": {
-            "count": 388,
-            "examples": [
-                "<nil>"
+                "unknownid:10035",
+                "unknownid:20014",
+                "unknownid:30021"
             ]
         },
         "SkillList.Desc: known missing string": {
