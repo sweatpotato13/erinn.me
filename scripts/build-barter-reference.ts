@@ -31,10 +31,39 @@ const materials: BarterMaterial[] = resolved.map(item =>
 );
 const byId = new Map(materials.map(item => [item.id, item]));
 
+// Current fixed goods, matched against Labanyu season 16 on 2026-09-11.
+// Other Prilus rows include legacy goods and rotating tier-six candidates.
+const fixedIds = new Map(
+    [
+        [9, 900, 8],
+        [201, 21000, 5],
+        [202, 22000, 5],
+        [203, 23000, 5],
+        [204, 24000, 5],
+    ].flatMap(([postId, base, count]) =>
+        Array.from({ length: count }, (_, i) => [base + i + 1, postId] as const)
+    )
+);
+const fixedRows = data.BarterList.filter(row => fixedIds.has(row.Id));
+assert.equal(
+    fixedRows.length,
+    fixedIds.size,
+    "Missing current fixed barter goods"
+);
+for (const row of fixedRows)
+    assert.equal(
+        row.PostId,
+        fixedIds.get(row.Id),
+        "Fixed barter post mismatch"
+    );
+
 function derive(rows: typeof data.BarterList) {
     const goods = rows.map(row => {
+        // Preserve saved-plan keys after Prilus renumbered the same Iria goods.
+        const keyId =
+            row.PostId === 9 ? row.Id : row.PostId * 100 + (row.Id % 1000);
         const payload = {
-            key: `fixed:${row.PostId}:${row.Id}`,
+            key: `fixed:${row.PostId}:${keyId}`,
             source: "fixed",
             postId: row.PostId,
             postName: strings.get(data.CommercePostNameMap[String(row.PostId)]),
@@ -58,7 +87,7 @@ function derive(rows: typeof data.BarterList) {
     return goods.sort((a, b) => a.key.localeCompare(b.key, "en"));
 }
 
-const fixed = derive(data.BarterList);
+const fixed = derive(fixedRows);
 const seasonPath = resolve(root, "barter-season.json");
 const season = existsSync(seasonPath)
     ? BarterSeasonSchema.parse(JSON.parse(readFileSync(seasonPath, "utf8")))
@@ -87,9 +116,10 @@ const outputs = {
 };
 
 // Source evidence, not a permanent catalog-size constraint.
-assert.equal(fixed.length, data.BarterList.length);
+assert.equal(fixed.length, 28);
 const wood = fixed.find(g => g.key === "fixed:201:20101");
 assert.equal(wood?.name, "우드 테이블");
+assert.equal(wood?.limit, 25);
 assert.deepEqual(wood?.groups, [
     [{ itemId: 50664, count: 4 }],
     [{ itemId: 67201, count: 2 }],
