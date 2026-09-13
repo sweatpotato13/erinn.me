@@ -12,8 +12,10 @@ function Topbar() {
     const trigger = useRef<HTMLButtonElement>(null);
     const desktopNav = useRef<HTMLElement>(null);
     const [open, setOpen] = useState(false);
-    const current = (url: string) =>
-        pathname === url || pathname.startsWith(`${url}/`);
+    const activeUrl = FEATURE_LINKS.filter(
+        link => pathname === link.url || pathname.startsWith(`${link.url}/`)
+    ).sort((a, b) => b.url.length - a.url.length)[0]?.url;
+    const current = (url: string) => activeUrl === url;
     const close = () => dialog.current?.close();
     useEffect(() => {
         const closeOutside = (event: MouseEvent) => {
