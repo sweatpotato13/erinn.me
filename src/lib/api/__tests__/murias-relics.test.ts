@@ -1,0 +1,109 @@
+/** @jest-environment node */
+import { fetchCurrentItemMarket } from "@/lib/api/auction-market";
+import { fetchRelicMarket, getRelicSnapshot } from "@/lib/api/murias-relics";
+
+jest.mock("next/cache", () => ({ unstable_cache: (fn: unknown) => fn }));
+const item = (price = 100, name = "무리아스의 유물") => ({
+    item_name: name,
+    item_display_name: name,
+    item_count: 2,
+    auction_price_per_unit: price,
+    date_auction_expire: "2026-09-15T00:00:00Z",
+    item_option: [
+        {
+            option_type: "무리아스 유물",
+            option_value: "데바스테이션 캐논 대미지 80% 증가 (최대 400%)",
+        },
+    ],
+});
+const page = (items: ReturnType<typeof item>[], cursor: string | null = null) =>
+    new Response(JSON.stringify({ auction_item: items, next_cursor: cursor }));
+const fetchMock = jest.fn();
+beforeEach(() => {
+    global.fetch = fetchMock;
+    fetchMock.mockReset();
+});
+
+test("bounded scans keep partial coverage and locally group unit prices", async () => {
+    fetchMock
+        .mockResolvedValueOnce(page([item(100)], "a"))
+        .mockResolvedValueOnce(page([item(80)], "b"));
+    const result = await fetchRelicMarket(2);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[1][0])).toContain("cursor=a");
+    expect(result).toMatchObject({
+        pages: 2,
+        nextCursor: "b",
+        isComplete: false,
+        receivedCount: 2,
+    });
+    expect(
+        result.cells.find(cell => cell.effectId === 73020 && cell.level === 2)
+    ).toMatchObject({ minUnitPrice: 80, listingCount: 2 });
+});
+
+test("rejects invalid limits, repeating cursors, schema failures and later-page failures", async () => {
+    await expect(fetchRelicMarket(11)).rejects.toThrow("Invalid page limit");
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockImplementation(() => page([item()], "same"));
+    await expect(fetchRelicMarket(3)).rejects.toThrow("Repeated cursor");
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    fetchMock
+        .mockReset()
+        .mockResolvedValueOnce(page([item()], "a"))
+        .mockResolvedValueOnce(new Response("no", { status: 503 }));
+    await expect(fetchRelicMarket(2)).rejects.toThrow();
+    fetchMock
+        .mockReset()
+        .mockResolvedValueOnce(
+            new Response(
+                JSON.stringify({ auction_item: [{ item_name: "bad" }] })
+            )
+        );
+    await expect(fetchRelicMarket(1)).rejects.toThrow(
+        "Invalid upstream response"
+    );
+});
+
+test("Idea exact-name summary excludes variants and preserves default callers", async () => {
+    const name = "무리아스의 유물(이데아)";
+    fetchMock.mockImplementation(() =>
+        page([item(100, name), item(1, name + " 변형")])
+    );
+    expect(await fetchCurrentItemMarket(name, undefined, true)).toMatchObject({
+        minPrice: 100,
+        listingCount: 1,
+    });
+    expect(await fetchCurrentItemMarket(name)).toMatchObject({
+        minPrice: 1,
+        listingCount: 2,
+    });
+});
+
+test("independent failures and empty Idea never produce a zero valuation", async () => {
+    fetchMock.mockImplementation((url: URL) =>
+        url.searchParams.get("item_name")?.includes("이데아")
+            ? page([])
+            : new Response("no", { status: 503 })
+    );
+    expect(await getRelicSnapshot(1)).toMatchObject({
+        fetchedAt: null,
+        relicError: expect.any(String),
+        ideaPrice: null,
+        ideaFetchedAt: expect.any(String),
+        ideaError: null,
+    });
+    fetchMock.mockImplementation((url: URL) =>
+        url.searchParams.get("item_name")?.includes("이데아")
+            ? new Response("no", { status: 503 })
+            : page([item()])
+    );
+    expect(await getRelicSnapshot(1)).toMatchObject({
+        fetchedAt: expect.any(String),
+        relicError: null,
+        isComplete: true,
+        ideaPrice: null,
+        ideaFetchedAt: null,
+        ideaError: expect.any(String),
+    });
+});

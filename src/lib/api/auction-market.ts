@@ -52,7 +52,8 @@ function summarizeCurrentMarket(
 
 export async function fetchCurrentItemMarket(
     itemName: string,
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    exactName = false
 ) {
     const deadline = createRequestDeadline(signal, 20_000);
     const listings: AuctionListResponse["auction_item"] = [];
@@ -77,7 +78,11 @@ export async function fetchCurrentItemMarket(
             AuctionListResponseSchema,
             deadline
         );
-        listings.push(...data.auction_item);
+        listings.push(
+            ...data.auction_item.filter(
+                item => !exactName || item.item_name === itemName
+            )
+        );
         nextCursor = data.next_cursor ?? null;
         pageCount++;
     } while (nextCursor && pageCount < CURRENT_MAX_PAGES);
