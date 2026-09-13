@@ -68,7 +68,11 @@ test("rejects invalid limits, repeating cursors, schema failures and later-page 
 test("Idea exact-name summary excludes variants and preserves default callers", async () => {
     const name = "무리아스의 유물(이데아)";
     fetchMock.mockImplementation(() =>
-        page([item(100, name), item(1, name + " 변형")])
+        page([
+            item(100, name),
+            item(1, name + " 변형"),
+            { ...item(2, name), item_display_name: "변형 이데아" },
+        ])
     );
     expect(await fetchCurrentItemMarket(name, undefined, true)).toMatchObject({
         minPrice: 100,
@@ -76,7 +80,7 @@ test("Idea exact-name summary excludes variants and preserves default callers", 
     });
     expect(await fetchCurrentItemMarket(name)).toMatchObject({
         minPrice: 1,
-        listingCount: 2,
+        listingCount: 3,
     });
 });
 
@@ -105,5 +109,22 @@ test("independent failures and empty Idea never produce a zero valuation", async
         ideaPrice: null,
         ideaFetchedAt: null,
         ideaError: expect.any(String),
+    });
+});
+
+test("maximum scan stays bounded and aborted upstream work reports timeout", async () => {
+    let cursor = 0;
+    fetchMock.mockImplementation(() => page([], String(++cursor)));
+    expect(await fetchRelicMarket(10)).toMatchObject({
+        pages: 10,
+        isComplete: false,
+        nextCursor: "10",
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(10);
+    fetchMock
+        .mockReset()
+        .mockRejectedValue(new DOMException("aborted", "AbortError"));
+    await expect(fetchRelicMarket(1)).rejects.toMatchObject({
+        failureClass: "timeout",
     });
 });

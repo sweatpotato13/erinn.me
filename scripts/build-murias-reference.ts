@@ -16,6 +16,7 @@ assert.deepEqual(
     rules.effects.map(row => row.id).sort()
 );
 assert.equal(new Set(rules.effects.map(row => row.id)).size, 30);
+assert.equal(new Set(rules.effects.map(row => row.template)).size, rows.length);
 for (const effect of rules.effects) {
     const row = rows.find(row => row.Id === effect.id)!;
     assert.equal(

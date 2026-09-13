@@ -80,7 +80,10 @@ export async function fetchCurrentItemMarket(
         );
         listings.push(
             ...data.auction_item.filter(
-                item => !exactName || item.item_name === itemName
+                item =>
+                    !exactName ||
+                    (item.item_name === itemName &&
+                        item.item_display_name === itemName)
             )
         );
         nextCursor = data.next_cursor ?? null;
