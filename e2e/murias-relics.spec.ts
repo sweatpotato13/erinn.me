@@ -68,6 +68,19 @@ test("matrix scroll, keyboard detail, local search and failed refresh", async ({
         )
     ).toBe(true);
     await region.scrollIntoViewIfNeeded();
+    const label = region.getByRole("rowheader").first();
+    await expect(label).toHaveCSS("position", "sticky");
+    await expect(label).toHaveCSS("left", "0px");
+    await expect(label).toHaveCSS(
+        "min-width",
+        page.viewportSize()!.width <= 640 ? "128px" : "176px"
+    );
+    await expect(region.getByRole("columnheader").first()).toHaveCSS(
+        "z-index",
+        "3"
+    );
+    const labelX = (await label.boundingBox())!.x;
+
     const overflow = await region.evaluate(
         element => element.scrollWidth > element.clientWidth
     );
@@ -79,6 +92,7 @@ test("matrix scroll, keyboard detail, local search and failed refresh", async ({
         expect(
             await region.evaluate(element => element.scrollLeft)
         ).toBeGreaterThan(0);
+        expect((await label.boundingBox())!.x).toBeCloseTo(labelX, 0);
         await expect(
             region.getByRole("columnheader", { name: "10레벨", exact: true })
         ).toBeInViewport();

@@ -145,3 +145,30 @@ test("empty and initial failure remain unavailable, and route is discoverable", 
     });
     expect(metadata.alternates?.canonical).toBe("/tools/murias-relics");
 });
+
+test("a server fallback replaces an initial empty failure and retains its original timestamp", async () => {
+    fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => ({
+            ...snapshot(),
+            ...aggregateRelicListings([]),
+            fetchedAt: null,
+            relicError: "초기 조회 실패",
+        }),
+    });
+    render(<RelicTool />);
+    await screen.findByText("초기 조회 실패");
+    fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => ({
+            ...snapshot(),
+            relicError: "전체 조회 실패",
+        }),
+    });
+    fireEvent.click(screen.getByRole("button", { name: "가격 새로고침" }));
+    await screen.findByText("1,234,567 Gold");
+    expect(screen.getByText(/유물 조회:/)).toHaveTextContent("2026. 9. 13.");
+    expect(screen.getByText(/전체 조회 실패/)).toHaveTextContent(
+        "이전 유물 조회 결과"
+    );
+});
