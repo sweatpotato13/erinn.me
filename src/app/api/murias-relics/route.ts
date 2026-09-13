@@ -21,9 +21,9 @@ async function respond(request: Request, refresh: boolean) {
     });
 }
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<NextResponse> {
     return respond(request, false);
 }
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<NextResponse> {
     return respond(request, true);
 }

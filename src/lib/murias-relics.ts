@@ -37,6 +37,18 @@ export interface RelicSnapshot {
     ideaError: string | null;
 }
 
+export type RelicMatch = Pick<RelicCell, "effectId" | "level">;
+export type RelicAggregation = Pick<
+    RelicSnapshot,
+    | "cells"
+    | "receivedCount"
+    | "unclassifiedCount"
+    | "excludedCount"
+    | "rejected"
+>;
+export type RelicMarketSnapshot = RelicAggregation &
+    Pick<RelicSnapshot, "fetchedAt" | "pages" | "nextCursor" | "isComplete">;
+
 // Match complete rendered templates: fixed numbers (e.g. "4개") and maxima
 // must never be mistaken for the rolled value. No numeric tolerance/rounding.
 const matches = new Map(
@@ -51,7 +63,9 @@ const matches = new Map(
     )
 );
 
-export function matchRelicOption(options: RelicListing["item_option"]) {
+export function matchRelicOption(
+    options: RelicListing["item_option"]
+): RelicMatch | null {
     const relics =
         options?.filter(option => option.option_type === "무리아스 유물") ?? [];
     if (relics.length !== 1) return null;
@@ -73,7 +87,33 @@ export function emptyRelicCells(): RelicCell[] {
     );
 }
 
-export function aggregateRelicListings(items: RelicListing[]) {
+function rejectionReason(item: RelicListing): string | null {
+    let reason: string | null = null;
+    if (item.item_name !== reference.item.name)
+        reason = "유물 기본 이름과 다른 아이템";
+    else if (item.item_display_name !== reference.item.name)
+        reason = "인챈트·변형된 표시 이름";
+    else if (
+        !Number.isSafeInteger(item.auction_price_per_unit) ||
+        item.auction_price_per_unit <= 0 ||
+        !Number.isSafeInteger(item.item_count) ||
+        item.item_count <= 0
+    )
+        reason = "유효하지 않은 가격·수량";
+    else if (
+        item.item_option?.some(option =>
+            /인챈트|개조|세공|에르그|내구도|전용화|남은 거래/.test(
+                option.option_type
+            )
+        )
+    )
+        reason = "인챈트·개조·상태 정보가 있는 매물 (복원 기준 비교 제외)";
+    return reason;
+}
+
+export function aggregateRelicListings(
+    items: RelicListing[]
+): RelicAggregation {
     const cells = emptyRelicCells();
     const byKey = new Map(
         cells.map(cell => [`${cell.effectId}:${cell.level}`, cell])
@@ -81,26 +121,7 @@ export function aggregateRelicListings(items: RelicListing[]) {
     const rejected: RelicSnapshot["rejected"] = [];
     let unclassifiedCount = 0;
     for (const item of items) {
-        let reason: string | null = null;
-        if (item.item_name !== reference.item.name)
-            reason = "유물 기본 이름과 다른 아이템";
-        else if (item.item_display_name !== reference.item.name)
-            reason = "인챈트·변형된 표시 이름";
-        else if (
-            !Number.isSafeInteger(item.auction_price_per_unit) ||
-            item.auction_price_per_unit <= 0 ||
-            !Number.isSafeInteger(item.item_count) ||
-            item.item_count <= 0
-        )
-            reason = "유효하지 않은 가격·수량";
-        else if (
-            item.item_option?.some(option =>
-                /인챈트|개조|세공|에르그|내구도|전용화|남은 거래/.test(
-                    option.option_type
-                )
-            )
-        )
-            reason = "인챈트·개조·상태 정보가 있는 매물 (복원 기준 비교 제외)";
+        let reason = rejectionReason(item);
         const match = reason ? null : matchRelicOption(item.item_option);
         if (!reason && !match) {
             reason = "효과·레벨 미분류 (알 수 없거나 중복·상충하는 옵션)";

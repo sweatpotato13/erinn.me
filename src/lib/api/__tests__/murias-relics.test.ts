@@ -1,6 +1,7 @@
 /** @jest-environment node */
 import { fetchCurrentItemMarket } from "@/lib/api/auction-market";
-import { fetchRelicMarket, getRelicSnapshot } from "@/lib/api/murias-relics";
+let fetchRelicMarket: typeof import("@/lib/api/murias-relics").fetchRelicMarket;
+let getRelicSnapshot: typeof import("@/lib/api/murias-relics").getRelicSnapshot;
 
 jest.mock("next/cache", () => ({ unstable_cache: (fn: unknown) => fn }));
 const item = (price = 100, name = "무리아스의 유물") => ({
@@ -19,7 +20,10 @@ const item = (price = 100, name = "무리아스의 유물") => ({
 const page = (items: ReturnType<typeof item>[], cursor: string | null = null) =>
     new Response(JSON.stringify({ auction_item: items, next_cursor: cursor }));
 const fetchMock = jest.fn();
-beforeEach(() => {
+beforeEach(async () => {
+    jest.resetModules();
+    ({ fetchRelicMarket, getRelicSnapshot } =
+        await import("@/lib/api/murias-relics"));
     global.fetch = fetchMock;
     fetchMock.mockReset();
 });
@@ -133,5 +137,50 @@ test("a scan exceeding its deadline fails instead of returning a partial snapsho
         .mockRejectedValue(new DOMException("aborted", "AbortError"));
     await expect(fetchRelicMarket()).rejects.toMatchObject({
         failureClass: "timeout",
+    });
+});
+
+test("server fallback retains complete prices and metadata until another complete scan succeeds", async () => {
+    fetchMock.mockImplementation((url: URL) =>
+        url.searchParams.get("item_name")?.includes("이데아")
+            ? page([])
+            : page([item(100)])
+    );
+    const success = await getRelicSnapshot();
+    fetchMock.mockImplementation((url: URL) => {
+        if (url.searchParams.get("item_name")?.includes("이데아"))
+            return page([]);
+        return url.searchParams.has("cursor")
+            ? new Response("no", { status: 503 })
+            : page([item(1)], "next");
+    });
+    const failed = await getRelicSnapshot();
+    expect(failed).toMatchObject({
+        cells: success.cells,
+        fetchedAt: success.fetchedAt,
+        pages: success.pages,
+        nextCursor: null,
+        isComplete: true,
+        receivedCount: success.receivedCount,
+        excludedCount: success.excludedCount,
+        unclassifiedCount: success.unclassifiedCount,
+        rejected: success.rejected,
+        relicError: expect.any(String),
+        ideaError: null,
+    });
+    fetchMock.mockImplementation(() => page([]));
+    const emptySuccess = await getRelicSnapshot();
+    expect(emptySuccess).toMatchObject({
+        receivedCount: 0,
+        isComplete: true,
+        relicError: null,
+    });
+    fetchMock.mockImplementation(() => new Response("no", { status: 503 }));
+    expect(await getRelicSnapshot()).toMatchObject({
+        cells: emptySuccess.cells,
+        receivedCount: 0,
+        fetchedAt: emptySuccess.fetchedAt,
+        isComplete: true,
+        relicError: expect.any(String),
     });
 });
