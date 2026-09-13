@@ -21,7 +21,7 @@ export const MURIAS_CACHE_TAG = "murias-market-v2-full";
 
 // Complete scans are time-bounded, never silently truncated by page count.
 export async function fetchRelicMarket() {
-    const deadline = createRequestDeadline(undefined, 90_000);
+    const deadline = createRequestDeadline(undefined, 50_000);
     const listings: RelicListing[] = [];
     const cursors = new Set<string>();
     let nextCursor: string | null = null;

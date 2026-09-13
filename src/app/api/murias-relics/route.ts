@@ -6,7 +6,7 @@ import { getRelicSnapshot, MURIAS_CACHE_TAG } from "@/lib/api/murias-relics";
 import { parseQuery } from "@/lib/api/request";
 import { checkOrigin } from "@/lib/utils/check-origin";
 
-export const maxDuration = 120;
+export const maxDuration = 60;
 
 const querySchema = z.object({}).strict();
 

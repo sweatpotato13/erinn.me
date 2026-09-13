@@ -1,7 +1,7 @@
 /** @jest-environment node */
 import { revalidateTag } from "next/cache";
 
-import { GET, POST } from "@/app/api/murias-relics/route";
+import { GET, maxDuration, POST } from "@/app/api/murias-relics/route";
 import { getRelicSnapshot, MURIAS_CACHE_TAG } from "@/lib/api/murias-relics";
 
 jest.mock("next/cache", () => ({ revalidateTag: jest.fn() }));
@@ -33,6 +33,7 @@ test("rejects pagination controls before reading or invalidating caches", async 
     expect(revalidateTag).not.toHaveBeenCalled();
 });
 test("GET uses cache and POST explicitly expires ten-minute market caches", async () => {
+    expect(maxDuration).toBe(60);
     const response = await GET(
         new Request("http://localhost/api/murias-relics")
     );

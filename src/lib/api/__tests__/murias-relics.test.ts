@@ -118,7 +118,7 @@ test("independent failures and empty Idea never produce a zero valuation", async
 test("a scan exceeding its deadline fails instead of returning a partial snapshot", async () => {
     const now = jest.spyOn(Date, "now").mockReturnValue(0);
     fetchMock.mockImplementation(() => {
-        now.mockReturnValue(90_001);
+        now.mockReturnValue(50_001);
         return page([item()], "next");
     });
     try {
