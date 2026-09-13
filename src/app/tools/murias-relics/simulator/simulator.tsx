@@ -17,7 +17,6 @@ import {
     type SimulationPrice,
     summarizeOpenings,
     validSimulationGold,
-    valueMissingOpening,
 } from "@/lib/murias-simulator";
 
 import ui from "./restoration.module.css";
@@ -67,14 +66,6 @@ export default function Simulator() {
     const restorationWindow = useRef<HTMLDetailsElement>(null);
     // Manual drafts are independent of the market response, including blank/invalid edits.
     const [ideaDraft, setIdeaDraft] = useState<string | null>(null);
-    const [feeDraft, setFeeDraft] = useState("3000000");
-    const [membership, setMembership] = useState(false);
-    const [overrides, setOverrides] = useState<Record<string, SimulationPrice>>(
-        {}
-    );
-    const [effectId, setEffectId] = useState(reference.effects[0].id);
-    const [level, setLevel] = useState(1);
-    const [priceDraft, setPriceDraft] = useState("");
     const [openings, setOpenings] = useState<RelicOpening[]>([]);
     const load = useCallback(async (refresh = false) => {
         active.current?.abort();
@@ -135,15 +126,7 @@ export default function Simulator() {
                 ? snapshot.ideaPrice
                 : null
             : parseSimulationGold(ideaDraft);
-    const restorationFee = parseSimulationGold(feeDraft);
     const total = summarizeOpenings(openings);
-    const key = `${effectId}:${level}`;
-    const cellPrice = snapshot?.cells.find(
-        cell => cell.effectId === effectId && cell.level === level
-    )?.minUnitPrice;
-    const selectedPrice =
-        overrides[key]?.value ??
-        (validSimulationGold(cellPrice) ? cellPrice : null);
     const latest = openings.at(-1);
     const commitRows = (next: RelicOpening[]) => {
         summarizeOpenings(next); // Validate all totals before replacing a valid ledger.
@@ -152,8 +135,8 @@ export default function Simulator() {
     const restore = () => {
         setError(null);
         try {
-            if (ideaValue === null || restorationFee === null)
-                throw new Error("이데아 가격과 복원비를 입력해 주세요.");
+            if (ideaValue === null)
+                throw new Error("이데아 가격을 입력해 주세요.");
             const row = restoreRelic(
                 {
                     idea: {
@@ -164,34 +147,13 @@ export default function Simulator() {
                                 ? (snapshot?.ideaFetchedAt ?? null)
                                 : new Date().toISOString(),
                     },
-                    restorationFee,
-                    hasMembership: membership,
                     snapshot,
-                    overrides,
                 },
                 openings.length + 1
             );
             commitRows([...openings, row]);
         } catch (caught) {
             setError(caught instanceof Error ? caught.message : "복원 실패");
-        }
-    };
-    const completeValue = (sequence: number, value: number) => {
-        setError(null);
-        try {
-            commitRows(
-                openings.map(row =>
-                    row.sequence === sequence
-                        ? valueMissingOpening(
-                              row,
-                              value,
-                              new Date().toISOString()
-                          )
-                        : row
-                )
-            );
-        } catch (caught) {
-            setError(caught instanceof Error ? caught.message : "평가 실패");
         }
     };
     return (
@@ -211,419 +173,308 @@ export default function Simulator() {
                     판매액이며, 실제 거래·수익을 보장하지 않습니다.
                 </p>
             </div>
-            <details ref={restorationWindow} open className={ui.window}>
-                <summary className={ui.titlebar}>
-                    <span className={ui.emblem} aria-hidden="true">
-                        ✓
-                    </span>
-                    무리아스의 유물 복원
-                    <span className={ui.windowControls} aria-hidden="true">
-                        <span>−</span>
-                        <span>×</span>
-                    </span>
-                </summary>
-                <div className={ui.body}>
-                    <p className={ui.instruction}>
-                        무리아스의 유물(이데아)를 복원합니다.
-                    </p>
-                    <div className={ui.itemSlot}>
-                        <Image
-                            src="/images/murias/relic.png"
-                            alt="무리아스의 유물"
-                            width={48}
-                            height={48}
-                            unoptimized
-                        />
-                    </div>
-                    <div
-                        role="status"
-                        aria-live="polite"
-                        aria-atomic="true"
-                        className={ui.result}
-                    >
-                        <h2 className="sr-only">최근 복원 결과</h2>
-                        <p className={ui.effect}>
-                            {latest
-                                ? latest.description
-                                : "복원할 무리아스의 유물(이데아)"}
-                        </p>
-                        {latest && (
-                            <>
-                                <p className={ui.sequence}>
-                                    #{latest.sequence} · {latest.level}레벨
-                                </p>
-                                <p className={ui.valuation}>
-                                    {latest.valuation.value === null
-                                        ? "시세 없음 · 손익 미확정"
-                                        : `예상 판매가 ${gold(latest.valuation.value)} · 예상 손익 ${signed(openingAmounts(latest).profit!)}`}
-                                </p>
-                            </>
-                        )}
-                    </div>
-                    <label
-                        className={ui.bank}
-                        title="게임 내 기능입니다. 시뮬레이터는 게임 골드를 사용하지 않습니다."
-                    >
-                        <input type="checkbox" disabled />
-                        은행 직거래
-                    </label>
-                    <div className={ui.buttons}>
-                        <button
-                            className={ui.button}
-                            disabled={
-                                ideaValue === null || restorationFee === null
-                            }
-                            onClick={restore}
-                        >
-                            복원
-                        </button>
-                        <button
-                            className={ui.button}
-                            onClick={() => {
-                                if (restorationWindow.current) {
-                                    restorationWindow.current.open = false;
-                                    restorationWindow.current
-                                        .querySelector("summary")
-                                        ?.focus();
-                                }
-                            }}
-                        >
-                            취소
-                        </button>
-                    </div>
-                </div>
-            </details>
-            <section
-                aria-label="가격과 복원 설정"
-                className={`${s.panel} p-4 space-y-3`}
-            >
-                <h2 className="text-lg font-bold">가격·수수료 가정</h2>
-                <p>
-                    유물 조회: {time(snapshot?.fetchedAt ?? null)} ·{" "}
-                    {snapshot?.isComplete
-                        ? "전체 매물 조회"
-                        : "일부 또는 미조회"}{" "}
-                    · 가격 있음{" "}
-                    {snapshot?.cells.filter(cell =>
-                        validSimulationGold(cell.minUnitPrice)
-                    ).length ?? 0}
-                    /{reference.effects.length * 10}
-                </p>
-                <p>
-                    이데아 조회: {time(snapshot?.ideaFetchedAt ?? null)} ·{" "}
-                    {snapshot?.ideaIsComplete
-                        ? "전체 매물 조회"
-                        : "일부 또는 미조회"}
-                </p>
-                {busy && <p role="status">가격을 조회하는 중입니다…</p>}
-                {[marketError, snapshot?.relicError, snapshot?.ideaError]
-                    .filter(Boolean)
-                    .map((message, i) => (
-                        <p role="alert" key={i}>
-                            {message}
-                        </p>
-                    ))}
-                <button
-                    className="btn btn-sm"
-                    disabled={busy}
-                    onClick={() => void load(true)}
-                >
-                    가격 새로고침
-                </button>
-                <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                        <GoldInput
-                            label="이데아 단가 (Gold)"
-                            value={
-                                ideaDraft ??
-                                (ideaValue === null ? "" : String(ideaValue))
-                            }
-                            onChange={setIdeaDraft}
-                        />
-                        <p>
-                            {ideaDraft === null
-                                ? "조회 매물 기준"
-                                : "수동 입력"}
-                        </p>
-                        <button
-                            className="btn btn-xs"
-                            onClick={() => setIdeaDraft(null)}
-                        >
-                            이데아 시세 사용
-                        </button>
-                    </div>
-                    <GoldInput
-                        label="복원비 (Gold · 수정 가능한 가정)"
-                        value={feeDraft}
-                        onChange={setFeeDraft}
-                    />
-                </div>
-                <p>
-                    복원비 기본 3,000,000 Gold는 한국 서버에서 확인되지 않은
-                    가정입니다. 0~{gold(MAX_GOLD)} 정수만 입력할 수 있습니다.
-                    직접 입력한 0은 무료로 계산합니다.
-                </p>
-                <label className="flex items-center gap-2">
-                    <input
-                        type="checkbox"
-                        checked={membership}
-                        onChange={event => setMembership(event.target.checked)}
-                    />
-                    경매장 멤버십 (4%, 일반 5%)
-                </label>
-                <p>
-                    각 유물을 한 개씩 별도 판매한다고 가정하며, 쿠폰 없이 건별
-                    수수료를 내림 계산합니다. 가격·비용 변경과 새로고침은 이후
-                    복원에만 반영됩니다.
-                </p>
-                {ideaValue === null && (
-                    <p>
-                        이데아 가격이 없거나 유효하지 않습니다. 유효한 단가를
-                        직접 입력해야 복원할 수 있습니다.
-                    </p>
-                )}
-                {restorationFee === null && (
-                    <p>유효한 복원비를 입력해 주세요.</p>
-                )}
-                <details>
-                    <summary className="cursor-pointer">
-                        옵션·레벨별 예상 판매가 직접 설정
-                    </summary>
-                    <div className="grid gap-3 mt-3 sm:grid-cols-2">
-                        <label className="min-w-0">
-                            유물 옵션
-                            <select
-                                className={s.input}
-                                value={effectId}
-                                onChange={event => {
-                                    setEffectId(Number(event.target.value));
-                                    setPriceDraft("");
+            <div className={ui.workspace}>
+                <div className={ui.main}>
+                    <section aria-label="누적 손익" className={ui.ledger}>
+                        <div className={ui.ledgerHead}>
+                            <h2>누적 손익 · {total.count}회 복원</h2>
+                            <button
+                                className="btn btn-sm"
+                                onClick={() => {
+                                    setOpenings([]);
+                                    setError(null);
                                 }}
                             >
-                                {reference.effects.map(effect => (
-                                    <option key={effect.id} value={effect.id}>
-                                        {effect.arcana} ·{" "}
-                                        {effect.template.replace("{0}", "수치")}
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                        <label>
-                            유물 레벨
-                            <select
-                                className={s.input}
-                                value={level}
-                                onChange={event => {
-                                    setLevel(Number(event.target.value));
-                                    setPriceDraft("");
-                                }}
-                            >
-                                {Array.from({ length: 10 }, (_, i) => (
-                                    <option key={i} value={i + 1}>
-                                        {i + 1}레벨
-                                    </option>
-                                ))}
-                            </select>
-                        </label>
-                        <GoldInput
-                            label="예상 판매가 (Gold)"
-                            value={priceDraft}
-                            onChange={setPriceDraft}
-                        />
-                    </div>
-                    <p>
-                        선택한 조합:{" "}
-                        {selectedPrice === null
-                            ? "시세 없음"
-                            : gold(selectedPrice)}{" "}
-                        · {overrides[key] ? "수동 입력" : "조회 매물 기준"}. 이
-                        선택은 추첨 확률에 영향을 주지 않습니다.
-                    </p>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                        <button
-                            className="btn btn-sm"
-                            disabled={parseSimulationGold(priceDraft) === null}
-                            onClick={() =>
-                                setOverrides(previous => ({
-                                    ...previous,
-                                    [key]: {
-                                        value: parseSimulationGold(priceDraft),
-                                        source: "manual",
-                                        at: new Date().toISOString(),
-                                    },
-                                }))
+                                세션 초기화
+                            </button>
+                        </div>
+                        <p
+                            className={ui.profit}
+                            data-profit={
+                                total.profit === null
+                                    ? "unknown"
+                                    : total.profit >= 0
+                                      ? "gain"
+                                      : "loss"
                             }
                         >
-                            선택한 조합 가격 적용
-                        </button>
-                        <button
-                            className="btn btn-sm"
-                            onClick={() =>
-                                setOverrides(previous => {
-                                    const next = { ...previous };
-                                    delete next[key];
-                                    return next;
-                                })
-                            }
-                        >
-                            선택한 조합 시세 사용
-                        </button>
-                    </div>
-                </details>
-            </section>
-            <div className="flex flex-wrap gap-2">
-                <button
-                    className="btn"
-                    onClick={() => {
-                        setOpenings([]);
-                        setError(null);
-                    }}
-                >
-                    세션 초기화
-                </button>
-            </div>
-            <p>
-                복원 한 번에 이데아 1개와 복원비가 소비됩니다. 기록은 이
-                페이지에 머무는 동안 유지되며 초기화하면 삭제됩니다. 현재 가격
-                설정은 유지합니다.
-            </p>
-            {error && <p role="alert">{error}</p>}
-            <section
-                aria-label="누적 손익"
-                className={`${s.panel} p-4 space-y-2`}
-            >
-                <h2 className="text-lg font-bold">
-                    누적 손익 · {total.count}회 복원
-                </h2>
-                <p>
-                    평가 완료 {total.valued}/{total.count}
-                    {total.profit === null && " · 전체 손익 미확정"}
-                </p>
-                <dl className="grid gap-3 sm:grid-cols-2 [&_dd]:font-semibold [&_dd]:break-words">
-                    <div>
-                        <dt>이데아 지출</dt>
-                        <dd>{gold(total.idea)}</dd>
-                    </div>
-                    <div>
-                        <dt>복원비 합계</dt>
-                        <dd>{gold(total.restoration)}</dd>
-                    </div>
-                    <div>
-                        <dt>총 지출</dt>
-                        <dd>{gold(total.cost)}</dd>
-                    </div>
-                    <div>
-                        <dt>평가된 판매 수수료 합계</dt>
-                        <dd>{gold(total.fees)}</dd>
-                    </div>
-                    <div>
-                        <dt>평가된 예상 판매액 합계 (수수료 전)</dt>
-                        <dd>{gold(total.gross)}</dd>
-                    </div>
-                    <div>
-                        <dt>평가된 예상 수령액 합계 (수수료 후)</dt>
-                        <dd>{gold(total.net)}</dd>
-                    </div>
-                    <div>
-                        <dt>이데아 대비 차액</dt>
-                        <dd>
-                            {total.ideaDifference === null
-                                ? "전체 차액 미확정"
-                                : signed(total.ideaDifference)}
-                        </dd>
-                    </div>
-                    <div>
-                        <dt>복원비·판매 수수료 반영 예상 손익</dt>
-                        <dd>
                             {total.profit === null
                                 ? "전체 손익 미확정"
                                 : signed(total.profit)}
-                        </dd>
+                        </p>
+                        <p>
+                            평가 완료 {total.valued}/{total.count}
+                            {total.profit === null && " · 전체 손익 미확정"}
+                        </p>
+                        <dl className={ui.totals}>
+                            <div>
+                                <dt>이데아 지출</dt>
+                                <dd>{gold(total.idea)}</dd>
+                            </div>
+                            <div>
+                                <dt>예상 판매액</dt>
+                                <dd>{gold(total.gross)}</dd>
+                            </div>
+                            <div>
+                                <dt>예상 수령액 (수수료 후)</dt>
+                                <dd>{gold(total.net)}</dd>
+                            </div>
+                        </dl>
+                        <p className="text-xs mt-3">
+                            판매 수수료 5% · 복원 비용은 이데아 단가만
+                            반영합니다.
+                        </p>
+                        {total.profit === null && (
+                            <p className="text-xs">
+                                판매액·수령액은 평가된 결과의 소계이며, 이데아
+                                지출은 모든 복원을 포함합니다.
+                            </p>
+                        )}
+                    </section>
+                    <div className={ui.controls}>
+                        <details
+                            ref={restorationWindow}
+                            open
+                            className={ui.window}
+                        >
+                            <summary className={ui.titlebar}>
+                                <span className={ui.emblem} aria-hidden="true">
+                                    ✓
+                                </span>
+                                무리아스의 유물 복원
+                                <span
+                                    className={ui.windowControls}
+                                    aria-hidden="true"
+                                >
+                                    <span>−</span>
+                                    <span>×</span>
+                                </span>
+                            </summary>
+                            <div className={ui.body}>
+                                <p className={ui.instruction}>
+                                    무리아스의 유물(이데아)를 복원합니다.
+                                </p>
+                                <div className={ui.itemSlot}>
+                                    <Image
+                                        src="/images/murias/relic.png"
+                                        alt="무리아스의 유물"
+                                        width={48}
+                                        height={48}
+                                        unoptimized
+                                    />
+                                </div>
+                                <div
+                                    role="status"
+                                    aria-live="polite"
+                                    aria-atomic="true"
+                                    className={ui.result}
+                                >
+                                    <h2 className="sr-only">최근 복원 결과</h2>
+                                    <p className={ui.effect}>
+                                        {latest
+                                            ? latest.description
+                                            : "복원할 무리아스의 유물(이데아)"}
+                                    </p>
+                                    {latest && (
+                                        <>
+                                            <p className={ui.sequence}>
+                                                #{latest.sequence} ·{" "}
+                                                {latest.level}레벨
+                                            </p>
+                                            <p className={ui.valuation}>
+                                                {latest.valuation.value === null
+                                                    ? "시세 없음 · 손익 미확정"
+                                                    : `예상 판매가 ${gold(latest.valuation.value)} · 예상 손익 ${signed(openingAmounts(latest).profit!)}`}
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+                                <div className={ui.buttons}>
+                                    <button
+                                        className={ui.button}
+                                        disabled={ideaValue === null}
+                                        onClick={restore}
+                                    >
+                                        복원
+                                    </button>
+                                    <button
+                                        className={ui.button}
+                                        onClick={() => {
+                                            if (restorationWindow.current) {
+                                                restorationWindow.current.open = false;
+                                                restorationWindow.current
+                                                    .querySelector("summary")
+                                                    ?.focus();
+                                            }
+                                        }}
+                                    >
+                                        취소
+                                    </button>
+                                </div>
+                            </div>
+                        </details>
+
+                        <section
+                            aria-label="가격과 복원 설정"
+                            className={ui.settings}
+                        >
+                            <h2 className="font-bold">이데아 비용</h2>
+                            <GoldInput
+                                label="이데아 단가 (Gold)"
+                                value={
+                                    ideaDraft ??
+                                    (ideaValue === null
+                                        ? ""
+                                        : String(ideaValue))
+                                }
+                                onChange={setIdeaDraft}
+                            />
+                            <p className="text-xs">
+                                {ideaDraft === null
+                                    ? "조회 매물 기준"
+                                    : "수동 입력"}{" "}
+                                · 0~{gold(MAX_GOLD)} 정수
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                                <button
+                                    className="btn btn-xs"
+                                    onClick={() => setIdeaDraft(null)}
+                                >
+                                    이데아 시세 사용
+                                </button>
+                                <button
+                                    className="btn btn-xs"
+                                    disabled={busy}
+                                    onClick={() => void load(true)}
+                                >
+                                    가격 새로고침
+                                </button>
+                            </div>
+                            {busy && (
+                                <p role="status">가격을 조회하는 중입니다…</p>
+                            )}
+                            {[
+                                marketError,
+                                snapshot?.relicError,
+                                snapshot?.ideaError,
+                            ]
+                                .filter(Boolean)
+                                .map((message, i) => (
+                                    <p role="alert" key={i}>
+                                        {message}
+                                    </p>
+                                ))}
+                            {ideaValue === null && (
+                                <p>
+                                    유효한 이데아 단가를 입력해야 복원할 수
+                                    있습니다.
+                                </p>
+                            )}
+                            <p className="text-xs">
+                                변경한 가격은 이후 복원에만 반영됩니다. 기록은
+                                페이지를 떠나거나 초기화하면 사라집니다.
+                            </p>
+                            <details className="text-xs">
+                                <summary className="cursor-pointer">
+                                    시세 조회 정보
+                                </summary>
+                                <p>
+                                    유물 조회:{" "}
+                                    {time(snapshot?.fetchedAt ?? null)} ·{" "}
+                                    {snapshot?.isComplete
+                                        ? "전체 매물 조회"
+                                        : "일부 또는 미조회"}
+                                </p>
+                                <p>
+                                    가격 있음{" "}
+                                    {snapshot?.cells.filter(cell =>
+                                        validSimulationGold(cell.minUnitPrice)
+                                    ).length ?? 0}
+                                    /{reference.effects.length * 10}
+                                </p>
+                                <p>
+                                    이데아 조회:{" "}
+                                    {time(snapshot?.ideaFetchedAt ?? null)} ·{" "}
+                                    {snapshot?.ideaIsComplete
+                                        ? "전체 매물 조회"
+                                        : "일부 또는 미조회"}
+                                </p>
+                            </details>
+                            {error && <p role="alert">{error}</p>}
+                        </section>
                     </div>
-                </dl>
-                {total.profit === null && (
-                    <p>
-                        판매액·수령액·판매 수수료는 평가된 결과만의 소계입니다.
-                        총 지출은 미평가 결과의 비용도 포함합니다.
-                    </p>
-                )}
-            </section>
-            <section aria-label="복원 기록" className="space-y-3">
-                <h2 className="text-lg font-bold">복원 기록</h2>
-                {!openings.length && <p>아직 복원 기록이 없습니다.</p>}
-                {[...openings].reverse().map(row => (
-                    <OpeningRow
-                        key={row.sequence}
-                        row={row}
-                        onValue={value => completeValue(row.sequence, value)}
-                    />
-                ))}
-            </section>
+                </div>
+                <section aria-label="복원 기록" className={ui.history}>
+                    <h2 className="font-bold p-4 border-b border-base-300">
+                        복원 기록{" "}
+                        <span className="font-normal text-xs">
+                            {total.count}개 · 최신순
+                        </span>
+                    </h2>
+                    <div className={ui.historyList}>
+                        {!openings.length && (
+                            <p className="p-4 text-sm">
+                                아직 복원 기록이 없습니다.
+                            </p>
+                        )}
+                        {[...openings].reverse().map(row => (
+                            <OpeningRow key={row.sequence} row={row} />
+                        ))}
+                    </div>
+                </section>
+            </div>
         </div>
     );
 }
 
-function OpeningRow({
-    row,
-    onValue,
-}: {
-    row: RelicOpening;
-    onValue: (value: number) => void;
-}) {
-    const [draft, setDraft] = useState("");
+function OpeningRow({ row }: { row: RelicOpening }) {
     const amounts = openingAmounts(row);
     return (
-        <article
-            aria-label={`${row.sequence}회 복원`}
-            className={`${s.panel} p-4 space-y-2`}
-        >
-            <h3 className="font-bold">
-                #{row.sequence} · {row.description} · {row.level}레벨
-            </h3>
-            <p>
-                이데아 {gold(row.idea.value)} + 복원비{" "}
-                {gold(row.restorationFee)}
-            </p>
-            {row.valuation.value === null ? (
-                <>
-                    <p>시세 없음 · 손익 미확정</p>
-                    <GoldInput
-                        label={`${row.sequence}회 결과 평가액 (Gold)`}
-                        value={draft}
-                        onChange={setDraft}
-                    />
-                    <button
-                        className="btn btn-sm"
-                        disabled={parseSimulationGold(draft) === null}
-                        onClick={() => onValue(parseSimulationGold(draft)!)}
-                    >
-                        이 결과 평가 적용
-                    </button>
-                </>
-            ) : (
-                <>
-                    <p>
-                        예상 판매가 {gold(row.valuation.value)} · 판매 수수료{" "}
-                        {gold(amounts.fee!)} · 예상 수령액 {gold(amounts.net!)}
-                    </p>
-                    <p>
-                        이데아 대비 차액{" "}
-                        {signed(row.valuation.value - row.idea.value)}
-                    </p>
-                    <p>예상 손익 {signed(amounts.profit!)}</p>
-                </>
-            )}
-            <p>이데아: {source(row.idea)}</p>
-            <p>유물 평가: {source(row.valuation)}</p>
+        <article aria-label={`${row.sequence}회 복원`}>
             <details>
-                <summary className="cursor-pointer">
-                    복원 당시 가격·수수료 근거
+                <summary className={ui.historyRow}>
+                    <span className="text-base-content/60">
+                        #{row.sequence}
+                    </span>
+                    <span className={ui.historyEffect} title={row.description}>
+                        {row.description}
+                    </span>
+                    <span className="text-xs">{row.level}레벨</span>
+                    <span
+                        className={ui.historyProfit}
+                        data-profit={
+                            amounts.profit === null
+                                ? "unknown"
+                                : amounts.profit >= 0
+                                  ? "gain"
+                                  : "loss"
+                        }
+                    >
+                        {amounts.profit === null
+                            ? "미확정"
+                            : `${amounts.profit >= 0 ? "+" : ""}${formatGold(amounts.profit)}`}
+                    </span>
                 </summary>
-                <p>
-                    판매 수수료: {row.hasMembership ? "멤버십 4%" : "일반 5%"} ·
-                    개별 판매 · 쿠폰 없음
-                </p>
-                <p>참조 버전: {row.referenceVersion}</p>
+                <div className="p-3 text-xs space-y-1 border-b border-base-300">
+                    <p>
+                        {row.description} · {row.level}레벨
+                    </p>
+                    <p>이데아 {gold(row.idea.value)}</p>
+                    {row.valuation.value === null ? (
+                        <p>시세 없음 · 손익 미확정</p>
+                    ) : (
+                        <>
+                            <p>
+                                예상 판매가 {gold(row.valuation.value)} · 판매
+                                수수료 {gold(amounts.fee!)} · 예상 수령액{" "}
+                                {gold(amounts.net!)}
+                            </p>
+                            <p>예상 손익 {signed(amounts.profit!)}</p>
+                        </>
+                    )}
+                    <p>이데아: {source(row.idea)}</p>
+                    <p>유물 평가: {source(row.valuation)}</p>
+                </div>
             </details>
         </article>
     );

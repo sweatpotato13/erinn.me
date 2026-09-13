@@ -61,10 +61,9 @@ test("ten clicks accumulate individual fees and costs without fetching, and rese
     for (let i = 0; i < 10; i++) clickRestore();
     expect(screen.getAllByRole("article")).toHaveLength(10);
     expect(summary()).toHaveTextContent("100,000,000 Gold");
-    expect(summary()).toHaveTextContent("30,000,000 Gold");
     expect(summary()).toHaveTextContent("200,000,000 Gold");
     expect(summary()).toHaveTextContent("190,000,000 Gold");
-    expect(summary()).toHaveTextContent("+60,000,000 Gold (이득)");
+    expect(summary()).toHaveTextContent("+90,000,000 Gold (이득)");
     expect(screen.getByRole("status")).toHaveTextContent("#10");
     expect(fetchMock).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole("button", { name: "세션 초기화" }));
@@ -74,7 +73,7 @@ test("ten clicks accumulate individual fees and costs without fetching, and rese
     expect(screen.getByRole("article")).toHaveAccessibleName("1회 복원");
 });
 
-test("unknown Idea blocks opening; explicit zero and missing outputs remain valid, manually valued using original membership", async () => {
+test("only Idea cost is configurable and unknown outcomes never become false losses", async () => {
     fetchMock.mockResolvedValue({
         ok: true,
         json: () => ({
@@ -87,24 +86,21 @@ test("unknown Idea blocks opening; explicit zero and missing outputs remain vali
     render(<Simulator />);
     await screen.findByText("유물 조회 실패");
     expect(screen.getByRole("button", { name: "복원" })).toBeDisabled();
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+    expect(
+        screen.queryByText(/옵션·레벨별 예상 판매가 직접 설정/)
+    ).not.toBeInTheDocument();
+    expect(screen.queryByLabelText(/복원비/)).not.toBeInTheDocument();
     edit("이데아 단가 (Gold)", "0");
-    edit("복원비 (Gold · 수정 가능한 가정)", "0");
-    fireEvent.click(screen.getByRole("checkbox", { name: /경매장 멤버십/ }));
     clickRestore();
     expect(summary()).toHaveTextContent("평가 완료 0/1 · 전체 손익 미확정");
     expect(summary()).not.toHaveTextContent("(손해)");
-    fireEvent.click(screen.getByRole("checkbox", { name: /경매장 멤버십/ }));
-    edit("1회 결과 평가액 (Gold)", "100");
-    fireEvent.click(screen.getByRole("button", { name: "이 결과 평가 적용" }));
-    expect(summary()).toHaveTextContent("+96 Gold (이득)");
-    expect(screen.getByRole("article")).toHaveTextContent("멤버십 4%");
     expect(
-        within(screen.getByRole("article")).getByText(/유물 평가: 수동 입력/)
-    ).toBeVisible();
-    expect(screen.getByRole("status")).toHaveTextContent("#1");
+        within(screen.getByRole("article")).queryByRole("textbox")
+    ).not.toBeInTheDocument();
 });
 
-test("late API responses preserve manual Idea and exact-cell overrides; editor selection does not filter rolls", async () => {
+test("late API responses preserve manual Idea prices", async () => {
     let resolve!: (value: unknown) => void;
     fetchMock.mockReturnValue(
         new Promise(done => {
@@ -113,13 +109,6 @@ test("late API responses preserve manual Idea and exact-cell overrides; editor s
     );
     render(<Simulator />);
     edit("이데아 단가 (Gold)", "500");
-    fireEvent.click(screen.getByText("옵션·레벨별 예상 판매가 직접 설정"));
-    edit("예상 판매가 (Gold)", "1000");
-    fireEvent.click(
-        screen.getByRole("button", { name: "선택한 조합 가격 적용" })
-    );
-    edit("유물 레벨", "10");
-    edit("유물 옵션", String(muriasReference.effects.at(-1)!.id));
     await act(() => {
         resolve({ ok: true, json: () => snapshot() });
         return Promise.resolve();
@@ -129,7 +118,7 @@ test("late API responses preserve manual Idea and exact-cell overrides; editor s
     const row = screen.getByRole("article");
     expect(row).toHaveTextContent("1레벨");
     expect(row).toHaveTextContent("이데아 500 Gold");
-    expect(row).toHaveTextContent("예상 판매가 1,000 Gold");
+    expect(row).toHaveTextContent("예상 판매가 20,000,000 Gold");
     expect(fetchMock).toHaveBeenCalledTimes(1);
 });
 
@@ -139,7 +128,6 @@ test("price refresh and costs only affect future openings, and failed refresh re
         expect(screen.getByRole("button", { name: "복원" })).toBeEnabled()
     );
     clickRestore();
-    edit("복원비 (Gold · 수정 가능한 가정)", "0");
     fetchMock.mockResolvedValueOnce({
         ok: true,
         json: () => ({
@@ -157,7 +145,7 @@ test("price refresh and costs only affect future openings, and failed refresh re
     );
     clickRestore();
     expect(screen.getByRole("article", { name: "1회 복원" })).toHaveTextContent(
-        "+6,000,000 Gold (이득)"
+        "+9,000,000 Gold (이득)"
     );
     expect(screen.getByRole("article", { name: "2회 복원" })).toHaveTextContent(
         "+90 Gold (이득)"
@@ -178,11 +166,8 @@ test("initial network failure allows manual costs and never substitutes another 
     await screen.findByText("네트워크 실패");
     edit("이데아 단가 (Gold)", "10000000");
     clickRestore();
-    expect(summary()).toHaveTextContent("13,000,000 Gold");
+    expect(summary()).toHaveTextContent("10,000,000 Gold");
     expect(summary()).toHaveTextContent("전체 손익 미확정");
-    edit("1회 결과 평가액 (Gold)", "0");
-    fireEvent.click(screen.getByRole("button", { name: "이 결과 평가 적용" }));
-    expect(summary()).toHaveTextContent("-13,000,000 Gold (손해)");
     expect(
         within(screen.getByRole("article")).queryByRole("textbox")
     ).not.toBeInTheDocument();

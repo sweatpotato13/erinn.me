@@ -7,7 +7,7 @@ import Simulator from "./simulator";
 
 const title = "무리아스의 유물 복원 시뮬레이터";
 const description =
-    "균등 확률을 가정해 유물을 복원하고 이데아·복원비·판매 수수료를 반영한 누적 예상 손익을 확인하세요.";
+    "균등 확률을 가정해 유물을 복원하고 이데아 비용과 판매 수수료를 반영한 누적 예상 손익을 확인하세요.";
 export const metadata: Metadata = {
     title,
     description,

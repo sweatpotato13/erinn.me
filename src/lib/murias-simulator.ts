@@ -33,29 +33,19 @@ export interface RelicOpening {
     description: string;
     referenceVersion: string;
     idea: SimulationPrice & { value: number };
-    restorationFee: number;
-    hasMembership: boolean;
     valuation: SimulationPrice;
 }
 
 export function restoreRelic(
     settings: {
         idea: SimulationPrice;
-        restorationFee: number;
-        hasMembership: boolean;
         snapshot: RelicSnapshot | null;
-        overrides: Record<string, SimulationPrice>;
     },
     sequence: number,
     rng: () => number = Math.random
 ): RelicOpening {
-    if (
-        !validSimulationGold(settings.idea.value) ||
-        !validSimulationGold(settings.restorationFee)
-    )
-        throw new Error(
-            "이데아 가격과 복원비를 유효한 Gold 정수로 입력해 주세요."
-        );
+    if (!validSimulationGold(settings.idea.value))
+        throw new Error("이데아 가격을 유효한 Gold 정수로 입력해 주세요.");
     if (!Number.isSafeInteger(sequence) || sequence < 1)
         throw new Error("복원 횟수 한도를 초과했습니다.");
     const draws = [rng(), rng()];
@@ -75,13 +65,11 @@ export function restoreRelic(
         cell => cell.effectId === effect.id && cell.level === level
     );
     const marketPrice = cell?.minUnitPrice;
-    const valuation = settings.overrides[`${effect.id}:${level}`] ?? {
+    const valuation: SimulationPrice = {
         value: validSimulationGold(marketPrice) ? marketPrice : null,
         source: validSimulationGold(marketPrice) ? "market" : "unknown",
         at: snapshot?.fetchedAt ?? null,
     };
-    if (valuation.value !== null && !validSimulationGold(valuation.value))
-        throw new Error("평가 금액이 허용 범위를 벗어났습니다.");
     return {
         sequence,
         effectId: effect.id,
@@ -92,8 +80,6 @@ export function restoreRelic(
         ),
         referenceVersion: muriasReference.version,
         idea: { ...settings.idea, value: settings.idea.value },
-        restorationFee: settings.restorationFee,
-        hasMembership: settings.hasMembership,
         valuation: { ...valuation },
     };
 }
@@ -108,11 +94,11 @@ export function openingAmounts(opening: RelicOpening) {
               : calculateAuctionDistribution({
                     salePrice: value,
                     memberCount: 1,
-                    hasMembership: opening.hasMembership,
+                    hasMembership: false,
                     additionalCost: 0,
                     couponPrices: createEmptyCouponPrices(),
                 }).recommended.auctionFee;
-    const cost = opening.idea.value + opening.restorationFee;
+    const cost = opening.idea.value;
     const net = value === null ? null : value - fee!;
     return { fee, cost, net, profit: net === null ? null : net - cost };
 }
@@ -130,7 +116,6 @@ function safeSum(a: number, b: number): number {
 // if sessions become large enough to make restoration noticeably slow.
 export function summarizeOpenings(openings: RelicOpening[]) {
     let idea = 0,
-        restoration = 0,
         gross = 0,
         fees = 0,
         net = 0,
@@ -138,7 +123,6 @@ export function summarizeOpenings(openings: RelicOpening[]) {
     for (const opening of openings) {
         const amounts = openingAmounts(opening);
         idea = safeSum(idea, opening.idea.value);
-        restoration = safeSum(restoration, opening.restorationFee);
         if (opening.valuation.value !== null) {
             valued++;
             gross = safeSum(gross, opening.valuation.value);
@@ -146,30 +130,14 @@ export function summarizeOpenings(openings: RelicOpening[]) {
             net = safeSum(net, amounts.net!);
         }
     }
-    const cost = safeSum(idea, restoration);
     const complete = valued === openings.length;
     return {
         count: openings.length,
         valued,
         idea,
-        restoration,
-        cost,
         gross,
         fees,
         net,
-        ideaDifference: complete ? gross - idea : null,
-        profit: complete ? net - cost : null,
+        profit: complete ? net - idea : null,
     };
-}
-
-export function valueMissingOpening(
-    opening: RelicOpening,
-    value: number,
-    at: string
-): RelicOpening {
-    if (opening.valuation.value !== null)
-        throw new Error("이미 평가된 기록은 변경할 수 없습니다.");
-    if (!validSimulationGold(value))
-        throw new Error("유효한 Gold 정수를 입력해 주세요.");
-    return { ...opening, valuation: { value, source: "manual", at } };
 }
