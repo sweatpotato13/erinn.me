@@ -1,0 +1,302 @@
+[
+  {
+    "effectId": 73001,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "파이어 리프 어택 대미지 450% 증가 (최대 500%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73002,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "아이스 윈드밀 대미지 420% 증가 (최대 600%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73003,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "라이트닝 스매시 대미지 800% 증가 (최대 800%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73004,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "구원의 메아리 회복량 7% 증가 (최대 10%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73005,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "정화의 고동 지속 시간 1.5초 증가 (최대 5초)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73006,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "붕괴의 파동 지속 시간 5초 증가 (최대 5초)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73007,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "익스플로전 런지 대미지 18% 증가 (최대 20%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73008,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "라이트닝 체인 대미지 24% 증가 (최대 30%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73009,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "스노우 스톰 지속 시간 2초 증가 (최대 5초)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73010,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "플레임 버스트 대미지 225% 증가 (최대 450%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73011,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "하이드로 피어스 최대 대미지 배율 990% 증가 (최대 1100%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73012,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "트라이 어설트 피니시 대미지 1350% 증가 (최대 1500%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73013,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "희생의 응징 : 성찰의 흔적 적용 중 세이크리드 가드 스킬 대미지 4.5% 증가 (최대 5%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73014,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "심판의 일격 대미지 900% 증가 (최대 1000%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73015,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "고결한 서약 매초 희생 회복량 0.35 증가 (최대 0.5)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73016,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "임팩트 크러시 대미지 300% 증가 (최대 500%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73017,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "오버 드라이브 폭발 공격 대미지 280% 증가 (최대 700%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73018,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "어나이얼레이션 대폭발 과열 계수 2.4 증가 (최대 3)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73019,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "헤비 아틸러리 대미지 180% 증가 (최대 300%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73020,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "데바스테이션 캐논 대미지 320% 증가 (최대 400%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73021,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "페이탈 스코프 대미지 360% 증가 (최대 400%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73022,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "케미컬 카니발 대미지 30% 증가 (최대 300%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73023,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "스파이럴 이럽션 대미지 120% 증가 (최대 200%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73024,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "서먼 나이트메어 속성 에너지 4개 소모 추가 대미지 배율 35% 증가 (최대 50%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73025,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "다운비트 악센트 캐릭터 대미지 350% 추가 (최대 700%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73026,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "인터루드 슬래시의 4막: 질투의 화신 대미지 배율 14% 증가 (최대 20%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73027,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "그랜드 피날레 에코 마리오네트 공격에 캐릭터 대미지 1200% 추가 (최대 1500%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73028,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "익시드 : 체인 블로우 피니시 대미지 270% 증가 (최대 300%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73029,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "익시드 : 임팩트 다이브 대미지 100% 증가 (최대 200%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  },
+  {
+    "effectId": 73030,
+    "option": {
+      "option_type": "무리아스 유물",
+      "option_sub_type": null,
+      "option_value": "익시드 : 포스 슬램 대미지 100% 증가 (최대 1000%)",
+      "option_value2": null,
+      "option_desc": null
+    }
+  }
+]

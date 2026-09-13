@@ -42,9 +42,24 @@ export const FEATURE_LINKS = [
         searchVisible: true,
     },
     {
+        label: "무리아스 유물 복원 시뮬레이터",
+        url: "/tools/murias-relics/simulator",
+        description:
+            "유물을 복원하고 이데아 비용과 누적 예상 손익을 확인하세요",
+        group: "강화 시뮬레이터",
+        searchVisible: true,
+    },
+    {
         label: "미니어처 비교",
         url: "/tools/miniatures",
         description: "설치 효과와 구매 후보의 증가량·가격을 비교하세요",
+        group: "아이템 비교",
+        searchVisible: true,
+    },
+    {
+        label: "무리아스의 유물 가격",
+        url: "/tools/murias-relics",
+        description: "아르카나별 유물 효과와 레벨별 매물 가격을 비교하세요",
         group: "아이템 비교",
         searchVisible: true,
     },

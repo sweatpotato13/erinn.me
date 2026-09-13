@@ -56,9 +56,22 @@ function limitedResponse() {
     );
 }
 
+function unavailableResponse(request: NextRequest) {
+    if (
+        request.method === "POST" &&
+        request.nextUrl.pathname === "/api/murias-relics"
+    ) {
+        return NextResponse.json(
+            { error: "Price refresh is temporarily unavailable" },
+            { status: 503, headers: { "Retry-After": "60" } }
+        );
+    }
+    return NextResponse.next();
+}
+
 /**
  * Applies rate limiting to configured public routes via Vercel Firewall WAF.
- * Fails open (passes through) when the WAF rule is unavailable.
+ * Rejects relic refreshes when WAF is unavailable; other requests fail open.
  *
  * @param request - The incoming request to evaluate.
  * @param check - The rate-limit service used to evaluate the request.
@@ -77,13 +90,13 @@ export async function applyRateLimit(
             request,
             rateLimitKey: resolveClientKey(request.headers),
         });
-        if (result.error === "not-found") return NextResponse.next();
+        if (result.error) return unavailableResponse(request);
         if (result.rateLimited) return limitedResponse();
         const response = NextResponse.next();
         response.headers.set("X-RateLimit-Limit", RATE_LIMIT.toString());
         return response;
     } catch {
-        return NextResponse.next();
+        return unavailableResponse(request);
     }
 }
 

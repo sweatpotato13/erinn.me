@@ -150,3 +150,34 @@ describe("rate limiter", () => {
         expect(shouldApplyRateLimit(environment)).toBe(expected);
     });
 });
+
+test("relic POST fails closed on missing or failing WAF, but GET and permitted POST pass", async () => {
+    const post = new NextRequest("http://localhost/api/murias-relics", {
+        method: "POST",
+    });
+    for (const check of [
+        jest.fn().mockResolvedValue({ rateLimited: false, error: "not-found" }),
+        jest.fn().mockRejectedValue(new Error("unavailable")),
+    ]) {
+        const response = await applyRateLimit(post, check);
+        expect(response.status).toBe(503);
+        expect(response.headers.get("x-middleware-next")).toBeNull();
+        expect(response.headers.get("Retry-After")).toBe("60");
+        expect(
+            (await applyRateLimit(new NextRequest(post.url), check)).status
+        ).toBe(200);
+    }
+    const permitted = await applyRateLimit(
+        post,
+        jest.fn().mockResolvedValue({ rateLimited: false })
+    );
+    expect(permitted.headers.get("x-middleware-next")).toBe("1");
+    expect(
+        (
+            await applyRateLimit(
+                post,
+                jest.fn().mockResolvedValue({ rateLimited: true })
+            )
+        ).status
+    ).toBe(429);
+});
