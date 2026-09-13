@@ -557,12 +557,12 @@ function OpeningRow({
                     <p>예상 손익 {signed(amounts.profit!)}</p>
                 </>
             )}
+            <p>이데아: {source(row.idea)}</p>
+            <p>유물 평가: {source(row.valuation)}</p>
             <details>
                 <summary className="cursor-pointer">
                     복원 당시 가격·수수료 근거
                 </summary>
-                <p>이데아: {source(row.idea)}</p>
-                <p>유물 평가: {source(row.valuation)}</p>
                 <p>
                     판매 수수료: {row.hasMembership ? "멤버십 4%" : "일반 5%"} ·
                     개별 판매 · 쿠폰 없음

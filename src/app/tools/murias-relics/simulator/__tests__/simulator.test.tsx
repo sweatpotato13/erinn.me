@@ -98,7 +98,9 @@ test("unknown Idea blocks opening; explicit zero and missing outputs remain vali
     fireEvent.click(screen.getByRole("button", { name: "이 결과 평가 적용" }));
     expect(summary()).toHaveTextContent("+96 Gold (이득)");
     expect(screen.getByRole("article")).toHaveTextContent("멤버십 4%");
-    expect(screen.getByRole("article")).toHaveTextContent("수동 입력");
+    expect(
+        within(screen.getByRole("article")).getByText(/유물 평가: 수동 입력/)
+    ).toBeVisible();
     expect(screen.getByRole("status")).toHaveTextContent("#1");
 });
 
