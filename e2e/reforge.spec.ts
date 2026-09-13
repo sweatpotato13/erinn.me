@@ -480,7 +480,7 @@ test("server HTML, social metadata, real image and base-only sitemap", async ({
             'name="twitter:card" content="summary_large_image"'
         );
         expect(html).toContain("계산 가정과 출처");
-        expect(html).toContain("1788405829");
+        expect(html).toContain(String(version));
         expect(html).not.toContain("EquipFilterMap");
     }
     const image = await request.get(`${base}/preview`);

@@ -49,6 +49,13 @@ export const FEATURE_LINKS = [
         searchVisible: true,
     },
     {
+        label: "무리아스의 유물 가격",
+        url: "/tools/murias-relics",
+        description: "아르카나별 유물 효과와 레벨별 매물 가격을 비교하세요",
+        group: "아이템 비교",
+        searchVisible: true,
+    },
+    {
         label: "토템 비교",
         url: "/tools/totems",
         description: "토템의 옵션 범위와 매물별 실제 수치·가격을 비교하세요",
