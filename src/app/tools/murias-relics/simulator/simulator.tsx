@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import s from "@/components/tools/preparation.module.css";
@@ -18,6 +19,8 @@ import {
     validSimulationGold,
     valueMissingOpening,
 } from "@/lib/murias-simulator";
+
+import ui from "./restoration.module.css";
 
 const gold = (value: number) => `${formatGold(value)} Gold`;
 const time = (value: string | null) =>
@@ -61,6 +64,7 @@ export default function Simulator() {
     const [marketError, setMarketError] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const active = useRef<AbortController | null>(null);
+    const restorationWindow = useRef<HTMLDetailsElement>(null);
     // Manual drafts are independent of the market response, including blank/invalid edits.
     const [ideaDraft, setIdeaDraft] = useState<string | null>(null);
     const [feeDraft, setFeeDraft] = useState("3000000");
@@ -207,6 +211,88 @@ export default function Simulator() {
                     판매액이며, 실제 거래·수익을 보장하지 않습니다.
                 </p>
             </div>
+            <details ref={restorationWindow} open className={ui.window}>
+                <summary className={ui.titlebar}>
+                    <span className={ui.emblem} aria-hidden="true">
+                        ✓
+                    </span>
+                    무리아스의 유물 복원
+                    <span className={ui.windowControls} aria-hidden="true">
+                        <span>−</span>
+                        <span>×</span>
+                    </span>
+                </summary>
+                <div className={ui.body}>
+                    <p className={ui.instruction}>
+                        무리아스의 유물(이데아)를 복원합니다.
+                    </p>
+                    <div className={ui.itemSlot}>
+                        <Image
+                            src="/images/murias/relic.png"
+                            alt="무리아스의 유물"
+                            width={48}
+                            height={48}
+                            unoptimized
+                        />
+                    </div>
+                    <div
+                        role="status"
+                        aria-live="polite"
+                        aria-atomic="true"
+                        className={ui.result}
+                    >
+                        <h2 className="sr-only">최근 복원 결과</h2>
+                        <p className={ui.effect}>
+                            {latest
+                                ? latest.description
+                                : "복원할 무리아스의 유물(이데아)"}
+                        </p>
+                        {latest && (
+                            <>
+                                <p className={ui.sequence}>
+                                    #{latest.sequence} · {latest.level}레벨
+                                </p>
+                                <p className={ui.valuation}>
+                                    {latest.valuation.value === null
+                                        ? "시세 없음 · 손익 미확정"
+                                        : `예상 판매가 ${gold(latest.valuation.value)} · 예상 손익 ${signed(openingAmounts(latest).profit!)}`}
+                                </p>
+                            </>
+                        )}
+                    </div>
+                    <label
+                        className={ui.bank}
+                        title="게임 내 기능입니다. 시뮬레이터는 게임 골드를 사용하지 않습니다."
+                    >
+                        <input type="checkbox" disabled />
+                        은행 직거래
+                    </label>
+                    <div className={ui.buttons}>
+                        <button
+                            className={ui.button}
+                            disabled={
+                                ideaValue === null || restorationFee === null
+                            }
+                            onClick={restore}
+                        >
+                            복원
+                        </button>
+                        <button
+                            className={ui.button}
+                            onClick={() => {
+                                if (restorationWindow.current) {
+                                    restorationWindow.current.open = false;
+                                    restorationWindow.current
+                                        .querySelector("summary")
+                                        ?.focus();
+                                }
+                            }}
+                        >
+                            취소
+                        </button>
+                    </div>
+                </div>
+            </details>
             <section
                 aria-label="가격과 복원 설정"
                 className={`${s.panel} p-4 space-y-3`}
@@ -387,13 +473,6 @@ export default function Simulator() {
             </section>
             <div className="flex flex-wrap gap-2">
                 <button
-                    className="btn btn-primary motion-reduce:transition-none"
-                    disabled={ideaValue === null || restorationFee === null}
-                    onClick={restore}
-                >
-                    복원
-                </button>
-                <button
                     className="btn"
                     onClick={() => {
                         setOpenings([]);
@@ -409,29 +488,6 @@ export default function Simulator() {
                 설정은 유지합니다.
             </p>
             {error && <p role="alert">{error}</p>}
-            <div
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
-                className={`${s.panel} p-4`}
-            >
-                <h2 className="font-bold">최근 복원 결과</h2>
-                {latest ? (
-                    <>
-                        <p>
-                            #{latest.sequence} · {latest.description} ·{" "}
-                            {latest.level}레벨
-                        </p>
-                        <p>
-                            {latest.valuation.value === null
-                                ? "시세 없음 · 손익 미확정"
-                                : `예상 판매가 ${gold(latest.valuation.value)} · 예상 손익 ${signed(openingAmounts(latest).profit!)}`}
-                        </p>
-                    </>
-                ) : (
-                    <p>복원 버튼을 눌러 시작하세요.</p>
-                )}
-            </div>
             <section
                 aria-label="누적 손익"
                 className={`${s.panel} p-4 space-y-2`}

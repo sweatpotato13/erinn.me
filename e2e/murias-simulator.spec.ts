@@ -53,6 +53,20 @@ test("ten restorations by keyboard, reduced motion, frozen ledger and no per-ope
     await expect(page.getByRole("article")).toHaveCount(10);
     await expect(page.getByRole("status")).toContainText("#10");
     expect(requests).toBe(before);
+    await expect(
+        page.getByRole("img", { name: "무리아스의 유물", exact: true })
+    ).toBeVisible();
+    await expect(
+        page.getByRole("checkbox", { name: "은행 직거래" })
+    ).toBeDisabled();
+    await page.getByRole("button", { name: "취소", exact: true }).click();
+    await expect(restore).toBeHidden();
+    await expect(total).toContainText("평가 완료 10/10");
+    await page
+        .locator("summary")
+        .filter({ hasText: "무리아스의 유물 복원" })
+        .click();
+    await expect(restore).toBeVisible();
     await expect(restore).toHaveCSS("transition-duration", "0s");
     await page.getByLabel("이데아 단가 (Gold)").fill("0");
     await expect(total).toContainText("+60,000,000 Gold (이득)");

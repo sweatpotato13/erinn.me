@@ -89,11 +89,11 @@ test("unknown Idea blocks opening; explicit zero and missing outputs remain vali
     expect(screen.getByRole("button", { name: "복원" })).toBeDisabled();
     edit("이데아 단가 (Gold)", "0");
     edit("복원비 (Gold · 수정 가능한 가정)", "0");
-    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("checkbox", { name: /경매장 멤버십/ }));
     clickRestore();
     expect(summary()).toHaveTextContent("평가 완료 0/1 · 전체 손익 미확정");
     expect(summary()).not.toHaveTextContent("(손해)");
-    fireEvent.click(screen.getByRole("checkbox"));
+    fireEvent.click(screen.getByRole("checkbox", { name: /경매장 멤버십/ }));
     edit("1회 결과 평가액 (Gold)", "100");
     fireEvent.click(screen.getByRole("button", { name: "이 결과 평가 적용" }));
     expect(summary()).toHaveTextContent("+96 Gold (이득)");
