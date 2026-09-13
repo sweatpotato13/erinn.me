@@ -100,3 +100,25 @@ test("aggregates unit asking prices, keeps all null cells and accounts for rejec
     expect(result.unclassifiedCount).toBe(1);
     expect(result.rejected).toHaveLength(7);
 });
+
+test.each(["option_sub_type", "option_value", "option_value2", "option_desc"])(
+    "excludes state markers in %s rather than pricing the listing",
+    field => {
+        const result = aggregateRelicListings([
+            listing(1, {
+                item_option: [
+                    cannon,
+                    { option_type: "상태", [field]: "남은 거래 1회" },
+                ],
+            }),
+            listing(80),
+        ]);
+        expect(result.excludedCount).toBe(1);
+        expect(result.unclassifiedCount).toBe(0);
+        expect(
+            result.cells.find(
+                cell => cell.effectId === 73020 && cell.level === 2
+            )
+        ).toMatchObject({ minUnitPrice: 80, listingCount: 1 });
+    }
+);

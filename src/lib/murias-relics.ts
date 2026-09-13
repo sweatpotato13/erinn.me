@@ -102,8 +102,16 @@ function rejectionReason(item: RelicListing): string | null {
         reason = "유효하지 않은 가격·수량";
     else if (
         item.item_option?.some(option =>
-            /인챈트|개조|세공|에르그|내구도|전용화|남은 거래/.test(
-                option.option_type
+            [
+                option.option_type,
+                option.option_sub_type,
+                option.option_value,
+                option.option_value2,
+                option.option_desc,
+            ].some(value =>
+                /인챈트|개조|세공|에르그|내구도|전용화|남은 거래/.test(
+                    value ?? ""
+                )
             )
         )
     )
