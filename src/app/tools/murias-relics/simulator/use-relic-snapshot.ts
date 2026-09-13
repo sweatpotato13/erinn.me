@@ -25,7 +25,7 @@ export function useRelicSnapshot() {
             });
             if (!response.ok)
                 throw new Error(
-                    "가격 조회 실패 · 이전 가격을 유지합니다. 수동 가격으로 복원할 수 있습니다."
+                    "가격 조회 실패 · 가격을 불러오지 못했습니다. 이전 조회 결과를 유지합니다."
                 );
             const next: RelicSnapshot = await response.json();
             if (controller.signal.aborted) return;
@@ -33,25 +33,7 @@ export function useRelicSnapshot() {
                 throw new Error(
                     "참조 데이터가 변경되었습니다. 페이지를 새로고침해 주세요."
                 );
-            setSnapshot(previous => ({
-                ...next,
-                ...(next.relicError &&
-                previous?.fetchedAt &&
-                (!next.fetchedAt || previous.fetchedAt > next.fetchedAt)
-                    ? {
-                          cells: previous.cells,
-                          fetchedAt: previous.fetchedAt,
-                          isComplete: previous.isComplete,
-                      }
-                    : {}),
-                ...(next.ideaError && previous
-                    ? {
-                          ideaPrice: previous.ideaPrice,
-                          ideaFetchedAt: previous.ideaFetchedAt,
-                          ideaIsComplete: previous.ideaIsComplete,
-                      }
-                    : {}),
-            }));
+            setSnapshot(previous => retainSnapshot(previous, next));
         } catch (caught) {
             if (!controller.signal.aborted)
                 setMarketError(
@@ -66,4 +48,36 @@ export function useRelicSnapshot() {
         return () => active.current?.abort();
     }, [load]);
     return { load, snapshot, busy, marketError };
+}
+
+function retainSnapshot(
+    previous: RelicSnapshot | null,
+    next: RelicSnapshot
+): RelicSnapshot {
+    if (!previous) return next;
+    return {
+        ...next,
+        ...(next.relicError &&
+        previous.fetchedAt &&
+        (!next.fetchedAt || previous.fetchedAt > next.fetchedAt)
+            ? {
+                  cells: previous.cells,
+                  fetchedAt: previous.fetchedAt,
+                  pages: previous.pages,
+                  nextCursor: previous.nextCursor,
+                  isComplete: previous.isComplete,
+                  receivedCount: previous.receivedCount,
+                  unclassifiedCount: previous.unclassifiedCount,
+                  excludedCount: previous.excludedCount,
+                  rejected: previous.rejected,
+              }
+            : {}),
+        ...(next.ideaError
+            ? {
+                  ideaPrice: previous.ideaPrice,
+                  ideaFetchedAt: previous.ideaFetchedAt,
+                  ideaIsComplete: previous.ideaIsComplete,
+              }
+            : {}),
+    };
 }

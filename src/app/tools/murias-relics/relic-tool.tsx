@@ -2,14 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-    Fragment,
-    type RefObject,
-    useCallback,
-    useEffect,
-    useRef,
-    useState,
-} from "react";
+import { Fragment, type RefObject, useRef, useState } from "react";
 
 import prep from "@/components/tools/preparation.module.css";
 import {
@@ -20,6 +13,8 @@ import {
     type RelicListing,
     type RelicSnapshot,
 } from "@/lib/murias-relics";
+
+import { useRelicSnapshot } from "./simulator/use-relic-snapshot";
 
 const emptyCells = emptyRelicCells();
 const gold = (value: number) => `${value.toLocaleString("ko-KR")} Gold`;
@@ -43,77 +38,31 @@ function ListingDetails({ item }: { item: RelicListing }) {
 }
 
 export default function RelicTool() {
-    const [snapshot, setSnapshot] = useState<RelicSnapshot | null>(null);
-    const [busy, setBusy] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const { snapshot, busy, marketError: error, load } = useRelicSnapshot();
     const [search, setSearch] = useState("");
+    return (
+        <div className="space-y-4">
+            <RelicToolbar
+                search={search}
+                onSearch={setSearch}
+                busy={busy}
+                onRefresh={() => void load(true)}
+            />
+            <StatusSummary snapshot={snapshot} busy={busy} error={error} />
+            <RelicCatalog snapshot={snapshot} search={search} />
+        </div>
+    );
+}
+
+function RelicCatalog({
+    snapshot,
+    search,
+}: {
+    snapshot: RelicSnapshot | null;
+    search: string;
+}) {
     const [selected, setSelected] = useState<string | null>(null);
-    const active = useRef<AbortController | null>(null);
     const detail = useRef<HTMLElement>(null);
-    const load = useCallback(async (refresh = false) => {
-        active.current?.abort();
-        const controller = new AbortController();
-        active.current = controller;
-        setBusy(true);
-        setError(null);
-        try {
-            const response = await fetch("/api/murias-relics", {
-                method: refresh ? "POST" : "GET",
-                signal: controller.signal,
-            });
-            if (!response.ok)
-                throw new Error(
-                    "가격을 불러오지 못했습니다. 이전 조회 결과가 있으면 유지합니다."
-                );
-            const next: RelicSnapshot = await response.json();
-            if (controller.signal.aborted) return;
-            if (next.referenceVersion !== reference.version)
-                throw new Error(
-                    "참조 데이터가 갱신되었습니다. 페이지를 새로고침해 주세요."
-                );
-            setSnapshot(previous => {
-                if (!previous) return next;
-                return {
-                    ...next,
-                    ...(next.relicError &&
-                    previous.fetchedAt &&
-                    (!next.fetchedAt || previous.fetchedAt > next.fetchedAt)
-                        ? {
-                              cells: previous.cells,
-                              fetchedAt: previous.fetchedAt,
-                              pages: previous.pages,
-                              nextCursor: previous.nextCursor,
-                              isComplete: previous.isComplete,
-                              receivedCount: previous.receivedCount,
-                              unclassifiedCount: previous.unclassifiedCount,
-                              excludedCount: previous.excludedCount,
-                              rejected: previous.rejected,
-                          }
-                        : {}),
-                    ...(next.ideaError
-                        ? {
-                              ideaPrice: previous.ideaPrice,
-                              ideaFetchedAt: previous.ideaFetchedAt,
-                              ideaIsComplete: previous.ideaIsComplete,
-                          }
-                        : {}),
-                };
-            });
-        } catch (caught) {
-            if (!controller.signal.aborted)
-                setError(
-                    caught instanceof Error
-                        ? caught.message
-                        : "조회에 실패했습니다."
-                );
-        } finally {
-            if (!controller.signal.aborted) setBusy(false);
-        }
-    }, []);
-    useEffect(() => {
-        void load();
-        return () => active.current?.abort();
-    }, [load]);
     const cells = snapshot?.cells ?? emptyCells;
     const byKey = new Map(
         cells.map(cell => [`${cell.effectId}:${cell.level}`, cell])
@@ -125,39 +74,19 @@ export default function RelicTool() {
     const effects = reference.effects.filter(effect =>
         `${effect.arcana} ${effect.template}`.includes(search.trim())
     );
-    const arcanas = [...new Set(effects.map(effect => effect.arcana))];
     const selectCell = (key: string) => {
         setSelected(key);
         requestAnimationFrame(() => detail.current?.focus());
     };
     return (
-        <div className="space-y-4">
-            <RelicToolbar
-                search={search}
-                onSearch={setSearch}
-                busy={busy}
-                onRefresh={() => void load(true)}
+        <>
+            <RelicMatrices
+                effects={effects}
+                byKey={byKey}
+                selected={selected}
+                onSelect={selectCell}
+                fetched={!!snapshot?.fetchedAt}
             />
-            <StatusSummary snapshot={snapshot} busy={busy} error={error} />
-            {!effects.length ? (
-                <p>검색 결과가 없습니다.</p>
-            ) : (
-                <div className={prep.catalog}>
-                    {arcanas.map(arcana => (
-                        <ArcanaMatrix
-                            key={arcana}
-                            arcana={arcana}
-                            effects={effects.filter(
-                                effect => effect.arcana === arcana
-                            )}
-                            byKey={byKey}
-                            selected={selected}
-                            onSelect={selectCell}
-                            fetched={!!snapshot?.fetchedAt}
-                        />
-                    ))}
-                </div>
-            )}
             <p className="text-sm">
                 표를 좌우로 스크롤할 수 있습니다. — 표시는 불러온 매물에서
                 가격을 찾지 못했음을 뜻합니다. 셀을 선택하면 매물 근거를 확인할
@@ -172,7 +101,7 @@ export default function RelicTool() {
                 />
             )}
             <RejectedListings rejected={snapshot?.rejected ?? []} />
-        </div>
+        </>
     );
 }
 
@@ -472,5 +401,37 @@ function RejectedListings({
                 </Fragment>
             ))}
         </details>
+    );
+}
+
+function RelicMatrices({
+    effects,
+    ...props
+}: { effects: RelicEffect[] } & MatrixProps) {
+    const { byKey, selected, onSelect, fetched } = props;
+    return (
+        <>
+            {!effects.length ? (
+                <p>검색 결과가 없습니다.</p>
+            ) : (
+                <div className={prep.catalog}>
+                    {[...new Set(effects.map(effect => effect.arcana))].map(
+                        arcana => (
+                            <ArcanaMatrix
+                                key={arcana}
+                                arcana={arcana}
+                                effects={effects.filter(
+                                    effect => effect.arcana === arcana
+                                )}
+                                byKey={byKey}
+                                selected={selected}
+                                onSelect={onSelect}
+                                fetched={fetched}
+                            />
+                        )
+                    )}
+                </div>
+            )}
+        </>
     );
 }

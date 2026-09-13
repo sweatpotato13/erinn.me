@@ -135,7 +135,7 @@
     margin: 0 auto;
     border: 1px solid #46a5c6;
     border-radius: 3px 3px 0 0;
-    background: linear-gradient(110deg, #d3eef5, #c6e7f1);
+    background: linear-gradient(110deg, #18343a, #203d42);
     box-shadow:
         inset 0 0 0 1px #e5f8fc,
         0 1px 3px #16495a40;
@@ -203,6 +203,7 @@
     font-weight: normal;
 }
 .body {
+    color: #f1f5f9;
     position: relative;
     min-height: 318px;
     padding: 5px 12px 58px;

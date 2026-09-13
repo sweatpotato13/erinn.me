@@ -60,9 +60,33 @@ function GoldInput({
 }
 
 export default function Simulator() {
-    const { load, snapshot, busy, marketError } = useRelicSnapshot();
+    const market = useRelicSnapshot();
+    const session = useRestorationSession(market.snapshot);
+    return (
+        <div className="space-y-4">
+            <div className={ui.workspace}>
+                <div className={ui.main}>
+                    <SessionTotals
+                        total={session.total}
+                        onReset={session.reset}
+                    />
+                    <div className={ui.controls}>
+                        <RestorationWindow
+                            latest={session.latest}
+                            ideaValue={session.ideaValue}
+                            restore={session.restore}
+                        />
+                        <PriceSettings {...market} {...session} />
+                    </div>
+                </div>
+                <RestorationHistory openings={session.openings} />
+            </div>
+        </div>
+    );
+}
+
+function useRestorationSession(snapshot: RelicSnapshot | null) {
     const [error, setError] = useState<string | null>(null);
-    const restorationWindow = useRef<HTMLDetailsElement>(null);
     // Manual drafts are independent of the market response, including blank/invalid edits.
     const [ideaDraft, setIdeaDraft] = useState<string | null>(null);
     const [openings, setOpenings] = useState<RelicOpening[]>([]);
@@ -83,18 +107,10 @@ export default function Simulator() {
         try {
             if (ideaValue === null)
                 throw new Error("이데아 가격을 입력해 주세요.");
-            const row = restoreRelic(
-                {
-                    idea: {
-                        value: ideaValue,
-                        source: ideaDraft === null ? "market" : "manual",
-                        at:
-                            ideaDraft === null
-                                ? (snapshot?.ideaFetchedAt ?? null)
-                                : new Date().toISOString(),
-                    },
-                    snapshot,
-                },
+            const row = createOpening(
+                ideaValue,
+                ideaDraft,
+                snapshot,
                 openings.length + 1
             );
             commitRows([...openings, row]);
@@ -102,132 +118,174 @@ export default function Simulator() {
             setError(caught instanceof Error ? caught.message : "복원 실패");
         }
     };
-    return (
-        <div className="space-y-4">
-            <div className={ui.workspace}>
-                <div className={ui.main}>
-                    <SessionTotals
-                        total={total}
-                        onReset={() => {
-                            setOpenings([]);
-                            setError(null);
-                        }}
-                    />
-                    <div className={ui.controls}>
-                        <details
-                            ref={restorationWindow}
-                            open
-                            className={ui.window}
-                        >
-                            <summary className={ui.titlebar}>
-                                <span className={ui.emblem} aria-hidden="true">
-                                    ✓
-                                </span>
-                                무리아스의 유물 복원
-                                <span
-                                    className={ui.windowControls}
-                                    aria-hidden="true"
-                                >
-                                    <span>−</span>
-                                    <span>×</span>
-                                </span>
-                            </summary>
-                            <div className={ui.body}>
-                                <p className={ui.instruction}>
-                                    무리아스의 유물(이데아)를 복원합니다.
-                                </p>
-                                <div className={ui.itemSlot}>
-                                    <Image
-                                        src="/images/murias/relic.png"
-                                        alt="무리아스의 유물"
-                                        width={48}
-                                        height={48}
-                                        unoptimized
-                                    />
-                                </div>
-                                <div
-                                    role="status"
-                                    aria-live="polite"
-                                    aria-atomic="true"
-                                    className={ui.result}
-                                >
-                                    <h2 className="sr-only">최근 복원 결과</h2>
-                                    <p className={ui.effect}>
-                                        {latest
-                                            ? latest.description
-                                            : "복원할 무리아스의 유물(이데아)"}
-                                    </p>
-                                    {latest && (
-                                        <>
-                                            <p className={ui.sequence}>
-                                                #{latest.sequence} ·{" "}
-                                                {latest.level}레벨
-                                            </p>
-                                            <p className={ui.valuation}>
-                                                {latest.valuation.value === null
-                                                    ? "시세 없음 · 손익 미확정"
-                                                    : `예상 판매가 ${gold(latest.valuation.value)} · 예상 손익 ${signed(openingAmounts(latest).profit!)}`}
-                                            </p>
-                                        </>
-                                    )}
-                                </div>
-                                <div className={ui.buttons}>
-                                    <button
-                                        className={ui.button}
-                                        disabled={ideaValue === null}
-                                        onClick={restore}
-                                    >
-                                        복원
-                                    </button>
-                                    <button
-                                        className={ui.button}
-                                        onClick={() => {
-                                            if (restorationWindow.current) {
-                                                restorationWindow.current.open = false;
-                                                restorationWindow.current
-                                                    .querySelector("summary")
-                                                    ?.focus();
-                                            }
-                                        }}
-                                    >
-                                        취소
-                                    </button>
-                                </div>
-                            </div>
-                        </details>
+    const reset = () => {
+        setOpenings([]);
+        setError(null);
+    };
+    return {
+        error,
+        ideaDraft,
+        setIdeaDraft,
+        ideaValue,
+        openings,
+        total,
+        latest,
+        restore,
+        reset,
+    };
+}
 
-                        <PriceSettings
-                            ideaDraft={ideaDraft}
-                            ideaValue={ideaValue}
-                            setIdeaDraft={setIdeaDraft}
-                            busy={busy}
-                            load={load}
-                            marketError={marketError}
-                            snapshot={snapshot}
-                            error={error}
-                        />
-                    </div>
+function createOpening(
+    ideaValue: number,
+    ideaDraft: string | null,
+    snapshot: RelicSnapshot | null,
+    sequence: number
+) {
+    return restoreRelic(
+        {
+            idea: {
+                value: ideaValue,
+                source: ideaDraft === null ? "market" : "manual",
+                at:
+                    ideaDraft === null
+                        ? (snapshot?.ideaFetchedAt ?? null)
+                        : new Date().toISOString(),
+            },
+            snapshot,
+        },
+        sequence
+    );
+}
+
+function RestorationWindow({
+    latest,
+    ideaValue,
+    restore,
+}: {
+    latest: RelicOpening | undefined;
+    ideaValue: number | null;
+    restore: () => void;
+}) {
+    const [open, setOpen] = useState(true);
+    const restorationWindow = useRef<HTMLDetailsElement>(null);
+    const close = () => {
+        setOpen(false);
+        restorationWindow.current?.querySelector("summary")?.focus();
+    };
+    return (
+        <details
+            ref={restorationWindow}
+            open={open}
+            onToggle={event => setOpen(event.currentTarget.open)}
+            className={ui.window}
+        >
+            <RestorationHeader />
+            <div className={ui.body}>
+                <p className={ui.instruction}>
+                    무리아스의 유물(이데아)를 복원합니다.
+                </p>
+                <div className={ui.itemSlot}>
+                    <Image
+                        src="/images/murias/relic.png"
+                        alt="무리아스의 유물"
+                        width={48}
+                        height={48}
+                        unoptimized
+                    />
                 </div>
-                <section aria-label="복원 기록" className={ui.history}>
-                    <h2 className="font-bold p-4 border-b border-base-300">
-                        복원 기록{" "}
-                        <span className="font-normal text-xs">
-                            {total.count}개 · 최신순
-                        </span>
-                    </h2>
-                    <div className={ui.historyList}>
-                        {!openings.length && (
-                            <p className="p-4 text-sm">
-                                아직 복원 기록이 없습니다.
-                            </p>
-                        )}
-                        {[...openings].reverse().map(row => (
-                            <OpeningRow key={row.sequence} row={row} />
-                        ))}
-                    </div>
-                </section>
+                <RestorationResult latest={latest} />
+                <RestorationActions
+                    disabled={ideaValue === null}
+                    restore={restore}
+                    close={close}
+                />
             </div>
+        </details>
+    );
+}
+
+function RestorationHeader() {
+    return (
+        <summary className={ui.titlebar}>
+            <span className={ui.emblem} aria-hidden="true">
+                ✓
+            </span>
+            무리아스의 유물 복원
+            <span className={ui.windowControls} aria-hidden="true">
+                <span>−</span>
+                <span>×</span>
+            </span>
+        </summary>
+    );
+}
+
+function RestorationResult({ latest }: { latest: RelicOpening | undefined }) {
+    return (
+        <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className={ui.result}
+        >
+            <h2 className="sr-only">최근 복원 결과</h2>
+            <p className={ui.effect}>
+                {latest ? latest.description : "복원할 무리아스의 유물(이데아)"}
+            </p>
+            {latest && (
+                <>
+                    <p className={ui.sequence}>
+                        #{latest.sequence} · {latest.level}레벨
+                    </p>
+                    <p className={ui.valuation}>
+                        {latest.valuation.value === null
+                            ? "시세 없음 · 손익 미확정"
+                            : `예상 판매가 ${gold(latest.valuation.value)} · 예상 손익 ${signed(openingAmounts(latest).profit!)}`}
+                    </p>
+                </>
+            )}
         </div>
+    );
+}
+
+function RestorationActions({
+    disabled,
+    restore,
+    close,
+}: {
+    disabled: boolean;
+    restore: () => void;
+    close: () => void;
+}) {
+    return (
+        <div className={ui.buttons}>
+            <button className={ui.button} disabled={disabled} onClick={restore}>
+                복원
+            </button>
+            <button className={ui.button} onClick={close}>
+                취소
+            </button>
+        </div>
+    );
+}
+
+function RestorationHistory({ openings }: { openings: RelicOpening[] }) {
+    return (
+        <section aria-label="복원 기록" className={ui.history}>
+            <h2 className="font-bold p-4 border-b border-base-300">
+                복원 기록{" "}
+                <span className="font-normal text-xs">
+                    {openings.length}개 · 최신순
+                </span>
+            </h2>
+            <div className={ui.historyList}>
+                {!openings.length && (
+                    <p className="p-4 text-sm">아직 복원 기록이 없습니다.</p>
+                )}
+                {[...openings].reverse().map(row => (
+                    <OpeningRow key={row.sequence} row={row} />
+                ))}
+            </div>
+        </section>
     );
 }
 
@@ -298,20 +356,7 @@ function SessionTotals({
                 평가 완료 {total.valued}/{total.count}
                 {total.profit === null && " · 전체 손익 미확정"}
             </p>
-            <dl className={ui.totals}>
-                <div>
-                    <dt>이데아 지출</dt>
-                    <dd>{gold(total.idea)}</dd>
-                </div>
-                <div>
-                    <dt>예상 판매액</dt>
-                    <dd>{gold(total.gross)}</dd>
-                </div>
-                <div>
-                    <dt>예상 수령액 (수수료 후)</dt>
-                    <dd>{gold(total.net)}</dd>
-                </div>
-            </dl>
+            <TotalsAmounts total={total} />
             <p className="text-xs mt-3">
                 판매 수수료 5% · 복원 비용은 이데아 단가만 반영합니다.
             </p>
@@ -358,58 +403,13 @@ function PriceSettings({
                 {ideaDraft === null ? "조회 매물 기준" : "수동 입력"} · 0~
                 {gold(MAX_GOLD)} 정수
             </p>
-            <div className="flex flex-wrap gap-2">
-                <button
-                    className="btn btn-xs"
-                    onClick={() => setIdeaDraft(null)}
-                >
-                    이데아 시세 사용
-                </button>
-                <button
-                    className="btn btn-xs"
-                    disabled={busy}
-                    onClick={() => void load(true)}
-                >
-                    가격 새로고침
-                </button>
-            </div>
-            {busy && <p role="status">가격을 조회하는 중입니다…</p>}
-            {[marketError, snapshot?.relicError, snapshot?.ideaError]
-                .filter(Boolean)
-                .map((message, i) => (
-                    <p role="alert" key={i}>
-                        {message}
-                    </p>
-                ))}
-            {ideaValue === null && (
-                <p>유효한 이데아 단가를 입력해야 복원할 수 있습니다.</p>
-            )}
-            <p className="text-xs">
-                변경한 가격은 이후 복원에만 반영됩니다. 기록은 페이지를 떠나거나
-                초기화하면 사라집니다.
-            </p>
-            <details className="text-xs">
-                <summary className="cursor-pointer">시세 조회 정보</summary>
-                <p>
-                    유물 조회: {time(snapshot?.fetchedAt ?? null)} ·{" "}
-                    {snapshot?.isComplete
-                        ? "전체 매물 조회"
-                        : "일부 또는 미조회"}
-                </p>
-                <p>
-                    가격 있음{" "}
-                    {snapshot?.cells.filter(cell =>
-                        validSimulationGold(cell.minUnitPrice)
-                    ).length ?? 0}
-                    /{reference.effects.length * 10}
-                </p>
-                <p>
-                    이데아 조회: {time(snapshot?.ideaFetchedAt ?? null)} ·{" "}
-                    {snapshot?.ideaIsComplete
-                        ? "전체 매물 조회"
-                        : "일부 또는 미조회"}
-                </p>
-            </details>
+            <PriceActions busy={busy} load={load} setIdeaDraft={setIdeaDraft} />
+            <MarketStatus
+                busy={busy}
+                marketError={marketError}
+                snapshot={snapshot}
+                ideaValue={ideaValue}
+            />
             {error && <p role="alert">{error}</p>}
         </section>
     );
@@ -436,6 +436,108 @@ function OpeningDetails({ row }: { row: RelicOpening }) {
             )}
             <p>이데아: {source(row.idea)}</p>
             <p>유물 평가: {source(row.valuation)}</p>
+        </div>
+    );
+}
+
+function TotalsAmounts({ total }: { total: SessionSummary }) {
+    return (
+        <dl className={ui.totals}>
+            <div>
+                <dt>이데아 지출</dt>
+                <dd>{gold(total.idea)}</dd>
+            </div>
+            <div>
+                <dt>예상 판매액</dt>
+                <dd>{gold(total.gross)}</dd>
+            </div>
+            <div>
+                <dt>예상 수령액 (수수료 후)</dt>
+                <dd>{gold(total.net)}</dd>
+            </div>
+        </dl>
+    );
+}
+
+function MarketStatus({
+    busy,
+    marketError,
+    snapshot,
+    ideaValue,
+}: {
+    busy: boolean;
+    marketError: string | null;
+    snapshot: RelicSnapshot | null;
+    ideaValue: number | null;
+}) {
+    return (
+        <>
+            {busy && <p role="status">가격을 조회하는 중입니다…</p>}
+            {[marketError, snapshot?.relicError, snapshot?.ideaError]
+                .filter(Boolean)
+                .map((message, i) => (
+                    <p role="alert" key={i}>
+                        {message}
+                    </p>
+                ))}
+            {ideaValue === null && (
+                <p>유효한 이데아 단가를 입력해야 복원할 수 있습니다.</p>
+            )}
+            <p className="text-xs">
+                변경한 가격은 이후 복원에만 반영됩니다. 기록은 페이지를 떠나거나
+                초기화하면 사라집니다.
+            </p>
+            <MarketDetails snapshot={snapshot} />
+        </>
+    );
+}
+
+function MarketDetails({ snapshot }: { snapshot: RelicSnapshot | null }) {
+    return (
+        <details className="text-xs">
+            <summary className="cursor-pointer">시세 조회 정보</summary>
+            <p>
+                유물 조회: {time(snapshot?.fetchedAt ?? null)} ·{" "}
+                {snapshot?.isComplete ? "전체 매물 조회" : "일부 또는 미조회"}
+            </p>
+            <p>
+                가격 있음{" "}
+                {snapshot?.cells.filter(cell =>
+                    validSimulationGold(cell.minUnitPrice)
+                ).length ?? 0}
+                /{reference.effects.length * 10}
+            </p>
+            <p>
+                이데아 조회: {time(snapshot?.ideaFetchedAt ?? null)} ·{" "}
+                {snapshot?.ideaIsComplete
+                    ? "전체 매물 조회"
+                    : "일부 또는 미조회"}
+            </p>
+        </details>
+    );
+}
+
+function PriceActions({
+    busy,
+    load,
+    setIdeaDraft,
+}: {
+    busy: boolean;
+    load: (refresh?: boolean) => Promise<void>;
+    setIdeaDraft: (value: string | null) => void;
+}) {
+    return (
+        <div className="flex flex-wrap gap-2">
+            <button className="btn btn-xs" onClick={() => setIdeaDraft(null)}>
+                이데아 시세 사용
+            </button>
+            <button
+                className="btn btn-xs"
+                disabled={busy}
+                onClick={() => void load(true)}
+            >
+                가격 새로고침
+            </button>
         </div>
     );
 }

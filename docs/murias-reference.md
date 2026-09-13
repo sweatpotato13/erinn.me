@@ -15,7 +15,7 @@ Baseline: exact base item and display name, positive safe-integer unit price and
 
 Relic requests follow cursors to the final page with no page-count cap. A 50-second deadline and repeated-cursor detection fail the scan rather than expose partial prices; the route requests a 60-second execution allowance compatible with the deployed Hobby plan. Only completed relic scans enter the ten-minute cache, and POST refresh expires it. Pagination is not an atomic market snapshot: listings can change during the scan. Idea independently retains its existing bounded exact-name summary and coverage indicator. Search and cell selection use local data only. Failed refreshes preserve previous successful data and timestamps independently for relic and Idea in the client. The relic service additionally retains the newest completed snapshot in process memory (including cache hits) and returns it with the original metadata and an error when a scan fails. Only complete successes replace it, including successful empty scans. This fallback is local to a warm serverless instance; cold starts and other instances have no guaranteed fallback without shared persistent storage.
 
-Prices are observed asking prices, not completed sales, estimates or competitor data. No interpolation or other-level fallback is used. #216 owns restoration simulation and its eventual link.
+Prices are observed asking prices, not completed sales, estimates or competitor data. No interpolation or other-level fallback is used. The [restoration simulator](/tools/murias-relics/simulator) is available and documented below.
 
 ## Skill icons
 

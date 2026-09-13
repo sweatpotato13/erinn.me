@@ -1,6 +1,8 @@
 import {
+    act,
     fireEvent,
     render,
+    renderHook,
     screen,
     waitFor,
     within,
@@ -9,6 +11,7 @@ import {
 import sitemap from "@/app/sitemap";
 import { metadata } from "@/app/tools/murias-relics/page";
 import RelicTool from "@/app/tools/murias-relics/relic-tool";
+import { useRelicSnapshot } from "@/app/tools/murias-relics/simulator/use-relic-snapshot";
 import { FEATURE_LINKS } from "@/lib/feature-links";
 import {
     aggregateRelicListings,
@@ -171,4 +174,71 @@ test("a server fallback replaces an initial empty failure and retains its origin
     expect(screen.getByText(/전체 조회 실패/)).toHaveTextContent(
         "이전 유물 조회 결과"
     );
+});
+
+test("shared snapshot hook retains complete relic metadata independently of Idea refresh", async () => {
+    const previous = {
+        ...snapshot(),
+        pages: 7,
+        receivedCount: 12,
+        excludedCount: 3,
+        unclassifiedCount: 2,
+        rejected: [
+            {
+                reason: "excluded",
+                item: snapshot().cells.flatMap(cell => cell.listings)[0],
+            },
+        ],
+    };
+    fetchMock.mockResolvedValueOnce({ ok: true, json: () => previous });
+    const { result } = renderHook(() => useRelicSnapshot());
+    await waitFor(() => expect(result.current.snapshot).toEqual(previous));
+    const failed = {
+        ...snapshot(),
+        ...aggregateRelicListings([]),
+        pages: 0,
+        fetchedAt: null,
+        isComplete: false,
+        relicError: "failed",
+        ideaPrice: 999,
+    };
+    fetchMock.mockResolvedValueOnce({ ok: true, json: () => failed });
+    await act(() => result.current.load(true));
+    expect(result.current.snapshot).toEqual({
+        ...previous,
+        relicError: "failed",
+        ideaPrice: 999,
+    });
+    const newer = { ...failed, fetchedAt: "2026-09-14T00:00:00Z" };
+    fetchMock.mockResolvedValueOnce({ ok: true, json: () => newer });
+    await act(() => result.current.load(true));
+    expect(result.current.snapshot).toEqual(newer);
+});
+
+test("shared snapshot hook aborts superseded/unmounted loads and rejects version mismatches", async () => {
+    let finish!: (response: unknown) => void;
+    fetchMock.mockReturnValueOnce(
+        new Promise(resolve => {
+            finish = resolve;
+        })
+    );
+    const { result, unmount } = renderHook(() => useRelicSnapshot());
+    const firstSignal = fetchMock.mock.calls[0][1].signal;
+    await act(() => result.current.load(true));
+    expect(firstSignal.aborted).toBe(true);
+    await act(() => {
+        finish({ ok: true, json: () => ({ ...snapshot(), ideaPrice: 1 }) });
+        return Promise.resolve();
+    });
+    expect(result.current.snapshot?.ideaPrice).toBe(100);
+    fetchMock.mockResolvedValueOnce({
+        ok: true,
+        json: () => ({ ...snapshot(), referenceVersion: "obsolete" }),
+    });
+    await act(() => result.current.load(true));
+    expect(result.current.marketError).toMatch(/참조 데이터/);
+    expect(result.current.snapshot?.ideaPrice).toBe(100);
+    const lastSignal = fetchMock.mock.calls.at(-1)[1].signal;
+    unmount();
+    expect(lastSignal.aborted).toBe(true);
 });
