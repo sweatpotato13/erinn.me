@@ -16,3 +16,7 @@ Baseline: exact base item and display name, positive safe-integer unit price and
 One request reads at most the requested 1–10 pages within a 20-second relic deadline; Idea independently uses the existing bounded summary with exact-name filtering. Load more rebuilds a larger bounded snapshot from the beginning (up to ten pages), replacing the earlier observation instead of merging moving cursor results that might double-count rows. This is a deliberate bounded rescan, not an atomic whole-market guarantee. At the cap, remaining cursor coverage stays partial. Cached results live for ten minutes; POST refresh expires the tagged caches. Search and cell selection use local data only. Failed refreshes preserve the previous successful data and timestamps independently for relic and Idea.
 
 Prices are observed asking prices, not completed sales, estimates or competitor data. No interpolation or other-level fallback is used. #216 owns restoration simulation and its eventual link.
+
+## Skill icons
+
+Each reviewed effect maps to a SkillList ID; the generator verifies its name against the effect prefix. The 30 PNG icons in `public/images/murias` were collected on 2026-09-13 from `https://mabires2.pril.cc/skillimage/kr/{skillId}/{skillId}.png`, the resource used by [Prilus skill listings](https://prilus.gitlab.io/skill). They are committed locally; builds and page views do not fetch this source.

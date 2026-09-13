@@ -18,6 +18,16 @@ assert.deepEqual(
 assert.equal(new Set(rules.effects.map(row => row.id)).size, 30);
 assert.equal(new Set(rules.effects.map(row => row.template)).size, rows.length);
 for (const effect of rules.effects) {
+    const skill = data.SkillList.find(row => row.Id === effect.skillId);
+    assert(skill, `Unknown skill ${effect.skillId}`);
+    assert(effect.template.startsWith(strings.get(skill.Name)!));
+    assert(
+        readFileSync(
+            resolve(__dirname, `../public/images/murias/${effect.skillId}.png`)
+        )
+            .subarray(0, 8)
+            .equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]))
+    );
     const row = rows.find(row => row.Id === effect.id)!;
     assert.equal(
         strings.get(row.Desc),

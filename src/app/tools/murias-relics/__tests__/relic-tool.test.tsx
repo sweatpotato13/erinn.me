@@ -56,8 +56,10 @@ test("shows ten columns, 30 effects, prices, details and filters without refetch
     render(<RelicTool />);
     expect(screen.getByRole("status")).toHaveTextContent("불러오는 중");
     await screen.findByText("1,234,567 Gold");
-    expect(screen.getAllByRole("columnheader")).toHaveLength(11);
+    expect(screen.getAllByRole("columnheader")).toHaveLength(110);
     expect(screen.getAllByRole("rowheader")).toHaveLength(30);
+    expect(screen.getAllByRole("table")).toHaveLength(10);
+    expect(screen.queryByText("가격·데이터 안내")).not.toBeInTheDocument();
     expect(screen.getByText(/일부 매물만 조회/)).toBeInTheDocument();
     fireEvent.change(screen.getByRole("searchbox"), {
         target: { value: "데바스테이션" },

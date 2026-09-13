@@ -1,8 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 
+import prep from "@/components/tools/preparation.module.css";
 import {
     emptyRelicCells,
     muriasReference as reference,
@@ -117,18 +119,18 @@ export default function RelicTool() {
     const arcanas = [...new Set(effects.map(effect => effect.arcana))];
     return (
         <div className="space-y-4">
-            <div className="flex flex-wrap items-end gap-3">
+            <div className={prep.toolbar}>
                 <label className="flex flex-col gap-1">
                     효과·아르카나 검색
                     <input
                         type="search"
-                        className="input input-bordered"
+                        className={prep.input}
                         value={search}
                         onChange={event => setSearch(event.target.value)}
                     />
                 </label>
                 <button
-                    className="btn"
+                    className="btn btn-sm"
                     disabled={busy}
                     onClick={() =>
                         void load(Math.max(2, snapshot?.pages ?? 2), true)
@@ -138,7 +140,7 @@ export default function RelicTool() {
                 </button>
                 {snapshot?.nextCursor && snapshot.pages < 10 && (
                     <button
-                        className="btn"
+                        className="btn btn-sm"
                         disabled={busy}
                         onClick={() =>
                             void load(Math.min(10, snapshot.pages + 2))
@@ -156,7 +158,7 @@ export default function RelicTool() {
                     {snapshot.fetchedAt && "이전 유물 조회 결과를 표시합니다."}
                 </p>
             )}
-            <div className="rounded-lg bg-base-200 p-3 text-sm space-y-1">
+            <div className={`${prep.notice} space-y-1`}>
                 <p className="font-bold">
                     조회된 매물 중 최저가 · 개당 등록 가격
                 </p>
@@ -200,99 +202,130 @@ export default function RelicTool() {
             {!effects.length ? (
                 <p>검색 결과가 없습니다.</p>
             ) : (
-                <div
-                    className={s.scroll}
-                    role="region"
-                    aria-label="유물 효과별 레벨 가격표"
-                    tabIndex={0}
-                >
-                    <table className={s.table}>
-                        <caption className="sr-only">
-                            아르카나별 효과와 1~10레벨 실제 수치 및 조회된 매물
-                            가격
-                        </caption>
-                        <thead>
-                            <tr>
-                                <th scope="col">아르카나 / 효과</th>
-                                {Array.from({ length: 10 }, (_, i) => (
-                                    <th key={i} scope="col">
-                                        {i + 1}레벨
-                                    </th>
-                                ))}
-                            </tr>
-                        </thead>
-                        {arcanas.map(arcana => (
-                            <tbody key={arcana} aria-label={arcana}>
-                                {effects
-                                    .filter(effect => effect.arcana === arcana)
-                                    .map(effect => (
-                                        <tr key={effect.id}>
-                                            <th scope="row">
-                                                <span className="block text-xs text-base-content/70">
-                                                    {arcana}
-                                                </span>
-                                                {effect.template
-                                                    .replace(
-                                                        `{0}${effect.unit}`,
-                                                        ""
-                                                    )
-                                                    .replace(
-                                                        /\s*\(최대.*$/,
-                                                        ""
-                                                    )}
-                                            </th>
-                                            {effect.values.map(
-                                                (value, index) => {
-                                                    const key = `${effect.id}:${index + 1}`;
-                                                    const cell =
-                                                        byKey.get(key)!;
-                                                    return (
-                                                        <td key={key}>
-                                                            <button
-                                                                aria-label={`${effect.template.split("{0}")[0].trim()} ${index + 1}레벨 상세`}
-                                                                aria-pressed={
-                                                                    selected ===
-                                                                    key
-                                                                }
-                                                                onClick={() => {
-                                                                    setSelected(
-                                                                        key
-                                                                    );
-                                                                    requestAnimationFrame(
-                                                                        () =>
-                                                                            detail.current?.focus()
-                                                                    );
-                                                                }}
-                                                            >
-                                                                <span className="block text-sm">
-                                                                    {value}
-                                                                    {
-                                                                        effect.unit
-                                                                    }
-                                                                </span>
-                                                                <span className="block font-semibold">
-                                                                    {cell.minUnitPrice ==
-                                                                    null
-                                                                        ? "—"
-                                                                        : gold(
-                                                                              cell.minUnitPrice
-                                                                          )}
-                                                                </span>
-                                                                <span className="block text-xs">
-                                                                    {snapshot?.fetchedAt
-                                                                        ? `${cell.listingCount}건`
-                                                                        : "미조회"}
-                                                                </span>
-                                                            </button>
-                                                        </td>
-                                                    );
-                                                }
+                <div className={prep.catalog}>
+                    {arcanas.map(arcana => (
+                        <section key={arcana} className={prep.panel}>
+                            <div className={prep.panelHead}>
+                                <h2>{arcana}</h2>
+                                <span className={prep.muted}>
+                                    효과별 1~10레벨
+                                </span>
+                            </div>
+                            <div
+                                className={s.scroll}
+                                role="region"
+                                aria-label={`${arcana} 유물 효과별 레벨 가격표`}
+                                tabIndex={0}
+                            >
+                                <table className={s.table}>
+                                    <caption className="sr-only">
+                                        아르카나별 효과와 1~10레벨 실제 수치 및
+                                        조회된 매물 가격
+                                    </caption>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">스킬 / 효과</th>
+                                            {Array.from(
+                                                { length: 10 },
+                                                (_, i) => (
+                                                    <th key={i} scope="col">
+                                                        {i + 1}레벨
+                                                    </th>
+                                                )
                                             )}
                                         </tr>
-                                    ))}
-                            </tbody>
-                        ))}
-                    </table>
+                                    </thead>
+                                    <tbody>
+                                        {effects
+                                            .filter(
+                                                effect =>
+                                                    effect.arcana === arcana
+                                            )
+                                            .map(effect => (
+                                                <tr key={effect.id}>
+                                                    <th scope="row">
+                                                        <div
+                                                            className={s.effect}
+                                                        >
+                                                            <Image
+                                                                src={`/images/murias/${effect.skillId}.png`}
+                                                                alt=""
+                                                                width={42}
+                                                                height={42}
+                                                                unoptimized
+                                                                className={
+                                                                    s.icon
+                                                                }
+                                                            />
+                                                            <span>
+                                                                {effect.template
+                                                                    .replace(
+                                                                        `{0}${effect.unit}`,
+                                                                        ""
+                                                                    )
+                                                                    .replace(
+                                                                        /\s*\(최대.*$/,
+                                                                        ""
+                                                                    )}
+                                                            </span>
+                                                        </div>
+                                                    </th>
+                                                    {effect.values.map(
+                                                        (value, index) => {
+                                                            const key = `${effect.id}:${index + 1}`;
+                                                            const cell =
+                                                                byKey.get(key)!;
+                                                            return (
+                                                                <td key={key}>
+                                                                    <button
+                                                                        aria-label={`${effect.template.split("{0}")[0].trim()} ${index + 1}레벨 상세`}
+                                                                        aria-pressed={
+                                                                            selected ===
+                                                                            key
+                                                                        }
+                                                                        onClick={() => {
+                                                                            setSelected(
+                                                                                key
+                                                                            );
+                                                                            requestAnimationFrame(
+                                                                                () =>
+                                                                                    detail.current?.focus()
+                                                                            );
+                                                                        }}
+                                                                    >
+                                                                        <span className="block text-sm">
+                                                                            {
+                                                                                value
+                                                                            }
+                                                                            {
+                                                                                effect.unit
+                                                                            }
+                                                                        </span>
+                                                                        <span className="block font-semibold">
+                                                                            {cell.minUnitPrice ==
+                                                                            null
+                                                                                ? "—"
+                                                                                : gold(
+                                                                                      cell.minUnitPrice
+                                                                                  )}
+                                                                        </span>
+                                                                        <span className="block text-xs">
+                                                                            {snapshot?.fetchedAt
+                                                                                ? `${cell.listingCount}건`
+                                                                                : "미조회"}
+                                                                        </span>
+                                                                    </button>
+                                                                </td>
+                                                            );
+                                                        }
+                                                    )}
+                                                </tr>
+                                            ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </section>
+                    ))}
                 </div>
             )}
             <p className="text-sm">
@@ -351,32 +384,6 @@ export default function RelicTool() {
                     ))}
                 </details>
             )}
-            <section
-                aria-label="가격·데이터 안내"
-                className="space-y-2 text-sm"
-            >
-                <h2 className="font-bold">가격·데이터 안내</h2>
-                <p>
-                    등록 가격은 판매 완료 가격이 아니며, 조회 후 판매·취소될 수
-                    있습니다. 가격은 최대 10분 캐시됩니다. 새로고침과 더
-                    불러오기는 시장을 다시 조회하고, 검색과 셀 선택은 추가
-                    요청을 하지 않습니다.
-                </p>
-                <p>
-                    기본 이름의 유물 중 명시적인 인챈트·개조·상태 정보가 없는
-                    매물을 비교합니다. 내구도·사용 상태 정보가 없으면 상태를
-                    확인할 수 없으며, 미사용 유물 가격을 보장하지 않습니다. 상태
-                    정보가 있는 매물은 보수적으로 제외합니다.
-                </p>
-                <p>
-                    참조 데이터:{" "}
-                    {time(
-                        new Date(reference.sourceVersion * 1000).toISOString()
-                    )}{" "}
-                    · {reference.effects.length}개 효과, 각 10레벨. 원본과 관측
-                    옵션을 대조한 수치이며 획득 확률을 뜻하지 않습니다.
-                </p>
-            </section>
         </div>
     );
 }

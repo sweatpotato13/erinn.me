@@ -1,8 +1,6 @@
 .scroll {
-    max-height: 70vh;
     overflow: auto;
-    border: 1px solid var(--color-base-300);
-    border-radius: 0.75rem;
+    border-top: 1px solid var(--color-base-300);
 }
 .table {
     width: 100%;
@@ -57,4 +55,20 @@
         max-width: 8rem;
         font-size: 0.8rem;
     }
+}
+
+.effect {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 4.5rem;
+}
+.icon {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+}
+.table tbody tr:last-child > * {
+    border-bottom: 0;
 }

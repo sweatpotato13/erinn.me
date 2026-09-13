@@ -45,16 +45,29 @@ test("matrix scroll, keyboard detail, local search and failed refresh", async ({
     });
     await page.goto(path);
     await expect(page.getByText(/일부 매물만 조회/)).toBeVisible();
-    await expect(page.getByRole("columnheader")).toHaveCount(11);
+    await expect(page.getByRole("columnheader")).toHaveCount(110);
     await expect(page.getByRole("rowheader")).toHaveCount(30);
+    await expect(page.getByRole("table")).toHaveCount(10);
+    await expect(page.getByText("가격·데이터 안내")).toHaveCount(0);
+    const icons = page.locator("th img");
+    await expect(icons).toHaveCount(30);
+    for (const icon of await icons.all()) {
+        await icon.scrollIntoViewIfNeeded();
+        await expect
+            .poll(() =>
+                icon.evaluate((img: HTMLImageElement) => img.naturalWidth)
+            )
+            .toBeGreaterThan(0);
+    }
     const region = page.getByRole("region", {
-        name: "유물 효과별 레벨 가격표",
+        name: "엘레멘탈 나이트 유물 효과별 레벨 가격표",
     });
     expect(
         await page.evaluate(
             () => document.documentElement.scrollWidth <= innerWidth
         )
     ).toBe(true);
+    await region.scrollIntoViewIfNeeded();
     const overflow = await region.evaluate(
         element => element.scrollWidth > element.clientWidth
     );
@@ -67,7 +80,7 @@ test("matrix scroll, keyboard detail, local search and failed refresh", async ({
             await region.evaluate(element => element.scrollLeft)
         ).toBeGreaterThan(0);
         await expect(
-            page.getByRole("columnheader", { name: "10레벨", exact: true })
+            region.getByRole("columnheader", { name: "10레벨", exact: true })
         ).toBeInViewport();
     }
     const initialRequests = requests; // Next dev Strict Mode remounts effects.
