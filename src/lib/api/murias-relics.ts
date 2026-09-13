@@ -18,6 +18,8 @@ import { AuctionListResponseSchema } from "@/lib/schemas/nexon";
 
 export const MURIAS_CACHE_TAG = "murias-market-v1";
 
+// ponytail: rescan up to ten pages to replace a moving snapshot; use a stored
+// snapshot/cursor session if larger markets make bounded rescans too expensive.
 export async function fetchRelicMarket(maxPages: number) {
     if (!Number.isInteger(maxPages) || maxPages < 1 || maxPages > 10)
         throw new RangeError("Invalid page limit");
