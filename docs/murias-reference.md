@@ -19,4 +19,6 @@ Prices are observed asking prices, not completed sales, estimates or competitor 
 
 ## Skill icons
 
+The restoration window follows the in-game screenshot supplied in the UI follow-up to #216. Its locally stored `public/images/murias/relic.png` is the matching item thumbnail from `https://tacask-cdn.com/mabi-labanyu/item-base-data/thumbnail/item-36764.png`. The frame and controls are CSS. The simplified simulator spends only the Idea cost, uses the normal 5% sale fee, and displays compact history beside the running totals.
+
 Each reviewed effect maps to a SkillList ID; the generator verifies its name against the effect prefix. The 30 PNG icons in `public/images/murias` were collected on 2026-09-13 from `https://mabires2.pril.cc/skillimage/kr/{skillId}/{skillId}.png`, the resource used by [Prilus skill listings](https://prilus.gitlab.io/skill). They are committed locally; builds and page views do not fetch this source.
