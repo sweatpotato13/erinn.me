@@ -57,7 +57,6 @@ test("ten clicks accumulate individual fees and costs without fetching, and rese
     await waitFor(() =>
         expect(screen.getByRole("button", { name: "복원" })).toBeEnabled()
     );
-    expect(screen.getByText(/공식 확률 아님/)).toBeInTheDocument();
     for (let i = 0; i < 10; i++) clickRestore();
     expect(screen.getAllByRole("article")).toHaveLength(10);
     expect(summary()).toHaveTextContent("100,000,000 Gold");

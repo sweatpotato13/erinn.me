@@ -84,7 +84,24 @@ export function restoreRelic(
     };
 }
 
-export function openingAmounts(opening: RelicOpening) {
+export interface OpeningAmounts {
+    fee: number | null;
+    cost: number;
+    net: number | null;
+    profit: number | null;
+}
+
+export interface SessionSummary {
+    count: number;
+    valued: number;
+    idea: number;
+    gross: number;
+    fees: number;
+    net: number;
+    profit: number | null;
+}
+
+export function openingAmounts(opening: RelicOpening): OpeningAmounts {
     const value = opening.valuation.value;
     const fee =
         value === null
@@ -114,7 +131,7 @@ function safeSum(a: number, b: number): number {
 
 // ponytail: recompute the in-memory ledger in O(n); use incremental totals
 // if sessions become large enough to make restoration noticeably slow.
-export function summarizeOpenings(openings: RelicOpening[]) {
+export function summarizeOpenings(openings: RelicOpening[]): SessionSummary {
     let idea = 0,
         gross = 0,
         fees = 0,

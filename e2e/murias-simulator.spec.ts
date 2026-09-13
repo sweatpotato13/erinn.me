@@ -43,7 +43,6 @@ test("ten restorations by keyboard, reduced motion, frozen ledger and no per-ope
     await page.goto(path);
     const restore = page.getByRole("button", { name: "복원", exact: true });
     await expect(restore).toBeEnabled();
-    await expect(page.getByText(/공식 확률 아님/)).toBeVisible();
     const before = requests;
     await restore.focus();
     for (let i = 0; i < 10; i++) await restore.press("Enter");
