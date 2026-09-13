@@ -39,7 +39,7 @@ const snapshot = (): RelicSnapshot => ({
 });
 const fetchMock = jest.fn();
 const clickRestore = () =>
-    fireEvent.click(screen.getByRole("button", { name: "복원", exact: true }));
+    fireEvent.click(screen.getByRole("button", { name: "복원" }));
 const summary = () => screen.getByRole("region", { name: "누적 손익" });
 const edit = (label: string | RegExp, value: string) =>
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
@@ -55,9 +55,7 @@ afterEach(() => jest.restoreAllMocks());
 test("ten clicks accumulate individual fees and costs without fetching, and reset clears ledger", async () => {
     render(<Simulator />);
     await waitFor(() =>
-        expect(
-            screen.getByRole("button", { name: "복원", exact: true })
-        ).toBeEnabled()
+        expect(screen.getByRole("button", { name: "복원" })).toBeEnabled()
     );
     expect(screen.getByText(/공식 확률 아님/)).toBeInTheDocument();
     for (let i = 0; i < 10; i++) clickRestore();
@@ -88,9 +86,7 @@ test("unknown Idea blocks opening; explicit zero and missing outputs remain vali
     });
     render(<Simulator />);
     await screen.findByText("유물 조회 실패");
-    expect(
-        screen.getByRole("button", { name: "복원", exact: true })
-    ).toBeDisabled();
+    expect(screen.getByRole("button", { name: "복원" })).toBeDisabled();
     edit("이데아 단가 (Gold)", "0");
     edit("복원비 (Gold · 수정 가능한 가정)", "0");
     fireEvent.click(screen.getByRole("checkbox"));
@@ -138,9 +134,7 @@ test("late API responses preserve manual Idea and exact-cell overrides; editor s
 test("price refresh and costs only affect future openings, and failed refresh retains snapshot", async () => {
     render(<Simulator />);
     await waitFor(() =>
-        expect(
-            screen.getByRole("button", { name: "복원", exact: true })
-        ).toBeEnabled()
+        expect(screen.getByRole("button", { name: "복원" })).toBeEnabled()
     );
     clickRestore();
     edit("복원비 (Gold · 수정 가능한 가정)", "0");
