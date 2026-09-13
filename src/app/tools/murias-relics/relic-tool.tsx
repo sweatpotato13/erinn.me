@@ -43,14 +43,14 @@ export default function RelicTool() {
     const [selected, setSelected] = useState<string | null>(null);
     const active = useRef<AbortController | null>(null);
     const detail = useRef<HTMLElement>(null);
-    const load = useCallback(async (pages = 2, refresh = false) => {
+    const load = useCallback(async (refresh = false) => {
         active.current?.abort();
         const controller = new AbortController();
         active.current = controller;
         setBusy(true);
         setError(null);
         try {
-            const response = await fetch(`/api/murias-relics?pages=${pages}`, {
+            const response = await fetch("/api/murias-relics", {
                 method: refresh ? "POST" : "GET",
                 signal: controller.signal,
             });
@@ -132,25 +132,17 @@ export default function RelicTool() {
                 <button
                     className="btn btn-sm"
                     disabled={busy}
-                    onClick={() =>
-                        void load(Math.max(2, snapshot?.pages ?? 2), true)
-                    }
+                    onClick={() => void load(true)}
                 >
                     가격 새로고침
                 </button>
-                {snapshot?.nextCursor && snapshot.pages < 10 && (
-                    <button
-                        className="btn btn-sm"
-                        disabled={busy}
-                        onClick={() =>
-                            void load(Math.min(10, snapshot.pages + 2))
-                        }
-                    >
-                        더 불러오기
-                    </button>
-                )}
             </div>
-            {busy && <p role="status">가격을 불러오는 중입니다…</p>}
+            {busy && (
+                <p role="status">
+                    전체 유물 매물을 조회하는 중입니다. 매물이 많으면 시간이
+                    걸릴 수 있습니다…
+                </p>
+            )}
             {error && <p role="alert">{error}</p>}
             {snapshot?.relicError && (
                 <p role="alert">
@@ -173,12 +165,6 @@ export default function RelicTool() {
                         · {snapshot.pages}페이지 · 수신 {snapshot.receivedCount}
                         건 · 미분류 {snapshot.unclassifiedCount}건 · 비교 제외{" "}
                         {snapshot.excludedCount}건
-                    </p>
-                )}
-                {snapshot?.nextCursor && snapshot.pages >= 10 && (
-                    <p>
-                        최대 10페이지에 도달했습니다. 남은 매물은 이번 조회에
-                        포함되지 않습니다.
                     </p>
                 )}
                 <p>

@@ -6,9 +6,9 @@ import { getRelicSnapshot, MURIAS_CACHE_TAG } from "@/lib/api/murias-relics";
 import { parseQuery } from "@/lib/api/request";
 import { checkOrigin } from "@/lib/utils/check-origin";
 
-const querySchema = z
-    .object({ pages: z.coerce.number().int().min(1).max(10).default(2) })
-    .strict();
+export const maxDuration = 120;
+
+const querySchema = z.object({}).strict();
 
 async function respond(request: Request, refresh: boolean) {
     const forbidden = checkOrigin(request);
@@ -16,7 +16,7 @@ async function respond(request: Request, refresh: boolean) {
     const query = parseQuery(request, querySchema);
     if (!query.success) return query.response;
     if (refresh) revalidateTag(MURIAS_CACHE_TAG, { expire: 0 });
-    return NextResponse.json(await getRelicSnapshot(query.data.pages), {
+    return NextResponse.json(await getRelicSnapshot(), {
         headers: { "Cache-Control": "no-store" },
     });
 }

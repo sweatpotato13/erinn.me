@@ -10,11 +10,11 @@ jest.mock("@/lib/api/murias-relics", () => ({
         fetchedAt: null,
         relicError: "unavailable",
     })),
-    MURIAS_CACHE_TAG: "murias-market-v1",
+    MURIAS_CACHE_TAG: "murias-market-v2-full",
 }));
 jest.mock("@/lib/utils/check-origin", () => ({ checkOrigin: () => null }));
 beforeEach(() => jest.clearAllMocks());
-test("validates bounds before reading or invalidating caches", async () => {
+test("rejects pagination controls before reading or invalidating caches", async () => {
     for (const query of [
         "pages=0",
         "pages=11",
@@ -36,15 +36,15 @@ test("GET uses cache and POST explicitly expires ten-minute market caches", asyn
     const response = await GET(
         new Request("http://localhost/api/murias-relics")
     );
-    expect(getRelicSnapshot).toHaveBeenCalledWith(2);
+    expect(getRelicSnapshot).toHaveBeenCalledWith();
     expect(revalidateTag).not.toHaveBeenCalled();
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(await response.json()).toMatchObject({ relicError: "unavailable" });
     await POST(
-        new Request("http://localhost/api/murias-relics?pages=4", {
+        new Request("http://localhost/api/murias-relics", {
             method: "POST",
         })
     );
     expect(revalidateTag).toHaveBeenCalledWith(MURIAS_CACHE_TAG, { expire: 0 });
-    expect(getRelicSnapshot).toHaveBeenLastCalledWith(4);
+    expect(getRelicSnapshot).toHaveBeenLastCalledWith();
 });

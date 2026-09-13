@@ -36,8 +36,8 @@ const snapshot = (): RelicSnapshot => ({
     ]),
     fetchedAt: "2026-09-13T00:00:00Z",
     pages: 2,
-    nextCursor: "next",
-    isComplete: false,
+    nextCursor: null,
+    isComplete: true,
     relicError: null,
     ideaPrice: 100,
     ideaFetchedAt: "2026-09-12T00:00:00Z",
@@ -54,13 +54,13 @@ beforeEach(() => {
 
 test("shows ten columns, 30 effects, prices, details and filters without refetch", async () => {
     render(<RelicTool />);
-    expect(screen.getByRole("status")).toHaveTextContent("불러오는 중");
+    expect(screen.getByRole("status")).toHaveTextContent("조회하는 중");
     await screen.findByText("1,234,567 Gold");
     expect(screen.getAllByRole("columnheader")).toHaveLength(110);
     expect(screen.getAllByRole("rowheader")).toHaveLength(30);
     expect(screen.getAllByRole("table")).toHaveLength(10);
     expect(screen.queryByText("가격·데이터 안내")).not.toBeInTheDocument();
-    expect(screen.getByText(/일부 매물만 조회/)).toBeInTheDocument();
+    expect(screen.getByText(/마지막 페이지까지 조회/)).toBeInTheDocument();
     fireEvent.change(screen.getByRole("searchbox"), {
         target: { value: "데바스테이션" },
     });
@@ -85,7 +85,7 @@ test("shows ten columns, 30 effects, prices, details and filters without refetch
     expect(screen.getByText("검색 결과가 없습니다.")).toBeInTheDocument();
 });
 
-test("refresh failure preserves independent prices, timestamps and coverage; load more replaces snapshot", async () => {
+test("refresh failure preserves independent prices, timestamps and coverage", async () => {
     render(<RelicTool />);
     await screen.findByText("1,234,567 Gold");
     const failed = {
@@ -106,24 +106,12 @@ test("refresh failure preserves independent prices, timestamps and coverage; loa
     );
     expect(screen.getByText(/유물 조회:/)).toHaveTextContent("2026. 9. 13.");
     expect(fetchMock.mock.calls[1][1].method).toBe("POST");
-    fetchMock.mockResolvedValueOnce({
-        ok: true,
-        json: () => ({
-            ...snapshot(),
-            pages: 4,
-            nextCursor: null,
-            isComplete: true,
-        }),
-    });
-    fireEvent.click(screen.getByRole("button", { name: "더 불러오기" }));
-    await screen.findByText(/마지막 페이지까지 조회/);
-    expect(fetchMock.mock.calls[2][0]).toContain("pages=4");
     expect(
         screen.queryByRole("button", { name: "더 불러오기" })
     ).not.toBeInTheDocument();
     fetchMock.mockResolvedValueOnce({ ok: false });
     fireEvent.click(screen.getByRole("button", { name: "가격 새로고침" }));
-    await screen.findByRole("alert");
+    await screen.findByText(/가격을 불러오지 못했습니다/);
     expect(screen.getByText("1,234,567 Gold")).toBeInTheDocument();
 });
 

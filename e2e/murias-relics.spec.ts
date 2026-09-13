@@ -6,9 +6,9 @@ const path = "/tools/murias-relics";
 const snapshot = {
     referenceVersion: reference.version,
     fetchedAt: "2026-09-13T00:00:00Z",
-    isComplete: false,
+    isComplete: true,
     pages: 2,
-    nextCursor: "next",
+    nextCursor: null,
     cells: reference.effects.flatMap(effect =>
         effect.values.map((_, index) => ({
             effectId: effect.id,
@@ -35,7 +35,7 @@ test("matrix scroll, keyboard detail, local search and failed refresh", async ({
     let requests = 0;
     const errors: string[] = [];
     page.on("pageerror", error => errors.push(error.message));
-    await page.route("**/api/murias-relics?**", async route => {
+    await page.route("**/api/murias-relics", async route => {
         requests++;
         await route.fulfill(
             route.request().method() === "POST"
@@ -44,7 +44,7 @@ test("matrix scroll, keyboard detail, local search and failed refresh", async ({
         );
     });
     await page.goto(path);
-    await expect(page.getByText(/일부 매물만 조회/)).toBeVisible();
+    await expect(page.getByText(/마지막 페이지까지 조회/)).toBeVisible();
     await expect(page.getByRole("columnheader")).toHaveCount(110);
     await expect(page.getByRole("rowheader")).toHaveCount(30);
     await expect(page.getByRole("table")).toHaveCount(10);
@@ -106,7 +106,7 @@ test("matrix scroll, keyboard detail, local search and failed refresh", async ({
 test("home and desktop/mobile menu expose canonical tool route", async ({
     page,
 }) => {
-    await page.route("**/api/murias-relics?**", route =>
+    await page.route("**/api/murias-relics", route =>
         route.fulfill({ json: snapshot })
     );
     await page.goto("/");

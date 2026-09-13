@@ -6,6 +6,7 @@ import {
     createUpstreamUrl,
     fetchUpstream,
     parseUpstreamJson,
+    throwIfDeadlineExpired,
     UpstreamFailure,
 } from "@/lib/api/upstream";
 import {
@@ -16,14 +17,11 @@ import {
 } from "@/lib/murias-relics";
 import { AuctionListResponseSchema } from "@/lib/schemas/nexon";
 
-export const MURIAS_CACHE_TAG = "murias-market-v1";
+export const MURIAS_CACHE_TAG = "murias-market-v2-full";
 
-// ponytail: rescan up to ten pages to replace a moving snapshot; use a stored
-// snapshot/cursor session if larger markets make bounded rescans too expensive.
-export async function fetchRelicMarket(maxPages: number) {
-    if (!Number.isInteger(maxPages) || maxPages < 1 || maxPages > 10)
-        throw new RangeError("Invalid page limit");
-    const deadline = createRequestDeadline(undefined, 20_000);
+// Complete scans are time-bounded, never silently truncated by page count.
+export async function fetchRelicMarket() {
+    const deadline = createRequestDeadline(undefined, 90_000);
     const listings: RelicListing[] = [];
     const cursors = new Set<string>();
     let nextCursor: string | null = null;
@@ -72,7 +70,8 @@ export async function fetchRelicMarket(maxPages: number) {
         if (nextCursor && cursors.has(nextCursor))
             throw new UpstreamFailure("upstream_schema", "Repeated cursor");
         if (nextCursor) cursors.add(nextCursor);
-    } while (nextCursor && pages < maxPages);
+    } while (nextCursor);
+    throwIfDeadlineExpired(deadline);
     return {
         ...aggregateRelicListings(listings),
         fetchedAt: new Date().toISOString(),
@@ -95,9 +94,9 @@ const cachedIdea = unstable_cache(
     { revalidate: 600, tags: [MURIAS_CACHE_TAG] }
 );
 
-export async function getRelicSnapshot(maxPages = 2): Promise<RelicSnapshot> {
+export async function getRelicSnapshot(): Promise<RelicSnapshot> {
     const [relic, idea] = await Promise.allSettled([
-        cachedRelics(maxPages),
+        cachedRelics(),
         cachedIdea(),
     ]);
     return {
@@ -113,7 +112,7 @@ export async function getRelicSnapshot(maxPages = 2): Promise<RelicSnapshot> {
               }),
         relicError:
             relic.status === "rejected"
-                ? "유물 매물을 불러오지 못했습니다. 다시 조회해 주세요."
+                ? "전체 유물 매물 조회를 완료하지 못했습니다. 다시 조회해 주세요."
                 : null,
         ideaPrice:
             idea.status === "fulfilled" &&

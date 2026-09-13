@@ -24,35 +24,38 @@ beforeEach(() => {
     fetchMock.mockReset();
 });
 
-test("bounded scans keep partial coverage and locally group unit prices", async () => {
-    fetchMock
-        .mockResolvedValueOnce(page([item(100)], "a"))
-        .mockResolvedValueOnce(page([item(80)], "b"));
-    const result = await fetchRelicMarket(2);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(String(fetchMock.mock.calls[1][0])).toContain("cursor=a");
+test("scans beyond the former ten-page cap and includes the final cheapest listing", async () => {
+    let calls = 0;
+    fetchMock.mockImplementation(() => {
+        calls++;
+        return page(
+            [item(calls === 12 ? 50 : 100)],
+            calls < 12 ? String(calls) : null
+        );
+    });
+    const result = await fetchRelicMarket();
+    expect(fetchMock).toHaveBeenCalledTimes(12);
+    expect(String(fetchMock.mock.calls[11][0])).toContain("cursor=11");
     expect(result).toMatchObject({
-        pages: 2,
-        nextCursor: "b",
-        isComplete: false,
-        receivedCount: 2,
+        pages: 12,
+        nextCursor: null,
+        isComplete: true,
+        receivedCount: 12,
     });
     expect(
         result.cells.find(cell => cell.effectId === 73020 && cell.level === 2)
-    ).toMatchObject({ minUnitPrice: 80, listingCount: 2 });
+    ).toMatchObject({ minUnitPrice: 50, listingCount: 12 });
 });
 
-test("rejects invalid limits, repeating cursors, schema failures and later-page failures", async () => {
-    await expect(fetchRelicMarket(11)).rejects.toThrow("Invalid page limit");
-    expect(fetchMock).not.toHaveBeenCalled();
+test("rejects repeating cursors, schema failures and later-page failures", async () => {
     fetchMock.mockImplementation(() => page([item()], "same"));
-    await expect(fetchRelicMarket(3)).rejects.toThrow("Repeated cursor");
+    await expect(fetchRelicMarket()).rejects.toThrow("Repeated cursor");
     expect(fetchMock).toHaveBeenCalledTimes(2);
     fetchMock
         .mockReset()
         .mockResolvedValueOnce(page([item()], "a"))
         .mockResolvedValueOnce(new Response("no", { status: 503 }));
-    await expect(fetchRelicMarket(2)).rejects.toThrow();
+    await expect(fetchRelicMarket()).rejects.toThrow();
     fetchMock
         .mockReset()
         .mockResolvedValueOnce(
@@ -60,7 +63,7 @@ test("rejects invalid limits, repeating cursors, schema failures and later-page 
                 JSON.stringify({ auction_item: [{ item_name: "bad" }] })
             )
         );
-    await expect(fetchRelicMarket(1)).rejects.toThrow(
+    await expect(fetchRelicMarket()).rejects.toThrow(
         "Invalid upstream response"
     );
 });
@@ -90,7 +93,7 @@ test("independent failures and empty Idea never produce a zero valuation", async
             ? page([])
             : new Response("no", { status: 503 })
     );
-    expect(await getRelicSnapshot(1)).toMatchObject({
+    expect(await getRelicSnapshot()).toMatchObject({
         fetchedAt: null,
         relicError: expect.any(String),
         ideaPrice: null,
@@ -102,7 +105,7 @@ test("independent failures and empty Idea never produce a zero valuation", async
             ? new Response("no", { status: 503 })
             : page([item()])
     );
-    expect(await getRelicSnapshot(1)).toMatchObject({
+    expect(await getRelicSnapshot()).toMatchObject({
         fetchedAt: expect.any(String),
         relicError: null,
         isComplete: true,
@@ -112,19 +115,23 @@ test("independent failures and empty Idea never produce a zero valuation", async
     });
 });
 
-test("maximum scan stays bounded and aborted upstream work reports timeout", async () => {
-    let cursor = 0;
-    fetchMock.mockImplementation(() => page([], String(++cursor)));
-    expect(await fetchRelicMarket(10)).toMatchObject({
-        pages: 10,
-        isComplete: false,
-        nextCursor: "10",
+test("a scan exceeding its deadline fails instead of returning a partial snapshot", async () => {
+    const now = jest.spyOn(Date, "now").mockReturnValue(0);
+    fetchMock.mockImplementation(() => {
+        now.mockReturnValue(90_001);
+        return page([item()], "next");
     });
-    expect(fetchMock).toHaveBeenCalledTimes(10);
+    try {
+        await expect(fetchRelicMarket()).rejects.toMatchObject({
+            failureClass: "timeout",
+        });
+    } finally {
+        now.mockRestore();
+    }
     fetchMock
         .mockReset()
         .mockRejectedValue(new DOMException("aborted", "AbortError"));
-    await expect(fetchRelicMarket(1)).rejects.toMatchObject({
+    await expect(fetchRelicMarket()).rejects.toMatchObject({
         failureClass: "timeout",
     });
 });
