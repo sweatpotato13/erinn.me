@@ -389,10 +389,10 @@ async function saveFilteredAuctionPreset(page: Page) {
     await page.getByPlaceholder("아이템명").fill("아이템");
     await page.getByRole("button", { name: "모든 카테고리" }).click();
     await page.getByRole("button", { name: "검", exact: true }).click();
-    await page.locator("summary").filter({ hasText: "장비 옵션 필터" }).click();
-    await page.getByLabel("인챈트 이름").fill("여명");
-    await page.getByLabel("세공 옵션 이름").fill("볼트 대미지");
-    await page.getByLabel("세공 최소 레벨").fill("10");
+    await page.locator("summary").filter({ hasText: "검색 필터" }).click();
+    await page.getByLabel("접두 인챈트").fill("여명");
+    await page.getByLabel("세공 1 옵션 이름").fill("볼트 대미지");
+    await page.getByLabel("세공 1 최소 레벨").fill("10");
     await page.getByRole("checkbox", { name: "에르그 있음" }).check();
     await page.getByLabel("에르그 등급").selectOption("S");
     await page.getByLabel("에르그 최소 레벨").fill("40");
@@ -477,13 +477,13 @@ test("auction URL restores on open and refresh", async ({ page }) => {
     await expect(
         page.getByRole("button", { name: "검", exact: true })
     ).toBeVisible();
-    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    await expect(page.getByText("인챈트 (위치 무관): 여명")).toBeVisible();
     await expect(page.getByText("에르그: 있음, S등급")).toBeVisible();
     await expect.poll(() => counts).toEqual({ auction: 1, history: 1 });
 
     await page.reload({ waitUntil: "networkidle" });
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("한글 검");
-    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    await expect(page.getByText("인챈트 (위치 무관): 여명")).toBeVisible();
     await expect.poll(() => counts).toEqual({ auction: 2, history: 2 });
 });
 
@@ -493,8 +493,8 @@ test("auction option filters validate, apply, remove, clear, and follow history"
     const counts = await setupMarketRoutes(page);
     await page.goto("/auction", { waitUntil: "networkidle" });
     await page.getByPlaceholder("아이템명").fill("아이템");
-    await page.locator("summary").filter({ hasText: "장비 옵션 필터" }).click();
-    await page.getByLabel("세공 옵션 이름").fill("볼트 대미지");
+    await page.locator("summary").filter({ hasText: "검색 필터" }).click();
+    await page.getByLabel("세공 1 옵션 이름").fill("볼트 대미지");
     await page.getByRole("button", { name: "조건 적용" }).click();
     await expect(
         page.getByRole("alert").filter({
@@ -504,8 +504,8 @@ test("auction option filters validate, apply, remove, clear, and follow history"
     expect(counts).toEqual({ auction: 0, history: 0 });
     expect(new URL(page.url()).searchParams.has("q")).toBe(false);
 
-    await page.getByLabel("인챈트 이름").fill("여명");
-    await page.getByLabel("세공 최소 레벨").fill("10");
+    await page.getByLabel("접두 인챈트").fill("여명");
+    await page.getByLabel("세공 1 최소 레벨").fill("10");
     await page.getByRole("checkbox", { name: "에르그 있음" }).check();
     await page.getByLabel("에르그 등급").selectOption("S");
     await page.getByLabel("에르그 최소 레벨").fill("40");
@@ -515,30 +515,30 @@ test("auction option filters validate, apply, remove, clear, and follow history"
     await expect.poll(() => counts.history).toBe(1);
     const appliedUrl = new URL(page.url());
     expect(appliedUrl.searchParams.get("q")).toBe("아이템");
-    expect(appliedUrl.searchParams.get("option_enchant")).toBe("여명");
-    expect(appliedUrl.searchParams.get("option_reforge")).toBe("볼트 대미지");
-    expect(appliedUrl.searchParams.get("option_reforge_min_level")).toBe("10");
+    expect(appliedUrl.searchParams.get("option_enchant_prefix")).toBe("여명");
+    expect(appliedUrl.searchParams.get("option_reforge_1")).toBe("볼트 대미지");
+    expect(appliedUrl.searchParams.get("option_reforge_1_min_level")).toBe("10");
     expect(appliedUrl.searchParams.get("option_erg_grade")).toBe("S");
     expect(appliedUrl.searchParams.get("option_erg_min_level")).toBe("40");
 
     const active = page.getByRole("region", {
-        name: "활성 장비 옵션 조건",
+        name: "활성 검색 필터 조건",
     });
-    await expect(active.getByText("인챈트: 여명")).toBeVisible();
+    await expect(active.getByText("접두 인챈트: 여명")).toBeVisible();
     await expect(active.getByText(/모든 활성 조건을 만족/)).toContainText(
         "최근 완료 거래에는 적용되지 않습니다."
     );
     await expect(
-        page.getByText(/장비 옵션 조건으로 전체 11개 매물을 확인했습니다/)
+        page.getByText(/검색 필터 조건으로 전체 11개 매물을 확인했습니다/)
     ).toContainText("판정할 수 없는 1개 매물은 결과에서 제외했습니다.");
     await expect(page.getByText(/최근 1시간 거래 중앙값 대비/)).toHaveCount(0);
 
     const details = page.locator("details").filter({
-        hasText: "장비 옵션 필터",
+        hasText: "검색 필터",
     });
-    await details.locator("summary").click();
+    await details.locator(":scope > summary").click();
     await expect(details).not.toHaveAttribute("open", "");
-    await expect(active.getByText("인챈트: 여명")).toBeVisible();
+    await expect(active.getByText("접두 인챈트: 여명")).toBeVisible();
 
     await page.getByPlaceholder("아이템명").fill("미제출 검색어");
     await active
@@ -549,10 +549,10 @@ test("auction option filters validate, apply, remove, clear, and follow history"
     await expect.poll(() => counts.auction).toBe(2);
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("아이템");
     expect(new URL(page.url()).searchParams.get("q")).toBe("아이템");
-    expect(new URL(page.url()).searchParams.has("option_reforge")).toBe(false);
+    expect(new URL(page.url()).searchParams.has("option_reforge_1")).toBe(false);
 
     await active
-        .getByRole("button", { name: "장비 옵션 조건 전체 해제" })
+        .getByRole("button", { name: "검색 필터 조건 전체 해제" })
         .click();
     await expect.poll(() => counts.auction).toBe(3);
     expect(
@@ -563,10 +563,10 @@ test("auction option filters validate, apply, remove, clear, and follow history"
     await expect(active).not.toBeVisible();
 
     await page.goBack();
-    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    await expect(page.getByText("접두 인챈트: 여명")).toBeVisible();
     await expect.poll(() => counts.auction).toBe(4);
     await page.goForward();
-    await expect(page.getByText("인챈트: 여명")).not.toBeVisible();
+    await expect(page.getByText("접두 인챈트: 여명")).not.toBeVisible();
     await expect.poll(() => counts.auction).toBe(5);
 
     if ((page.viewportSize()?.width ?? 1000) < 640) {
@@ -586,7 +586,7 @@ test("auction presets persist and restore the committed search", async ({
     page,
 }) => {
     const { counts, dialog } = await saveFilteredAuctionPreset(page);
-    expect(await storedAuctionPresets(page)).toEqual([filteredAuctionPreset]);
+    expect(await storedAuctionPresets(page)).toEqual([{ ...filteredAuctionPreset, optionFilters: { enchantPrefix: "여명", reforges: [filteredAuctionPreset.optionFilters.reforge], erg: filteredAuctionPreset.optionFilters.erg } }]);
     await dialog.getByRole("button", { name: "닫기" }).click();
     await page.reload({ waitUntil: "networkidle" });
     await page.getByRole("button", { name: "검색 프리셋" }).click();
@@ -596,7 +596,7 @@ test("auction presets persist and restore the committed search", async ({
         .click();
     await expect.poll(() => counts.auction).toBe(beforeLoad + 1);
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("아이템");
-    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    await expect(page.getByText("접두 인챈트: 여명")).toBeVisible();
     await expect(page.getByText("세공: 볼트 대미지 10레벨 이상")).toBeVisible();
     await expect(
         page.getByText("에르그: 있음, S등급, 40레벨 이상")
@@ -715,7 +715,7 @@ test("auction presets recover from corrupt storage and preview obsolete filters"
     await row.getByRole("button", { name: "불러오기" }).click();
     const warning = dialog.getByRole("alert");
     await expect(warning.getByText(/removedFilter/)).toBeVisible();
-    await expect(warning.getByText(/인챈트: 여명/)).toBeVisible();
+    await expect(warning.getByText(/인챈트 \(위치 무관\): 여명/)).toBeVisible();
     expect(counts.auction).toBe(beforeLoad);
 
     await warning
@@ -723,7 +723,7 @@ test("auction presets recover from corrupt storage and preview obsolete filters"
         .click();
     await expect.poll(() => counts.auction).toBe(beforeLoad + 1);
     await expect(page.getByPlaceholder("아이템명")).toHaveValue("복구 검");
-    await expect(page.getByText("인챈트: 여명")).toBeVisible();
+    await expect(page.getByText("인챈트 (위치 무관): 여명")).toBeVisible();
     expect(new URL(page.url()).searchParams.get("option_enchant")).toBe("여명");
     expect(new URL(page.url()).searchParams.has("option_removedFilter")).toBe(
         false

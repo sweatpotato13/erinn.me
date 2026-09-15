@@ -28,7 +28,7 @@ const activeSearch: AuctionUrlSearch = {
     category: "검",
     optionFilters: {
         enchantName: "여명",
-        reforge: { optionName: "볼트 대미지", minLevel: 10 },
+        reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
         erg: { grade: "S", minLevel: 40 },
     },
 };
@@ -101,7 +101,7 @@ describe("auction preset storage", () => {
             preset("구형", {
                 optionFilters: {
                     enchantName: "여명",
-                    reforge: { optionName: "누락된 레벨" },
+                    reforges: [{ optionName: "누락된 레벨" }],
                     erg: { grade: "A", minLevel: 20 },
                     socket: { count: 2 },
                 },
@@ -113,7 +113,7 @@ describe("auction preset storage", () => {
             erg: { grade: "A", minLevel: 20 },
         });
         expect(prepared.unsupportedConditions).toEqual([
-            "세공 (reforge)",
+            "세공 (reforges)",
             "지원하지 않는 조건 (socket)",
         ]);
     });
@@ -243,7 +243,7 @@ describe("auction preset storage", () => {
             result.current.add("잘못됨", {
                 ...activeSearch,
                 optionFilters: {
-                    reforge: { optionName: "레벨 없음" },
+                    reforges: [{ optionName: "레벨 없음" }],
                 } as AuctionUrlSearch["optionFilters"],
             })
         ).toEqual(expect.objectContaining({ success: false }));
@@ -371,7 +371,9 @@ describe("AuctionPresetsDialog", () => {
         expect(onLoad).not.toHaveBeenCalled();
         const warning = screen.getByRole("alert");
         expect(within(warning).getByText(/removedFilter/)).toBeVisible();
-        expect(within(warning).getByText(/인챈트: 여명/)).toBeVisible();
+        expect(
+            within(warning).getByText(/인챈트 \(위치 무관\): 여명/)
+        ).toBeVisible();
 
         await user.click(
             within(warning).getByRole("button", {
@@ -396,4 +398,39 @@ describe("AuctionPresetsDialog", () => {
             optionFilters: { enchantName: "여명" },
         });
     });
+});
+
+it("migrates legacy reforge presets in memory without rewriting storage", () => {
+    const original = JSON.stringify([
+        preset("구형", {
+            optionFilters: {
+                enchantName: "여명",
+                reforge: { optionName: "볼트 대미지", minLevel: 10 },
+            },
+        }),
+    ]);
+    localStorage.setItem(AUCTION_PRESETS_KEY, original);
+    const parsed = parseStoredAuctionPresets(original);
+    const prepared = prepareAuctionPresetSearch(parsed.presets[0]);
+    expect(prepared.search.optionFilters).toEqual({
+        enchantName: "여명",
+        reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
+    });
+    expect(prepared.unsupportedConditions).toEqual([]);
+    expect(localStorage.getItem(AUCTION_PRESETS_KEY)).toBe(original);
+});
+
+it("reports mixed old and new reforge groups even when their values agree", () => {
+    const row = { optionName: "볼트 대미지", minLevel: 10 };
+    const prepared = prepareAuctionPresetSearch(
+        preset("충돌", {
+            optionFilters: {
+                enchantName: "여명",
+                reforge: row,
+                reforges: [row],
+            },
+        })
+    );
+    expect(prepared.search.optionFilters).toEqual({ enchantName: "여명" });
+    expect(prepared.unsupportedConditions).toHaveLength(1);
 });

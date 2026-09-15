@@ -102,7 +102,7 @@ describe("auction URL state", () => {
                 category: categories[0],
                 optionFilters: {
                     enchantName: "  여명  ",
-                    reforge: { optionName: "볼트  대미지", minLevel: 10 },
+                    reforges: [{ optionName: "볼트  대미지", minLevel: 10 }],
                     erg: { grade: "S", minLevel: 40 },
                 },
             }
@@ -113,12 +113,12 @@ describe("auction URL state", () => {
             category: categories[0],
             optionFilters: {
                 enchantName: "여명",
-                reforge: { optionName: "볼트 대미지", minLevel: 10 },
+                reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
                 erg: { grade: "S", minLevel: 40 },
             },
         });
         expect(result.url.searchParams.get("option_enchant")).toBe("여명");
-        expect(result.url.searchParams.get("option_reforge")).toBe(
+        expect(result.url.searchParams.get("option_reforge_1")).toBe(
             "볼트 대미지"
         );
         expect(result.url.searchParams.get("option_erg")).toBe("present");
@@ -134,11 +134,11 @@ describe("auction URL state", () => {
         ],
         [
             "q=검&option_unknown=x",
-            "지원하지 않는 장비 옵션 필터입니다: option_unknown",
+            "지원하지 않는 검색 필터입니다: option_unknown",
         ],
         [
             "q=검&option_enchant=a&option_enchant=b",
-            "장비 옵션 필터는 같은 항목을 한 번만 지정할 수 있습니다: option_enchant",
+            "검색 필터는 같은 항목을 한 번만 지정할 수 있습니다: option_enchant",
         ],
     ])("removes invalid option params: %s", (query, filterError) => {
         const result = parseAuctionSearchParams(new URLSearchParams(query));

@@ -396,9 +396,11 @@ function OptionRenderer({ options }: OptionRendererProps) {
                                         <div className="text-blue-400">
                                             • {parsed.name}({parsed.level}레벨)
                                         </div>
-                                        <div className="pl-6 text-white">
-                                            ㄴ {parsed.effect}
-                                        </div>
+                                        {parsed.effect && (
+                                            <div className="pl-6 text-white">
+                                                ㄴ {parsed.effect}
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             }

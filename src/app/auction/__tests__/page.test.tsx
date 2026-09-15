@@ -318,22 +318,22 @@ describe("AuctionControls", () => {
         controls({ onApplyOptionFilters });
 
         await user.click(
-            screen.getByText("장비 옵션 필터", { selector: "summary" })
+            screen.getByText("검색 필터", { selector: "summary" })
         );
-        await user.type(screen.getByLabelText("인챈트 이름"), "  여명  ");
+        await user.type(screen.getByLabelText("접두 인챈트"), "  여명  ");
         await user.type(
-            screen.getByLabelText("세공 옵션 이름"),
+            screen.getByLabelText("세공 1 옵션 이름"),
             "볼트  대미지"
         );
-        await user.type(screen.getByLabelText("세공 최소 레벨"), "10");
+        await user.type(screen.getByLabelText("세공 1 최소 레벨"), "10");
         await user.click(screen.getByRole("checkbox", { name: "에르그 있음" }));
         await user.selectOptions(screen.getByLabelText("에르그 등급"), "S");
         await user.type(screen.getByLabelText("에르그 최소 레벨"), "40");
         await user.click(screen.getByRole("button", { name: "조건 적용" }));
 
         expect(onApplyOptionFilters).toHaveBeenCalledWith({
-            enchantName: "여명",
-            reforge: { optionName: "볼트 대미지", minLevel: 10 },
+            enchantPrefix: "여명",
+            reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
             erg: { grade: "S", minLevel: 40 },
         });
     });
@@ -344,9 +344,9 @@ describe("AuctionControls", () => {
         controls({ onApplyOptionFilters });
 
         await user.click(
-            screen.getByText("장비 옵션 필터", { selector: "summary" })
+            screen.getByText("검색 필터", { selector: "summary" })
         );
-        await user.type(screen.getByLabelText("세공 옵션 이름"), "볼트");
+        await user.type(screen.getByLabelText("세공 1 옵션 이름"), "볼트");
         await user.click(screen.getByRole("button", { name: "조건 적용" }));
 
         expect(screen.getByRole("alert")).toHaveTextContent(
@@ -361,16 +361,18 @@ describe("AuctionControls", () => {
         controls({
             optionFilters: {
                 enchantName: "여명",
-                reforge: { optionName: "볼트 대미지", minLevel: 10 },
+                reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
                 erg: { grade: "S", minLevel: 40 },
             },
             onChangeOptionFilters,
         });
 
-        expect(screen.getByText(/모든 활성 조건을 만족/)).toHaveTextContent(
-            "최근 완료 거래에는 적용되지 않습니다."
-        );
-        expect(screen.getByText("인챈트: 여명")).toBeVisible();
+        expect(
+            within(
+                screen.getByRole("region", { name: "활성 검색 필터 조건" })
+            ).getByText(/모든 활성 조건을 만족/)
+        ).toHaveTextContent("최근 완료 거래에는 적용되지 않습니다.");
+        expect(screen.getByText("인챈트 (위치 무관): 여명")).toBeVisible();
         expect(screen.getByText("세공: 볼트 대미지 10레벨 이상")).toBeVisible();
         expect(
             screen.getByText("에르그: 있음, S등급, 40레벨 이상")
@@ -387,7 +389,7 @@ describe("AuctionControls", () => {
         });
 
         await user.click(
-            screen.getByRole("button", { name: "장비 옵션 조건 전체 해제" })
+            screen.getByRole("button", { name: "검색 필터 조건 전체 해제" })
         );
         expect(onChangeOptionFilters).toHaveBeenLastCalledWith({});
     });
@@ -1468,7 +1470,10 @@ describe("AuctionResults", () => {
 
     it.each([
         ["enchantment", { enchantName: "여명" }],
-        ["reforge", { reforge: { optionName: "볼트 대미지", minLevel: 10 } }],
+        [
+            "reforge",
+            { reforges: [{ optionName: "볼트 대미지", minLevel: 10 }] },
+        ],
         ["Erg", { erg: { grade: "S", minLevel: 40 } }],
     ] as Array<[string, AuctionOptionFilters]>)(
         "hides the comparison for the %s filter",
@@ -1589,7 +1594,7 @@ describe("AuctionResults", () => {
 
         expect(
             screen.getByText(
-                /장비 옵션 조건으로 전체 1,234개 매물을 확인했습니다/
+                /검색 필터 조건으로 전체 1,234개 매물을 확인했습니다/
             )
         ).toHaveTextContent(
             "옵션 값을 판정할 수 없는 1,000개 매물은 결과에서 제외했습니다."

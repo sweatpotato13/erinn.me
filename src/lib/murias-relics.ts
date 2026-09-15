@@ -1,5 +1,6 @@
 import reference from "@/data/murias-reference.json";
 import type { AuctionListResponse } from "@/lib/schemas/nexon";
+import type { ItemOption } from "@/types/item-option";
 
 export { reference as muriasReference };
 export type RelicEffect = (typeof reference.effects)[number];
@@ -64,7 +65,7 @@ const matches = new Map(
 );
 
 export function matchRelicOption(
-    options: RelicListing["item_option"]
+    options: readonly ItemOption[] | null | undefined
 ): RelicMatch | null {
     const relics =
         options?.filter(option => option.option_type === "무리아스 유물") ?? [];

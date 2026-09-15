@@ -47,7 +47,7 @@ function SearchSummary({ search }: { search: AuctionUrlSearch }) {
                 <dd className="inline">{search.category}</dd>
             </div>
             <div>
-                <dt className="inline font-semibold">장비 옵션: </dt>
+                <dt className="inline font-semibold">검색 필터: </dt>
                 <dd className="inline">
                     {filters.map(filter => filter.label).join(", ") || "없음"}
                 </dd>
