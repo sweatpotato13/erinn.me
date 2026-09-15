@@ -502,7 +502,7 @@ function OptionEvaluationNotice({
         <p
             className={`alert mt-3 text-sm ${optionEvaluation.unevaluableCount > 0 ? "alert-warning" : "alert-info"}`}
         >
-            장비 옵션 조건으로 전체{" "}
+            검색 필터 조건으로 전체{" "}
             {numberFormatter.format(optionEvaluation.scannedCount)}개 매물을
             확인했습니다.
             {optionEvaluation.unevaluableCount > 0 && (

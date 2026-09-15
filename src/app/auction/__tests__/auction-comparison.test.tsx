@@ -243,3 +243,17 @@ describe("AuctionComparison", () => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 });
+
+it.each([
+    ["볼트 대미지 22 레벨", true],
+    ["볼트 대미지(22레벨:대미지 증가)", false],
+])("compares plain levels conservatively against %s", (second, emphasized) => {
+    const rows = prepareComparisonRows([
+        item("첫 매물", [option("세공 옵션", "볼트 대미지 21 레벨")]),
+        item("둘째 매물", [option("세공 옵션", second)]),
+    ]);
+    const row = rows.find(value => value.label === "세공 옵션 · 볼트 대미지")!;
+    expect(row.emphasizeDifference).toBe(emphasized);
+    expect(row.values[0]?.text).toContain("21");
+    expect(row.values[1]?.text).toContain("22");
+});

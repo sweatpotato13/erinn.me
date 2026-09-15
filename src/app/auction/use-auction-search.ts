@@ -348,7 +348,7 @@ async function runAuctionSearch(
             ...EMPTY_AUCTION_SEARCH_STATE,
             errorMessage:
                 parsedFilters.error.issues[0]?.message ??
-                "장비 옵션 필터가 올바르지 않습니다.",
+                "검색 필터가 올바르지 않습니다.",
         });
         return;
     }

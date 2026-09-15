@@ -28,7 +28,7 @@ const activeSearch: AuctionUrlSearch = {
     category: "검",
     optionFilters: {
         enchantName: "여명",
-        reforge: { optionName: "볼트 대미지", minLevel: 10 },
+        reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
         erg: { grade: "S", minLevel: 40 },
     },
 };
@@ -101,7 +101,7 @@ describe("auction preset storage", () => {
             preset("구형", {
                 optionFilters: {
                     enchantName: "여명",
-                    reforge: { optionName: "누락된 레벨" },
+                    reforges: [{ optionName: "누락된 레벨" }],
                     erg: { grade: "A", minLevel: 20 },
                     socket: { count: 2 },
                 },
@@ -113,7 +113,7 @@ describe("auction preset storage", () => {
             erg: { grade: "A", minLevel: 20 },
         });
         expect(prepared.unsupportedConditions).toEqual([
-            "세공 (reforge)",
+            "세공 (reforges)",
             "지원하지 않는 조건 (socket)",
         ]);
     });
@@ -243,7 +243,7 @@ describe("auction preset storage", () => {
             result.current.add("잘못됨", {
                 ...activeSearch,
                 optionFilters: {
-                    reforge: { optionName: "레벨 없음" },
+                    reforges: [{ optionName: "레벨 없음" }],
                 } as AuctionUrlSearch["optionFilters"],
             })
         ).toEqual(expect.objectContaining({ success: false }));
@@ -371,7 +371,9 @@ describe("AuctionPresetsDialog", () => {
         expect(onLoad).not.toHaveBeenCalled();
         const warning = screen.getByRole("alert");
         expect(within(warning).getByText(/removedFilter/)).toBeVisible();
-        expect(within(warning).getByText(/인챈트: 여명/)).toBeVisible();
+        expect(
+            within(warning).getByText(/인챈트 \(위치 무관\): 여명/)
+        ).toBeVisible();
 
         await user.click(
             within(warning).getByRole("button", {
@@ -397,3 +399,130 @@ describe("AuctionPresetsDialog", () => {
         });
     });
 });
+
+it("migrates legacy reforge presets in memory without rewriting storage", () => {
+    const original = JSON.stringify([
+        preset("구형", {
+            optionFilters: {
+                enchantName: "여명",
+                reforge: { optionName: "볼트 대미지", minLevel: 10 },
+            },
+        }),
+    ]);
+    localStorage.setItem(AUCTION_PRESETS_KEY, original);
+    const parsed = parseStoredAuctionPresets(original);
+    const prepared = prepareAuctionPresetSearch(parsed.presets[0]);
+    expect(prepared.search.optionFilters).toEqual({
+        enchantName: "여명",
+        reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
+    });
+    expect(prepared.unsupportedConditions).toEqual([]);
+    expect(localStorage.getItem(AUCTION_PRESETS_KEY)).toBe(original);
+});
+
+it("reports mixed old and new reforge groups even when their values agree", () => {
+    const row = { optionName: "볼트 대미지", minLevel: 10 };
+    const prepared = prepareAuctionPresetSearch(
+        preset("충돌", {
+            optionFilters: {
+                enchantName: "여명",
+                reforge: row,
+                reforges: [row],
+            },
+        })
+    );
+    expect(prepared.search.optionFilters).toEqual({ enchantName: "여명" });
+    expect(prepared.unsupportedConditions).toHaveLength(1);
+});
+
+it.each([
+    ["echostone", "murias"],
+    ["echostone", "totem"],
+    ["murias", "totem"],
+    ["echostone", "murias", "totem"],
+])("discards only conflicting target groups: %s / %s / %s", (...groups) => {
+    const targetFilters: Record<string, unknown> = {
+        echostone: { color: 1 },
+        murias: { effectId: 73020, minLevel: 1 },
+        totem: { maxdamage: 0 },
+    };
+    const stored = preset("대상 충돌", {
+        optionFilters: {
+            ...activeSearch.optionFilters,
+            ...Object.fromEntries(groups.map(key => [key, targetFilters[key]])),
+        },
+    });
+    const original = JSON.stringify(stored);
+    const prepared = prepareAuctionPresetSearch(stored);
+    expect(prepared.search).toEqual(activeSearch);
+    expect(prepared.unsupportedConditions).toHaveLength(groups.length);
+    for (const key of groups) {
+        expect(prepared.unsupportedConditions).toEqual(
+            expect.arrayContaining([expect.stringContaining(`(${key}):`)])
+        );
+    }
+    expect(JSON.stringify(stored)).toBe(original);
+});
+
+it("keeps a valid target group when the other target group is malformed", () => {
+    const prepared = prepareAuctionPresetSearch(
+        preset("일부 복구", {
+            optionFilters: {
+                ...activeSearch.optionFilters,
+                echostone: { color: 1 },
+                murias: { effectId: 73020 },
+            },
+        })
+    );
+    expect(prepared.search.optionFilters).toEqual({
+        ...activeSearch.optionFilters,
+        echostone: { color: 1 },
+    });
+    expect(prepared.unsupportedConditions).toEqual(["무리아스 유물 (murias)"]);
+});
+
+it.each(["echo", "relic", "totem"])(
+    "saves and restores %s with equipment filters",
+    kind => {
+        localStorage.clear();
+        const search: AuctionUrlSearch = {
+            ...activeSearch,
+            optionFilters: {
+                enchantName: "기존 이름",
+                enchantPrefix: "여명",
+                enchantSuffix: "편린",
+                reforges: [1, 2, 3].map(n => ({
+                    optionName: `효과${n}`,
+                    minLevel: n,
+                })),
+                erg: {},
+                echostone: {
+                    color: 3,
+                    minGrade: 30,
+                    awakening: {
+                        optionName: "보우 마스터리 최대 대미지",
+                        minLevel: 20,
+                    },
+                    innate: { stat: "dexterity", minValue: 0 },
+                },
+            },
+        };
+        if (kind === "relic") {
+            delete search.optionFilters.echostone;
+            search.optionFilters.murias = { effectId: 73020, minLevel: 2 };
+        }
+        if (kind === "totem") {
+            delete search.optionFilters.echostone;
+            search.optionFilters.totem = { maxdamage: 0, strength: 5 };
+        }
+        const { result, unmount } = renderHook(() => useAuctionPresets());
+        act(() => {
+            expect(result.current.add("전체 조건", search).success).toBe(true);
+        });
+        unmount();
+        const restored = renderHook(() => useAuctionPresets());
+        expect(
+            prepareAuctionPresetSearch(restored.result.current.presets[0])
+        ).toEqual({ search, unsupportedConditions: [] });
+    }
+);

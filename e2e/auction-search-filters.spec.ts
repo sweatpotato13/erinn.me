@@ -1,0 +1,265 @@
+import { expect, test } from "@playwright/test";
+
+test("new groups keep drafts, serialize conditions, and restore them on reload", async ({
+    page,
+}) => {
+    const requests: URL[] = [];
+    await page.route("**/api/**", async route => {
+        const url = new URL(route.request().url());
+        if (
+            url.pathname === "/api/auction" ||
+            url.pathname === "/api/auction/keyword-search"
+        )
+            requests.push(url);
+        await route.fulfill({
+            json: {
+                sales: [],
+                fetchedAt: "2026-09-15T00:00:00Z",
+                items: [],
+                hasMore: false,
+                nextCursor: null,
+                evaluation: { scannedCount: 0, unevaluableCount: 0 },
+                suggestions: [],
+            },
+        });
+    });
+    await page.goto("/auction", { waitUntil: "networkidle" });
+    await page.getByPlaceholder("아이템명").fill("검");
+    await page.locator("summary").filter({ hasText: "검색 필터" }).click();
+    const prefix = page.getByLabel("접두 인챈트", { exact: true });
+    await prefix.fill("여명");
+    await prefix.press("ArrowDown");
+    await prefix.press("Enter");
+    expect(requests).toHaveLength(0);
+    await page.getByLabel("접미 인챈트", { exact: true }).fill("수동 인챈트");
+    for (let n = 1; n <= 3; n++) {
+        if (n > 1)
+            await page.getByRole("button", { name: "세공 조건 추가" }).click();
+        await page.getByLabel(`세공 ${n} 옵션 이름`).fill(`수동 세공 ${n}`);
+        await page.getByLabel(`세공 ${n} 최소 레벨`).fill(String(n));
+    }
+    await page.getByRole("button", { name: "세공 2 입력 제거" }).click();
+    await expect(
+        page.getByRole("button", { name: "세공 조건 추가" })
+    ).toBeFocused();
+    await expect(page.getByLabel("세공 2 옵션 이름")).toHaveValue(
+        "수동 세공 3"
+    );
+    await page
+        .locator("summary")
+        .filter({ hasText: /^에코스톤$/ })
+        .click();
+    await page
+        .getByLabel("에코스톤 각성 옵션", { exact: true })
+        .fill("기준 밖 각성");
+    await page
+        .getByRole("combobox", { name: "에코스톤 종류", exact: true })
+        .selectOption("3");
+    await expect(
+        page.getByLabel("에코스톤 각성 옵션", { exact: true })
+    ).toHaveValue("기준 밖 각성");
+    await page.getByLabel("에코스톤 각성 최소 레벨").fill("20");
+    await page.getByLabel("에코스톤 최소 등급").fill("30");
+    await page
+        .getByRole("combobox", { name: "에코스톤 고유 능력", exact: true })
+        .selectOption("dexterity");
+    await page.getByLabel("에코스톤 고유 능력 최소 수치").fill("0");
+    expect(requests).toHaveLength(0);
+    expect(
+        await page.evaluate(
+            () =>
+                document.documentElement.scrollWidth <=
+                document.documentElement.clientWidth
+        )
+    ).toBe(true);
+    await page.getByRole("button", { name: "조건 적용" }).click();
+    await expect.poll(() => requests.length).toBe(1);
+    const query = new URL(page.url()).searchParams;
+    expect(query.get("q")).toBe("옐로 에코스톤");
+    expect(query.has("category")).toBe(false);
+    expect(query.get("option_reforge_2")).toBe("수동 세공 3");
+    expect(query.get("option_echo_min_value")).toBe("0");
+    await page.reload({ waitUntil: "networkidle" });
+    await expect.poll(() => requests.length).toBe(2);
+    expect(new URL(page.url()).searchParams.toString()).toBe(query.toString());
+    const active = page.getByRole("region", { name: "활성 검색 필터 조건" });
+    await expect(active).toBeVisible();
+    expect(
+        await page.evaluate(
+            () =>
+                document.documentElement.scrollWidth <=
+                document.documentElement.clientWidth
+        )
+    ).toBe(true);
+    await active
+        .getByRole("button", { name: "검색 필터 조건 전체 해제" })
+        .click();
+    await expect(active).not.toBeVisible();
+    expect(new URL(page.url()).searchParams.get("q")).toBe("옐로 에코스톤");
+});
+
+test("automatically searches relics and echostones and rejects conflicting targets with a toast", async ({
+    page,
+}) => {
+    const requests: URL[] = [];
+    await page.route("**/api/**", async route => {
+        const url = new URL(route.request().url());
+        if (
+            ["/api/auction", "/api/auction/keyword-search"].includes(
+                url.pathname
+            )
+        )
+            requests.push(url);
+        await route.fulfill({
+            json: {
+                items: [],
+                sales: [],
+                fetchedAt: "2026-09-15T00:00:00Z",
+                hasMore: false,
+                nextCursor: null,
+                evaluation: { scannedCount: 0, unevaluableCount: 0 },
+                suggestions: [],
+            },
+        });
+    });
+    await page.goto("/auction", { waitUntil: "networkidle" });
+    await page.locator("summary").filter({ hasText: "검색 필터" }).click();
+    await page
+        .locator("summary")
+        .filter({ hasText: /^무리아스/ })
+        .click();
+    await page
+        .getByRole("combobox", { name: "유물 효과", exact: true })
+        .selectOption({ index: 1 });
+    await page.getByLabel("유물 최소 레벨").fill("1");
+    await page
+        .locator("summary")
+        .filter({ hasText: /^에코스톤$/ })
+        .click();
+    await page
+        .getByRole("combobox", { name: "에코스톤 각성 옵션", exact: true })
+        .fill("하이드라 연성 마법 보호 감소 수치");
+    await page.getByLabel("에코스톤 각성 최소 레벨").fill("17");
+    await page.getByRole("button", { name: "검색", exact: true }).click();
+    await expect(
+        page.getByRole("alert").filter({ hasText: "함께 적용할 수 없습니다" })
+    ).toBeVisible();
+    expect(requests).toHaveLength(0);
+    expect(new URL(page.url()).searchParams.has("q")).toBe(false);
+    await page.getByRole("button", { name: "오류 알림 닫기" }).click();
+    await page
+        .getByRole("combobox", { name: "에코스톤 각성 옵션", exact: true })
+        .fill("");
+    await page.getByLabel("에코스톤 각성 최소 레벨").fill("");
+
+    await page.getByRole("button", { name: "검색", exact: true }).click();
+    await expect.poll(() => requests.length).toBe(1);
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue(
+        "무리아스의 유물"
+    );
+    expect(requests[0].searchParams.get("keyword")).toBe("무리아스의 유물");
+    const original = page.url();
+    await page
+        .locator("summary")
+        .filter({ hasText: /^에코스톤$/ })
+        .click();
+    await page
+        .getByRole("combobox", { name: "에코스톤 종류", exact: true })
+        .selectOption("1");
+    await page.getByRole("button", { name: "검색", exact: true }).click();
+    const toast = page
+        .getByRole("alert")
+        .filter({ hasText: "함께 적용할 수 없습니다" });
+    await expect(toast).toBeVisible();
+    await expect(toast).toHaveCSS("position", "fixed");
+    expect(page.url()).toBe(original);
+    expect(requests).toHaveLength(1);
+    await page.getByRole("button", { name: "오류 알림 닫기" }).click();
+    await page
+        .getByRole("combobox", { name: "유물 효과", exact: true })
+        .selectOption("");
+    await page.getByLabel("유물 최소 레벨").fill("");
+    await page.getByRole("button", { name: "검색", exact: true }).click();
+    await expect.poll(() => requests.length).toBe(2);
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue(
+        "레드 에코스톤"
+    );
+    await page
+        .getByRole("combobox", { name: "에코스톤 종류", exact: true })
+        .selectOption("");
+    await page.getByLabel("에코스톤 최소 등급").fill("30");
+    await page.getByRole("button", { name: "검색", exact: true }).click();
+    await expect.poll(() => requests.length).toBe(3);
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("");
+    expect(new URL(page.url()).searchParams.get("category")).toBe("에코스톤");
+    expect(requests[2].pathname).toBe("/api/auction");
+    expect(requests[2].searchParams.get("auction_item_category")).toBe(
+        "에코스톤"
+    );
+});
+
+test("main search automatically targets the totem category and preserves all stat conditions", async ({
+    page,
+}) => {
+    const requests: URL[] = [];
+    await page.route("**/api/**", async route => {
+        const url = new URL(route.request().url());
+        if (
+            ["/api/auction", "/api/auction/keyword-search"].includes(
+                url.pathname
+            )
+        )
+            requests.push(url);
+        await route.fulfill({
+            json: {
+                items: [],
+                sales: [],
+                fetchedAt: "2026-09-15T00:00:00Z",
+                hasMore: false,
+                nextCursor: null,
+                evaluation: { scannedCount: 0, unevaluableCount: 0 },
+                suggestions: [],
+            },
+        });
+    });
+    await page.goto("/auction", { waitUntil: "networkidle" });
+    await page.getByPlaceholder("아이템명").fill("검");
+    await page
+        .getByRole("button", { name: "모든 카테고리", exact: true })
+        .click();
+    await page.getByRole("button", { name: "검", exact: true }).click();
+    await page.locator("summary").filter({ hasText: "검색 필터" }).click();
+    await page
+        .locator("summary")
+        .filter({ hasText: /^토템$/ })
+        .click();
+    await page.getByLabel("토템 1 능력치").selectOption("maxdamage");
+    await page.getByLabel("토템 1 최소 수치", { exact: true }).fill("0");
+    await page.getByRole("button", { name: "토템 조건 추가" }).click();
+    await page.getByLabel("토템 2 능력치").selectOption("strength");
+    await page.getByLabel("토템 2 최소 수치", { exact: true }).fill("5");
+    await page.getByRole("button", { name: "검색", exact: true }).click();
+    await expect.poll(() => requests.length).toBe(1);
+    await expect(page.getByPlaceholder("아이템명")).toHaveValue("");
+    expect(requests[0].pathname).toBe("/api/auction");
+    expect(requests[0].searchParams.get("auction_item_category")).toBe("토템");
+    expect(requests[0].searchParams.has("item_name")).toBe(false);
+    expect(requests[0].searchParams.get("option_totem_maxdamage")).toBe("0");
+    expect(requests[0].searchParams.get("option_totem_strength")).toBe("5");
+    await page.reload({ waitUntil: "networkidle" });
+    await expect.poll(() => requests.length).toBe(2);
+    expect(new URL(page.url()).searchParams.get("category")).toBe("토템");
+    await page.locator("summary").filter({ hasText: "검색 필터" }).click();
+    await page
+        .locator("summary")
+        .filter({ hasText: /^에코스톤$/ })
+        .click();
+    await page
+        .getByRole("combobox", { name: "에코스톤 종류", exact: true })
+        .selectOption("1");
+    await page.getByRole("button", { name: "검색", exact: true }).click();
+    await expect(
+        page.getByRole("alert").filter({ hasText: "함께 적용할 수 없습니다" })
+    ).toBeVisible();
+    expect(requests).toHaveLength(2);
+});

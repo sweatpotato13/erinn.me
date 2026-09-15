@@ -3,7 +3,10 @@
 import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import type { AuctionOptionFilters } from "@/lib/auction-options";
+import {
+    type AuctionOptionFilters,
+    AuctionOptionFiltersSchema,
+} from "@/lib/auction-options";
 import {
     type AuctionUrlSearch,
     getAuctionShareTarget,
@@ -20,6 +23,7 @@ export {
 export type AuctionUrlFeedback = {
     message: string;
     kind: "success" | "info" | "error";
+    toast?: boolean;
 };
 
 async function copyUrl(url: string) {
@@ -109,6 +113,15 @@ export function useAuctionUrlState(
         category: string,
         optionFilters: AuctionOptionFilters
     ) => {
+        const filters = AuctionOptionFiltersSchema.safeParse(optionFilters);
+        if (!filters.success) {
+            setFeedback({
+                message: filters.error.issues[0].message,
+                kind: "error",
+                toast: true,
+            });
+            return;
+        }
         const next = setAuctionSearchUrl(new URL(window.location.href), {
             itemName,
             category,
