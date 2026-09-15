@@ -1,5 +1,8 @@
 import * as z from "zod";
 
+import { normalizeOptionText, parseEnchantName } from "./auction-option-text";
+export { normalizeOptionText, parseEnchantName } from "./auction-option-text";
+
 import type { ItemOption } from "@/types/item-option";
 
 export type ErgGrade = "B" | "A" | "S";
@@ -21,10 +24,6 @@ const FILTER_KEYS = [
     "option_erg_min_level",
 ] as const;
 const filterKeySet = new Set<string>(FILTER_KEYS);
-
-export function normalizeOptionText(value: string | null | undefined) {
-    return (value ?? "").normalize("NFC").trim().replace(/\s+/g, " ");
-}
 
 function optionNameSchema(label: string) {
     return z
@@ -78,13 +77,6 @@ export function hasAuctionOptionFilters(
     filters: AuctionOptionFilters | null | undefined
 ) {
     return Boolean(filters?.enchantName || filters?.reforge || filters?.erg);
-}
-
-export function parseEnchantName(value: string | null | undefined) {
-    const name = normalizeOptionText(
-        normalizeOptionText(value).split("(", 1)[0]
-    );
-    return name || null;
 }
 
 export function parseReforgeOptionValue(value: string | null | undefined) {

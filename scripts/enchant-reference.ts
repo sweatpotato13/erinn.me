@@ -1,6 +1,6 @@
 import { resolve } from "node:path";
 
-import { normalizeOptionText } from "../src/lib/auction-options";
+import { normalizeOptionText } from "../src/lib/auction-option-text";
 import { readSnapshot } from "./reference-data";
 
 interface SourceEnchant {
