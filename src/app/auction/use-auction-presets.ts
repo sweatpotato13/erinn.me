@@ -130,6 +130,17 @@ export function prepareAuctionPresetSearch(preset: AuctionPreset) {
             );
         }
     }
+    const targetGroups = (["echostone", "murias", "totem"] as const).filter(
+        key => optionFilters[key] !== undefined
+    );
+    if (targetGroups.length > 1) {
+        for (const key of targetGroups) {
+            delete optionFilters[key];
+            unsupportedConditions.push(
+                `${FILTER_LABELS[key]} (${key}): 다른 검색 대상 조건과 충돌하여 제외했습니다.`
+            );
+        }
+    }
     const complete = AuctionOptionFiltersSchema.safeParse(optionFilters);
     if (!complete.success)
         unsupportedConditions.push(

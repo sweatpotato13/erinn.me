@@ -435,6 +435,52 @@ it("reports mixed old and new reforge groups even when their values agree", () =
     expect(prepared.unsupportedConditions).toHaveLength(1);
 });
 
+it.each([
+    ["echostone", "murias"],
+    ["echostone", "totem"],
+    ["murias", "totem"],
+    ["echostone", "murias", "totem"],
+])("discards only conflicting target groups: %s / %s / %s", (...groups) => {
+    const targetFilters: Record<string, unknown> = {
+        echostone: { color: 1 },
+        murias: { effectId: 73020, minLevel: 1 },
+        totem: { maxdamage: 0 },
+    };
+    const stored = preset("대상 충돌", {
+        optionFilters: {
+            ...activeSearch.optionFilters,
+            ...Object.fromEntries(groups.map(key => [key, targetFilters[key]])),
+        },
+    });
+    const original = JSON.stringify(stored);
+    const prepared = prepareAuctionPresetSearch(stored);
+    expect(prepared.search).toEqual(activeSearch);
+    expect(prepared.unsupportedConditions).toHaveLength(groups.length);
+    for (const key of groups) {
+        expect(prepared.unsupportedConditions).toEqual(
+            expect.arrayContaining([expect.stringContaining(`(${key}):`)])
+        );
+    }
+    expect(JSON.stringify(stored)).toBe(original);
+});
+
+it("keeps a valid target group when the other target group is malformed", () => {
+    const prepared = prepareAuctionPresetSearch(
+        preset("일부 복구", {
+            optionFilters: {
+                ...activeSearch.optionFilters,
+                echostone: { color: 1 },
+                murias: { effectId: 73020 },
+            },
+        })
+    );
+    expect(prepared.search.optionFilters).toEqual({
+        ...activeSearch.optionFilters,
+        echostone: { color: 1 },
+    });
+    expect(prepared.unsupportedConditions).toEqual(["무리아스 유물 (murias)"]);
+});
+
 it.each(["echo", "relic", "totem"])(
     "saves and restores %s with equipment filters",
     kind => {
