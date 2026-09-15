@@ -122,6 +122,46 @@ it("preserves zero-valued totem rows and removes only the selected active condit
     });
 });
 
+it("identifies duplicate totem stats and accepts a corrected selection without losing drafts", async () => {
+    const user = userEvent.setup();
+    const apply = jest.fn();
+    render(
+        <AuctionOptionControls
+            filters={{ totem: { maxdamage: 0 } }}
+            onApply={apply}
+            onChange={jest.fn()}
+        />
+    );
+    await user.click(screen.getByText(/^검색 필터/, { selector: "summary" }));
+    await user.click(screen.getByRole("button", { name: "토템 조건 추가" }));
+    const stat = screen.getByLabelText("토템 2 능력치");
+    const value = screen.getByLabelText("토템 2 최소 수치");
+    const submit = screen.getByRole("button", { name: "조건 적용" });
+    await user.selectOptions(stat, "maxdamage");
+    await user.click(submit);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+        "토템 능력치와 최소 수치를 함께 입력해주세요."
+    );
+    expect(apply).not.toHaveBeenCalled();
+
+    await user.type(value, "5");
+    await user.click(submit);
+    expect(screen.getByRole("alert")).toHaveTextContent(
+        "토템 능력치 '최대 대미지'가 중복 선택되었습니다."
+    );
+    expect(stat).toHaveFocus();
+    expect(apply).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("토템 1 최소 수치")).toHaveValue(0);
+    expect(value).toHaveValue(5);
+
+    await user.selectOptions(stat, "strength");
+    await user.click(submit);
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(apply).toHaveBeenCalledWith({
+        totem: { maxdamage: 0, strength: 5 },
+    });
+});
+
 it("restricts innate stats by color and shows awakening suggestions on focus", async () => {
     const user = userEvent.setup();
     const apply = jest.fn();

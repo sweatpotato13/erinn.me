@@ -16,7 +16,7 @@ import {
     parseAuctionOptionFilterQuery,
 } from "@/lib/auction-options";
 import { muriasReference } from "@/lib/murias-relics";
-import { TOTEM_STATS } from "@/lib/totems";
+import { TOTEM_STATS, totemStatLabel } from "@/lib/totems";
 
 import { AuctionOptionAutocomplete } from "./auction-option-autocomplete";
 
@@ -548,7 +548,15 @@ function parseFilterForm(form: HTMLFormElement) {
                 success: false as const,
                 error: "토템 능력치와 최소 수치를 함께 입력해주세요.",
             };
-        params.append(`option_totem_${select.value}`, value);
+        const key = `option_totem_${select.value}`;
+        if (params.has(key)) {
+            select.focus();
+            return {
+                success: false as const,
+                error: `토템 능력치 '${totemStatLabel(select.value)}'가 중복 선택되었습니다. 다른 능력치를 선택해주세요.`,
+            };
+        }
+        params.append(key, value);
     }
     return parseAuctionOptionFilterQuery(params);
 }
