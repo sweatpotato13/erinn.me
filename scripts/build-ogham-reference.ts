@@ -11,7 +11,10 @@ const { data, manifest } = readSnapshot(
 const strings = new Map(data.StringTable.map(row => [row.Id, row.Str]));
 const text = (key: string) => {
     const value = strings.get(key);
-    assert(value?.trim(), `Missing Ogham string: ${key}`);
+    assert(
+        typeof value === "string" && value.trim(),
+        `Missing Ogham string: ${key}`
+    );
     return value;
 };
 const effects = [...data.OghamAbilityList]
