@@ -434,3 +434,40 @@ it("reports mixed old and new reforge groups even when their values agree", () =
     expect(prepared.search.optionFilters).toEqual({ enchantName: "여명" });
     expect(prepared.unsupportedConditions).toHaveLength(1);
 });
+
+it("saves and restores every new filter group together", () => {
+    localStorage.clear();
+    const search: AuctionUrlSearch = {
+        ...activeSearch,
+        optionFilters: {
+            enchantName: "기존 이름",
+            enchantPrefix: "여명",
+            enchantSuffix: "편린",
+            reforges: [1, 2, 3].map(n => ({
+                optionName: `효과${n}`,
+                minLevel: n,
+            })),
+            erg: {},
+            echostone: {
+                color: 3,
+                minGrade: 30,
+                awakening: {
+                    optionName: "보우 마스터리 최대 대미지",
+                    minLevel: 20,
+                },
+                innate: { stat: "dexterity", minValue: 0 },
+            },
+            murias: { effectId: 73020, minLevel: 2 },
+            totem: { maxdamage: 0, strength: 5 },
+        },
+    };
+    const { result, unmount } = renderHook(() => useAuctionPresets());
+    act(() => {
+        expect(result.current.add("전체 조건", search).success).toBe(true);
+    });
+    unmount();
+    const restored = renderHook(() => useAuctionPresets());
+    expect(
+        prepareAuctionPresetSearch(restored.result.current.presets[0])
+    ).toEqual({ search, unsupportedConditions: [] });
+});

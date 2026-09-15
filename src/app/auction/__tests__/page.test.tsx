@@ -1475,6 +1475,11 @@ describe("AuctionResults", () => {
             { reforges: [{ optionName: "볼트 대미지", minLevel: 10 }] },
         ],
         ["Erg", { erg: { grade: "S", minLevel: 40 } }],
+        ["prefix", { enchantPrefix: "여명" }],
+        ["suffix", { enchantSuffix: "여명" }],
+        ["echo", { echostone: { color: 1 } }],
+        ["relic", { murias: { effectId: 73020, minLevel: 1 } }],
+        ["totem zero", { totem: { maxdamage: 0 } }],
     ] as Array<[string, AuctionOptionFilters]>)(
         "hides the comparison for the %s filter",
         (_name, optionFilters) => {
