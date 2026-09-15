@@ -60,7 +60,6 @@ type AuctionViewProps = {
     setSearchTerm: (value: string) => void;
     setSelectedCategory: (value: string) => void;
     setCurrentPage: React.Dispatch<React.SetStateAction<number>>;
-    onSearch: () => void;
     onApplyOptionFilters: (filters: AuctionOptionFilters) => void;
     onChangeOptionFilters: (filters: AuctionOptionFilters) => void;
     onShare: () => void;
@@ -273,9 +272,6 @@ function AuctionPageContent() {
             favoritesTriggerRef={favoritesTriggerRef}
             presetsTriggerRef={presetsTriggerRef}
             {...{ setSearchTerm, setSelectedCategory, setCurrentPage }}
-            onSearch={() =>
-                urlState.commit(searchTerm, selectedCategory, optionFilters)
-            }
             onApplyOptionFilters={filters =>
                 urlState.commit(searchTerm, selectedCategory, filters)
             }

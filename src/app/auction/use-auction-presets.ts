@@ -33,6 +33,12 @@ export type PresetOperationResult = {
 const FILTER_LABELS = {
     enchantName: "인챈트",
     reforge: "세공",
+    reforges: "세공",
+    enchantPrefix: "접두 인챈트",
+    enchantSuffix: "접미 인챈트",
+    echostone: "에코스톤",
+    murias: "무리아스 유물",
+    totem: "토템",
     erg: "에르그",
 } as const;
 
@@ -102,7 +108,16 @@ export function parseStoredAuctionPresets(value: string | null) {
 export function prepareAuctionPresetSearch(preset: AuctionPreset) {
     const optionFilters: AuctionOptionFilters = {};
     const unsupportedConditions: string[] = [];
+    const reforgeConflict =
+        Object.hasOwn(preset.optionFilters, "reforge") &&
+        Object.hasOwn(preset.optionFilters, "reforges");
+    if (reforgeConflict)
+        unsupportedConditions.push(
+            "구형 세공 조건과 새 세공 조건이 함께 저장되어 있습니다."
+        );
     for (const [key, value] of Object.entries(preset.optionFilters)) {
+        if (reforgeConflict && (key === "reforge" || key === "reforges"))
+            continue;
         if (!Object.hasOwn(FILTER_LABELS, key)) {
             unsupportedConditions.push(`지원하지 않는 조건 (${key})`);
             continue;
@@ -115,11 +130,28 @@ export function prepareAuctionPresetSearch(preset: AuctionPreset) {
             );
         }
     }
+    const targetGroups = (["echostone", "murias", "totem"] as const).filter(
+        key => optionFilters[key] !== undefined
+    );
+    if (targetGroups.length > 1) {
+        for (const key of targetGroups) {
+            delete optionFilters[key];
+            unsupportedConditions.push(
+                `${FILTER_LABELS[key]} (${key}): 다른 검색 대상 조건과 충돌하여 제외했습니다.`
+            );
+        }
+    }
+    const complete = AuctionOptionFiltersSchema.safeParse(optionFilters);
+    if (!complete.success)
+        unsupportedConditions.push(
+            complete.error.issues[0]?.message ??
+                "검색 필터가 올바르지 않습니다."
+        );
     return {
         search: {
             itemName: preset.itemName,
             category: preset.category,
-            optionFilters,
+            optionFilters: complete.success ? complete.data : {},
         } satisfies AuctionUrlSearch,
         unsupportedConditions,
     };

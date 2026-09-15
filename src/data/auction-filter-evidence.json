@@ -1,0 +1,15 @@
+{
+  "observedAt": "2026-09-15",
+  "source": "https://erinn.me/api/auction?auction_item_category=%EC%97%90%EC%BD%94%EC%8A%A4%ED%86%A4",
+  "observedAwakenings": [
+    { "color": 4, "name": "핀즈 크래프트 성공 시 대성공 확률", "value": "핀즈 크래프트 성공 시 대성공 확률 10 레벨 \n(10.00 )" },
+    { "color": 4, "name": "핀즈 크래프트 대성공 시 결과 아이템 보너스", "value": "핀즈 크래프트 대성공 시 결과 아이템 보너스 3 레벨 \n(3.00 )" },
+    { "color": 3, "name": "목공 장비 생산 최대 품질 보너스", "value": "목공 장비 생산 최대 품질 보너스 18 레벨 \n(27.00 )" },
+    { "color": 3, "name": "목공 장비 생산 최소 품질 보너스", "value": "목공 장비 생산 최소 품질 보너스 18 레벨 \n(9.90 )" },
+    { "color": 3, "name": "목공 장비 생산 시간", "value": "목공 장비 생산 시간 19 레벨 \n(9.50 )" },
+    { "color": 3, "name": "채집 시 1개 추가 획득 확률", "value": "채집 시 1개 추가 획득 확률 3 레벨" }
+  ],
+  "fixedAwakenings": [
+    { "color": 1, "name": "돌진 인간 및 엘프일 때 방패 없이 사용 가능", "abilityId": 2001120, "level": 1 }
+  ]
+}
