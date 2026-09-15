@@ -1,4 +1,5 @@
 import { categories } from "@/constant/categories";
+import { auctionFilterReference } from "@/lib/auction-filter-reference";
 import {
     getAuctionCatalogItemByExactName,
     getAuctionItemPath,
@@ -9,6 +10,7 @@ import {
     hasAuctionOptionFilters,
     parseAuctionOptionFilterQuery,
 } from "@/lib/auction-options";
+import { muriasReference } from "@/lib/murias-relics";
 
 const ITEM_QUERY_PARAM = "q";
 const CATEGORY_QUERY_PARAM = "category";
@@ -69,6 +71,27 @@ export function parseAuctionSearchParams(params: URLSearchParams): {
     );
     const parsedFilters = parseAuctionOptionFilterQuery(params);
     const base = parseBaseAuctionParams(params);
+    if (parsedFilters.success) {
+        const filters = parsedFilters.filters;
+        if (filters?.murias) {
+            base.itemName = muriasReference.item.name;
+            base.usableItemName = true;
+            base.category = DEFAULT_AUCTION_CATEGORY;
+        } else if (filters?.echostone) {
+            base.itemName =
+                auctionFilterReference.echostones.find(
+                    color => color.id === filters.echostone?.color
+                )?.name ?? "";
+            base.usableItemName = !!base.itemName;
+            base.category = base.usableItemName
+                ? DEFAULT_AUCTION_CATEGORY
+                : "에코스톤";
+        } else if (filters?.totem) {
+            base.itemName = "";
+            base.usableItemName = false;
+            base.category = "토템";
+        }
+    }
 
     if (base.usableItemName) normalized.set(ITEM_QUERY_PARAM, base.itemName);
     else normalized.delete(ITEM_QUERY_PARAM);

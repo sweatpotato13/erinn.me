@@ -1,0 +1,13 @@
+{
+  "observedAt": "2026-09-15",
+  "source": "https://erinn.me/api/auction",
+  "reforges": ["매그넘 샷 대미지(19레벨:190 % 증가)", "컴뱃 마스터리 최대 대미지 19 레벨", "마나실드 마나 1당 대미지 방어량 11 레벨"],
+  "echo": {
+    "item_name": "옐로 에코스톤",
+    "item_option": [
+      { "option_type": "에코스톤 등급", "option_value": "30" },
+      { "option_type": "에코스톤 고유 능력", "option_sub_type": "솜씨", "option_value": "100" },
+      { "option_type": "에코스톤 각성 능력", "option_value": "보우 마스터리 최대 대미지 20 레벨 \n(20.00 )" }
+    ]
+  }
+}

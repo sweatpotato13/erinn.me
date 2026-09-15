@@ -1,5 +1,5 @@
 import { Loader, Share2 } from "lucide-react";
-import type { KeyboardEvent } from "react";
+import { type KeyboardEvent, useId } from "react";
 
 import { AuctionOptionControls } from "@/app/auction/auction-option-controls";
 import type { useAuctionSuggestions } from "@/app/auction/use-auction-suggestions";
@@ -153,7 +153,6 @@ type AuctionControlsProps = InputProps & {
     selectedCategory: string;
     setSelectedCategory: (category: string) => void;
     loading: boolean;
-    onSearch: () => void;
     canShare: boolean;
     sharing: boolean;
     feedback: AuctionUrlFeedback | null;
@@ -177,7 +176,7 @@ function AuctionFeedback({
               : "alert-info";
     return (
         <div
-            className={`alert mt-2 ${kindClass}`}
+            className={`alert ${kindClass} ${feedback.toast ? "fixed top-4 right-4 z-50 w-auto max-w-[calc(100vw-2rem)] shadow-lg" : "mt-2"}`}
             role={feedback.kind === "error" ? "alert" : "status"}
             aria-live={feedback.kind === "error" ? undefined : "polite"}
         >
@@ -192,14 +191,15 @@ function AuctionFeedback({
  * @param props - The search, category, loading, and suggestion state used by the controls
  */
 export function AuctionControls(props: AuctionControlsProps) {
+    const filterFormId = useId();
     return (
         <div className="mb-2">
             <div className="grid w-full grid-cols-[minmax(0,1fr)_auto_auto] gap-2 md:flex md:flex-row">
                 <SuggestionInput {...props} />
                 <button
-                    type="button"
+                    type="submit"
+                    form={filterFormId}
                     className="btn btn-outline col-start-2 row-start-2 w-auto"
-                    onClick={props.onSearch}
                 >
                     {props.loading ? (
                         <Loader className="animate-spin" />
@@ -223,6 +223,7 @@ export function AuctionControls(props: AuctionControlsProps) {
                 <CategoryDropdown {...props} />
             </div>
             <AuctionOptionControls
+                formId={filterFormId}
                 filters={props.optionFilters}
                 onApply={props.onApplyOptionFilters}
                 onChange={props.onChangeOptionFilters}

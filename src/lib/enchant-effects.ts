@@ -1,4 +1,4 @@
-import { normalizeOptionText } from "./auction-options";
+import { normalizeOptionText } from "./auction-option-text";
 
 export interface EnchantEffect {
     type: string;

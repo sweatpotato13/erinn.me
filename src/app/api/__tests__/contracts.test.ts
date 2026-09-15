@@ -7,6 +7,12 @@ import { GET as getAuction } from "@/app/api/auction/route";
 import { GET as getHorn } from "@/app/api/horn/route";
 import { GET as getNpcShop } from "@/app/api/npc-shop/route";
 import { GET as getSuggest } from "@/app/api/suggest/route";
+import {
+    appendAuctionOptionFilterQuery,
+    type AuctionOptionFilters,
+} from "@/lib/auction-options";
+import { muriasReference } from "@/lib/murias-relics";
+import { TOTEM_STATS } from "@/lib/totems";
 
 function request(path: string) {
     return new Request(`http://localhost:3000${path}`, {
@@ -911,4 +917,129 @@ describe("API upstream failure contracts", () => {
         );
         expect(response.status).toBe(502);
     });
+});
+
+describe.each([
+    [getAuction, "/api/auction?item_name=검"],
+    [getKeyword, "/api/auction/keyword-search?keyword=검"],
+] as const)("new filter continuation contracts: %s %s", (handler, path) => {
+    const effect = muriasReference.effects[0];
+    const cases: [
+        string,
+        AuctionOptionFilters,
+        ReturnType<typeof auctionItem>,
+    ][] = [
+        [
+            "prefix",
+            { enchantPrefix: "여명" },
+            auctionItem("검", [
+                {
+                    option_type: "인챈트",
+                    option_sub_type: "접두",
+                    option_value: "여명",
+                },
+            ]),
+        ],
+        [
+            "suffix",
+            { enchantSuffix: "여명" },
+            auctionItem("검", [
+                {
+                    option_type: "인챈트",
+                    option_sub_type: "접미",
+                    option_value: "여명",
+                },
+            ]),
+        ],
+        [
+            "three reforges",
+            {
+                reforges: [1, 2, 3].map(n => ({
+                    optionName: `효과${n}`,
+                    minLevel: n,
+                })),
+            },
+            auctionItem(
+                "검",
+                [3, 1, 2].map(n => ({
+                    option_type: "세공 옵션",
+                    option_value: `효과${n} ${n} 레벨`,
+                }))
+            ),
+        ],
+        [
+            "echo",
+            { echostone: { minGrade: 30 } },
+            auctionItem("레드 에코스톤", [
+                { option_type: "에코스톤 등급", option_value: "30" },
+            ]),
+        ],
+        [
+            "relic",
+            { murias: { effectId: effect.id, minLevel: 1 } },
+            auctionItem("인챈트된 유물", [
+                {
+                    option_type: "무리아스 유물",
+                    option_value: effect.template.replace(
+                        "{0}",
+                        String(effect.values[0])
+                    ),
+                },
+            ]),
+        ],
+        [
+            "totem",
+            { totem: { maxdamage: 0 } },
+            auctionItem("토템", [
+                {
+                    option_type: "토템 효과",
+                    option_sub_type: TOTEM_STATS.maxdamage.subtype,
+                    option_value: "0",
+                },
+            ]),
+        ],
+    ];
+    it.each(cases)(
+        "finds %s only after the next batch and keeps options off upstream URLs",
+        async (_, filters, matching) => {
+            let page = 0;
+            global.fetch = jest.fn(() =>
+                Promise.resolve(
+                    new Response(
+                        JSON.stringify({
+                            auction_item:
+                                page++ < 5
+                                    ? [auctionItem("검", [])]
+                                    : [matching],
+                            next_cursor: page <= 5 ? `cursor-${page}` : null,
+                        })
+                    )
+                )
+            );
+            const url = new URL(`http://localhost:3000${path}`);
+            appendAuctionOptionFilterQuery(url.searchParams, filters);
+            const first = await handler(request(url.pathname + url.search));
+            expect(first.status).toBe(200);
+            const body = await first.json();
+            expect(body).toMatchObject({
+                items: [],
+                hasMore: true,
+                nextCursor: "cursor-5",
+            });
+            url.searchParams.set("cursor", body.nextCursor);
+            const next = await handler(request(url.pathname + url.search));
+            expect(await next.json()).toMatchObject({
+                items: [matching],
+                hasMore: false,
+                evaluation: { scannedCount: 1, unevaluableCount: 0 },
+            });
+            expect(fetch).toHaveBeenCalledTimes(6);
+            for (const [upstream] of jest.mocked(fetch).mock.calls)
+                expect(
+                    upstream instanceof Request
+                        ? upstream.url
+                        : upstream.toString()
+                ).not.toContain("option_");
+        }
+    );
 });
