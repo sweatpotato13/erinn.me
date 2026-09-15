@@ -1,7 +1,11 @@
 # Auction search filters
 
-The `/auction` search filters apply to current listings and require an item name
-or category. All active conditions must match the same listing. Dye color search
+The `/auction` search filters apply to current listings. Relic conditions
+automatically select `무리아스의 유물`; echostone conditions select the chosen
+color name, or the `에코스톤` category when color is unspecified. Totem conditions
+clear the item name and select the `토템` category, since a stat can occur on many
+differently named totems. Other filters
+require an item name or category. All active conditions must match the same listing. Dye color search
 and completed-sale filtering are outside this feature.
 
 ## Reference generation
@@ -26,6 +30,9 @@ other unnumbered descriptions must not be assumed to be level 1.
 
 ## Matching and editing
 
+The main search button and the filter apply button submit the same current
+filter form. Neither silently reuses older applied filters while a draft is edited.
+
 Prefix and suffix names are separate conditions. Exact names match within their
 position; aliases use the reference's position, usage and reported rank. Missing
 or conflicting position and ambiguous identities remain unevaluable. The legacy
@@ -33,15 +40,18 @@ position-independent name keeps literal matching and remains editable until
 explicitly removed.
 
 One to three distinct reforge names can each specify a minimum integer level.
-Both `name N 레벨` and `name(N레벨:effect)` are supported, including levels above
-20. All rows must match, regardless of the order on the item. Plain values have
+Both `name N 레벨` and `name(N레벨:effect)` are supported, including levels above 20. All rows must match, regardless of the order on the item. Plain values have
 no effect description to render. Erg presence, grade and minimum level remain
 supported.
 
 Echostone conditions include color (from the base item name), grade 1–30,
 awakening name/minimum level, and innate stat/minimum value. The black stone's
 life, mana and stamina are a single reported stat. Changing color narrows local
-suggestions without deleting manual text. Only the source-verified red awakening
+suggestions without deleting manual awakening text. Awakening suggestions also
+open on focus with empty input. Innate stat choices follow the color: red
+strength, blue intelligence, yellow dexterity, silver will, black vitals.
+An already selected innate stat follows color changes while retaining its minimum.
+Without a color all five stats are available. Only the source-verified red awakening
 may infer level 1 from a value without a level.
 
 Murias filters reuse the exact rendered effect templates and their 1–10 levels.
@@ -53,23 +63,25 @@ own threshold; reference bounds are not needed for listing matching.
 Missing required options do not match. Malformed or duplicate required options
 remain unevaluable rather than being guessed. An independently failing AND
 condition still excludes the listing. Suggestions are optional: manual names
-are accepted. Incompatible groups or categories are never silently changed.
+are accepted. Relic, echostone and totem groups cannot be combined with each other; an error toast
+retains the draft and current search. Automatic targets are normalized in the
+shared URL parser, including restored links and preset searches.
 
 ## URL and preset compatibility
 
 Both existing auction endpoints and the page URL share these keys:
 
-| Condition | Query keys |
-| --- | --- |
-| Legacy any-position enchant | `option_enchant` |
-| Prefix / suffix | `option_enchant_prefix`, `option_enchant_suffix` |
-| Reforge row N (1–3) | `option_reforge_N`, `option_reforge_N_min_level` |
-| Erg | `option_erg=present`, `option_erg_grade`, `option_erg_min_level` |
-| Echostone | `option_echo_color`, `option_echo_min_grade` |
-| Awakening | `option_echo_awakening`, `option_echo_awakening_min_level` |
-| Innate stat | `option_echo_stat`, `option_echo_min_value` |
-| Murias relic | `option_murias_effect`, `option_murias_min_level` |
-| Totem stat | `option_totem_<stat>` (keys from `TOTEM_STATS`) |
+| Condition                   | Query keys                                                       |
+| --------------------------- | ---------------------------------------------------------------- |
+| Legacy any-position enchant | `option_enchant`                                                 |
+| Prefix / suffix             | `option_enchant_prefix`, `option_enchant_suffix`                 |
+| Reforge row N (1–3)         | `option_reforge_N`, `option_reforge_N_min_level`                 |
+| Erg                         | `option_erg=present`, `option_erg_grade`, `option_erg_min_level` |
+| Echostone                   | `option_echo_color`, `option_echo_min_grade`                     |
+| Awakening                   | `option_echo_awakening`, `option_echo_awakening_min_level`       |
+| Innate stat                 | `option_echo_stat`, `option_echo_min_value`                      |
+| Murias relic                | `option_murias_effect`, `option_murias_min_level`                |
+| Totem stat                  | `option_totem_<stat>` (keys from `TOTEM_STATS`)                  |
 
 The old `option_reforge` / `option_reforge_min_level` pair and preset `reforge`
 object are read as a single row. New URLs and saves use indexed keys and the

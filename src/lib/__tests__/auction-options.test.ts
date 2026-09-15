@@ -451,27 +451,37 @@ describe("expanded filter encoding", () => {
             },
             innate: { stat: "dexterity", minValue: 0 },
         },
-        murias: { effectId: 73001, minLevel: 10 },
         totem: { healing: 0.000001, bonusdamage: 0.4, strength: 0 },
     };
-    it("round-trips every field with deterministic encoding and zero thresholds", () => {
-        const params = appendAuctionOptionFilterQuery(
-            new URLSearchParams(),
-            filters
-        );
-        const parsed = parseAuctionOptionFilterQuery(params);
-        expect(parsed).toEqual({ success: true, filters });
-        expect(params.get("option_totem_healing")).toBe("0.000001");
-        expect(params.has("option_reforge")).toBe(false);
-        expect(
-            appendAuctionOptionFilterQuery(
+    it.each(["echo", "totem", "relic"])(
+        "round-trips %s with equipment filters",
+        kind => {
+            const current = { ...filters };
+            if (kind === "echo") delete current.totem;
+            else delete current.echostone;
+            if (kind === "relic") {
+                delete current.totem;
+                current.murias = { effectId: 73020, minLevel: 1 };
+            }
+            const params = appendAuctionOptionFilterQuery(
                 new URLSearchParams(),
-                parsed.success ? parsed.filters! : {}
-            ).toString()
-        ).toBe(params.toString());
-        for (const [key, value] of Object.entries(filters))
-            expect(hasAuctionOptionFilters({ [key]: value })).toBe(true);
-    });
+                current
+            );
+            const parsed = parseAuctionOptionFilterQuery(params);
+            expect(parsed).toEqual({ success: true, filters: current });
+            if (kind === "totem")
+                expect(params.get("option_totem_healing")).toBe("0.000001");
+            expect(params.has("option_reforge")).toBe(false);
+            expect(
+                appendAuctionOptionFilterQuery(
+                    new URLSearchParams(),
+                    parsed.success ? parsed.filters! : {}
+                ).toString()
+            ).toBe(params.toString());
+            for (const [key, value] of Object.entries(filters))
+                expect(hasAuctionOptionFilters({ [key]: value })).toBe(true);
+        }
+    );
     it("migrates legacy single reforge without changing the any-position enchant", () => {
         expect(
             parseAuctionOptionFilterQuery(
@@ -571,4 +581,12 @@ it("rejects unsupported raw totem keys before record parsing can discard them", 
             JSON.parse('{"totem":{"maxdamage":0,"__proto__":1}}')
         ).success
     ).toBe(false);
+});
+
+it.each([
+    { murias: { effectId: 73020, minLevel: 1 }, echostone: { color: 1 } },
+    { murias: { effectId: 73020, minLevel: 1 }, totem: { maxdamage: 0 } },
+    { echostone: { color: 1 }, totem: { maxdamage: 0 } },
+])("rejects competing automatic search targets: %j", filters => {
+    expect(AuctionOptionFiltersSchema.safeParse(filters).success).toBe(false);
 });

@@ -25,6 +25,13 @@ export const ECHO_INNATE_STATS = {
     vitals: "생명력, 마나, 스태미나",
 } as const;
 export type EchoInnateStat = keyof typeof ECHO_INNATE_STATS;
+export const ECHO_INNATE_STAT_BY_COLOR: Record<number, EchoInnateStat> = {
+    1: "strength",
+    2: "intelligence",
+    3: "dexterity",
+    4: "will",
+    5: "vitals",
+};
 export type AuctionLevelFilter = { optionName: string; minLevel: number };
 export type AuctionOptionFilters = {
     enchantName?: string;
@@ -197,7 +204,13 @@ const canonicalSchema = z
             })
             .optional(),
     })
-    .strict();
+    .strict()
+    .refine(
+        filters =>
+            [filters.murias, filters.echostone, filters.totem].filter(Boolean)
+                .length <= 1,
+        "무리아스 유물·에코스톤·토템 필터는 함께 적용할 수 없습니다. 한 종류만 선택해주세요."
+    );
 
 export const AuctionOptionFiltersSchema = z
     .unknown()

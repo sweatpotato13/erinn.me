@@ -193,7 +193,6 @@ describe("AuctionControls", () => {
                 selectedCategory={categories[0]}
                 setSelectedCategory={jest.fn()}
                 loading={false}
-                onSearch={jest.fn()}
                 canShare={false}
                 sharing={false}
                 feedback={null}
@@ -242,7 +241,6 @@ describe("AuctionControls", () => {
                 selectedCategory={categories[0]}
                 setSelectedCategory={setSelectedCategory}
                 loading={false}
-                onSearch={jest.fn()}
                 canShare={false}
                 sharing={false}
                 feedback={null}
@@ -276,7 +274,6 @@ describe("AuctionControls", () => {
                 selectedCategory={categories[0]}
                 setSelectedCategory={jest.fn()}
                 loading={false}
-                onSearch={jest.fn()}
                 canShare={false}
                 sharing={false}
                 feedback={null}
@@ -298,7 +295,6 @@ describe("AuctionControls", () => {
                 selectedCategory={categories[0]}
                 setSelectedCategory={jest.fn()}
                 loading={false}
-                onSearch={jest.fn()}
                 canShare
                 sharing={false}
                 feedback={null}
@@ -312,31 +308,36 @@ describe("AuctionControls", () => {
         expect(onShare).toHaveBeenCalledTimes(1);
     });
 
-    it("applies normalized enchantment, reforge, and Erg conditions", async () => {
-        const user = userEvent.setup();
-        const onApplyOptionFilters = jest.fn();
-        controls({ onApplyOptionFilters });
+    it.each(["검색", "조건 적용"])(
+        "applies draft filters with %s",
+        async buttonName => {
+            const user = userEvent.setup();
+            const onApplyOptionFilters = jest.fn();
+            controls({ onApplyOptionFilters });
 
-        await user.click(
-            screen.getByText("검색 필터", { selector: "summary" })
-        );
-        await user.type(screen.getByLabelText("접두 인챈트"), "  여명  ");
-        await user.type(
-            screen.getByLabelText("세공 1 옵션 이름"),
-            "볼트  대미지"
-        );
-        await user.type(screen.getByLabelText("세공 1 최소 레벨"), "10");
-        await user.click(screen.getByRole("checkbox", { name: "에르그 있음" }));
-        await user.selectOptions(screen.getByLabelText("에르그 등급"), "S");
-        await user.type(screen.getByLabelText("에르그 최소 레벨"), "40");
-        await user.click(screen.getByRole("button", { name: "조건 적용" }));
+            await user.click(
+                screen.getByText("검색 필터", { selector: "summary" })
+            );
+            await user.type(screen.getByLabelText("접두 인챈트"), "  여명  ");
+            await user.type(
+                screen.getByLabelText("세공 1 옵션 이름"),
+                "볼트  대미지"
+            );
+            await user.type(screen.getByLabelText("세공 1 최소 레벨"), "10");
+            await user.click(
+                screen.getByRole("checkbox", { name: "에르그 있음" })
+            );
+            await user.selectOptions(screen.getByLabelText("에르그 등급"), "S");
+            await user.type(screen.getByLabelText("에르그 최소 레벨"), "40");
+            await user.click(screen.getByRole("button", { name: buttonName }));
 
-        expect(onApplyOptionFilters).toHaveBeenCalledWith({
-            enchantPrefix: "여명",
-            reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
-            erg: { grade: "S", minLevel: 40 },
-        });
-    });
+            expect(onApplyOptionFilters).toHaveBeenCalledWith({
+                enchantPrefix: "여명",
+                reforges: [{ optionName: "볼트 대미지", minLevel: 10 }],
+                erg: { grade: "S", minLevel: 40 },
+            });
+        }
+    );
 
     it("explains incomplete filters without applying them", async () => {
         const user = userEvent.setup();

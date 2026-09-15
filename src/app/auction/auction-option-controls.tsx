@@ -10,6 +10,7 @@ import {
 } from "@/lib/auction-filter-reference";
 import {
     type AuctionOptionFilters,
+    ECHO_INNATE_STAT_BY_COLOR,
     ECHO_INNATE_STATS,
     hasAuctionOptionFilters,
     parseAuctionOptionFilterQuery,
@@ -20,6 +21,7 @@ import { TOTEM_STATS } from "@/lib/totems";
 import { AuctionOptionAutocomplete } from "./auction-option-autocomplete";
 
 type Props = {
+    formId?: string;
     filters: AuctionOptionFilters;
     onApply: (filters: AuctionOptionFilters) => void;
     onChange: (filters: AuctionOptionFilters) => void;
@@ -233,7 +235,13 @@ function EchoFields({ filters }: { filters: AuctionOptionFilters }) {
         echo?.awakening?.optionName ?? ""
     );
     const [level, setLevel] = useState(String(echo?.awakening?.minLevel ?? ""));
-    const [stat, setStat] = useState(echo?.innate?.stat ?? "");
+    const [stat, setStat] = useState(
+        echo?.innate
+            ? echo.color
+                ? ECHO_INNATE_STAT_BY_COLOR[echo.color]
+                : echo.innate.stat
+            : ""
+    );
     const [value, setValue] = useState(String(echo?.innate?.minValue ?? ""));
     const options = useMemo(
         () => echostoneSuggestions(color ? Number(color) : undefined),
@@ -242,8 +250,9 @@ function EchoFields({ filters }: { filters: AuctionOptionFilters }) {
     return (
         <div className="space-y-3">
             <p className="text-sm">
-                아이템명 또는 에코스톤 카테고리를 선택해주세요. 각성하지 않은
-                매물도 종류·등급·고유 능력으로 검색할 수 있습니다.
+                조건 적용 시 선택한 에코스톤 이름으로 검색합니다. 종류 무관이면
+                에코스톤 카테고리를 검색합니다. 각성하지 않은 매물도
+                종류·등급·고유 능력으로 검색할 수 있습니다.
             </p>
             <div className="grid gap-3 sm:grid-cols-2">
                 <label className="form-control">
@@ -252,7 +261,14 @@ function EchoFields({ filters }: { filters: AuctionOptionFilters }) {
                         name="option_echo_color"
                         className="select select-bordered w-full"
                         value={color}
-                        onChange={event => setColor(event.target.value)}
+                        onChange={event => {
+                            const nextColor = event.target.value;
+                            setColor(nextColor);
+                            if (nextColor && stat)
+                                setStat(
+                                    ECHO_INNATE_STAT_BY_COLOR[Number(nextColor)]
+                                );
+                        }}
                     >
                         <option value="">종류 무관</option>
                         {auctionFilterReference.echostones.map(row => (
@@ -270,6 +286,7 @@ function EchoFields({ filters }: { filters: AuctionOptionFilters }) {
                     onChange={setGrade}
                 />
                 <AuctionOptionAutocomplete
+                    suggestOnEmpty
                     label="에코스톤 각성 옵션"
                     name="option_echo_awakening"
                     value={awakening}
@@ -291,13 +308,18 @@ function EchoFields({ filters }: { filters: AuctionOptionFilters }) {
                         onChange={event => setStat(event.target.value)}
                     >
                         <option value="">선택 안 함</option>
-                        {Object.entries(ECHO_INNATE_STATS).map(
-                            ([key, label]) => (
+                        {Object.entries(ECHO_INNATE_STATS)
+                            .filter(
+                                ([key]) =>
+                                    !color ||
+                                    key ===
+                                        ECHO_INNATE_STAT_BY_COLOR[Number(color)]
+                            )
+                            .map(([key, label]) => (
                                 <option key={key} value={key}>
                                     {label}
                                 </option>
-                            )
-                        )}
+                            ))}
                     </select>
                 </label>
                 <NumberField
@@ -331,8 +353,8 @@ function MuriasFields({ filters }: { filters: AuctionOptionFilters }) {
     return (
         <div className="space-y-3">
             <p className="text-sm">
-                아이템명에 무리아스의 유물을 입력해주세요. 인챈트 조건과 함께
-                검색할 수 있습니다.
+                조건 적용 시 무리아스의 유물 이름으로 검색합니다. 인챈트 조건과
+                함께 검색할 수 있습니다.
             </p>
             <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_9rem]">
                 <label className="form-control min-w-0">
@@ -406,7 +428,7 @@ function TotemFields({ filters }: { filters: AuctionOptionFilters }) {
         <fieldset className="space-y-3">
             <legend className="sr-only">토템 능력치 조건</legend>
             <p className="text-sm">
-                아이템명 또는 토템 카테고리를 선택해주세요. 선택한 모든 능력치의
+                조건 적용 시 토템 카테고리에서 검색합니다. 선택한 모든 능력치의
                 실제 수치가 최소값 이상이어야 합니다.
             </p>
             {rows.map((row, index) => {
@@ -532,14 +554,17 @@ function parseFilterForm(form: HTMLFormElement) {
 }
 
 function OptionFilterForm({
+    formId,
     filters,
     onSubmit,
 }: {
     filters: AuctionOptionFilters;
     onSubmit: (form: HTMLFormElement) => void;
+    formId?: string;
 }) {
     return (
         <form
+            id={formId}
             className="space-y-3 border-t p-3 sm:p-4"
             noValidate
             onSubmit={event => {
@@ -548,7 +573,8 @@ function OptionFilterForm({
             }}
         >
             <p className="text-sm">
-                아이템명 또는 카테고리를 선택한 뒤 조건을 적용해주세요. 모든
+                아이템명 또는 카테고리를 선택한 뒤 조건을 적용해주세요.
+                유물·에코스톤·토템 조건은 검색 대상을 자동으로 지정합니다. 모든
                 활성 조건을 만족하는 현재 매물만 검색합니다.
             </p>
             <details open className="rounded-md border">
@@ -714,7 +740,12 @@ export function removeAuctionOptionFilter(
     return next;
 }
 
-export function AuctionOptionControls({ filters, onApply, onChange }: Props) {
+export function AuctionOptionControls({
+    formId,
+    filters,
+    onApply,
+    onChange,
+}: Props) {
     const filterKey = JSON.stringify(filters);
     const [error, setError] = useState<string | null>(null);
     useEffect(() => setError(null), [filterKey]);
@@ -726,6 +757,7 @@ export function AuctionOptionControls({ filters, onApply, onChange }: Props) {
                     검색 필터{values.length > 0 && ` (${values.length})`}
                 </summary>
                 <OptionFilterForm
+                    formId={formId}
                     key={filterKey}
                     filters={filters}
                     onSubmit={form => {
@@ -740,9 +772,20 @@ export function AuctionOptionControls({ filters, onApply, onChange }: Props) {
                 />
             </details>
             {error && (
-                <p role="alert" className="alert alert-error mt-2">
-                    {error}
-                </p>
+                <div
+                    role="alert"
+                    className="alert alert-error fixed top-4 right-4 z-50 w-auto max-w-[calc(100vw-2rem)] shadow-lg"
+                >
+                    <span>{error}</span>
+                    <button
+                        type="button"
+                        className="btn btn-ghost btn-xs"
+                        aria-label="오류 알림 닫기"
+                        onClick={() => setError(null)}
+                    >
+                        닫기
+                    </button>
+                </div>
             )}
             {hasAuctionOptionFilters(filters) && (
                 <section

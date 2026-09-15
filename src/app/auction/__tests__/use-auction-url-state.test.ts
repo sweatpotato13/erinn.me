@@ -284,3 +284,37 @@ describe("auction URL state", () => {
         expect(clipboard.writeText).toHaveBeenCalledWith(expected);
     });
 });
+
+it.each([
+    [
+        { murias: { effectId: 73020, minLevel: 1 } },
+        "무리아스의 유물",
+        categories[0],
+    ],
+    [{ echostone: { color: 1 } }, "레드 에코스톤", categories[0]],
+    [{ echostone: { color: 2 } }, "블루 에코스톤", categories[0]],
+    [{ echostone: { color: 3 } }, "옐로 에코스톤", categories[0]],
+    [{ echostone: { color: 4 } }, "실버 에코스톤", categories[0]],
+    [{ echostone: { color: 5 } }, "블랙 에코스톤", categories[0]],
+    [{ echostone: { minGrade: 30 } }, "", "에코스톤"],
+    [{ totem: { maxdamage: 0 } }, "", "토템"],
+])(
+    "automatically selects a target for %j and restores it from the URL",
+    (optionFilters, itemName, category) => {
+        const next = setAuctionSearchUrl(
+            new URL("https://erinn.me/auction?view=compact#results"),
+            { itemName: "검", category: "검", optionFilters }
+        );
+        expect(next.search).toEqual({ itemName, category, optionFilters });
+        expect(next.invalid).toBe(false);
+        expect(next.url.searchParams.get("view")).toBe("compact");
+        expect(next.url.hash).toBe("#results");
+        expect(parseAuctionSearchParams(next.url.searchParams).search).toEqual(
+            next.search
+        );
+        const noBase = new URLSearchParams(next.url.searchParams);
+        noBase.delete("q");
+        noBase.delete("category");
+        expect(parseAuctionSearchParams(noBase).search).toEqual(next.search);
+    }
+);

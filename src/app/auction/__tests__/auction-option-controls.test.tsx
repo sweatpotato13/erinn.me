@@ -121,3 +121,78 @@ it("preserves zero-valued totem rows and removes only the selected active condit
         totem: { maxdamage: 0, dexterity: 7 },
     });
 });
+
+it("restricts innate stats by color and shows awakening suggestions on focus", async () => {
+    const user = userEvent.setup();
+    const apply = jest.fn();
+    render(
+        <AuctionOptionControls
+            filters={{
+                echostone: {
+                    color: 1,
+                    innate: { stat: "strength", minValue: 50 },
+                },
+            }}
+            onApply={apply}
+            onChange={jest.fn()}
+        />
+    );
+    await user.click(screen.getByText(/^검색 필터/, { selector: "summary" }));
+    const stat = screen.getByRole("combobox", { name: "에코스톤 고유 능력" });
+    const color = screen.getByRole("combobox", { name: "에코스톤 종류" });
+    for (const [id, key, label] of [
+        ["1", "strength", "체력"],
+        ["2", "intelligence", "지력"],
+        ["3", "dexterity", "솜씨"],
+        ["4", "will", "의지"],
+        ["5", "vitals", "생명력, 마나, 스태미나"],
+    ]) {
+        await user.selectOptions(color, id);
+        expect(stat).toHaveValue(key);
+        expect(
+            Array.from((stat as HTMLSelectElement).options).map(
+                option => option.text
+            )
+        ).toEqual(["선택 안 함", label]);
+    }
+    await user.selectOptions(color, "");
+    expect((stat as HTMLSelectElement).options).toHaveLength(6);
+    const awakening = screen.getByRole("combobox", {
+        name: "에코스톤 각성 옵션",
+    });
+    await user.click(awakening);
+    expect(
+        screen.getByRole("listbox", { name: "에코스톤 각성 옵션 제안" })
+    ).toBeVisible();
+    await user.type(awakening, "보우 마스터리 최대 대미지");
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(awakening).toHaveValue("보우 마스터리 최대 대미지");
+    expect(apply).not.toHaveBeenCalled();
+});
+
+it("shows a dismissible error toast for conflicting targets without applying or clearing drafts", async () => {
+    const user = userEvent.setup();
+    const apply = jest.fn();
+    render(
+        <AuctionOptionControls
+            filters={{
+                echostone: { color: 1 },
+                murias: { effectId: 73020, minLevel: 1 },
+            }}
+            onApply={apply}
+            onChange={jest.fn()}
+        />
+    );
+    await user.click(screen.getByText(/^검색 필터/, { selector: "summary" }));
+    await user.click(screen.getByRole("button", { name: "조건 적용" }));
+    expect(screen.getByRole("alert")).toHaveClass("fixed", "alert-error");
+    expect(screen.getByRole("alert")).toHaveTextContent(
+        "함께 적용할 수 없습니다"
+    );
+    expect(apply).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "오류 알림 닫기" }));
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "에코스톤 종류" })).toHaveValue(
+        "1"
+    );
+});

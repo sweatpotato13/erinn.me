@@ -13,6 +13,7 @@ type Props = {
     value: string;
     onChange: (value: string) => void;
     options: AuctionOptionSuggestion[];
+    suggestOnEmpty?: boolean;
 };
 
 export function AuctionOptionAutocomplete({
@@ -21,13 +22,17 @@ export function AuctionOptionAutocomplete({
     value,
     onChange,
     options,
+    suggestOnEmpty = false,
 }: Props) {
     const id = useId();
     const [open, setOpen] = useState(false);
     const [active, setActive] = useState(-1);
     const composing = useRef(false);
     const input = useRef<HTMLInputElement>(null);
-    const suggestions = searchOptionSuggestions(options, value);
+    const suggestions =
+        !value.trim() && suggestOnEmpty
+            ? options.slice(0, 20)
+            : searchOptionSuggestions(options, value);
     const visible = open && suggestions.length > 0;
     const activeIndex = active < suggestions.length ? active : -1;
     const choose = (suggestion: AuctionOptionSuggestion) => {
