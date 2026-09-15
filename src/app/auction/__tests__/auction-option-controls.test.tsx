@@ -92,3 +92,32 @@ it("preserves legacy enchant and surviving reforge rows when removing the middle
         ],
     });
 });
+
+it("preserves zero-valued totem rows and removes only the selected active condition", async () => {
+    const user = userEvent.setup();
+    const apply = jest.fn();
+    const change = jest.fn();
+    render(
+        <AuctionOptionControls
+            filters={{ totem: { maxdamage: 0, strength: 5, dexterity: 7 } }}
+            onApply={apply}
+            onChange={change}
+        />
+    );
+    await user.click(screen.getByText(/^검색 필터/, { selector: "summary" }));
+    await user.click(screen.getByRole("button", { name: "토템 2 입력 제거" }));
+    expect(
+        screen.getByRole("button", { name: "토템 조건 추가" })
+    ).toHaveFocus();
+    expect(screen.getByLabelText("토템 2 최소 수치")).toHaveValue(7);
+    await user.click(screen.getByRole("button", { name: "조건 적용" }));
+    expect(apply).toHaveBeenCalledWith({
+        totem: { maxdamage: 0, dexterity: 7 },
+    });
+    await user.click(
+        screen.getByRole("button", { name: /토템:.*체력.*조건 제거/ })
+    );
+    expect(change).toHaveBeenCalledWith({
+        totem: { maxdamage: 0, dexterity: 7 },
+    });
+});
