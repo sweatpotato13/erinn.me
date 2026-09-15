@@ -49,6 +49,12 @@ test("last-slot locks are excluded before the first draw; costs charge exactly o
     const initial = initialSession();
     initial.slots[2].locked = true;
     const original = structuredClone(initial);
+    // This interval would select the locked third ID if it were not excluded.
+    const rng = jest
+        .fn()
+        .mockReturnValue(0)
+        .mockReturnValueOnce(2.5 / data.effects.length);
+    expect(resetOgham(initial, rng).slots[0].effectId).toBe(data.effects[3].id);
     let result = resetOgham(initial, () => 0);
     result = resetOgham(result, () => 0);
     expect(initial).toEqual(original);
