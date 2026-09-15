@@ -42,6 +42,7 @@ test("new groups keep drafts, serialize conditions, and restore them on reload",
     await page.getByLabel("토템 2 능력치").selectOption("strength");
     await page.getByLabel("토템 2 최소 수치", { exact: true }).fill("5");
     expect(requests).toHaveLength(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true);
     await page.getByRole("button", { name: "조건 적용" }).click();
     await expect.poll(() => requests.length).toBe(1);
     const query = new URL(page.url()).searchParams;
