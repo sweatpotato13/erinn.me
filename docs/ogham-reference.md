@@ -83,3 +83,17 @@ collector's working mirror at `https://mabires.pril.cc/oghamimage/kr/{id}/{id}.p
 for word IDs and `/invimage/kr/{id}/{id}.png` for material IDs. The UI serves them
 locally; each download is checked for a PNG signature. The Prilus Ogham page uses
 `resImageUrl('oghamimage', region, word.Id)` for word icons.
+
+## Session and verification
+
+Initial configuration is the first distinct effects in ascending source ID order,
+at level 1. This is a free editable starting configuration, not a claimed random
+acquisition. Changing word/grade or initializing clears locks and resource totals;
+a modified session requires confirmation before it is discarded. Editing current
+effects is free and preserves counters; locked rows must be unlocked before edits.
+
+`src/lib/__tests__/ogham.test.ts` checks every word/grade and every eligible effect
+at level boundaries, uniform effect intervals, sequential exclusions, exact locked
+preservation, failed transactions, and the three-reset resource example. The
+Playwright Ogham scenarios cover manual setup, keyboard locks, repeat rolls,
+zero roll requests, discard cancellation, pool/grade changes, and metadata/preview.
