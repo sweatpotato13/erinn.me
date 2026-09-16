@@ -368,16 +368,21 @@ function EffectSlot({ model, index }: SlotProps) {
     const slot = session.slots[index];
     const effect = pool.find(effect => effect.id === slot.effectId)!;
     const { editing } = model;
+    const isMaxLevel = slot.level === effect.values.length;
     return (
         <div
             className={`rounded-xl border p-3 sm:p-4 ${slot.locked ? "border-blue-300 bg-blue-50" : "border-slate-200 bg-slate-50"}`}
         >
             <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                    <p className="text-sm leading-6 break-words text-slate-900">
+                <div
+                    className={`min-w-0 flex-1 ${isMaxLevel ? "font-bold text-yellow-700" : "text-slate-900"}`}
+                >
+                    <p className="text-sm leading-6 break-words">
                         {effectText(effect, slot.level)}
                     </p>
-                    <p className="mt-1 text-xs text-slate-600">
+                    <p
+                        className={`mt-1 text-xs ${isMaxLevel ? "" : "text-slate-600"}`}
+                    >
                         ({slot.level}/{effect.values.length} 레벨)
                     </p>
                 </div>

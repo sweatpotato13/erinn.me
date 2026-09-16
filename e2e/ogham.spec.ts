@@ -125,3 +125,26 @@ test('home navigation, sitemap and social preview include Ogham', async ({ page,
     expect(preview.status()).toBe(200);
     expect(preview.headers()['content-type']).toContain('image/png');
 });
+
+test('maximum levels highlight the effect and level, and clear below the maximum', async ({ page }, testInfo) => {
+    await page.goto('/simulators/ogham');
+    await expect(page.getByRole('heading', { name: '재설정 규칙과 출처' })).toHaveCount(0);
+    await page.getByRole('button', { name: '현재 효과 직접 설정' }).click();
+    const level = page.getByRole('combobox', { name: '1번 레벨', exact: true });
+    const summary = page.getByRole('button', { name: '1번 효과 잠금' }).locator('..').locator('p');
+    const normalColor = await summary.first().evaluate(element => getComputedStyle(element).color);
+    for (const maximum of [10, 20]) {
+        const effect = data.effects.find(effect => effect.values.length === maximum)!;
+        await page.getByRole('combobox', { name: '1번 효과', exact: true }).selectOption(String(effect.id));
+        await level.selectOption(String(maximum));
+        await expect(summary.last()).toHaveText(`(${maximum}/${maximum} 레벨)`);
+        for (const line of await summary.all()) await expect(line).toHaveCSS('font-weight', '700');
+        const highlightColor = await summary.first().evaluate(element => getComputedStyle(element).color);
+        expect(highlightColor).not.toBe(normalColor);
+        await expect(summary.last()).toHaveCSS('color', highlightColor);
+        await page.screenshot({ path: testInfo.outputPath(`ogham-max-${maximum}.png`), fullPage: true });
+        await level.selectOption(String(maximum - 1));
+        await expect(summary.first()).toHaveCSS('font-weight', '400');
+        await expect(summary.first()).toHaveCSS('color', normalColor);
+    }
+});
