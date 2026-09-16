@@ -1,5 +1,13 @@
 export const FEATURE_LINKS = [
     {
+        label: "오검 효과 재설정 시뮬레이터",
+        url: "/simulators/ogham",
+        description:
+            "원하는 효과를 잠그고 재설정하며 골드·재료 소모량을 확인하세요",
+        group: "강화 시뮬레이터",
+        searchVisible: true,
+    },
+    {
         label: "경매장",
         url: "/auction",
         description: "실시간 경매장 아이템 가격을 확인하세요",
