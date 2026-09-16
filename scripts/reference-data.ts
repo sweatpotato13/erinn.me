@@ -263,6 +263,60 @@ const dataSchema = z.object({ Version: versionSchema, ...tableSchemas });
 const placeholders = new Set(["", "None", "<nil>"]);
 const knownMissing = new Set(knownMissingStrings);
 
+function requireRef(
+    ids: Set<string | number>,
+    value: string | number,
+    path: string
+) {
+    if (!ids.has(value))
+        throw new Error(`${path}: unresolved reference ${value}`);
+}
+
+function validateOgham(
+    data: z.infer<typeof dataSchema>,
+    items: Set<string | number>,
+    strings: Set<string | number>
+) {
+    for (const name of ["OghamWordList", "OghamAbilityList"] as const) {
+        if (new Set(data[name].map(row => row.Id)).size !== data[name].length)
+            throw new Error(`${name}: duplicate lookup key`);
+        for (const row of data[name])
+            requireRef(strings, row.Desc, `${name}.Desc`);
+    }
+    for (const word of data.OghamWordList) {
+        requireRef(strings, word.Name, "OghamWordList.Name");
+        requireRef(strings, word.CodeName, "OghamWordList.CodeName");
+        if (
+            new Set(word.Grades).size !== word.Grades.length ||
+            (word.Group === 1 && word.Grades.some(grade => grade !== 3))
+        )
+            throw new Error("OghamWordList: invalid grades");
+    }
+    const costKeys = new Set<string>();
+    for (const cost of data.OghamCost.ResetCosts) {
+        const key = `${cost.Grade}:${cost.LockCount}`;
+        if (cost.LockCount >= cost.Grade || costKeys.has(key))
+            throw new Error("OghamCost: invalid or duplicate cost row");
+        costKeys.add(key);
+        if (
+            new Set(cost.Items.map(item => item.ItemId)).size !==
+            cost.Items.length
+        )
+            throw new Error("OghamCost: duplicate material");
+        for (const item of cost.Items) {
+            requireRef(items, item.ItemId, "OghamCost.Items.ItemId");
+            requireRef(
+                strings,
+                data.ItemList.find(row => row.Id === item.ItemId)!.Name,
+                "OghamCost.Items.Name"
+            );
+        }
+    }
+    for (const grade of [1, 2, 3])
+        for (let locks = 0; locks < grade; locks++)
+            requireRef(costKeys, `${grade}:${locks}`, "OghamCost.ResetCosts");
+}
+
 export function validateData(input: unknown) {
     const data = dataSchema.parse(input);
     const warnings: Record<string, { count: number; examples: string[] }> = {};
@@ -290,14 +344,6 @@ export function validateData(input: unknown) {
             throw new Error(
                 `${path}: unresolved string ${value}; review upstream before extending the known-missing list`
             );
-    };
-    const requireRef = (
-        ids: Set<string | number>,
-        value: string | number,
-        path: string
-    ) => {
-        if (!ids.has(value))
-            throw new Error(`${path}: unresolved reference ${value}`);
     };
     for (const name of [
         "ItemList",
@@ -349,44 +395,7 @@ export function validateData(input: unknown) {
             requireRef(items, row.ItemId, `${name}.ItemId`);
     }
     const posts = new Set(Object.keys(data.CommercePostNameMap));
-    for (const name of ["OghamWordList", "OghamAbilityList"] as const) {
-        if (new Set(data[name].map(row => row.Id)).size !== data[name].length)
-            throw new Error(`${name}: duplicate lookup key`);
-        for (const row of data[name])
-            requireRef(strings, row.Desc, `${name}.Desc`);
-    }
-    for (const word of data.OghamWordList) {
-        requireRef(strings, word.Name, "OghamWordList.Name");
-        requireRef(strings, word.CodeName, "OghamWordList.CodeName");
-        if (
-            new Set(word.Grades).size !== word.Grades.length ||
-            (word.Group === 1 && word.Grades.some(grade => grade !== 3))
-        )
-            throw new Error("OghamWordList: invalid grades");
-    }
-    const costKeys = new Set<string>();
-    for (const cost of data.OghamCost.ResetCosts) {
-        const key = `${cost.Grade}:${cost.LockCount}`;
-        if (cost.LockCount >= cost.Grade || costKeys.has(key))
-            throw new Error("OghamCost: invalid or duplicate cost row");
-        costKeys.add(key);
-        if (
-            new Set(cost.Items.map(item => item.ItemId)).size !==
-            cost.Items.length
-        )
-            throw new Error("OghamCost: duplicate material");
-        for (const item of cost.Items) {
-            requireRef(items, item.ItemId, "OghamCost.Items.ItemId");
-            requireRef(
-                strings,
-                data.ItemList.find(row => row.Id === item.ItemId)!.Name,
-                "OghamCost.Items.Name"
-            );
-        }
-    }
-    for (const grade of [1, 2, 3])
-        for (let locks = 0; locks < grade; locks++)
-            requireRef(costKeys, `${grade}:${locks}`, "OghamCost.ResetCosts");
+    validateOgham(data, items, strings);
     for (const value of Object.values(data.CommercePostNameMap))
         checkString(value, "CommercePostNameMap");
     for (const row of data.BarterList) {

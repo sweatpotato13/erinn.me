@@ -1,8 +1,8 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import data from '../src/data/ogham-reference.json';
 
-test('configure, lock, reset and clear without network requests', async ({ page }, testInfo) => {
+async function configureLockedSession(page: Page) {
     await page.goto('/simulators/ogham');
     const panel = page.getByRole('region', { name: '오검 효과 재설정', exact: true });
     const next = panel.getByRole('region', { name: '다음 재설정 비용' });
@@ -26,11 +26,10 @@ test('configure, lock, reset and clear without network requests', async ({ page 
     await expect(next).toContainText('오검 파편 × 3');
     await expect(next).toContainText('불타래 × 1');
     await panel.getByRole('button', { name: '설정 닫기' }).click();
-    const lockedText = await lock.locator('..').innerText();
-    // Complete assets/hydration before observing the click-only request window.
-    await page.waitForLoadState('networkidle');
-    const requests: string[] = [];
-    page.on('request', request => requests.push(request.url()));
+    return { panel, totals, lock };
+}
+
+async function assertResetAccounting(panel: Locator, totals: Locator, lock: Locator, lockedText: string) {
     const reset = panel.getByRole('button', { name: '재설정', exact: true });
     await reset.click();
     await reset.click();
@@ -48,8 +47,9 @@ test('configure, lock, reset and clear without network requests', async ({ page 
     await expect(totals).toContainText('불타래 × 3');
     await expect(totals).toContainText('얼어붙은 불타래 × 1');
     await expect(panel.getByRole('status')).toContainText('3회 재설정 완료');
-    expect(requests).toEqual([]);
-    await page.screenshot({ path: testInfo.outputPath('ogham-reset.png'), fullPage: true });
+}
+
+async function clearSession(page: Page, panel: Locator, totals: Locator, lock: Locator) {
     page.once('dialog', dialog => dialog.dismiss());
     await panel.getByRole('button', { name: '시뮬레이션 초기화' }).click();
     await expect(totals).toContainText('재설정 3회');
@@ -60,6 +60,23 @@ test('configure, lock, reset and clear without network requests', async ({ page 
     await panel.getByRole('button', { name: '현재 효과 직접 설정' }).click();
     await expect(panel.getByRole('combobox', { name: '3번 레벨', exact: true })).toHaveValue('1');
     await expect(panel.getByRole('combobox', { name: '1번 효과', exact: true })).toHaveValue(String(data.effects[0].id));
+}
+
+test('configure, lock, reset and clear without network requests', async ({ page }, testInfo) => {
+    const { panel, totals, lock } = await configureLockedSession(page);
+    const lockedText = await lock.locator('..').innerText();
+    // Bring lazy material icons into view before observing reset-only requests.
+    await totals.scrollIntoViewIfNeeded();
+    await expect.poll(() => totals.locator('img').evaluateAll(images =>
+        images.every(image => (image as HTMLImageElement).complete && (image as HTMLImageElement).naturalWidth > 0)
+    )).toBe(true);
+    await page.waitForLoadState('networkidle');
+    const requests: string[] = [];
+    page.on('request', request => requests.push(request.url()));
+    await assertResetAccounting(panel, totals, lock, lockedText);
+    expect(requests).toEqual([]);
+    await page.screenshot({ path: testInfo.outputPath('ogham-reset.png'), fullPage: true });
+    await clearSession(page, panel, totals, lock);
 });
 
 test('word and grade changes clear only after confirmation, with legal pools and lock limits', async ({ page }) => {

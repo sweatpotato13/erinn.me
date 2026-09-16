@@ -98,6 +98,27 @@ export function effectText(effect: OghamEffect, level: number) {
     );
 }
 
+function randomIndex(size: number, rng: () => number) {
+    const value = rng();
+    if (!size || !Number.isFinite(value) || value < 0 || value >= 1)
+        throw new Error("추첨에 실패했습니다. 다시 시도해 주세요.");
+    return Math.floor(value * size);
+}
+
+function safeAdd(current: number, amount: number) {
+    if (
+        !Number.isSafeInteger(current) ||
+        current < 0 ||
+        !Number.isSafeInteger(amount) ||
+        amount < 0 ||
+        !Number.isSafeInteger(current + amount)
+    )
+        throw new Error(
+            "누적 수량의 범위를 초과했습니다. 시뮬레이션을 초기화해 주세요."
+        );
+    return current + amount;
+}
+
 export function resetOgham(
     session: OghamSession,
     rng = Math.random,
@@ -110,43 +131,24 @@ export function resetOgham(
     const pool = effectPool(session.wordId, session.grade, data).filter(
         effect => !locked.has(effect.id)
     );
-    const index = (size: number) => {
-        const value = rng();
-        if (!size || !Number.isFinite(value) || value < 0 || value >= 1)
-            throw new Error("추첨에 실패했습니다. 다시 시도해 주세요.");
-        return Math.floor(value * size);
-    };
     const slots = session.slots.map(slot => {
         if (slot.locked) return { ...slot };
-        const effect = pool.splice(index(pool.length), 1)[0];
+        const effect = pool.splice(randomIndex(pool.length, rng), 1)[0];
         return {
             effectId: effect.id,
-            level: index(effect.values.length) + 1,
+            level: randomIndex(effect.values.length, rng) + 1,
             locked: false,
         };
     });
-    const add = (current: number, amount: number) => {
-        if (
-            !Number.isSafeInteger(current) ||
-            current < 0 ||
-            !Number.isSafeInteger(amount) ||
-            amount < 0 ||
-            !Number.isSafeInteger(current + amount)
-        )
-            throw new Error(
-                "누적 수량의 범위를 초과했습니다. 시뮬레이션을 초기화해 주세요."
-            );
-        return current + amount;
-    };
     const items = { ...session.items };
     for (const item of cost.items)
-        items[item.id] = add(items[item.id] ?? 0, item.count);
+        items[item.id] = safeAdd(items[item.id] ?? 0, item.count);
     return {
         ...session,
         slots,
         items,
-        resets: add(session.resets, 1),
-        gold: add(session.gold, cost.gold),
-        fragments: add(session.fragments, cost.fragments),
+        resets: safeAdd(session.resets, 1),
+        gold: safeAdd(session.gold, cost.gold),
+        fragments: safeAdd(session.fragments, cost.fragments),
     };
 }
