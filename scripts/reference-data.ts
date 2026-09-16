@@ -263,6 +263,7 @@ const dataSchema = z.object({ Version: versionSchema, ...tableSchemas });
 const placeholders = new Set(["", "None", "<nil>"]);
 const knownMissing = new Set(knownMissingStrings);
 
+/** Require a foreign-key value to exist in its referenced lookup set. */
 function requireRef(
     ids: Set<string | number>,
     value: string | number,
@@ -272,6 +273,7 @@ function requireRef(
         throw new Error(`${path}: unresolved reference ${value}`);
 }
 
+/** Validate Ogham lookup keys, grades, costs, and cross-table references. */
 function validateOgham(
     data: z.infer<typeof dataSchema>,
     items: Set<string | number>,
@@ -317,6 +319,7 @@ function validateOgham(
             requireRef(costKeys, `${grade}:${locks}`, "OghamCost.ResetCosts");
 }
 
+/** Parse and validate a complete reference-data snapshot. */
 export function validateData(input: unknown) {
     const data = dataSchema.parse(input);
     const warnings: Record<string, { count: number; examples: string[] }> = {};

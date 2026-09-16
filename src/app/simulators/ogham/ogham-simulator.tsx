@@ -17,8 +17,10 @@ import {
 
 const control =
     "min-h-11 rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:cursor-not-allowed disabled:opacity-50";
+/** Format resource quantities for the Korean locale. */
 const number = (value: number) => value.toLocaleString("ko-KR");
 
+/** Render gold, fragments, and material quantities as one resource list. */
 function Resources({
     gold,
     fragments,
@@ -50,6 +52,7 @@ function Resources({
     );
 }
 
+/** Own the editable simulator session and its user-facing status state. */
 function useSimulatorState() {
     const [session, setSession] = useState(initialSession);
     const [editing, setEditing] = useState(false);
@@ -71,6 +74,7 @@ function useSimulatorState() {
 }
 type SimulatorState = ReturnType<typeof useSimulatorState>;
 
+/** Apply a valid manual slot configuration without charging resources. */
 function configure(state: SimulatorState, next: OghamSession) {
     const { setSession, setDirty, setError, setMessage } = state;
     try {
@@ -83,6 +87,8 @@ function configure(state: SimulatorState, next: OghamSession) {
         setError((error as Error).message);
     }
 }
+
+/** Start a clean simulation after confirming any destructive state change. */
 function start(
     state: SimulatorState,
     wordId = state.session.wordId,
@@ -105,6 +111,8 @@ function start(
         "새 시뮬레이션을 시작했습니다. 효과는 목록 순서의 첫 효과들, 레벨은 1입니다."
     );
 }
+
+/** Roll every unlocked slot and publish the resulting status or error. */
 function reset(state: SimulatorState) {
     const { session, setSession, setDirty, setError, setMessage } = state;
     const pool = effectPool(session.wordId, session.grade);
@@ -130,6 +138,7 @@ function reset(state: SimulatorState) {
     }
 }
 
+/** Derive the simulator view model and bind state transition callbacks. */
 function useSimulator() {
     const state = useSimulatorState();
     const { session } = state;
@@ -163,6 +172,7 @@ type Simulator = ReturnType<typeof useSimulator>;
 type SimulatorProps = { model: Simulator };
 type SlotProps = SimulatorProps & { index: number };
 
+/** Display the selected word, its category, and the active grade. */
 function WordHeader({ model }: SimulatorProps) {
     const { word, session } = model;
     return (
@@ -190,6 +200,7 @@ function WordHeader({ model }: SimulatorProps) {
     );
 }
 
+/** Select a word while preserving the grade when that word supports it. */
 function WordSelect({ model }: SimulatorProps) {
     const { session, start } = model;
     return (
@@ -220,6 +231,7 @@ function WordSelect({ model }: SimulatorProps) {
     );
 }
 
+/** Select one of the grades supported by the active word. */
 function GradeSelect({ model }: SimulatorProps) {
     const { session, word, start } = model;
     return (
@@ -242,6 +254,7 @@ function GradeSelect({ model }: SimulatorProps) {
     );
 }
 
+/** Group the word and grade controls with their reset warning. */
 function ConfigurationControls({ model }: SimulatorProps) {
     return (
         <>
@@ -257,6 +270,7 @@ function ConfigurationControls({ model }: SimulatorProps) {
     );
 }
 
+/** Select a unique effect for one editable simulator slot. */
 function EffectSelect({ model, index }: SlotProps) {
     const { session, pool } = model;
     const slot = session.slots[index];
@@ -294,6 +308,7 @@ function EffectSelect({ model, index }: SlotProps) {
     );
 }
 
+/** Select a level within the active effect's supported range. */
 function LevelSelect({ model, index }: SlotProps) {
     const { session, pool } = model;
     const slot = session.slots[index];
@@ -320,6 +335,7 @@ function LevelSelect({ model, index }: SlotProps) {
     );
 }
 
+/** Render manual effect and level controls for an unlocked slot. */
 function EffectSlotEditor({ model, index }: SlotProps) {
     const slot = model.session.slots[index];
     return (
@@ -339,6 +355,7 @@ function EffectSlotEditor({ model, index }: SlotProps) {
     );
 }
 
+/** Toggle one slot's lock while enforcing the grade lock limit. */
 function SlotLock({ model, index }: SlotProps) {
     const { session, locks } = model;
     const slot = session.slots[index];
@@ -363,6 +380,7 @@ function SlotLock({ model, index }: SlotProps) {
     );
 }
 
+/** Display one effect slot and highlight it when it reaches maximum level. */
 function EffectSlot({ model, index }: SlotProps) {
     const { session, pool } = model;
     const slot = session.slots[index];
@@ -393,6 +411,7 @@ function EffectSlot({ model, index }: SlotProps) {
     );
 }
 
+/** Render all effect slots and the manual-editing controls. */
 function Effects({ model }: SimulatorProps) {
     const { session, editing, setEditing } = model;
     return (
@@ -428,6 +447,7 @@ function Effects({ model }: SimulatorProps) {
     );
 }
 
+/** Display the resource cost of the next reset for the current locks. */
 function CostPanel({ model }: SimulatorProps) {
     const { cost, locks } = model;
     return (
@@ -447,6 +467,7 @@ function CostPanel({ model }: SimulatorProps) {
     );
 }
 
+/** Trigger a reset and expose its accessible status and error messages. */
 function ResetControls({ model }: SimulatorProps) {
     const { reset, error, message } = model;
     return (
@@ -475,6 +496,7 @@ function ResetControls({ model }: SimulatorProps) {
     );
 }
 
+/** Display cumulative spending and the confirmed session-reset action. */
 function CumulativeResources({ model }: SimulatorProps) {
     const { session, start } = model;
     return (
@@ -510,6 +532,7 @@ function CumulativeResources({ model }: SimulatorProps) {
     );
 }
 
+/** Render the complete Ogham reset simulator. */
 export default function OghamSimulator() {
     const model = useSimulator();
     return (

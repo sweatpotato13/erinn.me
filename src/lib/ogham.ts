@@ -19,6 +19,7 @@ export interface OghamSession {
 }
 export const gradeNames = ["", "엘리트", "에픽", "마스터"];
 
+/** Resolve and validate the effect pool for a word and grade. */
 export function effectPool(wordId: number, grade: number, data = reference) {
     const word = data.words.find(word => word.id === wordId);
     if (!word?.grades.includes(grade))
@@ -38,6 +39,7 @@ export function effectPool(wordId: number, grade: number, data = reference) {
     return pool;
 }
 
+/** Validate a session and return the cost for its current grade and locks. */
 export function nextResetCost(session: OghamSession, data = reference) {
     const pool = effectPool(session.wordId, session.grade, data);
     if (
@@ -67,6 +69,7 @@ export function nextResetCost(session: OghamSession, data = reference) {
     return cost;
 }
 
+/** Create an unspent session using the first unique effects in its pool. */
 export function initialSession(
     wordId = 2,
     grade = 3,
@@ -86,6 +89,7 @@ export function initialSession(
     };
 }
 
+/** Substitute the selected level's value into an effect text template. */
 export function effectText(effect: OghamEffect, level: number) {
     const value = effect.values[level - 1];
     if (!Number.isInteger(level) || !Number.isFinite(value))
@@ -98,6 +102,7 @@ export function effectText(effect: OghamEffect, level: number) {
     );
 }
 
+/** Convert one valid random sample into an index within the requested size. */
 function randomIndex(size: number, rng: () => number) {
     const value = rng();
     if (!size || !Number.isFinite(value) || value < 0 || value >= 1)
@@ -105,6 +110,7 @@ function randomIndex(size: number, rng: () => number) {
     return Math.floor(value * size);
 }
 
+/** Add non-negative counters without exceeding JavaScript's safe range. */
 function safeAdd(current: number, amount: number) {
     if (
         !Number.isSafeInteger(current) ||
@@ -119,6 +125,7 @@ function safeAdd(current: number, amount: number) {
     return current + amount;
 }
 
+/** Reroll unlocked effects without replacement and charge exactly one reset. */
 export function resetOgham(
     session: OghamSession,
     rng = Math.random,

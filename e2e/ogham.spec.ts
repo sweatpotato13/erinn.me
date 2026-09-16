@@ -2,6 +2,7 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 import data from '../src/data/ogham-reference.json';
 
+/** Configure a master-grade session with one locked effect for reset tests. */
 async function configureLockedSession(page: Page) {
     await page.goto('/simulators/ogham');
     const panel = page.getByRole('region', { name: '오검 효과 재설정', exact: true });
@@ -29,6 +30,7 @@ async function configureLockedSession(page: Page) {
     return { panel, totals, lock };
 }
 
+/** Verify reset costs, locked-effect preservation, and cumulative accounting. */
 async function assertResetAccounting(panel: Locator, totals: Locator, lock: Locator, lockedText: string) {
     const reset = panel.getByRole('button', { name: '재설정', exact: true });
     await reset.click();
@@ -49,6 +51,7 @@ async function assertResetAccounting(panel: Locator, totals: Locator, lock: Loca
     await expect(panel.getByRole('status')).toContainText('3회 재설정 완료');
 }
 
+/** Exercise both cancellation and confirmation of a session reset. */
 async function clearSession(page: Page, panel: Locator, totals: Locator, lock: Locator) {
     page.once('dialog', dialog => dialog.dismiss());
     await panel.getByRole('button', { name: '시뮬레이션 초기화' }).click();

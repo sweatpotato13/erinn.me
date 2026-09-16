@@ -32,6 +32,8 @@ export const metadata: Metadata = {
         images: [image.url],
     },
 };
+
+/** Render the canonical Ogham reset simulator page. */
 export default function OghamPage() {
     return (
         <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">

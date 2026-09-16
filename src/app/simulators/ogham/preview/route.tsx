@@ -5,6 +5,8 @@ import { ImageResponse } from "next/og";
 
 const font = readFile(join(process.cwd(), "public/fonts/auction-preview.otf"));
 export const dynamic = "force-static";
+
+/** Generate the static social preview image for the Ogham simulator. */
 export async function GET(): Promise<ImageResponse> {
     return new ImageResponse(
         <div

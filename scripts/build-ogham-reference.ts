@@ -9,6 +9,7 @@ const { data, manifest } = readSnapshot(
     resolve(__dirname, "../src/data/reference")
 );
 const strings = new Map(data.StringTable.map(row => [row.Id, row.Str]));
+/** Resolve a required localized Ogham string from the collected snapshot. */
 const text = (key: string) => {
     const value = strings.get(key);
     assert(
