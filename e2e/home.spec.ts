@@ -4,6 +4,16 @@ import auctionCatalog from "../src/data/auction-item-catalog.json";
 
 const publicPages = [
     {
+        path: "/simulators/ogham",
+        title: "마비노기 오검 효과 재설정 시뮬레이터 | Erinn.me",
+        description:
+            "오검의 현재 효과와 레벨을 설정하고 원하는 효과를 잠근 채 재설정해 보세요. 골드, 오검 파편과 재료의 누적 소모량을 확인할 수 있습니다.",
+        canonical: "https://erinn.me/simulators/ogham",
+        heading: "마비노기 오검 효과 재설정 시뮬레이터",
+        summary:
+            "간직할 효과는 잠그고, 나머지 효과를 다시 뽑아 보세요. 현재 효과 직접 설정은 무료입니다.",
+    },
+    {
         path: "/tools/crafting",
         title: "마비노기 제작 원가 계산기 | Erinn.me",
         description:
@@ -334,6 +344,7 @@ test.describe("Homepage Tests", () => {
             "/npc-shop",
             "/horn",
             "/simulators/reforge",
+            "/simulators/ogham",
         ]) {
             await expect(menu.locator(`a[href="${path}"]`)).toBeVisible();
         }
