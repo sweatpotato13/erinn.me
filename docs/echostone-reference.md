@@ -57,3 +57,12 @@ The user explicitly requested an equal probability for each integer between Abil
 Upgrade visuals follow the official guide images `https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195649.png` and `https://file.mabinogi.nexon.com/dataAdmin/UpImg/91195654.png`.
 
 Agent price fields automatically request the existing auction summary on mount and seed untouched empty inputs with an available safe-integer minimum price. Manual edits (including zero) and restored prices take priority over late results; missing listings or failed requests remain unpriced. The single manual refresh button fetches and applies the latest available price; edits made while that request is pending take priority.
+
+## Snapshot refresh for Ogham (#223)
+
+Rechecked 2026-09-16 against `1789028032`: polishing level tables, grade/agent
+adjustments and upgrade rows are unchanged, preserving all six numerical fixtures.
+The same-version full snapshot includes upstream corrections to color-option names,
+ability joins and some maximum levels (for example yellow 2막 now has maximum 20).
+The existing generator validates these updated options against their level tables;
+they are retained rather than mixing older tables into the Ogham snapshot.

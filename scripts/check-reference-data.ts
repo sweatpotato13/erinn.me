@@ -384,3 +384,54 @@ try {
 console.log(
     `Prilus checks passed: version ${manifest.sourceVersion.CreatedAt}, ${tableNames.length} tables; validation, deterministic collection, failed writes/promotion and rollback.`
 );
+
+// Ogham tables must join the same snapshot and retain their object/array shapes.
+for (const name of ["OghamWordList", "OghamAbilityList"] as const) {
+    assert.throws(
+        () => validateData({ ...data, [name]: [...data[name], data[name][0]] }),
+        /duplicate/
+    );
+    assert.throws(
+        () =>
+            validateData({
+                ...data,
+                [name]: [{ ...data[name][0], Desc: "ogham.missing" }],
+            }),
+        /unresolved/
+    );
+}
+for (const values of [[], [NaN], [Infinity]])
+    assert.throws(() =>
+        validateData({
+            ...data,
+            OghamAbilityList: [{ ...data.OghamAbilityList[0], Values: values }],
+        })
+    );
+for (const costs of [
+    data.OghamCost.ResetCosts.slice(1),
+    [...data.OghamCost.ResetCosts, data.OghamCost.ResetCosts[0]],
+])
+    assert.throws(() =>
+        validateData({
+            ...data,
+            OghamCost: { ...data.OghamCost, ResetCosts: costs },
+        })
+    );
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            OghamCost: {
+                ...data.OghamCost,
+                ResetCosts: data.OghamCost.ResetCosts.map(row => ({
+                    ...row,
+                    Items: [{ ItemId: Number.MAX_SAFE_INTEGER, Count: 1 }],
+                })),
+            },
+        }),
+    /unresolved/
+);
+assert.equal(
+    manifest.tables.OghamCost?.count,
+    Object.keys(data.OghamCost).length
+);
