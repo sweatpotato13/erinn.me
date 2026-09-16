@@ -23,7 +23,7 @@ const effects = [...data.OghamAbilityList]
         const template = text(row.Desc);
         assert(template.includes("[*"), `Missing value placeholder: ${row.Id}`);
         assert(
-            !/[\[\]<>]/.test(template.replace(/\[\*(-?\d+(?:\.\d+)?)\]/g, "")),
+            !/[[\]<>]/.test(template.replace(/\[\*(-?\d+(?:\.\d+)?)\]/g, "")),
             `Unsupported Ogham text: ${row.Id}`
         );
         return {
