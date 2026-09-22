@@ -64,8 +64,7 @@
     font-weight: 400;
 }
 .rateInput input,
-.field input,
-.saleSettings input {
+.field input {
     min-width: 0;
     height: 44px;
     border: 1px solid var(--color-base-300);
@@ -186,6 +185,9 @@
     top: 10px;
     right: 10px;
     min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     padding: 0 9px;
     border-radius: 6px;
     background: var(--color-warning);
@@ -268,10 +270,6 @@
 }
 .itemRow:last-child {
     border-bottom: 0;
-}
-.itemRow[data-unresolved="true"]:focus {
-    outline: 3px solid var(--color-warning);
-    outline-offset: -3px;
 }
 .itemName {
     min-width: 0;
@@ -387,67 +385,13 @@
     background: var(--color-base-200);
     text-align: right;
 }
-.settlementStats dt,
-.calculation dt {
+.settlementStats dt {
     font-size: 11px;
     color: color-mix(in oklab, var(--color-base-content) 64%, transparent);
 }
 .settlementStats dd {
     min-height: 29px;
     font-size: 18px;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-}
-.details {
-    border-top: 1px solid var(--color-base-300);
-    padding: 11px 0;
-}
-.details summary {
-    min-height: 44px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    font-weight: 700;
-}
-.saleSettings {
-    display: grid;
-    gap: 7px;
-}
-.saleSettings > div {
-    display: grid;
-    grid-template-columns: minmax(180px, 1fr) 150px 150px;
-    gap: 10px;
-    align-items: end;
-    padding: 8px 10px;
-    border-radius: 8px;
-    background: var(--color-base-200);
-}
-.saleSettings > div > span {
-    align-self: center;
-    overflow-wrap: anywhere;
-}
-.saleSettings > div > span small {
-    display: block;
-    margin-top: 2px;
-    color: color-mix(in oklab, var(--color-base-content) 64%, transparent);
-    font-size: 11px;
-}
-.saleSettings label {
-    display: grid;
-    gap: 3px;
-    font-size: 11px;
-}
-.calculation {
-    display: grid;
-    gap: 7px;
-    padding: 10px;
-}
-.calculation > div {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-}
-.calculation dd {
     font-weight: 700;
     font-variant-numeric: tabular-nums;
 }
@@ -560,12 +504,6 @@
     }
     .settlementStats {
         grid-template-columns: 1fr;
-    }
-    .saleSettings > div {
-        grid-template-columns: 1fr 1fr;
-    }
-    .saleSettings > div > span {
-        grid-column: 1 / -1;
     }
 }
 @media (max-width: 390px) {

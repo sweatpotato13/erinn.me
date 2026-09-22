@@ -99,14 +99,14 @@ function safeMultiply(left: number, right: number, label: string): number {
 function convertedCost(
     cashPrice: number,
     purchaseQuantity: number,
-    referenceGold: number
+    cashPerTenMillion: number
 ): number {
     const numerator =
-        BigInt(cashPrice) * BigInt(purchaseQuantity) * BigInt(referenceGold);
-    const scale = BigInt(10_000);
-    const whole = numerator / scale;
+        BigInt(cashPrice) * BigInt(purchaseQuantity) * BigInt(10_000_000);
+    const denominator = BigInt(cashPerTenMillion);
+    const whole = numerator / denominator;
     if (whole > MAX_SAFE_BIGINT) throw new Error("Unsafe converted cost");
-    return Number(whole) + Number(numerator % scale) / 10_000;
+    return Number(whole) + Number(numerator % denominator) / cashPerTenMillion;
 }
 
 function splitFee(sale: CashPackageSale, hasMembership: boolean): number {
@@ -138,7 +138,7 @@ function splitFee(sale: CashPackageSale, hasMembership: boolean): number {
 export function calculateCashPackage(input: {
     cashPrice: number;
     purchaseQuantity: number;
-    referenceGold: number | null;
+    cashPerTenMillion: number | null;
     hasMembership: boolean;
     couponStock: number;
     sales: CashPackageSale[];
@@ -146,8 +146,8 @@ export function calculateCashPackage(input: {
     integer(input.cashPrice, 1, "cash price");
     integer(input.purchaseQuantity, 1, "purchase quantity");
     integer(input.couponStock, 0, "coupon stock");
-    if (input.referenceGold !== null)
-        integer(input.referenceGold, 1, "reference gold");
+    if (input.cashPerTenMillion !== null)
+        integer(input.cashPerTenMillion, 1, "cash per ten million gold");
 
     let grossGold = 0;
     let feeGold = 0;
@@ -196,12 +196,12 @@ export function calculateCashPackage(input: {
         "cash cost"
     );
     const goldCost =
-        input.referenceGold === null
+        input.cashPerTenMillion === null
             ? null
             : convertedCost(
                   input.cashPrice,
                   input.purchaseQuantity,
-                  input.referenceGold
+                  input.cashPerTenMillion
               );
     const profitGold = goldCost === null ? null : netGold - goldCost;
     return {
@@ -219,12 +219,10 @@ export function calculateCashPackage(input: {
     };
 }
 
-export function parseReferenceGold(value: string): number | null {
+export function parseCashPerTenMillion(value: string): number | null {
     const input = value.trim();
-    if (!/^\d+(?:\.\d{1,4})?$/.test(input)) return null;
-    const [whole, fraction = ""] = input.split(".");
-    const result =
-        BigInt(whole) * BigInt(10_000) + BigInt(fraction.padEnd(4, "0") || "0");
+    if (!/^\d+$/.test(input)) return null;
+    const result = BigInt(input);
     return result > BigInt(0) && result <= MAX_SAFE_BIGINT
         ? Number(result)
         : null;

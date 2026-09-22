@@ -1,11 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import {
-    fireEvent,
-    render,
-    screen,
-    waitFor,
-    within,
-} from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import CashPackageTool from "@/app/tools/cash-packages/cash-package-tool";
@@ -71,7 +65,9 @@ test("starts with a blank rate and fixed three-package comparison", async () => 
     expect(
         screen.getByRole("heading", { name: "캐시 패키지 비교" })
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("10,000 캐시 환산 골드")).toHaveValue("");
+    expect(screen.getByLabelText("1,000만 골드당 캐시")).toHaveValue("");
+    expect(screen.queryByText("판매 건수와 쿠폰 사용")).not.toBeInTheDocument();
+    expect(screen.queryByText("계산 내역")).not.toBeInTheDocument();
     const cards = screen
         .getAllByRole("button", { name: /예상 손익/ })
         .filter(button => button.hasAttribute("aria-pressed"));
@@ -81,9 +77,12 @@ test("starts with a blank rate and fixed three-package comparison", async () => 
         expect.stringContaining("온누리"),
     ]);
     expect(cards[0]).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("조회 중").length).toBeGreaterThan(0);
     await waitFor(() =>
         expect(fetchMock).toHaveBeenCalledTimes(marketItems.length)
+    );
+    await waitFor(() =>
+        expect(screen.getAllByText("—").length).toBeGreaterThan(0)
     );
 });
 
@@ -112,22 +111,6 @@ test("selects a package, edits a price, preserves it on refresh and restores aut
     await waitFor(() => expect(price).toHaveValue("100"));
 });
 
-test("shows per-sale quantities and consumes coupons by sale", async () => {
-    const user = userEvent.setup();
-    renderTool();
-    await user.click(screen.getByRole("button", { name: /달고운.*예상 손익/ }));
-    await user.click(screen.getByText("판매 건수와 쿠폰 사용"));
-    const count = screen.getByLabelText("찬란한 세공 도구 판매 건수");
-    fireEvent.change(count, { target: { value: "2" } });
-    expect(screen.getByText("20개 × 2건")).toBeInTheDocument();
-
-    const coupons = screen.getByLabelText("찬란한 세공 도구 쿠폰 적용 건수");
-    fireEvent.change(coupons, { target: { value: "1" } });
-    expect(
-        screen.getByLabelText("경매장 수수료 100% 할인 쿠폰 판매 수량")
-    ).toHaveValue(0);
-});
-
 test("shows isolated lookup failure and manual zero resolves its warning", async () => {
     fetchMock.mockImplementation((url: string) => {
         const itemId = new URL(url, "http://localhost").searchParams.get(
@@ -142,9 +125,11 @@ test("shows isolated lookup failure and manual zero resolves its warning", async
     const user = userEvent.setup();
     renderTool();
     await user.click(screen.getByRole("button", { name: /달고운.*예상 손익/ }));
-    const warning = await screen.findByRole("button", {
-        name: "기억의 보석 시세 상태 확인",
-    });
+    const warning = await screen.findByRole(
+        "button",
+        { name: "기억의 보석 시세 상태 확인" },
+        { timeout: 3_000 }
+    );
     await user.click(warning);
     expect(screen.getByRole("status")).toHaveTextContent("503");
     expect(
@@ -160,6 +145,61 @@ test("shows isolated lookup failure and manual zero resolves its warning", async
     expect(
         screen.getByRole("button", { name: "기억의 보석 자동 가격 복원" })
     ).toBeInTheDocument();
+});
+
+test("retries every unresolved item in a package from its badge", async () => {
+    const failed = new Set(["farm-expansion-1", "farm-expansion-2"]);
+    fetchMock.mockImplementation((url: string) => {
+        const itemId = new URL(url, "http://localhost").searchParams.get(
+            "item_id"
+        )!;
+        return Promise.resolve(
+            failed.has(itemId)
+                ? ({ ok: false, status: 503 } as Response)
+                : response(itemId)
+        );
+    });
+    const user = userEvent.setup();
+    renderTool();
+    const retry = await screen.findByRole(
+        "button",
+        { name: "소담한 미확인 2개 다시 조회" },
+        { timeout: 5_000 }
+    );
+    const before = Object.fromEntries(
+        [...failed].map(itemId => [
+            itemId,
+            fetchMock.mock.calls.filter(([url]) =>
+                String(url).includes(`item_id=${itemId}`)
+            ).length,
+        ])
+    );
+    expect(before).toEqual({
+        "farm-expansion-1": 5,
+        "farm-expansion-2": 5,
+    });
+    fetchMock.mockImplementation((url: string) => {
+        const itemId = new URL(url, "http://localhost").searchParams.get(
+            "item_id"
+        )!;
+        return Promise.resolve(response(itemId));
+    });
+
+    await user.click(retry);
+
+    await waitFor(() =>
+        expect(
+            screen.queryByRole("button", {
+                name: /소담한 미확인 .* 다시 조회/,
+            })
+        ).not.toBeInTheDocument()
+    );
+    for (const itemId of failed)
+        expect(
+            fetchMock.mock.calls.filter(([url]) =>
+                String(url).includes(`item_id=${itemId}`)
+            )
+        ).toHaveLength(before[itemId] + 1);
 });
 
 test("allocates selection boxes to the higher known price and keeps the choice after refresh", async () => {

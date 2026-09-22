@@ -18,7 +18,7 @@ import {
     type CashPackageSale,
     choosePricedOption,
     type PackageResult,
-    parseReferenceGold,
+    parseCashPerTenMillion,
 } from "@/lib/cash-packages";
 
 import styles from "./cash-package-tool.module.css";
@@ -40,8 +40,6 @@ type ViewRow = {
     key: string;
     capacity: number;
     quantity: number;
-    saleCount: number;
-    couponCount: number;
     unitGold: number;
     priceText: string;
     manual: boolean;
@@ -53,7 +51,6 @@ type ViewRow = {
 type ProductView = {
     result: PackageResult | null;
     rows: ViewRow[];
-    couponStock: number;
 };
 
 const NUMBER = new Intl.NumberFormat("ko-KR", { maximumFractionDigits: 0 });
@@ -92,17 +89,6 @@ function gold(value: number | null, signed = false) {
     if (value === null) return "—";
     const rounded = Math.round(value);
     return `${signed && rounded >= 0 ? "+" : ""}${NUMBER.format(rounded)} G`;
-}
-
-function saleBreakdown(quantity: number, count: number) {
-    const smaller = Math.floor(quantity / count);
-    const largerCount = quantity % count;
-    return [
-        largerCount && `${smaller + 1}개 × ${largerCount}건`,
-        count - largerCount && `${smaller}개 × ${count - largerCount}건`,
-    ]
-        .filter(Boolean)
-        .join(", ");
 }
 
 function statusCause(quote: Quote) {
@@ -162,17 +148,24 @@ async function fetchQuote(
     }
 }
 
+async function fetchQuoteWithRetry(itemId: string, signal?: AbortSignal) {
+    let quote = loadingQuote;
+    for (let attempt = 0; attempt < 5; attempt++) {
+        signal?.throwIfAborted();
+        quote = await fetchQuote(itemId, signal);
+        if (quote.status !== "error") return quote;
+        if (attempt < 4)
+            await new Promise(resolve =>
+                setTimeout(resolve, 150 * (attempt + 1))
+            );
+    }
+    return quote;
+}
+
 async function fetchQuotes(itemIds: string[], signal: AbortSignal) {
     const quotes: QuoteBook = {};
-    let next = 0;
-    await Promise.all(
-        Array.from({ length: Math.min(3, itemIds.length) }, async () => {
-            while (next < itemIds.length) {
-                const itemId = itemIds[next++];
-                quotes[itemId] = await fetchQuote(itemId, signal);
-            }
-        })
-    );
+    for (const itemId of itemIds)
+        quotes[itemId] = await fetchQuoteWithRetry(itemId, signal);
     return quotes;
 }
 
@@ -249,14 +242,16 @@ function PackageCard({
     selected,
     loading,
     select,
-    openUnresolved,
+    retrying,
+    retryUnresolved,
 }: {
     product: CashPackageProduct;
     view: ProductView;
     selected: boolean;
     loading: boolean;
     select: () => void;
-    openUnresolved: () => void;
+    retrying: boolean;
+    retryUnresolved: () => void;
 }) {
     const result = view.result;
     const profit = result?.profitGold ?? null;
@@ -334,9 +329,12 @@ function PackageCard({
                 <button
                     type="button"
                     className={styles.unresolvedBadge}
-                    onClick={openUnresolved}
+                    aria-label={`${product.name} 미확인 ${result!.unpricedCount}개 다시 조회`}
+                    disabled={retrying}
+                    onClick={retryUnresolved}
                 >
-                    미확인 {result!.unpricedCount}
+                    <RefreshCw size={14} aria-hidden="true" />
+                    {retrying ? "조회 중" : `미확인 ${result!.unpricedCount}`}
                 </button>
             )}
         </article>
@@ -360,10 +358,7 @@ function ItemRow({
     const issue = !row.manual ? statusCause(row.quote) : null;
     return (
         <div
-            id={`cash-item-${row.key}`}
             className={styles.itemRow}
-            data-unresolved={row.unresolved || undefined}
-            tabIndex={row.unresolved ? -1 : undefined}
             onKeyDown={event => {
                 if (event.key === "Escape") setOpen(false);
             }}
@@ -494,16 +489,15 @@ export default function CashPackageTool({
     const [saleQuantities, setSaleQuantities] = useState<
         Record<string, number>
     >({});
-    const [saleCounts, setSaleCounts] = useState<Record<string, number>>({});
-    const [couponCounts, setCouponCounts] = useState<Record<string, number>>(
-        {}
-    );
     const [manualPrices, setManualPrices] = useState<Record<string, string>>(
         {}
     );
     const [choices, setChoices] = useState<ChoiceAllocations>({});
-    const referenceGold = parseReferenceGold(rate);
-    const rateInvalid = rate.trim() !== "" && referenceGold === null;
+    const [retryingProductIds, setRetryingProductIds] = useState<Set<string>>(
+        () => new Set()
+    );
+    const cashPerTenMillion = parseCashPerTenMillion(rate);
+    const rateInvalid = rate.trim() !== "" && cashPerTenMillion === null;
 
     useEffect(() => {
         if (!quotesQuery.data) return;
@@ -601,8 +595,6 @@ export default function CashPackageTool({
                             key: rowKey,
                             capacity,
                             quantity: clamp(desired, 0, capacity),
-                            saleCount: 0,
-                            couponCount: 0,
                             unitGold: parsed ?? 0,
                             priceText,
                             manual,
@@ -618,41 +610,12 @@ export default function CashPackageTool({
 
                 const couponStock =
                     rows.find(row => row.item.coupon)?.capacity ?? 0;
-                let couponRemaining = couponStock;
-                for (const row of rows) {
-                    if (row.item.coupon) continue;
-                    row.saleCount = row.quantity
-                        ? clamp(saleCounts[row.key] ?? 1, 1, row.quantity)
-                        : 0;
-                    row.couponCount = clamp(
-                        couponCounts[row.key] ?? 0,
-                        0,
-                        Math.min(row.saleCount, couponRemaining)
-                    );
-                    couponRemaining -= row.couponCount;
-                }
-                const couponsUsed = couponStock - couponRemaining;
-                for (const row of rows) {
-                    if (row.item.coupon)
-                        row.quantity = Math.min(
-                            row.quantity,
-                            couponStock - couponsUsed
-                        );
-                    if (row.item.coupon || row.saleCount === 0)
-                        row.saleCount = row.quantity
-                            ? clamp(saleCounts[row.key] ?? 1, 1, row.quantity)
-                            : 0;
-                    row.unresolved =
-                        row.quantity > 0 &&
-                        !row.manual &&
-                        row.quote.status !== "available";
-                }
                 const sales: CashPackageSale[] = rows.map(row => ({
                     itemId: row.item.itemId,
                     quantity: row.quantity,
                     unitGold: row.unitGold,
-                    saleCount: row.saleCount,
-                    couponCount: row.couponCount,
+                    saleCount: row.quantity ? 1 : 0,
+                    couponCount: 0,
                     priced:
                         !row.invalid &&
                         (row.manual || row.quote.status === "available"),
@@ -664,7 +627,7 @@ export default function CashPackageTool({
                         result = calculateCashPackage({
                             cashPrice: product.cashPrice,
                             purchaseQuantity: purchase,
-                            referenceGold,
+                            cashPerTenMillion,
                             hasMembership: membership,
                             couponStock,
                             sales,
@@ -673,19 +636,17 @@ export default function CashPackageTool({
                         result = null;
                     }
                 }
-                return [product.id, { result, rows, couponStock }];
+                return [product.id, { result, rows }];
             })
         );
     }, [
         catalog.products,
         choices,
-        couponCounts,
+        cashPerTenMillion,
         manualPrices,
         membership,
         purchases,
         quotes,
-        referenceGold,
-        saleCounts,
         saleQuantities,
     ]);
 
@@ -794,28 +755,48 @@ export default function CashPackageTool({
         }
     }
 
-    async function retry(itemId: string) {
+    async function retryItems(itemIds: string[]) {
         queryClient.setQueryData<QuoteBook>(queryKey, previous => ({
             ...(previous ?? {}),
-            [itemId]: {
-                ...(previous?.[itemId] ?? loadingQuote),
-                status: "loading",
-            },
+            ...Object.fromEntries(
+                itemIds.map(itemId => [
+                    itemId,
+                    {
+                        ...(previous?.[itemId] ?? loadingQuote),
+                        status: "loading",
+                    },
+                ])
+            ),
         }));
-        const quote = await fetchQuote(itemId);
-        queryClient.setQueryData<QuoteBook>(queryKey, previous => ({
-            ...(previous ?? {}),
-            [itemId]: quote,
-        }));
+        for (const itemId of itemIds) {
+            const quote = await fetchQuoteWithRetry(itemId);
+            queryClient.setQueryData<QuoteBook>(queryKey, previous => ({
+                ...(previous ?? {}),
+                [itemId]: quote,
+            }));
+        }
     }
 
-    function focusUnresolved(product: CashPackageProduct) {
+    async function retryUnresolved(product: CashPackageProduct) {
         setSelectedId(product.id);
-        window.setTimeout(() => {
-            document
-                .querySelector<HTMLElement>("[data-unresolved='true']")
-                ?.focus();
-        });
+        const itemIds = [
+            ...new Set(
+                views[product.id].rows
+                    .filter(row => row.unresolved)
+                    .map(row => row.item.itemId)
+            ),
+        ];
+        if (!itemIds.length) return;
+        setRetryingProductIds(values => new Set(values).add(product.id));
+        try {
+            await retryItems(itemIds);
+        } finally {
+            setRetryingProductIds(values => {
+                const next = new Set(values);
+                next.delete(product.id);
+                return next;
+            });
+        }
     }
 
     return (
@@ -839,19 +820,19 @@ export default function CashPackageTool({
                     <label className={styles.rateField}>
                         <span>환산 기준</span>
                         <span className={styles.rateInput}>
-                            <b>10,000 캐시 =</b>
+                            <b>1,000만 G =</b>
                             <input
-                                aria-label="10,000 캐시 환산 골드"
-                                inputMode="decimal"
+                                aria-label="1,000만 골드당 캐시"
+                                inputMode="numeric"
                                 placeholder="입력"
                                 value={rate}
                                 aria-invalid={rateInvalid}
                                 onChange={event => setRate(event.target.value)}
                             />
-                            <b>만 G</b>
+                            <b>캐시</b>
                         </span>
                         {rateInvalid && (
-                            <small>0보다 큰 숫자를 입력해 주세요.</small>
+                            <small>0보다 큰 정수를 입력해 주세요.</small>
                         )}
                     </label>
                     <label className={styles.membership}>
@@ -876,7 +857,8 @@ export default function CashPackageTool({
                         selected={product.id === selectedId}
                         loading={initialLoading}
                         select={() => setSelectedId(product.id)}
-                        openUnresolved={() => focusUnresolved(product)}
+                        retrying={retryingProductIds.has(product.id)}
+                        retryUnresolved={() => void retryUnresolved(product)}
                     />
                 ))}
             </section>
@@ -928,7 +910,7 @@ export default function CashPackageTool({
                                         return next;
                                     })
                                 }
-                                retry={() => void retry(row.item.itemId)}
+                                retry={() => void retryItems([row.item.itemId])}
                             />
                         ));
                         return entry.kind === "choice" ? (
@@ -985,112 +967,6 @@ export default function CashPackageTool({
                         </dd>
                     </div>
                 </dl>
-                <details className={styles.details}>
-                    <summary>판매 건수와 쿠폰 사용</summary>
-                    <div className={styles.saleSettings}>
-                        {selectedView.rows
-                            .filter(row => row.quantity > 0)
-                            .map(row => (
-                                <div key={row.key}>
-                                    <span>
-                                        {row.item.name}
-                                        <small>
-                                            {saleBreakdown(
-                                                row.quantity,
-                                                row.saleCount
-                                            )}
-                                        </small>
-                                    </span>
-                                    <label>
-                                        판매 건수
-                                        <input
-                                            aria-label={`${row.item.name} 판매 건수`}
-                                            type="number"
-                                            min={1}
-                                            max={row.quantity}
-                                            value={row.saleCount}
-                                            onChange={event => {
-                                                const value = Number(
-                                                    event.target.value
-                                                );
-                                                if (Number.isSafeInteger(value))
-                                                    setSaleCounts(values => ({
-                                                        ...values,
-                                                        [row.key]: clamp(
-                                                            value,
-                                                            1,
-                                                            row.quantity
-                                                        ),
-                                                    }));
-                                            }}
-                                        />
-                                    </label>
-                                    {selectedView.couponStock > 0 &&
-                                        !row.item.coupon && (
-                                            <label>
-                                                쿠폰 적용
-                                                <input
-                                                    aria-label={`${row.item.name} 쿠폰 적용 건수`}
-                                                    type="number"
-                                                    min={0}
-                                                    max={row.saleCount}
-                                                    value={row.couponCount}
-                                                    onChange={event => {
-                                                        const value = Number(
-                                                            event.target.value
-                                                        );
-                                                        if (
-                                                            Number.isSafeInteger(
-                                                                value
-                                                            )
-                                                        )
-                                                            setCouponCounts(
-                                                                values => ({
-                                                                    ...values,
-                                                                    [row.key]:
-                                                                        clamp(
-                                                                            value,
-                                                                            0,
-                                                                            row.saleCount
-                                                                        ),
-                                                                })
-                                                            );
-                                                    }}
-                                                />
-                                            </label>
-                                        )}
-                                </div>
-                            ))}
-                    </div>
-                </details>
-                <details className={styles.details}>
-                    <summary>계산 내역</summary>
-                    <dl className={styles.calculation}>
-                        <div>
-                            <dt>환산 비용</dt>
-                            <dd>
-                                {gold(selectedView.result?.goldCost ?? null)}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>예상 손익</dt>
-                            <dd>
-                                {gold(
-                                    selectedView.result?.profitGold ?? null,
-                                    true
-                                )}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt>수익률</dt>
-                            <dd>
-                                {selectedView.result?.profitPercent == null
-                                    ? "—"
-                                    : `${PERCENT.format(selectedView.result.profitPercent)}%`}
-                            </dd>
-                        </div>
-                    </dl>
-                </details>
             </section>
         </div>
     );

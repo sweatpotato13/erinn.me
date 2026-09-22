@@ -4,7 +4,7 @@ import {
     type CashPackageCatalog,
     cashPackageMarketItems,
     choosePricedOption,
-    parseReferenceGold,
+    parseCashPerTenMillion,
 } from "@/lib/cash-packages";
 
 const catalog = catalogData as CashPackageCatalog;
@@ -35,7 +35,7 @@ test("calculates converted cost, per-sale fees and profit", () => {
         calculateCashPackage({
             cashPrice: 32_900,
             purchaseQuantity: 1,
-            referenceGold: 10_000_000,
+            cashPerTenMillion: 8_000,
             hasMembership: false,
             couponStock: 0,
             sales: [
@@ -51,12 +51,12 @@ test("calculates converted cost, per-sale fees and profit", () => {
         })
     ).toEqual({
         cashCost: 32_900,
-        goldCost: 32_900_000,
+        goldCost: 41_125_000,
         grossGold: 38_000_000,
         feeGold: 1_900_000,
         netGold: 36_100_000,
-        profitGold: 3_200_000,
-        profitPercent: expect.closeTo(9.7264, 3),
+        profitGold: -5_025_000,
+        profitPercent: expect.closeTo(-12.2188, 3),
         unpricedCount: 0,
     });
 });
@@ -65,7 +65,7 @@ test("handles membership, split-sale truncation and coupons", () => {
     const result = calculateCashPackage({
         cashPrice: 1,
         purchaseQuantity: 2,
-        referenceGold: null,
+        cashPerTenMillion: null,
         hasMembership: true,
         couponStock: 2,
         sales: [
@@ -100,7 +100,7 @@ test("handles membership, split-sale truncation and coupons", () => {
         calculateCashPackage({
             cashPrice: 1,
             purchaseQuantity: 1,
-            referenceGold: null,
+            cashPerTenMillion: null,
             hasMembership: false,
             couponStock: 1,
             sales: [
@@ -123,7 +123,7 @@ test("counts unresolved included items while manual zero resolves one", () => {
         calculateCashPackage({
             cashPrice: 1,
             purchaseQuantity: 1,
-            referenceGold: null,
+            cashPerTenMillion: null,
             hasMembership: false,
             couponStock: 0,
             sales: [
@@ -156,13 +156,12 @@ test("counts unresolved included items while manual zero resolves one", () => {
     ).toBe(1);
 });
 
-test("parses 만 G input exactly and rejects unsafe values", () => {
-    expect(parseReferenceGold("")).toBeNull();
-    expect(parseReferenceGold("1000")).toBe(10_000_000);
-    expect(parseReferenceGold("0.0001")).toBe(1);
-    expect(parseReferenceGold("0")).toBeNull();
-    expect(parseReferenceGold("1.00001")).toBeNull();
-    expect(parseReferenceGold("Infinity")).toBeNull();
+test("parses cash per ten million gold and rejects invalid values", () => {
+    expect(parseCashPerTenMillion("")).toBeNull();
+    expect(parseCashPerTenMillion("10000")).toBe(10_000);
+    expect(parseCashPerTenMillion("0")).toBeNull();
+    expect(parseCashPerTenMillion("1.5")).toBeNull();
+    expect(parseCashPerTenMillion("Infinity")).toBeNull();
 });
 
 test("chooses the highest known option and never favors unknown price", () => {
@@ -195,7 +194,7 @@ test("rejects unsafe and impossible allocations", () => {
         calculateCashPackage({
             cashPrice: 1,
             purchaseQuantity: 1,
-            referenceGold: 1,
+            cashPerTenMillion: 1,
             hasMembership: false,
             couponStock: 0,
             sales: [
