@@ -23,6 +23,11 @@ const nextConfig = {
                 hostname: "open.api.nexon.com",
                 pathname: "/static/mabinogi/img/**",
             },
+            {
+                protocol: "https",
+                hostname: "ssl.nexon.com",
+                pathname: "/s2/game/mabinogi/ItemShop/ItemImage/**",
+            },
         ],
         deviceSizes: [40, 120, 200],
         imageSizes: [40, 120, 200],
@@ -31,22 +36,22 @@ const nextConfig = {
     async headers() {
         return [
             {
-                source: '/(.*)',
+                source: "/(.*)",
                 headers: [
                     {
-                        key: 'X-Content-Type-Options',
-                        value: 'nosniff',
+                        key: "X-Content-Type-Options",
+                        value: "nosniff",
                     },
                     {
-                        key: 'X-Frame-Options',
-                        value: 'DENY',
+                        key: "X-Frame-Options",
+                        value: "DENY",
                     },
                     {
-                        key: 'Referrer-Policy',
-                        value: 'strict-origin-when-cross-origin',
+                        key: "Referrer-Policy",
+                        value: "strict-origin-when-cross-origin",
                     },
                 ],
-            }
+            },
         ];
     },
 };
