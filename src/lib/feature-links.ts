@@ -22,6 +22,13 @@ export const FEATURE_LINKS = [
         searchVisible: true,
     },
     {
+        label: "캐시 패키지 비교",
+        url: "/tools/cash-packages",
+        description: "캐시 환산 비용과 경매장 예상 손익을 비교하세요",
+        group: "생활·파티 계산",
+        searchVisible: true,
+    },
+    {
         label: "뿔피리 조회",
         url: "/horn",
         description: "뿔피리 내역을 조회하세요",
