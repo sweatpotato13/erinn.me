@@ -225,6 +225,8 @@ function ResultValue({
 }) {
     return loading ? (
         <span className={styles.skeleton} aria-label="조회 중" />
+    ) : value === null ? (
+        <span className={styles.dash}>—</span>
     ) : (
         <>{gold(value, signed)}</>
     );
@@ -283,11 +285,17 @@ function PackageCard({
                         <ResultValue value={profit} loading={loading} signed />
                     </strong>
                     <span>
-                        {loading || result?.profitPercent === null || !result
-                            ? loading
-                                ? "조회 중"
-                                : "—"
-                            : `${PERCENT.format(result.profitPercent)}%`}
+                        {loading ||
+                        result?.profitPercent === null ||
+                        !result ? (
+                            loading ? (
+                                "조회 중"
+                            ) : (
+                                <span className={styles.dash}>—</span>
+                            )
+                        ) : (
+                            `${PERCENT.format(result.profitPercent)}%`
+                        )}
                     </span>
                 </span>
                 <span className={styles.cardStats}>

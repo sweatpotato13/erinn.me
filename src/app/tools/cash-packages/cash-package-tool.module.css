@@ -185,7 +185,7 @@
     position: absolute;
     top: 10px;
     right: 10px;
-    min-height: 32px;
+    min-height: 44px;
     padding: 0 9px;
     border-radius: 6px;
     background: var(--color-warning);
@@ -206,6 +206,9 @@
     );
     background-size: 200% 100%;
     animation: pulse 1.2s linear infinite;
+}
+.dash {
+    font-family: Arial, sans-serif;
 }
 .contents {
     margin-bottom: 22px;
@@ -254,10 +257,9 @@
 }
 .itemRow {
     display: grid;
-    grid-template-columns: minmax(250px, 1.4fr) minmax(100px, 0.45fr) minmax(
-            190px,
-            0.8fr
-        ) minmax(130px, 0.55fr);
+    grid-template-columns:
+        minmax(250px, 1.4fr) minmax(100px, 0.45fr) minmax(190px, 0.8fr)
+        minmax(130px, 0.55fr);
     gap: 14px;
     align-items: end;
     padding: 14px 18px;
@@ -345,7 +347,7 @@
     font-size: 12px;
 }
 .issue button {
-    min-height: 36px;
+    min-height: 44px;
     padding: 0 12px;
     color: var(--color-primary);
     font-weight: 700;
@@ -450,13 +452,12 @@
 }
 @media (max-width: 900px) {
     .itemRow {
-        grid-template-columns: minmax(190px, 1fr) 100px minmax(180px, 0.8fr);
-    }
-    .subtotal {
-        grid-column: 3;
+        grid-template-columns:
+            minmax(180px, 1.2fr) minmax(82px, 0.45fr)
+            minmax(145px, 0.8fr) minmax(105px, 0.55fr);
     }
     .rowMessage {
-        grid-column: 3;
+        grid-column: 3 / 5;
     }
 }
 @media (max-width: 700px) {
