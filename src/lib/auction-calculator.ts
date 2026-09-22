@@ -82,6 +82,22 @@ function assertSafe(value: number, label: string): number {
     return value;
 }
 
+export function calculateAuctionFee(
+    saleGold: number,
+    hasMembership: boolean,
+    discountPercent = 0
+): number {
+    assertIntegerInRange(saleGold, 0, MAX_GOLD, "sale gold");
+    assertIntegerInRange(discountPercent, 0, 100, "discount percent");
+    const baseFeePercent = hasMembership ? 4 : 5;
+    return Math.floor(
+        assertSafe(
+            saleGold * baseFeePercent * (100 - discountPercent),
+            "auction fee"
+        ) / 10_000
+    );
+}
+
 function validateInput(input: AuctionCalculatorInput): void {
     assertIntegerInRange(input.salePrice, 1, MAX_GOLD, "sale price");
     assertIntegerInRange(
@@ -105,11 +121,11 @@ function calculateOption(
     couponCost: number
 ): AvailableAuctionOption {
     const baseFeePercent = input.hasMembership ? 4 : 5;
-    const feeProduct = assertSafe(
-        input.salePrice * baseFeePercent * (100 - discountPercent),
-        "auction fee"
+    const auctionFee = calculateAuctionFee(
+        input.salePrice,
+        input.hasMembership,
+        discountPercent
     );
-    const auctionFee = Math.floor(feeProduct / 10_000);
     const totalCost = assertSafe(
         auctionFee + couponCost + input.additionalCost,
         "total cost"

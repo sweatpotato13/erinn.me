@@ -1,6 +1,7 @@
 import {
     type AuctionCalculatorInput,
     calculateAuctionDistribution,
+    calculateAuctionFee,
     createEmptyCouponPrices,
     formatGold,
     MAX_GOLD,
@@ -28,6 +29,12 @@ function input(
 }
 
 describe("auction calculator", () => {
+    it("calculates one sale fee with membership and coupons", () => {
+        expect(calculateAuctionFee(101, false)).toBe(5);
+        expect(calculateAuctionFee(101, true)).toBe(4);
+        expect(calculateAuctionFee(101, false, 100)).toBe(0);
+    });
+
     it("formats safe Gold values and rejects unsafe values", () => {
         expect(formatGold(1_234_567)).toBe("1,234,567");
         expect(() => formatGold(Number.MAX_SAFE_INTEGER + 1)).toThrow(
