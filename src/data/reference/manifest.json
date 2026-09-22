@@ -5,17 +5,17 @@
         "site": "https://prilus.gitlab.io/",
         "region": "kr",
         "language": "kr",
-        "resourceUrl": "https://mabires4.pril.cc/resourcedata/kr/kr_resourcedata.bin.br",
-        "versionUrl": "https://mabires4.pril.cc/resourceversion/kr/kr_resourceversion.json",
+        "resourceUrl": "https://mabires3.pril.cc/resourcedata/kr/kr_resourcedata.bin.br",
+        "versionUrl": "https://mabires3.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-indexeddb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-D0SobkQZ.js"
+            "https://prilus.gitlab.io/assets/index-DauInS6r.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1789611973
+        "CreatedAt": 1790058363
     },
-    "collectedAt": "2026-09-17T09:53:50.899Z",
+    "collectedAt": "2026-09-22T23:31:51.672Z",
     "tables": {
         "OghamWordList": {
             "count": 26,
@@ -33,9 +33,9 @@
             "sha256": "17c42c6e0be08c39ec20af9d5c002bc9aad5f85316b64526cc4592d925f217c5"
         },
         "ItemList": {
-            "count": 43243,
-            "bytes": 7420171,
-            "sha256": "224ed8749d072070d1d31a9c043408d7c302c325aa35f6d7700a30f8bd47262f"
+            "count": 43222,
+            "bytes": 7417368,
+            "sha256": "1044381c0a92d37f8483aa8263967f6aac99ebeb09a2a91b3668875114769f58"
         },
         "OptionSetList": {
             "count": 1770,
@@ -43,14 +43,14 @@
             "sha256": "643565062be3972d689b442bfd25bffc3a54ad667682cdf66e3a8d266960414b"
         },
         "StringTable": {
-            "count": 225314,
-            "bytes": 30141949,
-            "sha256": "fb460e450def25c505c21981e78b6cb10d218fd300a1ae0b666e782d45995bd5"
+            "count": 190265,
+            "bytes": 23474472,
+            "sha256": "c63b695f14aca2767027edbbc95e9a982c9e0db49db6a6ae915fb4697c7b753f"
         },
         "ItemExtendMetalWareList": {
-            "count": 11555,
-            "bytes": 866067,
-            "sha256": "0424be777a81cda882274c8691406a4db2c4421f3126d6d9864252969a4a8b01"
+            "count": 11522,
+            "bytes": 863598,
+            "sha256": "0a58189c0625c37aff507a012051a12c2df5a7d169b706e49f6bfc058c49ed6c"
         },
         "MetalWareAbilityList": {
             "count": 528,
@@ -90,17 +90,17 @@
         "RandomTableList": {
             "count": 19,
             "bytes": 150981,
-            "sha256": "adb2964ad16d3d426889d5b35cba7ef2faf9c9180c23291df8335c0acc51556f"
+            "sha256": "ce018ad063b44732d9d9d4b3fcbdbb77716be9300880523146a0c87b1462aece"
         },
         "ProductionList": {
-            "count": 1899,
-            "bytes": 575545,
-            "sha256": "e206d096192465d4e13b0e1e562eda56db7407906f3fcb7bac0fc027fa0067ed"
+            "count": 1898,
+            "bytes": 575372,
+            "sha256": "5348de29c79160c95cee89e6af852b887746773e1c85652f2514160323ed108e"
         },
         "ItemExtendUpgradeList": {
-            "count": 4758,
-            "bytes": 679922,
-            "sha256": "c2501641c10b4493eb23fdc3f3a11e89504c1b71967ba437d30fbad73c0f22d3"
+            "count": 4745,
+            "bytes": 678194,
+            "sha256": "c1781a89593e3ec3447700d75142aed3483949365f065455a369336d3530b19d"
         },
         "ItemUpgradeList": {
             "count": 3668,
@@ -110,17 +110,17 @@
         "MiniatureList": {
             "count": 200,
             "bytes": 35726,
-            "sha256": "0ed5ece9b87bb4a47b3f7e8eddea028051039330592cef017a0356486bf06829"
+            "sha256": "aabe17591df41bb0b2ffffcd83039cf7164e5f11f51938be3727fa95deb4ca60"
         },
         "ItemExtendTotemList": {
             "count": 271,
             "bytes": 33188,
-            "sha256": "c86a7ef5a7e1f25636346a1865f600fa8b704c4bb063946bc86357e4720161a0"
+            "sha256": "54b7782b01f5b21f533382de0f631abb5a6b3da80875354fdb1229683c577cd1"
         },
         "BarterList": {
             "count": 128,
             "bytes": 19733,
-            "sha256": "6225e6a37dea41ef915c740bb04f25cfa1d6e858514feb55c76c2373799c3003"
+            "sha256": "c6216aa5057d5824142f3f766ae026fba8cd61a1aeeb02f6836a9619e579e738"
         },
         "CommercePostNameMap": {
             "count": 17,
@@ -128,14 +128,14 @@
             "sha256": "5c4e4c3dbf7b7b0ba8c8035d4db22fda9e644768499e9e28c55e64f982d5f971"
         },
         "SkillList": {
-            "count": 1194,
-            "bytes": 612480,
-            "sha256": "f31caa38e74e994d28771b3d7c2755c2294cfe487d2fdd2eac94d634158944b9"
+            "count": 1193,
+            "bytes": 3715637,
+            "sha256": "f43603a276bdcd3384849b28deea943c228a28d2446d8faab657ef8063eb9c69"
         }
     },
     "warnings": {
         "ItemList.Desc: placeholder": {
-            "count": 1402,
+            "count": 1391,
             "examples": [
                 "<nil>"
             ]
@@ -143,21 +143,21 @@
         "ItemList.Name: known missing string": {
             "count": 577,
             "examples": [
-                "itemdb.8846",
-                "itemdb.9564",
-                "itemdb.9452",
-                "itemdb.9587",
-                "itemdb.9516"
+                "itemdb.15663",
+                "itemdb.20529",
+                "itemdb.9366",
+                "itemdb.24849",
+                "itemdb.9362"
             ]
         },
         "ItemList.Desc: known missing string": {
             "count": 674,
             "examples": [
-                "itemdb.9667",
-                "itemdb.9894",
-                "itemdb.9781",
-                "itemdb.25157",
-                "itemdb.35070"
+                "itemdb.23184",
+                "itemdb.9690",
+                "itemdb.24850",
+                "itemdb_weapon.344",
+                "itemdb.9686"
             ]
         },
         "RandomTableList.Name: placeholder": {
@@ -167,7 +167,7 @@
             ]
         },
         "SkillList.Desc: placeholder": {
-            "count": 407,
+            "count": 406,
             "examples": [
                 "<nil>"
             ]
@@ -175,11 +175,11 @@
         "SkillList.Name: placeholder": {
             "count": 10,
             "examples": [
-                "unknownid:10035",
-                "unknownid:50148",
+                "unknownid:30020",
+                "unknownid:35020",
+                "unknownid:23015",
                 "unknownid:20013",
-                "unknownid:30021",
-                "unknownid:20014"
+                "unknownid:23017"
             ]
         },
         "SkillList.Desc: known missing string": {
@@ -188,22 +188,50 @@
                 "skillinfo.7334"
             ]
         },
-        "SkillList.HumanLevelEffectDescList: placeholder": {
-            "count": 1014,
+        "SkillList.HumanLevels.EffectDesc: placeholder": {
+            "count": 942,
             "examples": [
-                "<nil>"
+                ""
             ]
         },
-        "SkillList.ElfLevelEffectDescList: placeholder": {
-            "count": 3,
+        "SkillList.HumanLevels.LevelDesc: placeholder": {
+            "count": 2295,
             "examples": [
-                "<nil>"
+                ""
             ]
         },
-        "SkillList.GiantLevelEffectDescList: placeholder": {
+        "SkillList.ElfLevels.LevelDesc: placeholder": {
+            "count": 6,
+            "examples": [
+                ""
+            ]
+        },
+        "SkillList.GiantLevels.LevelDesc: placeholder": {
+            "count": 7,
+            "examples": [
+                ""
+            ]
+        },
+        "SkillList.ElfLevels.EffectDesc: placeholder": {
+            "count": 2,
+            "examples": [
+                ""
+            ]
+        },
+        "SkillList.HumanLevels.LevelDesc: known missing string": {
+            "count": 24,
+            "examples": [
+                "skillleveldescription.9059",
+                "skillleveldescription.8678",
+                "skillleveldescription.30606",
+                "skillleveldescription.94879",
+                "skillleveldescription.30609"
+            ]
+        },
+        "SkillList.GiantLevels.EffectDesc: placeholder": {
             "count": 17,
             "examples": [
-                "<nil>"
+                ""
             ]
         }
     }

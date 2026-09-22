@@ -181,6 +181,87 @@ assert.throws(
         }),
     /unresolved string/
 );
+assert.equal(
+    validateData({ ...data, SkillList: [data.SkillList[0]] }).data.SkillList[0]
+        .Id,
+    data.SkillList[0].Id,
+    "legacy skill records remain readable"
+);
+const modernSkill = { ...data.SkillList[0] } as Record<string, unknown>;
+delete modernSkill.HumanLevelEffectDescList;
+delete modernSkill.ElfLevelEffectDescList;
+delete modernSkill.GiantLevelEffectDescList;
+const modernLevel = {
+    Level: 0,
+    Ap: 0,
+    CombatPower: 0,
+    ManaCost: 0.5,
+    StaminaCost: 0,
+    Cooltime: 0,
+    PrepareTime: 0,
+    BonusLife: 0,
+    BonusMana: 0,
+    BonusStamina: 0,
+    BonusStr: 0,
+    BonusInt: 0,
+    BonusDex: 0,
+    BonusWill: 0,
+    BonusLuck: 0,
+    EffectDesc: data.SkillList[0].Desc,
+    TrainConditions: data.SkillList[0].Desc,
+    LevelDesc: data.SkillList[0].Desc,
+    FutureSourceField: { retained: true },
+};
+modernSkill.HumanLevels = [modernLevel];
+modernSkill.ElfLevels = [];
+modernSkill.GiantLevels = [];
+const modernData = validateData({ ...data, SkillList: [modernSkill] }).data;
+const parsedModernSkill = modernData.SkillList[0];
+assert("HumanLevels" in parsedModernSkill);
+assert(Array.isArray(parsedModernSkill.HumanLevels));
+assert.deepEqual(parsedModernSkill.HumanLevels[0], modernLevel);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            SkillList: [
+                {
+                    ...modernSkill,
+                    HumanLevels: [{ ...modernLevel, Level: 0.5 }],
+                },
+            ],
+        })
+);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            SkillList: [
+                {
+                    ...modernSkill,
+                    ElfLevels: undefined,
+                },
+            ],
+        })
+);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            SkillList: [
+                {
+                    ...modernSkill,
+                    HumanLevels: [
+                        {
+                            ...modernLevel,
+                            EffectDesc: "skillleveldescription.unexpected",
+                        },
+                    ],
+                },
+            ],
+        }),
+    /unresolved string/
+);
 assert.throws(
     () => validateData({ ...data, ItemList: [...data.ItemList, item] }),
     /duplicate lookup/

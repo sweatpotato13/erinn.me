@@ -20,6 +20,48 @@ const record = z.looseObject({});
 const material = z.looseObject({ ItemIds: z.array(id).min(1), Count: id });
 const reward = z.looseObject({ Id: id, Count: id, Rate: z.number() });
 const named = { Id: id, Name: z.string(), Desc: z.string() };
+const skillBase = {
+    ...named,
+    Category: id,
+    VariableMap: z.record(z.string(), z.string()),
+    MaxLevel: id,
+    ComboCardStackDuration: z.number(),
+    ComboCardStackCooldown: z.number(),
+};
+const skillLevel = z.looseObject({
+    Level: id,
+    Ap: id,
+    CombatPower: id,
+    ManaCost: z.number().finite().nonnegative(),
+    StaminaCost: z.number().finite().nonnegative(),
+    Cooltime: id,
+    PrepareTime: id,
+    BonusLife: id,
+    BonusMana: id,
+    BonusStamina: id,
+    BonusStr: id,
+    BonusInt: id,
+    BonusDex: id,
+    BonusWill: id,
+    BonusLuck: id,
+    EffectDesc: z.string(),
+    TrainConditions: z.string(),
+    LevelDesc: z.string(),
+});
+const skill = z.union([
+    z.looseObject({
+        ...skillBase,
+        HumanLevelEffectDescList: z.array(z.string()),
+        ElfLevelEffectDescList: z.array(z.string()),
+        GiantLevelEffectDescList: z.array(z.string()),
+    }),
+    z.looseObject({
+        ...skillBase,
+        HumanLevels: z.array(skillLevel),
+        ElfLevels: z.array(skillLevel),
+        GiantLevels: z.array(skillLevel),
+    }),
+]);
 
 // Validate relationships without stripping any decoded fields or defaulting values.
 const tableSchemas = {
@@ -238,19 +280,7 @@ const tableSchemas = {
             value => Object.keys(value).length > 0,
             "Expected commerce post names"
         ),
-    SkillList: rows(
-        z.looseObject({
-            ...named,
-            Category: id,
-            VariableMap: z.record(z.string(), z.string()),
-            MaxLevel: id,
-            HumanLevelEffectDescList: z.array(z.string()),
-            ElfLevelEffectDescList: z.array(z.string()),
-            GiantLevelEffectDescList: z.array(z.string()),
-            ComboCardStackDuration: z.number(),
-            ComboCardStackCooldown: z.number(),
-        })
-    ),
+    SkillList: rows(skill),
 };
 
 export const tableNames = Object.keys(tableSchemas) as Array<
@@ -409,13 +439,38 @@ export function validateData(input: unknown) {
     for (const row of data.SkillList) {
         for (const value of Object.values(row.VariableMap))
             checkString(value, "SkillList.VariableMap");
-        for (const field of [
-            "HumanLevelEffectDescList",
-            "ElfLevelEffectDescList",
-            "GiantLevelEffectDescList",
-        ] as const) {
-            for (const value of row[field])
-                checkString(value, `SkillList.${field}`);
+        if ("HumanLevels" in row && Array.isArray(row.HumanLevels)) {
+            const races: Array<
+                [string, Array<z.infer<typeof skillLevel>>]
+            > = [
+                ["Human", row.HumanLevels],
+                ["Elf", row.ElfLevels as Array<z.infer<typeof skillLevel>>],
+                [
+                    "Giant",
+                    row.GiantLevels as Array<z.infer<typeof skillLevel>>,
+                ],
+            ];
+            for (const [race, levels] of races) {
+                for (const level of levels)
+                    for (const field of [
+                        "EffectDesc",
+                        "TrainConditions",
+                        "LevelDesc",
+                    ] as const)
+                        checkString(
+                            level[field],
+                            `SkillList.${race}Levels.${field}`
+                        );
+            }
+        } else {
+            for (const field of [
+                "HumanLevelEffectDescList",
+                "ElfLevelEffectDescList",
+                "GiantLevelEffectDescList",
+            ] as const) {
+                for (const value of row[field] as string[])
+                    checkString(value, `SkillList.${field}`);
+            }
         }
     }
     const upgrades = new Set(data.ItemUpgradeList.map(row => row.Id));
