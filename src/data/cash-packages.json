@@ -1,0 +1,348 @@
+{
+    "version": 1,
+    "verifiedAt": "2026-09-22",
+    "noticeUrl": "https://mabinogi.nexon.com/page/news/notice_view.asp?id=4893855",
+    "products": [
+        {
+            "id": "sodamhan",
+            "name": "소담한",
+            "fullName": "소담한 한가위 선물 세트",
+            "cashPrice": 32900,
+            "imageUrl": "https://ssl.nexon.com/s2/game/mabinogi/ItemShop/ItemImage/CD908DAD33824C12B99E411BE4DCBC0E/thumb.png?v=1",
+            "sourceUrl": "https://mabinogi.nexon.com/ItemShop/product_detail.asp?product_no=630515",
+            "entries": [
+                {
+                    "kind": "item",
+                    "itemId": "farm-expansion-1",
+                    "name": "낭만 농장 개간권(1단계)",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "farm-expansion-2",
+                    "name": "낭만 농장 개간권(2단계)",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "farm-expansion-3",
+                    "name": "낭만 농장 개간권(3단계)",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "farm-expansion-4",
+                    "name": "낭만 농장 개간권(4단계)",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "farm-expansion-5",
+                    "name": "낭만 농장 개간권(5단계)",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "farm-expansion-6",
+                    "name": "낭만 농장 개간권(6단계)",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "farm-relocation",
+                    "name": "낭만 농장 이전권",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "spirit-contract",
+                    "name": "정령 무기 추가 계약권",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "inventory-expansion",
+                    "name": "인벤토리 확장권",
+                    "quantity": 3,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "bank-limit-10m",
+                    "name": "은행 한도 확장권(1천만)",
+                    "quantity": 5,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "gold-limit-1m",
+                    "name": "소지 골드 한도 확장권(100만 골드)",
+                    "quantity": 2,
+                    "tradeUnit": "stack"
+                }
+            ]
+        },
+        {
+            "id": "dalgoun",
+            "name": "달고운",
+            "fullName": "달고운 한가위 선물 세트",
+            "cashPrice": 89900,
+            "imageUrl": "https://ssl.nexon.com/s2/game/mabinogi/ItemShop/ItemImage/768F8CE25C72476BB8CB4A095CC5A4FE/thumb.png?v=1",
+            "sourceUrl": "https://mabinogi.nexon.com/ItemShop/product_detail.asp?product_no=630514",
+            "entries": [
+                {
+                    "kind": "item",
+                    "itemId": "brilliant-reforge-tool",
+                    "name": "찬란한 세공 도구",
+                    "quantity": 40,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "memory-gem",
+                    "name": "기억의 보석",
+                    "quantity": 40,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "rebirth-potion",
+                    "name": "환생의 비약",
+                    "sourceName": "환생의 비약 상자",
+                    "quantity": 10,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "choice",
+                    "id": "protected-stone-6",
+                    "name": "보호의 6단계 개조석 선택 상자",
+                    "quantity": 2,
+                    "options": [
+                        {
+                            "itemId": "protected-blue-stone-6",
+                            "name": "보호의 6단계 푸른 개조석",
+                            "tone": "blue",
+                            "tradeUnit": "stack"
+                        },
+                        {
+                            "itemId": "protected-red-stone-6",
+                            "name": "보호의 6단계 붉은 개조석",
+                            "tone": "red",
+                            "tradeUnit": "stack"
+                        }
+                    ]
+                },
+                {
+                    "kind": "choice",
+                    "id": "protected-stone-7",
+                    "name": "보호의 7단계 개조석 선택 상자",
+                    "quantity": 2,
+                    "options": [
+                        {
+                            "itemId": "protected-blue-stone-7",
+                            "name": "보호의 7단계 푸른 개조석",
+                            "tone": "blue",
+                            "tradeUnit": "stack"
+                        },
+                        {
+                            "itemId": "protected-red-stone-7",
+                            "name": "보호의 7단계 붉은 개조석",
+                            "tone": "red",
+                            "tradeUnit": "stack"
+                        }
+                    ]
+                },
+                {
+                    "kind": "item",
+                    "itemId": "scroll-trade-unlock",
+                    "name": "스크롤 전용 해제 포션",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "training-seal-50",
+                    "name": "증폭된 스킬 수련 인장(50)",
+                    "quantity": 5,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "auction-fee-coupon-100",
+                    "name": "경매장 수수료 100% 할인 쿠폰",
+                    "quantity": 1,
+                    "tradeUnit": "stack",
+                    "coupon": true
+                },
+                {
+                    "kind": "item",
+                    "itemId": "enchant-extract-protection",
+                    "name": "인챈트 추출 보호 포션",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                }
+            ]
+        },
+        {
+            "id": "onnuri",
+            "name": "온누리",
+            "fullName": "온누리 한가위 선물 세트",
+            "cashPrice": 119000,
+            "imageUrl": "https://ssl.nexon.com/s2/game/mabinogi/ItemShop/ItemImage/7822199BB59140B891856A71A45895D5/thumb.png?v=1",
+            "sourceUrl": "https://mabinogi.nexon.com/ItemShop/product_detail.asp?product_no=630512",
+            "entries": [
+                {
+                    "kind": "item",
+                    "itemId": "brilliant-reforge-tool",
+                    "name": "찬란한 세공 도구",
+                    "quantity": 80,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "memory-gem",
+                    "name": "기억의 보석",
+                    "quantity": 80,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "sparkling-name-chat-color-30",
+                    "name": "반짝이 이름/채팅 지정 색상 변경 포션(30일)",
+                    "sourceName": "반짝이 이름/채팅 지정 색상 변경 포션 상자",
+                    "secondary": "전체 색상 최저가",
+                    "quantity": 5,
+                    "tradeUnit": "stack",
+                    "pricing": "colorVariants"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "simple-forget-potion",
+                    "name": "간편한 망각의 비약",
+                    "quantity": 20,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "rebirth-potion",
+                    "name": "환생의 비약",
+                    "sourceName": "환생의 비약 상자",
+                    "quantity": 20,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "enchant-protection",
+                    "name": "인챈트 보호 포션",
+                    "quantity": 2,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "choice",
+                    "id": "protected-stone-6",
+                    "name": "보호의 6단계 개조석 선택 상자",
+                    "quantity": 2,
+                    "options": [
+                        {
+                            "itemId": "protected-blue-stone-6",
+                            "name": "보호의 6단계 푸른 개조석",
+                            "tone": "blue",
+                            "tradeUnit": "stack"
+                        },
+                        {
+                            "itemId": "protected-red-stone-6",
+                            "name": "보호의 6단계 붉은 개조석",
+                            "tone": "red",
+                            "tradeUnit": "stack"
+                        }
+                    ]
+                },
+                {
+                    "kind": "choice",
+                    "id": "protected-stone-7",
+                    "name": "보호의 7단계 개조석 선택 상자",
+                    "quantity": 2,
+                    "options": [
+                        {
+                            "itemId": "protected-blue-stone-7",
+                            "name": "보호의 7단계 푸른 개조석",
+                            "tone": "blue",
+                            "tradeUnit": "stack"
+                        },
+                        {
+                            "itemId": "protected-red-stone-7",
+                            "name": "보호의 7단계 붉은 개조석",
+                            "tone": "red",
+                            "tradeUnit": "stack"
+                        }
+                    ]
+                },
+                {
+                    "kind": "item",
+                    "itemId": "special-upgrade-conversion",
+                    "name": "특별 개조 전환 키트",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "simple-special-upgrade-recovery",
+                    "name": "간편한 특별 개조 복구의 정수",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "trade-unlock",
+                    "name": "전용 해제 포션",
+                    "quantity": 1,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "scroll-trade-unlock",
+                    "name": "스크롤 전용 해제 포션",
+                    "quantity": 2,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "special-relic-piece-1000",
+                    "name": "특별한 유물 조각(1000%)",
+                    "quantity": 10,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "training-seal-50",
+                    "name": "증폭된 스킬 수련 인장(50)",
+                    "quantity": 10,
+                    "tradeUnit": "stack"
+                },
+                {
+                    "kind": "item",
+                    "itemId": "auction-fee-coupon-100",
+                    "name": "경매장 수수료 100% 할인 쿠폰",
+                    "quantity": 3,
+                    "tradeUnit": "stack",
+                    "coupon": true
+                },
+                {
+                    "kind": "item",
+                    "itemId": "enchant-extract-protection",
+                    "name": "인챈트 추출 보호 포션",
+                    "quantity": 2,
+                    "tradeUnit": "stack"
+                }
+            ]
+        }
+    ]
+}

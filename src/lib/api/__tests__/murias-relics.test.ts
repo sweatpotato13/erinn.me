@@ -89,6 +89,14 @@ test("Idea exact-name summary excludes variants and preserves default callers", 
         minPrice: 1,
         listingCount: 3,
     });
+    expect(
+        await fetchCurrentItemMarket(
+            name,
+            undefined,
+            false,
+            listing => listing.auction_price_per_unit > 1
+        )
+    ).toMatchObject({ minPrice: 2, listingCount: 2 });
 });
 
 test("independent failures and empty Idea never produce a zero valuation", async () => {

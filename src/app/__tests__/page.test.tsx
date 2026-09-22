@@ -60,6 +60,9 @@ describe("Homepage Component", () => {
             screen.getByRole("heading", { name: "파티 분배 계산기" })
         ).toBeInTheDocument();
         expect(
+            screen.getByRole("heading", { name: "캐시 패키지 비교" })
+        ).toBeInTheDocument();
+        expect(
             screen.getByRole("heading", { name: "NPC 상점" })
         ).toBeInTheDocument();
         expect(
@@ -83,6 +86,11 @@ describe("Homepage Component", () => {
             "href",
             "/calculator"
         );
+        expect(
+            screen
+                .getByRole("heading", { name: "캐시 패키지 비교" })
+                .closest("a")
+        ).toHaveAttribute("href", "/tools/cash-packages");
 
         // Check shop link
         const shopHeading = screen.getByRole("heading", { name: "NPC 상점" });
