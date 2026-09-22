@@ -31,14 +31,20 @@ const querySchema = z
 
 type Listing = AuctionListResponse["auction_item"][number];
 
+function matchesColorVariant(value: string, name: string) {
+    if (value === name) return true;
+    const suffix = value.slice(name.length);
+    return value.startsWith(name) && /^\([^()]+\)$/.test(suffix);
+}
+
 export function matchesCashPackageListing(
     item: CashPackageMarketItem,
     listing: Listing
 ): boolean {
     if (item.pricing === "colorVariants") {
         return (
-            listing.item_name.startsWith(item.name) &&
-            listing.item_display_name.startsWith(item.name)
+            matchesColorVariant(listing.item_name, item.name) &&
+            matchesColorVariant(listing.item_display_name, item.name)
         );
     }
     return (

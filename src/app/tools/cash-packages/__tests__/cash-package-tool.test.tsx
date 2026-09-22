@@ -1,5 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+    fireEvent,
+    render,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 import CashPackageTool from "@/app/tools/cash-packages/cash-package-tool";
@@ -104,6 +110,22 @@ test("selects a package, edits a price, preserves it on refresh and restores aut
         screen.getByRole("button", { name: "찬란한 세공 도구 자동 가격 복원" })
     );
     await waitFor(() => expect(price).toHaveValue("100"));
+});
+
+test("shows per-sale quantities and consumes coupons by sale", async () => {
+    const user = userEvent.setup();
+    renderTool();
+    await user.click(screen.getByRole("button", { name: /달고운.*예상 손익/ }));
+    await user.click(screen.getByText("판매 건수와 쿠폰 사용"));
+    const count = screen.getByLabelText("찬란한 세공 도구 판매 건수");
+    fireEvent.change(count, { target: { value: "2" } });
+    expect(screen.getByText("20개 × 2건")).toBeInTheDocument();
+
+    const coupons = screen.getByLabelText("찬란한 세공 도구 쿠폰 적용 건수");
+    fireEvent.change(coupons, { target: { value: "1" } });
+    expect(
+        screen.getByLabelText("경매장 수수료 100% 할인 쿠폰 판매 수량")
+    ).toHaveValue(0);
 });
 
 test("shows isolated lookup failure and manual zero resolves its warning", async () => {

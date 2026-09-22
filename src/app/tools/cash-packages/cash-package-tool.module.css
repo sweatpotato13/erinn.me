@@ -426,6 +426,12 @@
     align-self: center;
     overflow-wrap: anywhere;
 }
+.saleSettings > div > span small {
+    display: block;
+    margin-top: 2px;
+    color: color-mix(in oklab, var(--color-base-content) 64%, transparent);
+    font-size: 11px;
+}
 .saleSettings label {
     display: grid;
     gap: 3px;

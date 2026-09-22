@@ -94,6 +94,17 @@ function gold(value: number | null, signed = false) {
     return `${signed && rounded >= 0 ? "+" : ""}${NUMBER.format(rounded)} G`;
 }
 
+function saleBreakdown(quantity: number, count: number) {
+    const smaller = Math.floor(quantity / count);
+    const largerCount = quantity % count;
+    return [
+        largerCount && `${smaller + 1}개 × ${largerCount}건`,
+        count - largerCount && `${smaller}개 × ${count - largerCount}건`,
+    ]
+        .filter(Boolean)
+        .join(", ");
+}
+
 function statusCause(quote: Quote) {
     if (quote.status === "error")
         return quote.cause ?? "시세 조회에 실패했습니다.";
@@ -808,7 +819,7 @@ export default function CashPackageTool({
     }
 
     return (
-        <main className={preparation.page}>
+        <div className={preparation.page}>
             <header className={styles.header}>
                 <div className={styles.titleLine}>
                     <h1>캐시 패키지 비교</h1>
@@ -981,7 +992,15 @@ export default function CashPackageTool({
                             .filter(row => row.quantity > 0)
                             .map(row => (
                                 <div key={row.key}>
-                                    <span>{row.item.name}</span>
+                                    <span>
+                                        {row.item.name}
+                                        <small>
+                                            {saleBreakdown(
+                                                row.quantity,
+                                                row.saleCount
+                                            )}
+                                        </small>
+                                    </span>
                                     <label>
                                         판매 건수
                                         <input
@@ -1073,6 +1092,6 @@ export default function CashPackageTool({
                     </dl>
                 </details>
             </section>
-        </main>
+        </div>
     );
 }

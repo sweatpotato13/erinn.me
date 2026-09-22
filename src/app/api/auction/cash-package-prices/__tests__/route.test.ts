@@ -113,9 +113,16 @@ test("color matching aggregates only the same 30-day product", () => {
         auction_price_per_unit: 1,
         date_auction_expire: "",
     });
+    expect(matchesCashPackageListing(item, listing(item.name))).toBe(true);
     expect(matchesCashPackageListing(item, listing(`${item.name}(빨강)`))).toBe(
         true
     );
+    expect(matchesCashPackageListing(item, listing(`${item.name}()`))).toBe(
+        false
+    );
+    expect(
+        matchesCashPackageListing(item, listing(`${item.name} 특별판`))
+    ).toBe(false);
     expect(
         matchesCashPackageListing(
             item,
