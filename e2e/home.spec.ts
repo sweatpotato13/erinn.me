@@ -24,6 +24,14 @@ const publicPages = [
             "만들 물품을 고르면, 필요한 재료와 구매·제작 비용을 비교할 수 있어요.",
     },
     {
+        path: "/tools/cash-packages",
+        title: "마비노기 캐시 패키지 비교 | Erinn.me",
+        description:
+            "2026 한가위 캐시 패키지 3종의 경매장 예상 수령액과 손익을 비교하세요.",
+        canonical: "https://erinn.me/tools/cash-packages",
+        heading: "캐시 패키지 비교",
+    },
+    {
         path: "/",
         title: "Erinn.me - 마비노기 도우미",
         description:
