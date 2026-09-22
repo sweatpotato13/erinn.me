@@ -53,7 +53,8 @@ function summarizeCurrentMarket(
 export async function fetchCurrentItemMarket(
     itemName: string,
     signal?: AbortSignal,
-    exactName = false
+    exactName = false,
+    matches?: (item: AuctionListResponse["auction_item"][number]) => boolean
 ) {
     const deadline = createRequestDeadline(signal, 20_000);
     const listings: AuctionListResponse["auction_item"] = [];
@@ -81,9 +82,10 @@ export async function fetchCurrentItemMarket(
         listings.push(
             ...data.auction_item.filter(
                 item =>
-                    !exactName ||
-                    (item.item_name === itemName &&
-                        item.item_display_name === itemName)
+                    (!exactName ||
+                        (item.item_name === itemName &&
+                            item.item_display_name === itemName)) &&
+                    (!matches || matches(item))
             )
         );
         nextCursor = data.next_cursor ?? null;
