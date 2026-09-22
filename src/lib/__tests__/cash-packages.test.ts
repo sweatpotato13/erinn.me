@@ -30,6 +30,19 @@ test("matches the verified package contents without unopened boxes", () => {
     ).toHaveLength(1);
 });
 
+test("rejects choices without market options", () => {
+    const invalid = JSON.parse(JSON.stringify(catalog)) as CashPackageCatalog;
+    const choice = invalid.products
+        .flatMap(product => product.entries)
+        .find(entry => entry.kind === "choice");
+    if (!choice || choice.kind !== "choice") throw new Error("Missing fixture");
+    choice.options.splice(0);
+
+    expect(() => cashPackageMarketItems(invalid)).toThrow(
+        "Choice has no market options"
+    );
+});
+
 test("calculates converted cost, per-sale fees and profit", () => {
     expect(
         calculateCashPackage({

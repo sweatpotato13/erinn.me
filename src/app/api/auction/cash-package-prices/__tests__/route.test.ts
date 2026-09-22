@@ -1,9 +1,7 @@
 /** @jest-environment node */
 
-import {
-    GET,
-    matchesCashPackageListing,
-} from "@/app/api/auction/cash-package-prices/route";
+import { matchesCashPackageListing } from "@/app/api/auction/cash-package-prices/cash-package-market";
+import { GET } from "@/app/api/auction/cash-package-prices/route";
 import { fetchCurrentItemMarket } from "@/lib/api/auction-market";
 
 jest.mock("next/cache", () => ({ unstable_cache: (fn: unknown) => fn }));

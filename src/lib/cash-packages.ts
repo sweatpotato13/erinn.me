@@ -29,7 +29,7 @@ export type CashPackageChoice = {
     id: string;
     name: string;
     quantity: number;
-    options: CashPackageMarketOption[];
+    options: [CashPackageMarketOption, ...CashPackageMarketOption[]];
 };
 
 export type CashPackageEntry = CashPackageItem | CashPackageChoice;
@@ -234,6 +234,9 @@ export function cashPackageMarketItems(
     const items = new Map<string, CashPackageMarketItem>();
     for (const product of catalog.products) {
         for (const entry of product.entries) {
+            if (entry.kind === "choice" && entry.options.length === 0) {
+                throw new Error(`Choice has no market options: ${entry.id}`);
+            }
             const candidates =
                 entry.kind === "choice" ? entry.options : [entry];
             for (const candidate of candidates) {

@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 import { MaterialIcon } from "@/app/tools/barter/barter-ui";
-import preparation from "@/components/tools/preparation.module.css";
 import {
     calculateCashPackage,
     type CashPackageCatalog,
@@ -20,8 +19,6 @@ import {
     type PackageResult,
     parseCashPerTenMillion,
 } from "@/lib/cash-packages";
-
-import styles from "./cash-package-tool.module.css";
 
 type Quote = {
     status: "loading" | "available" | "empty" | "error";
@@ -58,6 +55,11 @@ const PERCENT = new Intl.NumberFormat("ko-KR", {
     maximumFractionDigits: 1,
     signDisplay: "always",
 });
+const INPUT_CLASS =
+    "input input-bordered h-11 min-h-11 w-full min-w-0 rounded-lg bg-base-100 px-2.5 text-right tabular-nums";
+const ICON_BUTTON_CLASS =
+    "btn btn-outline h-11 min-h-11 w-11 min-w-11 rounded-lg bg-base-100 p-0";
+const MUTED_CLASS = "text-base-content/60";
 const loadingQuote: Quote = {
     status: "loading",
     marketUnitGold: null,
@@ -183,9 +185,10 @@ function Quantity({
     setValue: (value: number) => void;
 }) {
     return (
-        <span className={styles.stepper}>
+        <span className="join inline-grid grid-cols-[44px_58px_44px] overflow-hidden rounded-lg border border-base-300 bg-base-100">
             <button
                 type="button"
+                className="btn btn-ghost join-item h-11 min-h-11 w-11 min-w-11 rounded-none p-0"
                 aria-label={`${label} 줄이기`}
                 disabled={value <= min}
                 onClick={() => setValue(value - 1)}
@@ -193,6 +196,7 @@ function Quantity({
                 <Minus size={15} aria-hidden="true" />
             </button>
             <input
+                className="input join-item h-11 min-h-11 w-[58px] min-w-0 rounded-none border-y-0 border-x border-base-300 px-1 text-center tabular-nums"
                 aria-label={label}
                 type="number"
                 inputMode="numeric"
@@ -208,6 +212,7 @@ function Quantity({
             />
             <button
                 type="button"
+                className="btn btn-ghost join-item h-11 min-h-11 w-11 min-w-11 rounded-none p-0"
                 aria-label={`${label} 늘리기`}
                 disabled={value >= max}
                 onClick={() => setValue(value + 1)}
@@ -228,9 +233,12 @@ function ResultValue({
     signed?: boolean;
 }) {
     return loading ? (
-        <span className={styles.skeleton} aria-label="조회 중" />
+        <span
+            className="skeleton inline-block h-[0.9em] w-[72%] rounded-[5px] motion-reduce:animate-none"
+            aria-label="조회 중"
+        />
     ) : value === null ? (
-        <span className={styles.dash}>—</span>
+        <span className="[font-family:Arial,sans-serif]">—</span>
     ) : (
         <>{gold(value, signed)}</>
     );
@@ -255,16 +263,25 @@ function PackageCard({
 }) {
     const result = view.result;
     const profit = result?.profitGold ?? null;
+    const profitColor =
+        profit === null ? "" : profit >= 0 ? "text-success" : "text-error";
     return (
-        <article className={styles.card} data-selected={selected}>
+        <article
+            className={`card relative min-w-0 overflow-hidden rounded-xl border bg-base-100 ${
+                selected
+                    ? "border-primary bg-[color-mix(in_oklab,var(--color-primary)_5%,var(--color-base-100))] shadow-[inset_0_0_0_1px_var(--color-primary)]"
+                    : "border-base-300"
+            }`}
+        >
             <button
                 type="button"
-                className={styles.cardButton}
+                className="grid min-h-[238px] w-full gap-[13px] p-4 text-left focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-primary max-[700px]:min-h-0 max-[700px]:grid-cols-[minmax(135px,1fr)_minmax(130px,1fr)] max-[700px]:gap-x-3 max-[700px]:gap-y-2 max-[700px]:px-3.5 max-[700px]:py-3"
                 aria-pressed={selected}
                 onClick={select}
             >
-                <span className={styles.productHead}>
+                <span className="flex items-center gap-3">
                     <Image
+                        className="h-16 w-16 object-contain max-[700px]:h-11 max-[700px]:w-11"
                         src={product.imageUrl}
                         width={72}
                         height={72}
@@ -272,42 +289,47 @@ function PackageCard({
                         priority={product.id === "sodamhan"}
                     />
                     <span>
-                        <strong>{product.name}</strong>
-                        <small>{NUMBER.format(product.cashPrice)} 캐시</small>
+                        <strong className="block text-[17px] max-[700px]:text-[15px]">
+                            {product.name}
+                        </strong>
+                        <small className={`block text-xs ${MUTED_CLASS}`}>
+                            {NUMBER.format(product.cashPrice)} 캐시
+                        </small>
                     </span>
                 </span>
-                <span
-                    className={styles.profit}
-                    data-sign={
-                        profit === null
-                            ? "none"
-                            : profit >= 0
-                              ? "profit"
-                              : "loss"
-                    }
-                >
-                    <small>예상 손익</small>
-                    <strong>
+                <span className="self-auto text-right tabular-nums max-[700px]:self-center">
+                    <small className={`block text-xs ${MUTED_CLASS}`}>
+                        예상 손익
+                    </small>
+                    <strong
+                        className={`block min-h-[31px] text-[23px] leading-[1.35] max-[700px]:text-lg ${profitColor}`}
+                    >
                         <ResultValue value={profit} loading={loading} signed />
                     </strong>
-                    <span>
+                    <span
+                        className={`block min-h-[23px] text-[13px] ${profitColor}`}
+                    >
                         {loading ||
                         result?.profitPercent === null ||
                         !result ? (
                             loading ? (
                                 "조회 중"
                             ) : (
-                                <span className={styles.dash}>—</span>
+                                <span className="[font-family:Arial,sans-serif]">
+                                    —
+                                </span>
                             )
                         ) : (
                             `${PERCENT.format(result.profitPercent)}%`
                         )}
                     </span>
                 </span>
-                <span className={styles.cardStats}>
+                <span className="grid grid-cols-2 gap-3 border-t border-base-300 pt-[11px] text-right tabular-nums max-[700px]:col-span-full max-[700px]:pt-2">
                     <span>
-                        <small>환산 비용</small>
-                        <b>
+                        <small className={`block text-xs ${MUTED_CLASS}`}>
+                            환산 비용
+                        </small>
+                        <b className="block min-h-[23px] [overflow-wrap:anywhere]">
                             <ResultValue
                                 value={result?.goldCost ?? null}
                                 loading={loading}
@@ -315,8 +337,10 @@ function PackageCard({
                         </b>
                     </span>
                     <span>
-                        <small>예상 수령</small>
-                        <b>
+                        <small className={`block text-xs ${MUTED_CLASS}`}>
+                            예상 수령
+                        </small>
+                        <b className="block min-h-[23px] [overflow-wrap:anywhere]">
                             <ResultValue
                                 value={result?.netGold ?? null}
                                 loading={loading}
@@ -328,7 +352,7 @@ function PackageCard({
             {!loading && (result?.unpricedCount ?? 0) > 0 && (
                 <button
                     type="button"
-                    className={styles.unresolvedBadge}
+                    className="btn btn-warning absolute top-2.5 right-2.5 h-11 min-h-11 gap-1 rounded-md px-[9px] text-[11px] font-bold max-[700px]:top-1/2 max-[700px]:right-[7px] max-[700px]:-translate-y-1/2"
                     aria-label={`${product.name} 미확인 ${result!.unpricedCount}개 다시 조회`}
                     disabled={retrying}
                     onClick={retryUnresolved}
@@ -358,26 +382,31 @@ function ItemRow({
     const issue = !row.manual ? statusCause(row.quote) : null;
     return (
         <div
-            className={styles.itemRow}
+            className="grid scroll-mt-[84px] grid-cols-[minmax(250px,1.4fr)_minmax(100px,0.45fr)_minmax(190px,0.8fr)_minmax(130px,0.55fr)] items-end gap-3.5 border-b border-base-300 px-[18px] py-3.5 last:border-b-0 max-[900px]:grid-cols-[minmax(180px,1.2fr)_minmax(82px,0.45fr)_minmax(145px,0.8fr)_minmax(105px,0.55fr)] max-[700px]:grid-cols-2 max-[700px]:gap-2.5 max-[700px]:p-3.5 max-[390px]:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]"
             onKeyDown={event => {
                 if (event.key === "Escape") setOpen(false);
             }}
         >
-            <div className={styles.itemName}>
+            <div className="flex min-h-11 min-w-0 items-center gap-2.5 max-[700px]:col-span-full">
                 <MaterialIcon id={0} name={row.item.name} />
-                <span>
-                    <strong>{row.item.name}</strong>
+                <span className="min-w-0">
+                    <strong className="block text-[13px] [overflow-wrap:anywhere]">
+                        {row.item.name}
+                    </strong>
                     {(row.item.sourceName || row.item.secondary) && (
-                        <small>
+                        <small
+                            className={`block text-[11px] [overflow-wrap:anywhere] ${MUTED_CLASS}`}
+                        >
                             {row.item.secondary ??
                                 `${row.item.sourceName} 개봉 결과`}
                         </small>
                     )}
                 </span>
             </div>
-            <label className={styles.field}>
-                <span>판매 수량</span>
+            <label className="grid min-w-0 gap-1">
+                <span className={`text-[11px] ${MUTED_CLASS}`}>판매 수량</span>
                 <input
+                    className={INPUT_CLASS}
                     aria-label={`${row.item.name} 판매 수량`}
                     type="number"
                     inputMode="numeric"
@@ -392,10 +421,13 @@ function ItemRow({
                     }}
                 />
             </label>
-            <div className={styles.priceField}>
-                <label className={styles.field}>
-                    <span>개당 가격</span>
+            <div className="flex items-end gap-1.5 max-[700px]:min-w-0">
+                <label className="grid min-w-0 flex-1 gap-1">
+                    <span className={`text-[11px] ${MUTED_CLASS}`}>
+                        개당 가격
+                    </span>
                     <input
+                        className={`${INPUT_CLASS} ${row.invalid ? "input-error" : ""}`}
                         aria-label={`${row.item.name} 단가`}
                         inputMode="numeric"
                         value={
@@ -413,7 +445,7 @@ function ItemRow({
                 {row.manual && (
                     <button
                         type="button"
-                        className={styles.iconButton}
+                        className={ICON_BUTTON_CLASS}
                         aria-label={`${row.item.name} 자동 가격 복원`}
                         onClick={restorePrice}
                     >
@@ -423,7 +455,7 @@ function ItemRow({
                 {issue && (
                     <button
                         type="button"
-                        className={styles.warningButton}
+                        className="btn btn-warning h-11 min-h-11 w-11 min-w-11 rounded-lg p-0"
                         aria-label={`${row.item.name} 시세 상태 확인`}
                         aria-expanded={open}
                         onClick={() => setOpen(value => !value)}
@@ -432,19 +464,28 @@ function ItemRow({
                     </button>
                 )}
             </div>
-            <div className={styles.subtotal}>
-                <span>소계</span>
-                <strong>{gold(row.quantity * row.unitGold)}</strong>
+            <div className="grid min-w-0 gap-1 text-right tabular-nums max-[700px]:col-span-full max-[700px]:grid-cols-[auto_1fr] max-[700px]:items-center">
+                <span className={`text-[11px] ${MUTED_CLASS}`}>소계</span>
+                <strong className="flex min-h-11 items-center justify-end [overflow-wrap:anywhere] max-[700px]:min-h-7">
+                    {gold(row.quantity * row.unitGold)}
+                </strong>
             </div>
             {row.invalid && (
-                <p className={styles.rowMessage}>
+                <p className="col-start-3 text-[11px] text-error max-[900px]:[grid-column:3/5] max-[700px]:[grid-column:1/-1]">
                     0 이상의 정수로 입력해 주세요.
                 </p>
             )}
             {open && issue && (
-                <div className={styles.issue} role="status">
+                <div
+                    className="alert col-span-full flex items-center justify-between gap-3 rounded-lg bg-base-200 px-3 py-[9px] text-xs"
+                    role="status"
+                >
                     <span>{issue}</span>
-                    <button type="button" onClick={retry}>
+                    <button
+                        type="button"
+                        className="btn btn-ghost h-11 min-h-11 px-3 font-bold text-primary"
+                        onClick={retry}
+                    >
                         다시 조회
                     </button>
                 </div>
@@ -800,13 +841,15 @@ export default function CashPackageTool({
     }
 
     return (
-        <div className={preparation.page}>
-            <header className={styles.header}>
-                <div className={styles.titleLine}>
-                    <h1>캐시 패키지 비교</h1>
+        <div className="mx-auto max-w-[1280px] px-6 pt-6 pb-16 text-sm leading-[1.6] text-base-content [&_*]:box-border [&_button]:cursor-pointer [&_button:disabled]:cursor-not-allowed [&_button:disabled]:opacity-45">
+            <header className="mb-[22px] grid gap-[18px]">
+                <div className="flex items-center justify-between gap-3 max-[390px]:items-start">
+                    <h1 className="text-3xl leading-[1.2] font-bold max-[700px]:text-2xl">
+                        캐시 패키지 비교
+                    </h1>
                     <button
                         type="button"
-                        className={styles.refresh}
+                        className="btn btn-outline h-11 min-h-11 gap-1.5 rounded-lg px-3.5 font-semibold max-[390px]:px-2.5"
                         aria-label="시세 새로고침"
                         aria-busy={quotesQuery.isFetching}
                         disabled={quotesQuery.isFetching}
@@ -816,12 +859,13 @@ export default function CashPackageTool({
                         {quotesQuery.isFetching ? "조회 중" : "새로고침"}
                     </button>
                 </div>
-                <div className={styles.controls}>
-                    <label className={styles.rateField}>
+                <div className="card flex flex-row items-center justify-start gap-3 rounded-xl border border-base-300 bg-base-100 px-[18px] py-4 max-[700px]:flex-col max-[700px]:items-stretch">
+                    <label className="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3.5 gap-y-1.5 font-bold max-[700px]:grid-cols-1">
                         <span>환산 기준</span>
-                        <span className={styles.rateInput}>
-                            <b>1,000만 G =</b>
+                        <span className="flex min-w-0 items-center gap-2 font-normal max-[390px]:grid max-[390px]:grid-cols-[auto_1fr_auto]">
+                            <b className="whitespace-nowrap">1,000만 G =</b>
                             <input
+                                className={`${INPUT_CLASS} max-w-[140px] max-[700px]:max-w-none ${rateInvalid ? "input-error" : ""}`}
                                 aria-label="1,000만 골드당 캐시"
                                 inputMode="numeric"
                                 placeholder="입력"
@@ -829,14 +873,17 @@ export default function CashPackageTool({
                                 aria-invalid={rateInvalid}
                                 onChange={event => setRate(event.target.value)}
                             />
-                            <b>캐시</b>
+                            <b className="whitespace-nowrap">캐시</b>
                         </span>
                         {rateInvalid && (
-                            <small>0보다 큰 정수를 입력해 주세요.</small>
+                            <small className="col-start-2 text-xs text-error max-[700px]:col-start-1">
+                                0보다 큰 정수를 입력해 주세요.
+                            </small>
                         )}
                     </label>
-                    <label className={styles.membership}>
+                    <label className="inline-flex min-h-11 cursor-pointer items-center gap-2 border-l border-base-300 pl-[18px] max-[700px]:border-t max-[700px]:border-l-0 max-[700px]:pt-2 max-[700px]:pl-0">
                         <input
+                            className="checkbox checkbox-sm"
                             type="checkbox"
                             checked={membership}
                             onChange={event =>
@@ -848,7 +895,10 @@ export default function CashPackageTool({
                 </div>
             </header>
 
-            <section className={styles.cards} aria-label="패키지 비교">
+            <section
+                className="mb-[22px] grid grid-cols-3 gap-3.5 max-[700px]:grid-cols-1 max-[700px]:gap-2"
+                aria-label="패키지 비교"
+            >
                 {catalog.products.map(product => (
                     <PackageCard
                         key={product.id}
@@ -864,15 +914,19 @@ export default function CashPackageTool({
             </section>
 
             <section
-                className={`${preparation.panel} ${styles.contents}`}
+                className="card mb-[22px] min-w-0 overflow-hidden rounded-xl border border-base-300 bg-base-100"
                 aria-labelledby="contents-title"
             >
-                <div className={styles.contentsHead}>
+                <div className="flex min-h-[76px] items-center justify-between gap-3 border-b border-base-300 px-5 py-[15px] max-[700px]:items-start max-[390px]:flex-col">
                     <div>
-                        <h2 id="contents-title">{selected.name} 구성품</h2>
-                        <span>{NUMBER.format(selected.cashPrice)} 캐시</span>
+                        <h2 id="contents-title" className="text-lg font-bold">
+                            {selected.name} 구성품
+                        </h2>
+                        <span className={`text-xs ${MUTED_CLASS}`}>
+                            {NUMBER.format(selected.cashPrice)} 캐시
+                        </span>
                     </div>
-                    <label className={styles.purchase}>
+                    <label className="flex items-center justify-end gap-3 text-xs font-bold max-[700px]:flex-col max-[700px]:items-end max-[390px]:w-full max-[390px]:flex-row max-[390px]:items-center">
                         구매 수량
                         <Quantity
                             label={`${selected.name} 구매 수량`}
@@ -883,7 +937,7 @@ export default function CashPackageTool({
                         />
                     </label>
                 </div>
-                <div className={styles.rows}>
+                <div className="grid">
                     {selected.entries.map(entry => {
                         const rows = entryRows(entry).map(item =>
                             selectedView.rows.find(
@@ -914,8 +968,13 @@ export default function CashPackageTool({
                             />
                         ));
                         return entry.kind === "choice" ? (
-                            <div className={styles.choice} key={entry.id}>
-                                <h3>{entry.name}</h3>
+                            <div
+                                className="border-b border-base-300 bg-base-200/45"
+                                key={entry.id}
+                            >
+                                <h3 className="px-[18px] pt-[11px] text-xs font-bold">
+                                    {entry.name}
+                                </h3>
                                 <div>{content}</div>
                             </div>
                         ) : (
@@ -926,40 +985,46 @@ export default function CashPackageTool({
             </section>
 
             <section
-                className={`${preparation.panel} ${styles.settlement}`}
+                className="card min-w-0 overflow-hidden rounded-xl border border-base-300 bg-base-100 p-5 max-[700px]:px-3.5 max-[700px]:py-4"
                 aria-labelledby="settlement-title"
             >
-                <div className={styles.settlementHead}>
-                    <h2 id="settlement-title">정산</h2>
-                    <strong>
+                <div className="flex items-center justify-between gap-3 max-[390px]:flex-col max-[390px]:items-start">
+                    <h2 id="settlement-title" className="text-lg font-bold">
+                        정산
+                    </h2>
+                    <strong className="text-2xl tabular-nums max-[700px]:text-[19px]">
                         <ResultValue
                             value={selectedView.result?.netGold ?? null}
                             loading={initialLoading}
                         />
                     </strong>
                 </div>
-                <dl className={styles.settlementStats}>
-                    <div>
-                        <dt>총 판매액</dt>
-                        <dd>
+                <dl className="my-4 grid grid-cols-3 gap-3 max-[700px]:grid-cols-1">
+                    <div className="rounded-[9px] bg-base-200 p-3.5 text-right">
+                        <dt className={`text-[11px] ${MUTED_CLASS}`}>
+                            총 판매액
+                        </dt>
+                        <dd className="min-h-[29px] text-lg font-bold tabular-nums">
                             <ResultValue
                                 value={selectedView.result?.grossGold ?? null}
                                 loading={initialLoading}
                             />
                         </dd>
                     </div>
-                    <div>
-                        <dt>수수료</dt>
-                        <dd>
+                    <div className="rounded-[9px] bg-base-200 p-3.5 text-right">
+                        <dt className={`text-[11px] ${MUTED_CLASS}`}>수수료</dt>
+                        <dd className="min-h-[29px] text-lg font-bold tabular-nums">
                             <ResultValue
                                 value={selectedView.result?.feeGold ?? null}
                                 loading={initialLoading}
                             />
                         </dd>
                     </div>
-                    <div>
-                        <dt>예상 수령</dt>
-                        <dd>
+                    <div className="rounded-[9px] bg-base-200 p-3.5 text-right">
+                        <dt className={`text-[11px] ${MUTED_CLASS}`}>
+                            예상 수령
+                        </dt>
+                        <dd className="min-h-[29px] text-lg font-bold tabular-nums">
                             <ResultValue
                                 value={selectedView.result?.netGold ?? null}
                                 loading={initialLoading}
