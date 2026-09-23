@@ -181,12 +181,30 @@ assert.throws(
         }),
     /unresolved string/
 );
-assert.equal(
-    validateData({ ...data, SkillList: [data.SkillList[0]] }).data.SkillList[0]
-        .Id,
-    data.SkillList[0].Id,
-    "legacy skill records remain readable"
-);
+const legacySkill = { ...data.SkillList[0] } as Record<string, unknown>;
+delete legacySkill.HumanLevels;
+delete legacySkill.ElfLevels;
+delete legacySkill.GiantLevels;
+legacySkill.HumanLevelEffectDescList = [data.SkillList[0].Desc];
+legacySkill.ElfLevelEffectDescList = [];
+legacySkill.GiantLevelEffectDescList = [];
+for (const row of [legacySkill, { ...legacySkill, HumanLevels: [] }]) {
+    assert.equal(
+        validateData({ ...data, SkillList: [row] }).data.SkillList[0].Id,
+        legacySkill.Id,
+        "legacy and hybrid skill records remain readable"
+    );
+    assert.throws(
+        () =>
+            validateData({
+                ...data,
+                SkillList: [
+                    { ...row, HumanLevelEffectDescList: ["skill.unknown"] },
+                ],
+            }),
+        /SkillList.HumanLevelEffectDescList: unresolved string/
+    );
+}
 const modernSkill = { ...data.SkillList[0] } as Record<string, unknown>;
 delete modernSkill.HumanLevelEffectDescList;
 delete modernSkill.ElfLevelEffectDescList;

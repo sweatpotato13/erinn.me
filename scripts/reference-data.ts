@@ -349,35 +349,14 @@ function validateOgham(
             requireRef(costKeys, `${grade}:${locks}`, "OghamCost.ResetCosts");
 }
 
-/** Parse and validate a complete reference-data snapshot. */
-export function validateData(input: unknown) {
-    const data = dataSchema.parse(input);
-    const warnings: Record<string, { count: number; examples: string[] }> = {};
-    const warn = (kind: string, value: string) => {
-        const entry = (warnings[kind] ??= { count: 0, examples: [] });
-        entry.count++;
-        if (entry.examples.length < 5 && !entry.examples.includes(value))
-            entry.examples.push(value);
-    };
-    const lookup = (table: "ItemList" | "OptionSetList" | "StringTable") => {
-        const ids = new Set(data[table].map(row => row.Id));
-        if (ids.size !== data[table].length)
-            throw new Error(`${table}: duplicate lookup key`);
-        return ids;
-    };
-    const items = lookup("ItemList");
-    const options = lookup("OptionSetList");
-    const strings = lookup("StringTable");
-    const checkString = (value: string, path: string) => {
-        if (strings.has(value)) return;
-        if (placeholders.has(value)) warn(`${path}: placeholder`, value);
-        else if (knownMissing.has(value))
-            warn(`${path}: known missing string`, value);
-        else
-            throw new Error(
-                `${path}: unresolved string ${value}; review upstream before extending the known-missing list`
-            );
-    };
+type ReferenceData = z.infer<typeof dataSchema>;
+type CheckString = (value: string, path: string) => void;
+
+function validateNamedStrings(
+    data: ReferenceData,
+    checkString: CheckString,
+    warn: (kind: string, value: string) => void
+) {
     for (const name of [
         "ItemList",
         "OptionSetList",
@@ -410,6 +389,12 @@ export function validateData(input: unknown) {
             }
         }
     }
+}
+
+function validateItemReferences(
+    data: ReferenceData,
+    items: Set<string | number>
+) {
     for (const name of [
         "ItemExtendMetalWareList",
         "ItemExtendUpgradeList",
@@ -427,8 +412,14 @@ export function validateData(input: unknown) {
         for (const row of data[name])
             requireRef(items, row.ItemId, `${name}.ItemId`);
     }
+}
+
+function validateBarter(
+    data: ReferenceData,
+    items: Set<string | number>,
+    checkString: CheckString
+) {
     const posts = new Set(Object.keys(data.CommercePostNameMap));
-    validateOgham(data, items, strings);
     for (const value of Object.values(data.CommercePostNameMap))
         checkString(value, "CommercePostNameMap");
     for (const row of data.BarterList) {
@@ -436,43 +427,51 @@ export function validateData(input: unknown) {
         for (const price of row.Prices)
             requireRef(items, price.Id, "BarterList.Prices.Id");
     }
-    for (const row of data.SkillList) {
-        for (const value of Object.values(row.VariableMap))
-            checkString(value, "SkillList.VariableMap");
-        if ("HumanLevels" in row && Array.isArray(row.HumanLevels)) {
-            const races: Array<
-                [string, Array<z.infer<typeof skillLevel>>]
-            > = [
-                ["Human", row.HumanLevels],
-                ["Elf", row.ElfLevels as Array<z.infer<typeof skillLevel>>],
-                [
-                    "Giant",
-                    row.GiantLevels as Array<z.infer<typeof skillLevel>>,
-                ],
-            ];
-            for (const [race, levels] of races) {
-                for (const level of levels)
-                    for (const field of [
-                        "EffectDesc",
-                        "TrainConditions",
-                        "LevelDesc",
-                    ] as const)
-                        checkString(
-                            level[field],
-                            `SkillList.${race}Levels.${field}`
-                        );
-            }
-        } else {
-            for (const field of [
-                "HumanLevelEffectDescList",
-                "ElfLevelEffectDescList",
-                "GiantLevelEffectDescList",
-            ] as const) {
-                for (const value of row[field] as string[])
-                    checkString(value, `SkillList.${field}`);
-            }
-        }
+}
+
+function validateSkillLevels(
+    levels: Array<z.infer<typeof skillLevel>>,
+    race: string,
+    checkString: CheckString
+) {
+    for (const level of levels)
+        for (const field of [
+            "EffectDesc",
+            "TrainConditions",
+            "LevelDesc",
+        ] as const)
+            checkString(level[field], `SkillList.${race}Levels.${field}`);
+}
+
+function validateSkillStrings(
+    row: ReferenceData["SkillList"][number],
+    checkString: CheckString
+) {
+    for (const value of Object.values(row.VariableMap))
+        checkString(value, "SkillList.VariableMap");
+    if (
+        Array.isArray(row.HumanLevels) &&
+        Array.isArray(row.ElfLevels) &&
+        Array.isArray(row.GiantLevels)
+    ) {
+        for (const race of ["Human", "Elf", "Giant"] as const)
+            validateSkillLevels(
+                row[`${race}Levels`] as Array<z.infer<typeof skillLevel>>,
+                race,
+                checkString
+            );
+        return;
     }
+    for (const field of [
+        "HumanLevelEffectDescList",
+        "ElfLevelEffectDescList",
+        "GiantLevelEffectDescList",
+    ] as const)
+        for (const value of row[field] as string[])
+            checkString(value, `SkillList.${field}`);
+}
+
+function validateUpgrades(data: ReferenceData, options: Set<string | number>) {
     const upgrades = new Set(data.ItemUpgradeList.map(row => row.Id));
     for (const row of data.ItemExtendUpgradeList) {
         for (const value of row.UpgradeIds)
@@ -482,6 +481,9 @@ export function validateData(input: unknown) {
         for (const value of row.OptionSetIds)
             requireRef(options, value, "ItemUpgradeList.OptionSetIds");
     }
+}
+
+function validateProduction(data: ReferenceData, items: Set<string | number>) {
     for (const row of data.ProductionList) {
         for (const material of [
             ...row.Essentials,
@@ -491,6 +493,9 @@ export function validateData(input: unknown) {
                 requireRef(items, value, "ProductionList.Essentials.ItemIds");
         }
     }
+}
+
+function validateEchoStone(data: ReferenceData, items: Set<string | number>) {
     const rewards = new Set(
         data.EchoStoneConvertAdditionalRewardList.map(row => row.Id)
     );
@@ -522,6 +527,45 @@ export function validateData(input: unknown) {
                 "EchoStoneConvertAdditionalRewardList.RewardTables"
             );
     }
+}
+
+/** Parse and validate a complete reference-data snapshot. */
+export function validateData(input: unknown) {
+    const data = dataSchema.parse(input);
+    const warnings: Record<string, { count: number; examples: string[] }> = {};
+    const warn = (kind: string, value: string) => {
+        const entry = (warnings[kind] ??= { count: 0, examples: [] });
+        entry.count++;
+        if (entry.examples.length < 5 && !entry.examples.includes(value))
+            entry.examples.push(value);
+    };
+    const lookup = (table: "ItemList" | "OptionSetList" | "StringTable") => {
+        const ids = new Set(data[table].map(row => row.Id));
+        if (ids.size !== data[table].length)
+            throw new Error(`${table}: duplicate lookup key`);
+        return ids;
+    };
+    const items = lookup("ItemList");
+    const options = lookup("OptionSetList");
+    const strings = lookup("StringTable");
+    const checkString = (value: string, path: string) => {
+        if (strings.has(value)) return;
+        if (placeholders.has(value)) warn(`${path}: placeholder`, value);
+        else if (knownMissing.has(value))
+            warn(`${path}: known missing string`, value);
+        else
+            throw new Error(
+                `${path}: unresolved string ${value}; review upstream before extending the known-missing list`
+            );
+    };
+    validateNamedStrings(data, checkString, warn);
+    validateItemReferences(data, items);
+    validateOgham(data, items, strings);
+    validateBarter(data, items, checkString);
+    for (const row of data.SkillList) validateSkillStrings(row, checkString);
+    validateUpgrades(data, options);
+    validateProduction(data, items);
+    validateEchoStone(data, items);
     return { data, warnings };
 }
 
