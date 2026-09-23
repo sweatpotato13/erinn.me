@@ -7,6 +7,10 @@ The fixed coverage is currently 28 goods: eight at Skatha and five at each of
 Karu/Oasis/Calida/Pera. Empty entries from the 17-name post map are not catalogs.
 `BarterList.Id` identifies a trade good; only `Prices[].Id` joins to an item.
 
+The common snapshot was refreshed to Prilus version `1790058363` on 2026-09-23.
+All 128 barter rows are unchanged by ID; the existing fixed-good selection and
+seasonal material identities remain valid.
+
 The 2026-09-11 refresh to Prilus version `1789022199` (2026-09-10 15:36:39
 Asia/Seoul) contains 128 raw barter rows, including legacy definitions and
 rotating candidates. Matched names, weekly limits and ingredient names/counts

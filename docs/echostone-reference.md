@@ -1,6 +1,6 @@
 # Echostone reference and polishing evidence (#192)
 
-The committed Korean snapshot `1789022199` is the only reference-data input.
+The committed Korean snapshot `1790058363` is the only reference-data input.
 `pnpm echostone:build` generates a compact subset locally; production builds never collect Prilus data.
 `pnpm data:check` verifies reproducibility. Raw snapshot files are not modified.
 
@@ -20,11 +20,13 @@ Direct orrery access spends 25 AP per awakening, separate from Gold; an optional
 
 Checked 2026-09-07. The user confirmed that Prilus contains data extracted from the actual game and accepted it as the calculation source; a separate probability-screen capture is not required for this implementation.
 
-Rechecked against snapshot `1789022199` on 2026-09-11: polishing level tables,
-grade/agent bounds and upgrade data are unchanged; all six numerical fixtures
-remain valid. The evidence version and check date were refreshed accordingly.
+Rechecked against snapshot `1790058363` on 2026-09-23: the random tables are
+identical by ID (the source reordered their rows), and grade/agent bounds,
+upgrade data, item identities and descriptions are unchanged. All six numerical
+fixtures were recalculated and remain valid; the evidence version and check date
+match the committed snapshot.
 
-- [Prilus echostone data](https://prilus.gitlab.io/echostone), committed Korean snapshot `1788405829`: original level weights, grade upper bounds and agent lower bounds.
+- [Prilus echostone data](https://prilus.gitlab.io/echostone), committed Korean snapshot `1790058363`: original level weights, grade upper bounds and agent lower bounds.
 - [Official 2025-09-11 patch](https://mabinogi.nexon.com/m/news/notice_view.asp?id=4893022) and [current echo guide](https://mabinogi.nexon.com/page/archive/guide_view.asp?id=4886983): polishing uses the probabilities of 에코스톤 각성제, the exact name resolved for item **53940**. It consumes only the stone, permits one attempt, excludes maximum-level options and retains the current level on a lower draw.
 - Snapshot item 5040961 description excludes additional bonus effects. Consequently the prior high/highest-quality agent's minimum adjustment is not carried over.
 

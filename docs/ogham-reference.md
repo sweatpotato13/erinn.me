@@ -7,6 +7,10 @@ browser/decoder/IndexedDB collector. Source `Version.CreatedAt` and committed
 IndexedDB `CreatedAt_kr` both equal **1789028032** (2026-09-10 17:13:52 KST).
 This is source generation time, not a claimed game patch date.
 
+Revalidated on 2026-09-23 against snapshot `1790058363`: the Ogham word,
+ability and cost tables are unchanged. Their derived reference was regenerated
+with the new snapshot provenance.
+
 The collector discovers the mirror via the upstream app. The manifest records
 its actual resource/version URLs and entry script. It exports the three Ogham
 tables plus supporting ItemList/StringTable in one same-version snapshot.
