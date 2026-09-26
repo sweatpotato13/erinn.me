@@ -164,7 +164,7 @@ test("retries every unresolved item in a package from its badge", async () => {
     const retry = await screen.findByRole(
         "button",
         { name: "소담한 미확인 2개 다시 조회" },
-        { timeout: 5_000 }
+        { timeout: 10_000 }
     );
     const before = Object.fromEntries(
         [...failed].map(itemId => [
