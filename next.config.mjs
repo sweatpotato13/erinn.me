@@ -1,10 +1,11 @@
-import { HTML_LIMITED_BOT_UA_RE } from "next/dist/shared/lib/router/utils/html-bots.js";
+export const NEXT_DEFAULT_HTML_LIMITED_BOTS =
+    "[\\w-]+-Google|Google-[\\w-]+|Chrome-Lighthouse|Slurp|DuckDuckBot|baiduspider|yandex|sogou|bitlybot|tumblr|vkShare|quora link preview|redditbot|ia_archiver|Bingbot|BingPreview|applebot|facebookexternalhit|facebookcatalog|Twitterbot|LinkedInBot|Slackbot|Discordbot|WhatsApp|SkypeUriPreview|Yeti|googleweblight";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
     htmlLimitedBots: new RegExp(
-        `${HTML_LIMITED_BOT_UA_RE.source}|kakaotalk-scrap`,
-        HTML_LIMITED_BOT_UA_RE.flags
+        `${NEXT_DEFAULT_HTML_LIMITED_BOTS}|kakaotalk-scrap`,
+        "i"
     ),
     async rewrites() {
         return [];
