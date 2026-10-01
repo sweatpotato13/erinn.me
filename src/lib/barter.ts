@@ -83,7 +83,7 @@ export const IRIA_POSTS = [201, 202, 203, 204] as const;
 export const BarterSeasonSchema = z
     .object({
         formatVersion: z.literal(1),
-        source: z.literal("https://labanyu.com/trade"),
+        source: z.literal("https://labanyu.com/trade").optional(),
         collectedAt: z.iso.datetime(),
         sourceVersion: positive,
         seasonId: positive,

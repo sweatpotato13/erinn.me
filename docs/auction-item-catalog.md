@@ -10,6 +10,16 @@
 - Stable IDs: price lookup still uses the exact item name. When local data has multiple IDs for that name, the lowest numeric ID is retained only as the stable page key.
 - Limitations: Labanyu samples the one-hour Nexon API by item name, excludes some item types, and notes that its totals may differ from actual trades. `verifiedAt` records when the published ranking was checked, while `observedFrom` and `observedTo` describe the ranking's data period.
 
+## 2026-10-01 refresh
+
+Rebuilt the 500-item catalog from the currently published two TOP 300 tables,
+using the same rank merge and canonical-ID rules. Of 540 distinct source names,
+four could not be resolved against the Korean snapshot and were excluded.
+The selection retains 397 items and replaces 103. All evidence ranks and check
+timestamps were refreshed. The source still labels its observation period as
+2025-12-14 04:00 KST plus seven days; this refresh does not claim current-week
+trade observations. The committed observation period remains unchanged.
+
 ## Updating
 
 1. Prepare an ordered JSON array of exact names or `{ "name", "canonicalId" }` objects.

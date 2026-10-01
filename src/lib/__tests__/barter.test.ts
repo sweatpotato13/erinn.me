@@ -3,6 +3,7 @@ import {
     barterDeficits,
     BarterGoodSchema,
     barterMonth,
+    BarterSeasonSchema,
     barterWeek,
     calculateBarter,
     emptyBarterRow,
@@ -17,6 +18,20 @@ const wood = BarterGoodSchema.parse(
     reference.goods.find(g => g.key === "fixed:201:20101")
 );
 const row = () => ({ ...emptyBarterRow(wood), q: "3" });
+
+test("season attribution can be omitted while supplied URLs stay validated", () => {
+    for (const source of [undefined, "https://labanyu.com/trade"])
+        expect(
+            BarterSeasonSchema.safeParse({ ...reference.season, source })
+                .success
+        ).toBe(true);
+    expect(
+        BarterSeasonSchema.safeParse({
+            ...reference.season,
+            source: "https://example.com/trade",
+        }).success
+    ).toBe(false);
+});
 
 test("real exchange materials, one inventory allocation, two cost bases and net handoff", () => {
     const owned = { 50664: "5", 67201: "2" };

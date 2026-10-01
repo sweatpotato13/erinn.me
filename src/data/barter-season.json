@@ -1,27 +1,26 @@
 {
   "formatVersion": 1,
-  "source": "https://labanyu.com/trade",
-  "collectedAt": "2026-09-11T00:05:15.453Z",
-  "sourceVersion": 1789022199,
-  "seasonId": 16,
-  "seasonVersion": 2,
+  "collectedAt": "2026-10-01T05:22:28.177Z",
+  "sourceVersion": 1790820275,
+  "seasonId": 20261001,
+  "seasonVersion": "08187ae61689d719122315a3e31c9b7d659d4026ce7729183d81d0bf6e6ced97",
   "period": {
-    "startAt": 1788386400000,
-    "endAt": 1790805600000
+    "startAt": 1790805600000,
+    "endAt": 1793829600000
   },
   "goods": [
     {
-      "key": "season:201:16",
+      "key": "season:201:20261001",
       "source": "season",
-      "revision": "9d54cbcbe22c170a36ec2c1fe2f8e9fc3e8cfdc3402af5bf4f237abe5c1fa2d7",
+      "revision": "b316bfd6c19fa2e2e96d79803c907193d359d0fcef944a4ea805948bc6dfbb0f",
       "postId": 201,
       "postName": "카루 숲",
       "name": "나무 조각 퍼즐",
       "limit": 3,
       "reset": "weekly",
       "period": {
-        "startAt": 1788386400000,
-        "endAt": 1790805600000
+        "startAt": 1790805600000,
+        "endAt": 1793829600000
       },
       "groups": [
         [
@@ -45,73 +44,45 @@
       ]
     },
     {
-      "key": "season:202:16",
+      "key": "season:202:20261001",
       "source": "season",
-      "revision": "f2301d16c8ff24ec8fd50ec7d3ebd7aa32e30e38303f17329b60db2e0c6927ef",
+      "revision": "24666e38eb6a345647e0704e37aa54f0345ae1f1d690ee937467813fa7672e54",
       "postId": 202,
       "postName": "오아시스",
-      "name": "유적 탐사 개론",
+      "name": "바람의 물병",
       "limit": 2,
       "reset": "weekly",
       "period": {
-        "startAt": 1788386400000,
-        "endAt": 1790805600000
+        "startAt": 1790805600000,
+        "endAt": 1793829600000
       },
       "groups": [
         [
           {
-            "itemId": 5041016,
+            "itemId": 5041006,
             "count": 1
           }
         ],
         [
           {
-            "itemId": 5041022,
+            "itemId": 5041012,
             "count": 1
           }
         ]
       ]
     },
     {
-      "key": "season:203:16",
+      "key": "season:203:20261001",
       "source": "season",
-      "revision": "9e7dbb90ea73c3be4146713b2315d674f74bd8ccada2ef33d69c10975af582b1",
+      "revision": "4ba7c35cd391670bc14c525e98f407b351c9b42098ed7d2b9c571cc20f85470d",
       "postId": 203,
       "postName": "칼리다",
-      "name": "대형 해먹",
+      "name": "물의 정령 조각상",
       "limit": 2,
       "reset": "weekly",
       "period": {
-        "startAt": 1788386400000,
-        "endAt": 1790805600000
-      },
-      "groups": [
-        [
-          {
-            "itemId": 5100409,
-            "count": 1
-          }
-        ],
-        [
-          {
-            "itemId": 5100405,
-            "count": 1
-          }
-        ]
-      ]
-    },
-    {
-      "key": "season:204:16",
-      "source": "season",
-      "revision": "ad5f7972460cc962d3829f53b4533698a272ba5250a233c08817eee0b97b0b83",
-      "postId": 204,
-      "postName": "페라",
-      "name": "불의 수정구",
-      "limit": 2,
-      "reset": "weekly",
-      "period": {
-        "startAt": 1788386400000,
-        "endAt": 1790805600000
+        "startAt": 1790805600000,
+        "endAt": 1793829600000
       },
       "groups": [
         [
@@ -122,7 +93,35 @@
         ],
         [
           {
-            "itemId": 5100404,
+            "itemId": 5100407,
+            "count": 1
+          }
+        ]
+      ]
+    },
+    {
+      "key": "season:204:20261001",
+      "source": "season",
+      "revision": "b2864dad6bf33705c8f8125515825069b72e6f7523197264567d074a6df9966c",
+      "postId": 204,
+      "postName": "페라",
+      "name": "붉은 물고기 조각상",
+      "limit": 2,
+      "reset": "weekly",
+      "period": {
+        "startAt": 1790805600000,
+        "endAt": 1793829600000
+      },
+      "groups": [
+        [
+          {
+            "itemId": 5100408,
+            "count": 1
+          }
+        ],
+        [
+          {
+            "itemId": 5100410,
             "count": 1
           }
         ]
