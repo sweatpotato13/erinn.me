@@ -36,7 +36,7 @@ test("shared market lookup rejects an oversized click without launching requests
     expect(result.current.errors.request).toContain("100종");
     expect(prices).not.toHaveBeenCalled();
 });
-const now = Date.parse("2026-09-10T08:00:00+09:00");
+const now = data.season!.period.startAt + 60 * 60 * 1000;
 const good = data.goods.find(g => g.key === "fixed:201:20101")!;
 const quote = {
     minPrice: 100,
