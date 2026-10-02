@@ -1,5 +1,6 @@
-import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
+
+import { expect, test } from "@playwright/test";
 
 import season from "../src/data/barter-season.json";
 import { buildBarterShare } from "../src/lib/barter-state";
