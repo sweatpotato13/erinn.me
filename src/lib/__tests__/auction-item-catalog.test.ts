@@ -15,6 +15,27 @@ const { items: localItems } = readItemReference();
 const cloneCatalog = () => structuredClone(catalog);
 
 describe("auction item catalog", () => {
+    it("preserves retired public identities without adding them to discovery", () => {
+        const activeIds = new Set(
+            getAuctionCatalogItems().map(item => item.id)
+        );
+        for (const item of catalog.archivedItems) {
+            expect(getAuctionCatalogItemById(item.id)).toEqual(item);
+            expect(activeIds.has(item.id)).toBe(false);
+        }
+        expect(getAuctionCatalogItemById("3160099")).toMatchObject({
+            id: "3160099",
+            name: "불완전한 공상의 왕관 헤일로",
+        });
+        const withoutArchived = localItems.filter(
+            item =>
+                !catalog.archivedItems.some(archived => archived.id === item.id)
+        );
+        expect(() =>
+            validateAuctionItemCatalog(catalog, withoutArchived)
+        ).not.toThrow();
+    });
+
     it("validates the checked-in catalog and exposes exact lookups", () => {
         const validated = validateAuctionItemCatalog(catalog, localItems);
         expect(validated.items).toHaveLength(500);
@@ -54,6 +75,24 @@ describe("auction item catalog", () => {
     });
 
     it.each([
+        [
+            "archived ID overlapping an active page",
+            (value: ReturnType<typeof cloneCatalog>) => {
+                value.archivedItems.push(value.items[0]);
+            },
+        ],
+        [
+            "duplicate archived ID",
+            (value: ReturnType<typeof cloneCatalog>) => {
+                value.archivedItems.push(value.archivedItems[0]);
+            },
+        ],
+        [
+            "unsafe archived ID",
+            (value: ReturnType<typeof cloneCatalog>) => {
+                value.archivedItems[0].id = "../unknown";
+            },
+        ],
         [
             "malformed date",
             (value: ReturnType<typeof cloneCatalog>) => {

@@ -8,7 +8,7 @@ import {
     getCachedRecentItemSales,
 } from "@/lib/api/auction-market";
 import {
-    type AuctionCatalogItem,
+    type AuctionItem,
     getAuctionCatalogItemById,
     getAuctionItemPath,
 } from "@/lib/auction-item-catalog";
@@ -53,7 +53,7 @@ interface CurrentMarketContentProps {
 }
 
 interface CurrentMarketPanelProps {
-    item: AuctionCatalogItem;
+    item: AuctionItem;
 }
 
 interface RecentSalesSummaryProps {
@@ -71,7 +71,7 @@ interface RecentSalesContentProps {
 }
 
 interface RecentSalesPanelProps {
-    item: AuctionCatalogItem;
+    item: AuctionItem;
 }
 
 function getItem(itemId: string) {

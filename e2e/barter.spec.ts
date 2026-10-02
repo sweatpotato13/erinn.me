@@ -1,13 +1,17 @@
-import { expect, test } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 
+import { expect, test } from "@playwright/test";
+
+import season from "../src/data/barter-season.json";
 import { buildBarterShare } from "../src/lib/barter-state";
 
 const path = "/tools/barter";
 const key = "erinn-barter-v1";
+const seasonStart = season.period.startAt + 60 * 60 * 1000;
+const seasonalName = season.goods[0].name;
 test.use({ timezoneId: "America/Los_Angeles" });
 test.beforeEach(async ({ page }) => {
-    await page.clock.setFixedTime(new Date("2026-09-10T08:00:00+09:00"));
+    await page.clock.setFixedTime(new Date(seasonStart));
 });
 
 test("preparation quantities, explicit market lookup, export and shared import", async ({
@@ -31,7 +35,7 @@ test("preparation quantities, explicit market lookup, export and shared import",
                 averagePrice: 150,
                 availableQuantity: 2,
                 isComplete: false,
-                fetchedAt: "2026-09-10T00:00:00Z",
+                fetchedAt: new Date(seasonStart).toISOString(),
             },
         });
     });
@@ -114,20 +118,21 @@ test("weekly selection exposes four sixth-tier goods and uses the shared site st
 }) => {
     await page.goto(path);
     const seasonal = page.getByRole("region", { name: "이달의 6티어" });
-    for (const [name, limit] of [
-        ["나무 조각 퍼즐", "3"],
-        ["유적 탐사 개론", "2"],
-        ["대형 해먹", "2"],
-        ["불의 수정구", "2"],
-    ]) {
+    expect(season.goods).toHaveLength(4);
+    for (const { name, limit } of season.goods) {
         await seasonal
             .getByRole("checkbox", { name: `${name} 주간분 담기` })
             .check();
         await expect(
             seasonal.getByRole("textbox", { name: `${name} 준비할 횟수` })
-        ).toHaveValue(limit);
+        ).toHaveValue(String(limit));
     }
-    await expect(page.getByRole("article", { name: /재료$/ })).toHaveCount(9);
+    const materialIds = new Set(
+        season.goods.flatMap(good => good.groups.map(group => group[0].itemId))
+    );
+    await expect(page.getByRole("article", { name: /재료$/ })).toHaveCount(
+        materialIds.size
+    );
     await expect(
         page.getByRole("button", { name: "시즌 교역품 직접 입력" })
     ).toHaveCount(0);
@@ -195,7 +200,7 @@ test("weekly rollover and monthly expiry are independent and keep owned stock", 
     await page
         .getByRole("textbox", { name: "실리엔 보유 수량", exact: true })
         .fill("1");
-    await page.clock.setFixedTime(new Date("2026-09-17T08:00:00+09:00"));
+    await page.clock.setFixedTime(new Date(seasonStart + 7 * 86_400_000));
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
     await page
         .getByRole("button", { name: "이번 주로 전환", exact: true })
@@ -211,18 +216,29 @@ test("weekly rollover and monthly expiry are independent and keep owned stock", 
     ).toHaveValue("1");
     await expect(
         page.getByRole("textbox", {
-            name: "나무 조각 퍼즐 준비할 횟수",
+            name: `${seasonalName} 준비할 횟수`,
             exact: true,
         })
     ).toBeEnabled();
-    await page.clock.setFixedTime(new Date("2026-10-01T08:00:00+09:00"));
+    await page.clock.setFixedTime(new Date(season.period.endAt - 1));
     await page.evaluate(() => window.dispatchEvent(new Event("focus")));
     await page
         .getByRole("button", { name: "이번 주로 전환", exact: true })
         .click();
     await expect(
         page.getByRole("textbox", {
-            name: "나무 조각 퍼즐 준비할 횟수",
+            name: `${seasonalName} 준비할 횟수`,
+            exact: true,
+        })
+    ).toBeEnabled();
+    await page.clock.setFixedTime(new Date(season.period.endAt));
+    await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+    await page
+        .getByRole("button", { name: "이번 주로 전환", exact: true })
+        .click();
+    await expect(
+        page.getByRole("textbox", {
+            name: `${seasonalName} 준비할 횟수`,
             exact: true,
         })
     ).toBeDisabled();

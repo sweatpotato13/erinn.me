@@ -246,6 +246,24 @@ test.describe("Homepage Tests", () => {
         ).toBe(404);
     });
 
+    test("retired auction item links retain their page and sharing metadata", async ({
+        page,
+    }) => {
+        const response = await page.goto("/auction/items/3160099");
+        expect(response?.status()).toBe(200);
+        await expect(page.getByRole("heading", { level: 1 })).toHaveText(
+            "불완전한 공상의 왕관 헤일로 경매장 시세"
+        );
+        await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
+            "href",
+            "https://erinn.me/auction/items/3160099"
+        );
+        await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+            "content",
+            "https://erinn.me/auction/items/3160099/preview"
+        );
+    });
+
     test("link crawlers receive complete auction item metadata in the initial head", async ({
         request,
     }) => {
@@ -289,6 +307,7 @@ test.describe("Homepage Tests", () => {
             item.id,
             longestItem.id,
             plusItem.id,
+            "3160099",
             "UNKNOWN_SAFE_ID",
         ]) {
             const response = await request.get(

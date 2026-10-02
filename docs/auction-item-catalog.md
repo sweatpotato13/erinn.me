@@ -20,11 +20,20 @@ timestamps were refreshed. The source still labels its observation period as
 2025-12-14 04:00 KST plus seven days; this refresh does not claim current-week
 trade observations. The committed observation period remains unchanged.
 
+The 103 retired IDs and exact names are retained in `archivedItems`. Existing
+detail-page and preview URLs continue to use live market queries by that saved
+name, including the normal empty/unavailable states. The discovery list and
+sitemap use only active `items`. Archived identities have no freshness claim
+and remain valid even when the latest reference snapshot no longer contains them.
+
 ## Updating
 
 1. Prepare an ordered JSON array of exact names or `{ "name", "canonicalId" }` objects.
 2. Run `pnpm catalog:collect --input <file>`. The maintainer-only command requires `NXOPEN_API_URL` and `NXOPEN_API_KEY`, checks current listings then recent sales, and writes an ignored report to `artifacts/auction-catalog-candidates.json`.
 3. Review evidence and explicitly select a canonical ID for duplicate names. Never change an existing canonical ID merely because live data is temporarily empty.
 4. Edit the catalog in a dedicated pull request and run `pnpm catalog:validate`. Validation rejects evidence checks more than 30 days old, so revisit the source before refreshing `verifiedAt`; do not merely change its timestamp.
+   Move each removed item's original `{ id, name }` into `archivedItems` to keep
+   published links working. Preserve older archive entries; when an item returns
+   to the active list, remove its archive entry. IDs must be unique across both lists.
 
 If catalog data is stored or republished, follow Nexon Open API's current attribution and refresh requirements, including the documented 30-day update requirement.

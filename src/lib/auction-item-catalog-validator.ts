@@ -46,6 +46,15 @@ const catalogSchema = z.object({
         limitations: trimmedText,
     }),
     items: z.array(catalogItemSchema).min(500).max(1000),
+    // Historical route identities survive source removals and do not claim fresh evidence.
+    archivedItems: z
+        .array(
+            z.object({
+                id: catalogItemSchema.shape.id,
+                name: catalogItemSchema.shape.name,
+            })
+        )
+        .default([]),
 });
 
 type LocalItem = { id: string; name: string };
@@ -109,6 +118,12 @@ export function validateAuctionItemCatalog(
                 `catalog evidence is older than 30 days: ${item.id} (${item.name})`
             );
         }
+    }
+    for (const item of catalog.archivedItems) {
+        if (seenIds.has(item.id)) {
+            throw new Error(`duplicate catalog id: ${item.id}`);
+        }
+        seenIds.add(item.id);
     }
     return catalog;
 }
