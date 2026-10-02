@@ -11,18 +11,19 @@ export type AuctionCatalogItem = {
     sourceRank?: number;
     verifiedAt: string;
 };
+export type AuctionItem = Pick<AuctionCatalogItem, "id" | "name">;
 
 const items = catalog.items as AuctionCatalogItem[];
-const itemsById = new Map(items.map(item => [item.id, item]));
+const itemsById = new Map<string, AuctionItem>(
+    [...catalog.archivedItems, ...items].map(item => [item.id, item])
+);
 const itemsByName = new Map(items.map(item => [item.name, item]));
 
 export function getAuctionCatalogItems(): readonly AuctionCatalogItem[] {
     return items;
 }
 
-export function getAuctionCatalogItemById(
-    id: string
-): AuctionCatalogItem | undefined {
+export function getAuctionCatalogItemById(id: string): AuctionItem | undefined {
     return itemsById.get(id);
 }
 

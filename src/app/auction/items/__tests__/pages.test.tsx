@@ -78,6 +78,18 @@ describe("auction item metadata", () => {
 });
 
 describe("auction item routing", () => {
+    it("keeps the original page, canonical and preview URL for a retired item", async () => {
+        const props = { params: Promise.resolve({ itemId: "3160099" }) };
+        await expect(AuctionItemPage(props)).resolves.toBeDefined();
+        await expect(generateMetadata(props)).resolves.toMatchObject({
+            title: "불완전한 공상의 왕관 헤일로 경매장 시세",
+            alternates: { canonical: "/auction/items/3160099" },
+            openGraph: {
+                images: [{ url: "/auction/items/3160099/preview" }],
+            },
+        });
+    });
+
     it("rejects non-catalog IDs before any live fetch", async () => {
         await expect(
             AuctionItemPage({

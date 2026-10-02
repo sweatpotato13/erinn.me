@@ -335,6 +335,22 @@ describe("auction item preview", () => {
         expect(getCachedRecentItemSales).not.toHaveBeenCalled();
     });
 
+    it("queries the saved exact name for a retired item's shared preview", async () => {
+        mockMarketSuccess();
+        await expectPng(
+            await GET(
+                new Request("http://localhost/auction/items/3160099/preview"),
+                { params: Promise.resolve({ itemId: "3160099" }) }
+            )
+        );
+        expect(getCachedCurrentItemMarket).toHaveBeenCalledWith(
+            "불완전한 공상의 왕관 헤일로"
+        );
+        expect(getCachedRecentItemSales).toHaveBeenCalledWith(
+            "불완전한 공상의 왕관 헤일로"
+        );
+    });
+
     it("materializes rendering inside the fallback boundary", async () => {
         const spy = jest
             .spyOn(Response.prototype, "arrayBuffer")
