@@ -1,5 +1,6 @@
 import { FlatCompat } from "@eslint/eslintrc";
 import eslintJs from "@eslint/js";
+import nextConfig from "eslint-config-next";
 import pluginSecurity from "eslint-plugin-security";
 import simpleImportSortPlugin from "eslint-plugin-simple-import-sort";
 import globals from "globals";
@@ -14,9 +15,21 @@ const compat = new FlatCompat({
     baseDirectory: __dirname,
     recommendedConfig: eslintJs.configs.recommended
 });
+const next = nextConfig.find(config => config.name === "next");
 
 export default eslintTs.config(
     eslintJs.configs.recommended,
+    {
+        plugins: next.plugins,
+        settings: next.settings,
+        rules: {
+            ...next.plugins["@next/next"].configs.recommended.rules,
+            // Keep the established Hooks checks without opting into React Compiler rules.
+            "react-hooks/rules-of-hooks": "error",
+            "react-hooks/exhaustive-deps": "warn",
+        },
+    },
+    pluginSecurity.configs.recommended,
     ...eslintTs.configs.recommendedTypeChecked,
     ...compat.extends(
         "prettier"
@@ -47,9 +60,10 @@ export default eslintTs.config(
         plugins: {
             "@typescript-eslint": tseslint.plugin,
             "simple-import-sort": simpleImportSortPlugin,
-            security: pluginSecurity.configs.recommended,
         },
         rules: {
+            // Syntax-only indexing warnings flag typed records and arrays throughout this app.
+            "security/detect-object-injection": "off",
             "no-empty-pattern": "off",
             "@typescript-eslint/no-unsafe-return": "off",
             "@typescript-eslint/no-unsafe-call": "off",
