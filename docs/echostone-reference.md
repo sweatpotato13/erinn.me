@@ -68,3 +68,8 @@ The same-version full snapshot includes upstream corrections to color-option nam
 ability joins and some maximum levels (for example yellow 2막 now has maximum 20).
 The existing generator validates these updated options against their level tables;
 they are retained rather than mixing older tables into the Ogham snapshot.
+
+Rechecked 2026-10-08 against `1791426211`: all echo tables and RandomTableList
+records are unchanged by ID (only RandomTableList row order changed). Agent
+53940 still resolves to 에코스톤 각성제. The six polishing fixtures remain
+unchanged; their reviewed source version and date were advanced together.

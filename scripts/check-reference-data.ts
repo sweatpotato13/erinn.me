@@ -160,11 +160,33 @@ assert.throws(
 );
 const totemFlags = validateData({
     ...data,
-    ItemExtendTotemList: [
-        { ...data.ItemExtendTotemList[0], isExtra: true, isPet: true },
-    ],
+    ItemExtendTotemList: [{ ...data.ItemExtendTotemList[0], Flags: 7 }],
 }).data.ItemExtendTotemList[0];
-assert(totemFlags.isExtra && totemFlags.isPet);
+assert.equal(totemFlags.Flags, 7);
+const {
+    Flags: _flags,
+    DamageSkinId: _damageSkin,
+    ...legacyTotem
+} = data.ItemExtendTotemList[0];
+const legacyFlags = { ...legacyTotem, isExtra: true, isPet: true };
+assert.deepEqual(
+    validateData({ ...data, ItemExtendTotemList: [legacyFlags] }).data
+        .ItemExtendTotemList[0],
+    legacyFlags
+);
+for (const Flags of [undefined, -1, 1.5, 8])
+    assert.throws(() =>
+        validateData({
+            ...data,
+            ItemExtendTotemList: [{ ...data.ItemExtendTotemList[0], Flags }],
+        })
+    );
+assert.throws(() =>
+    validateData({
+        ...data,
+        ItemExtendTotemList: [{ ...legacyFlags, Flags: 8 }],
+    })
+);
 const unknownSkill = {
     ...data.SkillList[0],
     Name: `unknownid:${data.SkillList[0].Id}`,

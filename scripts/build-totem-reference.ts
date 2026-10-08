@@ -44,20 +44,23 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
     return [...rows]
         .sort((a, b) => a.Id - b.Id)
         .map(r => {
+            const flags = r.Flags ?? (r.isExtra ? 1 : 0) | (r.isPet ? 2 : 0);
             const item = items.get(r.Id);
             const name = names.get(r.Id);
             assert(item && name, `Unresolved totem item: ${r.Id}`);
             assert(
-                /^\/totem_[a-z_]+\/$/.test(r.TotemType),
+                flags & 4
+                    ? r.TotemType === ""
+                    : /^\/totem_[a-z_]+\/$/.test(r.TotemType),
                 `Review totem type: ${r.TotemType}`
             );
             return {
                 id: r.Id,
                 name,
                 description: text(item.Desc),
-                type: r.TotemType.slice(7, -1),
-                isExtra: r.isExtra,
-                isPet: r.isPet,
+                type: flags & 4 ? "secondarytotem" : r.TotemType.slice(7, -1),
+                isExtra: (flags & 1) !== 0,
+                isPet: (flags & 2) !== 0,
                 searchable: item.IsAuctionSearchable,
                 bonuses: r.Bonuses,
                 ranges: totemRanges(r.Bonuses),
@@ -162,8 +165,8 @@ const unknown = derive([
     {
         ...data.ItemExtendTotemList[0],
         Bonuses: [{ StatName: "future", Min: 1, Max: 2 }],
-        isExtra: true,
-        isPet: true,
+        Flags: 3,
+        DamageSkinId: 0,
     },
 ])[0];
 assert.deepEqual(unknown.bonuses, [{ StatName: "future", Min: 1, Max: 2 }]);

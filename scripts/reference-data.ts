@@ -248,19 +248,29 @@ const tableSchemas = {
         })
     ),
     ItemExtendTotemList: rows(
-        z.looseObject({
-            Id: id,
-            TotemType: z.string(),
-            Bonuses: z.array(
-                z.looseObject({
-                    StatName: z.string(),
-                    Min: z.number(),
-                    Max: z.number(),
-                })
-            ),
-            isExtra: z.boolean(),
-            isPet: z.boolean(),
-        })
+        z
+            .looseObject({
+                Id: id,
+                TotemType: z.string(),
+                Bonuses: z.array(
+                    z.looseObject({
+                        StatName: z.string(),
+                        Min: z.number(),
+                        Max: z.number(),
+                    })
+                ),
+            })
+            .and(
+                z.union([
+                    z.object({ Flags: id.max(7), DamageSkinId: id }),
+                    // Keep historical snapshots readable for atomic refresh and rollback.
+                    z.object({
+                        Flags: z.never().optional(),
+                        isExtra: z.boolean(),
+                        isPet: z.boolean(),
+                    }),
+                ])
+            )
     ),
     BarterList: rows(
         z.looseObject({

@@ -49,7 +49,11 @@ export function TotemBadges({ item }: { item: Totem }) {
     return (
         <span className={s.badges}>
             <span className={s.badge}>
-                {item.isExtra ? "엑스트라" : "일반"}
+                {item.type === "secondarytotem"
+                    ? "보조"
+                    : item.isExtra
+                      ? "엑스트라"
+                      : "일반"}
             </span>
             <span className={s.badge}>{item.isPet ? "펫" : "캐릭터"}</span>
             {!Object.keys(item.ranges).length && (

@@ -3,11 +3,27 @@
 The tool derives `src/data/totem-reference.json` from the existing same-version
 `ItemExtendTotemList`, `ItemList`, and `StringTable` snapshots. It does not fetch
 Prilus at application/build time. `Id` joins `ItemList.Id`; item names and
-descriptions resolve through StringTable. All totem rows, raw bonuses, and
-lowercase `isExtra`/`isPet` flags survive derivation, including duplicate names.
+descriptions resolve through StringTable. All totem rows and raw bonuses survive
+derivation, including duplicate names. Current `Flags` bits map to extra (1),
+pet (2), and secondary (4); historical lowercase `isExtra`/`isPet` snapshots
+remain readable for atomic refresh and rollback.
 The snapshot reviewed on 2026-09-09 has source version `1788405829`, 271 rows,
 24 types, and 74 empty bonus arrays. These counts are observations, not schema
 limits. Empty bonuses do not mean zero effects or a fixed roll.
+
+### 2026-10-08 refresh
+
+Prilus version `1791426211` contains 275 totems, including four newly exported
+브리 레흐의 주화 variants (5160409–5160412). The current
+[totem module](https://prilus.gitlab.io/assets/totemList-Bf1FOVUI.js) and
+[constants](https://prilus.gitlab.io/assets/consts-DmbD4VdP.js) define the flag
+bits above and classify the empty `TotemType` as `secondarytotem`. All 271
+previous rows retain their bonuses and extra/pet classification. The new raw
+`DamageSkinId` field is retained in the snapshot.
+
+Secondary entries have a separate 보조 filter/badge. Their unreviewed effect
+keys remain visible as raw ranges, without guessed units, scores, or replacement
+rules. Existing reviewed maximum-damage and magic-attack ranges still resolve.
 
 ## Evidence and units
 

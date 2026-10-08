@@ -169,6 +169,7 @@ export default function TotemTool({ data }: { data: TotemReference }) {
                         <option value="all">전체</option>
                         <option value="normal">일반</option>
                         <option value="extra">엑스트라</option>
+                        <option value="secondary">보조</option>
                     </select>
                 </label>
                 <label>
