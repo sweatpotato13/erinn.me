@@ -580,11 +580,13 @@ export function filterTotems(
     }
 ): Totem[] {
     const filtered = items.filter(item => {
-        if (
-            options.type !== "all" &&
-            item.isExtra !== (options.type === "extra")
-        )
-            return false;
+        const type =
+            item.type === "secondarytotem"
+                ? "secondary"
+                : item.isExtra
+                  ? "extra"
+                  : "normal";
+        if (options.type !== "all" && type !== options.type) return false;
         if (
             options.target !== "all" &&
             item.isPet !== (options.target === "pet")

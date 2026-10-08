@@ -64,6 +64,20 @@ const comparison = () =>
     within(screen.getByRole("region", { name: "후보 비교" }));
 const button = (name: string) => screen.getByRole("button", { name });
 
+test("secondary catalog entries have their own filter and badge", () => {
+    mount();
+    fireEvent.change(screen.getByRole("combobox", { name: "종류" }), {
+        target: { value: "secondary" },
+    });
+    const coins = screen.getAllByRole("button", { name: /브리 레흐의 주화/ });
+    expect(coins).toHaveLength(4);
+    for (const coin of coins) {
+        expect(within(coin).getByText("보조")).toBeInTheDocument();
+        expect(within(coin).queryByText("일반")).not.toBeInTheDocument();
+    }
+    expect(fetchMock).not.toHaveBeenCalled();
+});
+
 test("search, explicit market loading, exact value/bundle price and local changes share one observation", async () => {
     fetchMock.mockResolvedValue({
         ok: true,

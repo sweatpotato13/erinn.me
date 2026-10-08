@@ -11,6 +11,16 @@ The common snapshot was refreshed to Prilus version `1790058363` on 2026-09-23.
 All 128 barter rows are unchanged by ID; the existing fixed-good selection and
 seasonal material identities remain valid.
 
+On 2026-10-08, the common snapshot was refreshed to `1791426211`; all 128 barter
+rows remain unchanged. Labanyu now supplies season **17/version 2**, effective
+2026-10-01 07:00 through 2026-11-05 07:00 Asia/Seoul (end exclusive). The four
+goods are 나무 조각 퍼즐, 바람의 물병, 물의 정령 조각상, and 붉은 물고기 조각상.
+Their materials and limits match the previously committed October supplement.
+The collector restores the source attribution and uses upstream season ID 17
+instead of the previous local ID 20261001. Saved plans retain their original
+rows; users may see the existing source-change notice and select the current
+season entry. All 65 currently used local material icons were fetched again.
+
 The 2026-09-11 refresh to Prilus version `1789022199` (2026-09-10 15:36:39
 Asia/Seoul) contains 128 raw barter rows, including legacy definitions and
 rotating candidates. Matched names, weekly limits and ingredient names/counts

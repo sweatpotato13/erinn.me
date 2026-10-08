@@ -1,18 +1,19 @@
 {
   "formatVersion": 1,
-  "collectedAt": "2026-10-01T05:22:28.177Z",
-  "sourceVersion": 1790820275,
-  "seasonId": 20261001,
-  "seasonVersion": "08187ae61689d719122315a3e31c9b7d659d4026ce7729183d81d0bf6e6ced97",
+  "source": "https://labanyu.com/trade",
+  "collectedAt": "2026-10-08T05:56:30.635Z",
+  "sourceVersion": 1791426211,
+  "seasonId": 17,
+  "seasonVersion": 2,
   "period": {
     "startAt": 1790805600000,
     "endAt": 1793829600000
   },
   "goods": [
     {
-      "key": "season:201:20261001",
+      "key": "season:201:17",
       "source": "season",
-      "revision": "b316bfd6c19fa2e2e96d79803c907193d359d0fcef944a4ea805948bc6dfbb0f",
+      "revision": "43b34a0dcf260d33f077b3b053fb674237f7674f42e3b3a9bff325fcc2103fca",
       "postId": 201,
       "postName": "카루 숲",
       "name": "나무 조각 퍼즐",
@@ -44,9 +45,9 @@
       ]
     },
     {
-      "key": "season:202:20261001",
+      "key": "season:202:17",
       "source": "season",
-      "revision": "24666e38eb6a345647e0704e37aa54f0345ae1f1d690ee937467813fa7672e54",
+      "revision": "d0ef720bce7a9ac7f418cf98d7aa7b4a8e55e5f59ad26adb6dbadaa6a3d0a3e8",
       "postId": 202,
       "postName": "오아시스",
       "name": "바람의 물병",
@@ -72,9 +73,9 @@
       ]
     },
     {
-      "key": "season:203:20261001",
+      "key": "season:203:17",
       "source": "season",
-      "revision": "4ba7c35cd391670bc14c525e98f407b351c9b42098ed7d2b9c571cc20f85470d",
+      "revision": "c9f8c68505b0eea3a6ad44363bc3869aaccbbc53ec53dc57d3aa2d4561955ad0",
       "postId": 203,
       "postName": "칼리다",
       "name": "물의 정령 조각상",
@@ -100,9 +101,9 @@
       ]
     },
     {
-      "key": "season:204:20261001",
+      "key": "season:204:17",
       "source": "season",
-      "revision": "b2864dad6bf33705c8f8125515825069b72e6f7523197264567d074a6df9966c",
+      "revision": "46c91ba1c52273cd410b138b5c3be693b9794b1a501b7fbf3b868bf04f5a48c1",
       "postId": 204,
       "postName": "페라",
       "name": "붉은 물고기 조각상",
