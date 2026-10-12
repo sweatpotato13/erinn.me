@@ -78,17 +78,24 @@ describe("auction item metadata", () => {
 });
 
 describe("auction item routing", () => {
-    it("keeps the original page, canonical and preview URL for a retired item", async () => {
-        const props = { params: Promise.resolve({ itemId: "3160099" }) };
-        await expect(AuctionItemPage(props)).resolves.toBeDefined();
-        await expect(generateMetadata(props)).resolves.toMatchObject({
-            title: "불완전한 공상의 왕관 헤일로 경매장 시세",
-            alternates: { canonical: "/auction/items/3160099" },
-            openGraph: {
-                images: [{ url: "/auction/items/3160099/preview" }],
-            },
-        });
-    });
+    it.each([
+        ["3160099", "불완전한 공상의 왕관 헤일로"],
+        ["2230015", "리파인드 마제스틱 나이트 아머(여성용)"],
+        ["40081", "레더 롱 보우"],
+    ])(
+        "keeps the published page, canonical and preview URL for %s",
+        async (itemId, name) => {
+            const props = { params: Promise.resolve({ itemId }) };
+            await expect(AuctionItemPage(props)).resolves.toBeDefined();
+            await expect(generateMetadata(props)).resolves.toMatchObject({
+                title: `${name} 경매장 시세`,
+                alternates: { canonical: `/auction/items/${itemId}` },
+                openGraph: {
+                    images: [{ url: `/auction/items/${itemId}/preview` }],
+                },
+            });
+        }
+    );
 
     it("rejects non-catalog IDs before any live fetch", async () => {
         await expect(

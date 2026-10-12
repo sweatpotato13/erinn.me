@@ -249,18 +249,18 @@ test.describe("Homepage Tests", () => {
     test("retired auction item links retain their page and sharing metadata", async ({
         page,
     }) => {
-        const response = await page.goto("/auction/items/3160099");
+        const response = await page.goto("/auction/items/2230015");
         expect(response?.status()).toBe(200);
         await expect(page.getByRole("heading", { level: 1 })).toHaveText(
-            "불완전한 공상의 왕관 헤일로 경매장 시세"
+            "리파인드 마제스틱 나이트 아머(여성용) 경매장 시세"
         );
         await expect(page.locator('link[rel="canonical"]')).toHaveAttribute(
             "href",
-            "https://erinn.me/auction/items/3160099"
+            "https://erinn.me/auction/items/2230015"
         );
         await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
             "content",
-            "https://erinn.me/auction/items/3160099/preview"
+            "https://erinn.me/auction/items/2230015/preview"
         );
     });
 
@@ -308,6 +308,8 @@ test.describe("Homepage Tests", () => {
             longestItem.id,
             plusItem.id,
             "3160099",
+            "2230015",
+            "40081",
             "UNKNOWN_SAFE_ID",
         ]) {
             const response = await request.get(
