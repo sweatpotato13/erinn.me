@@ -40,11 +40,14 @@ describe("auction item catalog", () => {
         const validated = validateAuctionItemCatalog(catalog, localItems);
         expect(validated.items).toHaveLength(500);
         expect(validated.selection.method).toBe("trading-demand");
+        const rankedItems = validated.items.filter(item => item.sourceRank);
+        expect(rankedItems).toHaveLength(2);
+        expect(rankedItems.every(item => item.sourceRank! <= 300)).toBe(true);
         expect(
-            validated.items.every(
-                item => item.sourceRank && item.sourceRank <= 300
+            validated.items.filter(item =>
+                ["current-listing", "recent-sale"].includes(item.evidence)
             )
-        ).toBe(true);
+        ).toHaveLength(498);
         const item = getAuctionCatalogItems()[0];
         expect(getAuctionCatalogItemById(item.id)).toEqual(item);
         expect(getAuctionCatalogItemByExactName(item.name)).toEqual(item);

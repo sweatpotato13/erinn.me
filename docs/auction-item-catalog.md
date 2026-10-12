@@ -26,6 +26,22 @@ name, including the normal empty/unavailable states. The discovery list and
 sitemap use only active `items`. Archived identities have no freshness claim
 and remain valid even when the latest reference snapshot no longer contains them.
 
+## 2026-10-12 evidence refresh
+
+The documented Nexon collector checked all 500 active identities and found
+current listings or recent sales for 496. A fresh read of both published
+Labanyu rankings verified two more; the rankings still label their data period
+as the seven days from 2025-12-14 04:00 KST, so `observedFrom` and `observedTo`
+remain unchanged.
+
+리파인드 마제스틱 나이트 아머(여성용) and 레더 롱 보우 had neither fresh API
+activity nor ranking membership. They rotated into the archive with their exact
+IDs and names preserved; this discovery rotation does not establish permanent
+retirement. Fresh current-listing evidence supports the returning 불완전한 공상의
+왕관 헤일로 and newly selected 낭만 농장 에아렌이 그려진 이젤. The catalog now
+has 500 active entries (498 API observations and two ranking observations) and
+104 archived identities. All 603 previously published IDs and names survive.
+
 ## Updating
 
 1. Prepare an ordered JSON array of exact names or `{ "name", "canonicalId" }` objects.
