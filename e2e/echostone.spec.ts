@@ -360,9 +360,15 @@ test("manual edits during refresh win until the next explicit refresh", async ({
 test("automatic awakening remains capped and cancellable and stops on polishing success", async ({
     page,
 }) => {
+    const release = await mockInitialMarket(page);
     await page.goto(base);
     await costs(page);
     await page.getByLabel(normalPrice, { exact: true }).fill("100");
+    release();
+    await expect(page.getByText(/조회 최저가 120 Gold/)).toBeVisible();
+    await expect(page.getByLabel(normalPrice, { exact: true })).toHaveValue(
+        "100"
+    );
     await page.getByLabel("자동 실행 최대 행동 횟수").fill("1");
     await page
         .getByLabel("목표 옵션이 나오면 연마도 사용", { exact: true })

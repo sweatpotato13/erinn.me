@@ -140,6 +140,9 @@ async function searchMarket(page: Page, itemName = "아이템") {
         ),
         page.getByRole("button", { name: "검색", exact: true }).click(),
     ]);
+    await expect(
+        page.getByRole("button", { name: "검색", exact: true })
+    ).toBeVisible();
 }
 
 function recentSalesButton(page: Page) {

@@ -257,7 +257,7 @@ test("released navigation, SSR metadata, base sitemap and Korean preview", async
     page,
     request,
 }) => {
-    await page.goto("/");
+    await page.goto("/", { waitUntil: "networkidle" });
     await page.locator('main a[href="/tools/barter"]').click();
     await expect(
         page.getByRole("heading", {
