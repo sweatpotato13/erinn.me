@@ -4,12 +4,30 @@ The tool derives `src/data/totem-reference.json` from the existing same-version
 `ItemExtendTotemList`, `ItemList`, and `StringTable` snapshots. It does not fetch
 Prilus at application/build time. `Id` joins `ItemList.Id`; item names and
 descriptions resolve through StringTable. All totem rows and raw bonuses survive
-derivation, including duplicate names. Current `Flags` bits map to extra (1),
-pet (2), and secondary (4); historical lowercase `isExtra`/`isPet` snapshots
-remain readable for atomic refresh and rollback.
+derivation, including duplicate names. Current categories come from the same
+snapshot's `ItemCategoryList` and `ItemCategoryGroups` through `ItemList.CategoryId`.
+The generator also recognizes historical `Flags` (extra=1, pet=2, secondary=4)
+and lowercase `isExtra`/`isPet` rows. Roll back schema changes and their required
+tables together with the snapshot.
 The snapshot reviewed on 2026-09-09 has source version `1788405829`, 271 rows,
 24 types, and 74 empty bonus arrays. These counts are observations, not schema
 limits. Empty bonuses do not mean zero effects or a fixed roll.
+
+### 2026-10-15 refresh
+
+Prilus version `1792036284` removes `Flags` from totem records. Source links below
+are pinned to commit `9322a8e1fb82a4096c27ac66a13634fc837bce3a`; the implementations
+match the bundles inspected for this snapshot. The
+[totem module](https://gitlab.com/prilus/prilus.gitlab.io/-/blob/9322a8e1fb82a4096c27ac66a13634fc837bce3a/src/components/totemList.vue#L135-145) calls
+`hasItemCategoryGroup` for `ExtraTotem`, `PetTotem`, and `SecondaryTotem`.
+The [decoder/database module](https://gitlab.com/prilus/prilus.gitlab.io/-/blob/9322a8e1fb82a4096c27ac66a13634fc837bce3a/src/mabidb.ts#L139-150)
+resolves the item's and group's category IDs. Its
+[mask helper](https://gitlab.com/prilus/prilus.gitlab.io/-/blob/9322a8e1fb82a4096c27ac66a13634fc837bce3a/src/mabidb.logic.ts#L183-189)
+requires every group mask bit to be present in the item mask; an empty group mask
+never matches. The collector now includes both category tables and serializes
+their byte masks as arrays.
+All 275 existing derived rows retain their classification, names and effects.
+The one new row is `5160508`, 대미지 스킨 - 고깔모자의 아틀리에.
 
 ### 2026-10-08 refresh
 

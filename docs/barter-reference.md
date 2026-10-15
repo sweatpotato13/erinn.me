@@ -21,6 +21,15 @@ instead of the previous local ID 20261001. Saved plans retain their original
 rows; users may see the existing source-change notice and select the current
 season entry. All 65 currently used local material icons were fetched again.
 
+On 2026-10-15, Prilus version `1792036284` removes 80 legacy barter rows
+(20101–20120, 20201–20220, 20301–20320, 20401–20420), leaving 48 rows.
+The retained rows preserve all previous fields and add `Grade`, `MaxBundle`
+and `Weight`. The 28 selected fixed goods and their plan keys remain unchanged.
+Live Labanyu collection still returns season 17/version 2 with the same four
+goods, quantities, limits and October 1–November 5 period. The supplement's
+collection time and source version were refreshed, and all 65 material icons
+were fetched successfully (identical bytes).
+
 The 2026-09-11 refresh to Prilus version `1789022199` (2026-09-10 15:36:39
 Asia/Seoul) contains 128 raw barter rows, including legacy definitions and
 rotating candidates. Matched names, weekly limits and ingredient names/counts

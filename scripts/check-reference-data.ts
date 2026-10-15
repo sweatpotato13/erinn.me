@@ -163,18 +163,19 @@ const totemFlags = validateData({
     ItemExtendTotemList: [{ ...data.ItemExtendTotemList[0], Flags: 7 }],
 }).data.ItemExtendTotemList[0];
 assert.equal(totemFlags.Flags, 7);
-const {
-    Flags: _flags,
-    DamageSkinId: _damageSkin,
-    ...legacyTotem
-} = data.ItemExtendTotemList[0];
-const legacyFlags = { ...legacyTotem, isExtra: true, isPet: true };
+const legacyFlags = {
+    Id: data.ItemExtendTotemList[0].Id,
+    TotemType: data.ItemExtendTotemList[0].TotemType,
+    Bonuses: data.ItemExtendTotemList[0].Bonuses,
+    isExtra: true,
+    isPet: true,
+};
 assert.deepEqual(
     validateData({ ...data, ItemExtendTotemList: [legacyFlags] }).data
         .ItemExtendTotemList[0],
     legacyFlags
 );
-for (const Flags of [undefined, -1, 1.5, 8])
+for (const Flags of [-1, 1.5, 8])
     assert.throws(() =>
         validateData({
             ...data,
@@ -186,6 +187,53 @@ assert.throws(() =>
         ...data,
         ItemExtendTotemList: [{ ...legacyFlags, Flags: 8 }],
     })
+);
+assert.throws(() =>
+    validateData(withItem({ CategoryId: Number.MAX_SAFE_INTEGER }))
+);
+assert.throws(() =>
+    validateData(withItem({ CategoryId: undefined, IsDyeAble: undefined }))
+);
+assert.throws(() => validateData(withItem({ IsDyeAble: "true" })));
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            ItemCategoryList: [
+                ...data.ItemCategoryList,
+                data.ItemCategoryList[0],
+            ],
+        }),
+    /duplicate lookup key/
+);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            ItemCategoryGroups: {
+                ...data.ItemCategoryGroups,
+                ExtraTotem: Number.MAX_SAFE_INTEGER,
+            },
+        }),
+    /ItemCategoryGroups: unresolved reference/
+);
+assert.throws(() =>
+    validateData({
+        ...data,
+        ItemCategoryList: [{ Id: 0, TagMask: [256] }],
+    })
+);
+assert.throws(
+    () =>
+        validateData({
+            ...data,
+            ItemList: data.ItemList.map(row =>
+                row.Id === data.ItemExtendTotemList[0].Id
+                    ? { ...row, CategoryId: undefined, IsDyeAble: true }
+                    : row
+            ),
+        }),
+    /ItemExtendTotemList.CategoryId: missing category/
 );
 const unknownSkill = {
     ...data.SkillList[0],

@@ -5,8 +5,8 @@ import { resolve } from "node:path";
 import {
     ROYAL_TOTEM_IDS,
     type Totem,
-    totemRanges,
     TOTEM_SOURCE_KEYS,
+    totemRanges,
 } from "../src/lib/totems";
 import { resolveItems } from "./item-reference";
 import { readSnapshot, sha256, stableJson } from "./reference-data";
@@ -16,6 +16,20 @@ const { data, manifest } = readSnapshot(
 );
 const strings = new Map(data.StringTable.map(r => [r.Id, r.Str]));
 const items = new Map(data.ItemList.map(r => [r.Id, r]));
+const categories = new Map(data.ItemCategoryList.map(r => [r.Id, r.TagMask]));
+function hasCategory(
+    item: { Id: number; CategoryId?: number },
+    group: string
+): boolean {
+    assert(item.CategoryId !== undefined, `Missing totem category: ${item.Id}`);
+    const mask = categories.get(item.CategoryId);
+    const required = categories.get(data.ItemCategoryGroups[group]);
+    assert(mask && required, `Missing totem category: ${item.Id}/${group}`);
+    return (
+        required.some(value => value !== 0) &&
+        required.every((value, index) => ((mask[index] ?? 0) & value) === value)
+    );
+}
 const names = new Map(
     resolveItems(data.ItemList, data.StringTable).items.map(r => [
         Number(r.id),
@@ -44,10 +58,16 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
     return [...rows]
         .sort((a, b) => a.Id - b.Id)
         .map(r => {
-            const flags = r.Flags ?? (r.isExtra ? 1 : 0) | (r.isPet ? 2 : 0);
             const item = items.get(r.Id);
             const name = names.get(r.Id);
             assert(item && name, `Unresolved totem item: ${r.Id}`);
+            const flags =
+                r.Flags ??
+                (r.isExtra !== undefined
+                    ? (r.isExtra ? 1 : 0) | (r.isPet ? 2 : 0)
+                    : (hasCategory(item, "ExtraTotem") ? 1 : 0) |
+                      (hasCategory(item, "PetTotem") ? 2 : 0) |
+                      (hasCategory(item, "SecondaryTotem") ? 4 : 0));
             assert(
                 flags & 4
                     ? r.TotemType === ""
@@ -69,6 +89,26 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
 }
 
 const totems = derive(data.ItemExtendTotemList);
+for (const group of ["ExtraTotem", "PetTotem", "SecondaryTotem"]) {
+    assert(
+        hasCategory(
+            { ...data.ItemList[0], CategoryId: data.ItemCategoryGroups[group] },
+            group
+        )
+    );
+    assert.equal(
+        hasCategory({ ...data.ItemList[0], CategoryId: 0 }, group),
+        false
+    );
+}
+assert.throws(
+    () =>
+        hasCategory(
+            { ...data.ItemList[0], CategoryId: undefined },
+            "ExtraTotem"
+        ),
+    /Missing totem category/
+);
 // Evidence rows, not fixed catalog counts. Re-review changed bounds/units on refresh.
 const evidence: Array<[number, string, number, number]> = [
     [5160032, "critical", 1, 22],
