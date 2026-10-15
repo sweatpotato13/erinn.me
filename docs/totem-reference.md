@@ -15,13 +15,17 @@ limits. Empty bonuses do not mean zero effects or a fixed roll.
 
 ### 2026-10-15 refresh
 
-Prilus version `1792036284` removes `Flags` from totem records. The current
-[totem module](https://prilus.gitlab.io/assets/totemList-DXZBrWM2.js) calls
+Prilus version `1792036284` removes `Flags` from totem records. Source links below
+are pinned to commit `9322a8e1fb82a4096c27ac66a13634fc837bce3a`; the implementations
+match the bundles inspected for this snapshot. The
+[totem module](https://gitlab.com/prilus/prilus.gitlab.io/-/blob/9322a8e1fb82a4096c27ac66a13634fc837bce3a/src/components/totemList.vue#L135-145) calls
 `hasItemCategoryGroup` for `ExtraTotem`, `PetTotem`, and `SecondaryTotem`.
-The [decoder/database module](https://prilus.gitlab.io/assets/index-UNq48uQI.js)
-resolves the item's and group's category IDs, then requires every group mask bit
-to be present in the item mask; an empty group mask never matches. The collector
-now includes both category tables and serializes their byte masks as arrays.
+The [decoder/database module](https://gitlab.com/prilus/prilus.gitlab.io/-/blob/9322a8e1fb82a4096c27ac66a13634fc837bce3a/src/mabidb.ts#L139-150)
+resolves the item's and group's category IDs. Its
+[mask helper](https://gitlab.com/prilus/prilus.gitlab.io/-/blob/9322a8e1fb82a4096c27ac66a13634fc837bce3a/src/mabidb.logic.ts#L183-189)
+requires every group mask bit to be present in the item mask; an empty group mask
+never matches. The collector now includes both category tables and serializes
+their byte masks as arrays.
 All 275 existing derived rows retain their classification, names and effects.
 The one new row is `5160508`, 대미지 스킨 - 고깔모자의 아틀리에.
 
