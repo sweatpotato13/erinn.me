@@ -103,14 +103,39 @@ const tableSchemas = {
         ),
     }),
     ItemList: rows(
+        z
+            .looseObject({
+                ...named,
+                ColorTableIds: z.array(id),
+                IsAuctionSearchable: z.boolean(),
+                HaveMesh: z.boolean(),
+                CategoryId: id.optional(),
+            })
+            .and(
+                z.union([
+                    z.object({ IsDyeAble: z.boolean() }),
+                    z.object({
+                        IsDyeAble: z.never().optional(),
+                        CategoryId: id,
+                    }),
+                ])
+            )
+    ),
+    ItemCategoryList: rows(
         z.looseObject({
-            ...named,
-            ColorTableIds: z.array(id),
-            IsAuctionSearchable: z.boolean(),
-            HaveMesh: z.boolean(),
-            IsDyeAble: z.boolean(),
+            Id: id,
+            TagMask: z.array(id.max(255)),
         })
     ),
+    ItemCategoryGroups: z
+        .record(z.string().min(1), id)
+        .refine(
+            groups =>
+                ["ExtraTotem", "PetTotem", "SecondaryTotem"].every(
+                    name => name in groups
+                ),
+            "Missing totem category groups"
+        ),
     OptionSetList: rows(
         z.looseObject({ ...named, Name2: z.string(), Usage: id, Level: id })
     ),
@@ -263,6 +288,12 @@ const tableSchemas = {
             .and(
                 z.union([
                     z.object({ Flags: id.max(7), DamageSkinId: id }),
+                    z.object({
+                        Flags: z.never().optional(),
+                        isExtra: z.never().optional(),
+                        isPet: z.never().optional(),
+                        DamageSkinId: id,
+                    }),
                     // Keep historical snapshots readable for atomic refresh and rollback.
                     z.object({
                         Flags: z.never().optional(),
@@ -558,6 +589,28 @@ export function validateData(input: unknown) {
     const items = lookup("ItemList");
     const options = lookup("OptionSetList");
     const strings = lookup("StringTable");
+    validateItemReferences(data, items);
+    const categories = new Set(data.ItemCategoryList.map(row => row.Id));
+    if (categories.size !== data.ItemCategoryList.length)
+        throw new Error("ItemCategoryList: duplicate lookup key");
+    for (const category of Object.values(data.ItemCategoryGroups))
+        requireRef(categories, category, "ItemCategoryGroups");
+    for (const item of data.ItemList)
+        if (item.CategoryId !== undefined)
+            requireRef(categories, item.CategoryId, "ItemList.CategoryId");
+    for (const totem of data.ItemExtendTotemList)
+        if (totem.Flags === undefined && totem.isExtra === undefined) {
+            const item = data.ItemList.find(row => row.Id === totem.Id);
+            if (item?.CategoryId === undefined)
+                throw new Error(
+                    "ItemExtendTotemList.CategoryId: missing category"
+                );
+            requireRef(
+                categories,
+                item.CategoryId,
+                "ItemExtendTotemList.CategoryId"
+            );
+        }
     const checkString = (value: string, path: string) => {
         if (strings.has(value)) return;
         if (placeholders.has(value)) warn(`${path}: placeholder`, value);
@@ -569,7 +622,6 @@ export function validateData(input: unknown) {
             );
     };
     validateNamedStrings(data, checkString, warn);
-    validateItemReferences(data, items);
     validateOgham(data, items, strings);
     validateBarter(data, items, checkString);
     for (const row of data.SkillList) validateSkillStrings(row, checkString);

@@ -123,10 +123,16 @@ export async function collectReference() {
                         transaction.oncomplete = () => {
                             db.close();
                             resolveData(
-                                JSON.stringify({
-                                    data,
-                                    committedVersion: version.result,
-                                })
+                                JSON.stringify(
+                                    {
+                                        data,
+                                        committedVersion: version.result,
+                                    },
+                                    (_key, value) =>
+                                        value instanceof Uint8Array
+                                            ? Array.from(value)
+                                            : value
+                                )
                             );
                         };
                         transaction.onabort = transaction.onerror = () => {
