@@ -22,8 +22,10 @@ test.each(["success", "write", "rename", "cleanup"])(
         const previousExitCode = process.exitCode;
         const request = jest.spyOn(global, "fetch").mockResolvedValue({
             ok: true,
-            arrayBuffer: async () =>
-                Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]).buffer,
+            arrayBuffer: () =>
+                Promise.resolve(
+                    Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]).buffer
+                ),
         } as Response);
         let finish!: (value: unknown) => void;
         const finished = new Promise(resolve => {

@@ -13,7 +13,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint \"{src,e2e}/**/*.{ts,tsx}\"",
+    "lint": "eslint \"{src,e2e,scripts}/**/*.{ts,tsx}\"",
     "lint:fix": "pnpm lint --fix",
     "typecheck": "tsc --noEmit",
     "prettier": "prettier --write \"src/**/*.{ts,tsx}\"",

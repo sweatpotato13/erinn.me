@@ -1,7 +1,6 @@
 import { resolve } from "node:path";
 
 import { hasExcludedKeyword } from "../src/constant/excluded-keywords";
-
 import { readSnapshot } from "./reference-data";
 
 interface SourceItem {
