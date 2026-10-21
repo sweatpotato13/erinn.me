@@ -539,6 +539,16 @@ function useRestoreCalculatorQuery(
 ) {
     const { searchParamsKey, onRestore, onReset } = options;
     useEffect(() => {
+        // Browser history navigation is never an echo of our own writes, even
+        // when it targets a query we wrote whose echo has not arrived yet.
+        const forgetPendingWrites = () => {
+            syncRef.current.pendingWrites = [];
+        };
+        window.addEventListener("popstate", forgetPendingWrites);
+        return () =>
+            window.removeEventListener("popstate", forgetPendingWrites);
+    }, [syncRef]);
+    useEffect(() => {
         const sync = syncRef.current;
         // Re-runs caused only by a changed represented query must not
         // re-process a key that was already handled.
