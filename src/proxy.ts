@@ -8,9 +8,17 @@ type RateLimitEnvironment = {
     ENABLE_PREVIEW_RATE_LIMIT?: string;
 };
 
+type UnavailableReason = "not-found" | "blocked" | "timeout" | "error";
+
 const RATE_LIMIT_ID = "erinn-api";
 const RATE_LIMIT = 120;
+const RATE_LIMIT_CHECK_TIMEOUT_MS = 1500;
 const CALCULATOR_PREVIEW_PATH = "/calculator/preview";
+
+const FAIL_CLOSED_ROUTES = [
+    { method: "POST", path: "/api/contact" },
+    { method: "POST", path: "/api/murias-relics" },
+] as const;
 
 /**
  * Checks whether the request targets an API route that should be rate-limited.
@@ -24,6 +32,13 @@ export function isApiRoute(pathname: string): boolean {
 
 export function isRateLimitedRoute(pathname: string): boolean {
     return isApiRoute(pathname) || pathname === CALCULATOR_PREVIEW_PATH;
+}
+
+function isFailClosed(request: NextRequest): boolean {
+    const pathname = request.nextUrl.pathname;
+    return FAIL_CLOSED_ROUTES.some(
+        route => route.method === request.method && route.path === pathname
+    );
 }
 
 /**
@@ -43,6 +58,29 @@ export function resolveClientKey(headers: Headers): string {
     );
 }
 
+function logRateLimitUnavailable(
+    reason: UnavailableReason,
+    request: NextRequest,
+    failClosed: boolean
+): void {
+    console.error(
+        JSON.stringify({
+            event: "rate_limit_unavailable",
+            reason,
+            method: request.method,
+            path: request.nextUrl.pathname,
+            failClosed,
+        })
+    );
+}
+
+function unavailableReasonFromError(error: unknown): UnavailableReason {
+    if (error instanceof Error && error.name === "TimeoutError") {
+        return "timeout";
+    }
+    return "error";
+}
+
 function limitedResponse() {
     return NextResponse.json(
         { error: "Too many requests" },
@@ -56,22 +94,32 @@ function limitedResponse() {
     );
 }
 
-function unavailableResponse(request: NextRequest) {
-    if (
-        request.method === "POST" &&
+function failClosedResponse(request: NextRequest): NextResponse {
+    const message =
         request.nextUrl.pathname === "/api/murias-relics"
-    ) {
-        return NextResponse.json(
-            { error: "Price refresh is temporarily unavailable" },
-            { status: 503, headers: { "Retry-After": "60" } }
-        );
+            ? "Price refresh is temporarily unavailable"
+            : "Contact delivery is temporarily unavailable";
+    return NextResponse.json(
+        { error: message },
+        { status: 503, headers: { "Retry-After": "60" } }
+    );
+}
+
+function handleUnavailableCheck(
+    reason: UnavailableReason,
+    request: NextRequest
+): NextResponse {
+    const failClosed = isFailClosed(request);
+    logRateLimitUnavailable(reason, request, failClosed);
+    if (failClosed) {
+        return failClosedResponse(request);
     }
     return NextResponse.next();
 }
 
 /**
  * Applies rate limiting to configured public routes via Vercel Firewall WAF.
- * Rejects relic refreshes when WAF is unavailable; other requests fail open.
+ * Mail and cache-bust routes fail closed when the WAF is unavailable; others fail open.
  *
  * @param request - The incoming request to evaluate.
  * @param check - The rate-limit service used to evaluate the request.
@@ -89,14 +137,20 @@ export async function applyRateLimit(
         const result = await check(RATE_LIMIT_ID, {
             request,
             rateLimitKey: resolveClientKey(request.headers),
+            timeout: RATE_LIMIT_CHECK_TIMEOUT_MS,
         });
-        if (result.error) return unavailableResponse(request);
+        if (result.error) {
+            return handleUnavailableCheck(result.error, request);
+        }
         if (result.rateLimited) return limitedResponse();
         const response = NextResponse.next();
         response.headers.set("X-RateLimit-Limit", RATE_LIMIT.toString());
         return response;
-    } catch {
-        return unavailableResponse(request);
+    } catch (error) {
+        return handleUnavailableCheck(
+            unavailableReasonFromError(error),
+            request
+        );
     }
 }
 

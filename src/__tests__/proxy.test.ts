@@ -11,13 +11,36 @@ import {
     shouldApplyRateLimit,
 } from "@/proxy";
 
-function request(path: string, ip = "203.0.113.8") {
+function request(path: string, options: { method?: string; ip?: string } = {}) {
+    const { method = "GET", ip = "203.0.113.8" } = options;
     return new NextRequest(`http://localhost${path}`, {
+        method,
         headers: { "x-vercel-forwarded-for": ip },
     });
 }
 
+function parseLog(spy: jest.SpyInstance) {
+    expect(spy).toHaveBeenCalledTimes(1);
+    return JSON.parse(String(spy.mock.calls[0][0])) as {
+        event: string;
+        reason: string;
+        method: string;
+        path: string;
+        failClosed: boolean;
+    };
+}
+
 describe("rate limiter", () => {
+    let errorSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+        errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+        errorSpy.mockRestore();
+    });
+
     it("identifies API routes for rate limiting", () => {
         expect(isApiRoute("/api/contact")).toBe(true);
         expect(isApiRoute("/api/auction/price-summary")).toBe(true);
@@ -50,12 +73,16 @@ describe("rate limiter", () => {
         ).toBe("127.0.0.1");
     });
 
-    it("calls the unified WAF rule with the trusted identity", async () => {
+    it("calls the unified WAF rule with the trusted identity and timeout", async () => {
         const check = jest.fn().mockResolvedValue({ rateLimited: false });
-        const response = await applyRateLimit(request("/api/contact"), check);
+        const response = await applyRateLimit(
+            request("/api/contact", { method: "POST" }),
+            check
+        );
         expect(check).toHaveBeenCalledWith("erinn-api", {
             request: expect.any(Request),
             rateLimitKey: "203.0.113.8",
+            timeout: 1500,
         });
         expect(response.headers.get("X-RateLimit-Limit")).toBe("120");
     });
@@ -66,21 +93,74 @@ describe("rate limiter", () => {
         expect(response.status).toBe(429);
         expect(response.headers.get("Retry-After")).toBe("60");
         expect(response.headers.get("X-RateLimit-Limit")).toBe("120");
+        expect(errorSpy).not.toHaveBeenCalled();
     });
 
-    it("fails open when the WAF rule is missing or unavailable", async () => {
-        const missing = jest.fn().mockResolvedValue({
+    it("fails open on not-found for GET /api/auction and logs without IP", async () => {
+        const check = jest.fn().mockResolvedValue({
             rateLimited: false,
             error: "not-found",
         });
-        expect(
-            (await applyRateLimit(request("/api/contact"), missing)).status
-        ).toBe(200);
+        const response = await applyRateLimit(request("/api/auction"), check);
+        expect(response.status).toBe(200);
+        const log = parseLog(errorSpy);
+        expect(log).toEqual({
+            event: "rate_limit_unavailable",
+            reason: "not-found",
+            method: "GET",
+            path: "/api/auction",
+            failClosed: false,
+        });
+        expect(JSON.stringify(log)).not.toContain("203.0.113.8");
+    });
 
-        const failing = jest.fn().mockRejectedValue(new Error("secret"));
-        expect(
-            (await applyRateLimit(request("/api/contact"), failing)).status
-        ).toBe(200);
+    it("fails open on blocked for GET /api/auction and logs", async () => {
+        const check = jest.fn().mockResolvedValue({
+            rateLimited: false,
+            error: "blocked",
+        });
+        const response = await applyRateLimit(request("/api/auction"), check);
+        expect(response.status).toBe(200);
+        expect(parseLog(errorSpy).reason).toBe("blocked");
+    });
+
+    it("fails closed when POST /api/contact throws", async () => {
+        const check = jest.fn().mockRejectedValue(new Error("secret"));
+        const response = await applyRateLimit(
+            request("/api/contact", { method: "POST" }),
+            check
+        );
+        expect(response.status).toBe(503);
+        expect(response.headers.get("Retry-After")).toBe("60");
+        expect(parseLog(errorSpy).reason).toBe("error");
+        expect(JSON.stringify(errorSpy.mock.calls[0][0])).not.toContain(
+            "203.0.113.8"
+        );
+    });
+
+    it("fails closed on TimeoutError for POST /api/murias-relics", async () => {
+        const timeout = new Error("timed out");
+        timeout.name = "TimeoutError";
+        const check = jest.fn().mockRejectedValue(timeout);
+        const response = await applyRateLimit(
+            request("/api/murias-relics", { method: "POST" }),
+            check
+        );
+        expect(response.status).toBe(503);
+        expect(parseLog(errorSpy).reason).toBe("timeout");
+    });
+
+    it("fails open on GET /api/murias-relics when the WAF is missing", async () => {
+        const check = jest.fn().mockResolvedValue({
+            rateLimited: false,
+            error: "not-found",
+        });
+        const response = await applyRateLimit(
+            request("/api/murias-relics"),
+            check
+        );
+        expect(response.status).toBe(200);
+        expect(parseLog(errorSpy).failClosed).toBe(false);
     });
 
     it("bypasses non-API routes without calling WAF", async () => {
@@ -97,6 +177,7 @@ describe("rate limiter", () => {
         expect(check).toHaveBeenCalledWith("erinn-api", {
             request: expect.any(Request),
             rateLimitKey: "203.0.113.8",
+            timeout: 1500,
         });
     });
 
@@ -152,32 +233,41 @@ describe("rate limiter", () => {
 });
 
 test("relic POST fails closed on missing or failing WAF, but GET and permitted POST pass", async () => {
+    const errorSpy = jest.spyOn(console, "error").mockImplementation(() => {});
     const post = new NextRequest("http://localhost/api/murias-relics", {
         method: "POST",
     });
-    for (const check of [
-        jest.fn().mockResolvedValue({ rateLimited: false, error: "not-found" }),
-        jest.fn().mockRejectedValue(new Error("unavailable")),
-    ]) {
-        const response = await applyRateLimit(post, check);
-        expect(response.status).toBe(503);
-        expect(response.headers.get("x-middleware-next")).toBeNull();
-        expect(response.headers.get("Retry-After")).toBe("60");
+    try {
+        for (const check of [
+            jest
+                .fn()
+                .mockResolvedValue({ rateLimited: false, error: "not-found" }),
+            jest.fn().mockRejectedValue(new Error("unavailable")),
+        ]) {
+            errorSpy.mockClear();
+            const response = await applyRateLimit(post, check);
+            expect(response.status).toBe(503);
+            expect(response.headers.get("x-middleware-next")).toBeNull();
+            expect(response.headers.get("Retry-After")).toBe("60");
+            expect(errorSpy).toHaveBeenCalledTimes(1);
+            expect(
+                (await applyRateLimit(new NextRequest(post.url), check)).status
+            ).toBe(200);
+        }
+        const permitted = await applyRateLimit(
+            post,
+            jest.fn().mockResolvedValue({ rateLimited: false })
+        );
+        expect(permitted.headers.get("x-middleware-next")).toBe("1");
         expect(
-            (await applyRateLimit(new NextRequest(post.url), check)).status
-        ).toBe(200);
+            (
+                await applyRateLimit(
+                    post,
+                    jest.fn().mockResolvedValue({ rateLimited: true })
+                )
+            ).status
+        ).toBe(429);
+    } finally {
+        errorSpy.mockRestore();
     }
-    const permitted = await applyRateLimit(
-        post,
-        jest.fn().mockResolvedValue({ rateLimited: false })
-    );
-    expect(permitted.headers.get("x-middleware-next")).toBe("1");
-    expect(
-        (
-            await applyRateLimit(
-                post,
-                jest.fn().mockResolvedValue({ rateLimited: true })
-            )
-        ).status
-    ).toBe(429);
 });
