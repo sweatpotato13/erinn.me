@@ -61,13 +61,32 @@ export default function CraftingTool({
         issues: [...new Set(issues)],
         complete: calculated.complete && !issues.length,
     };
-    const prices = Object.fromEntries(
-        reference.items.map(item => [
-            item.id,
-            materialPrice(item, plan.prices, plan.quotes),
-        ])
+    const resultForCosts = useMemo(
+        () => ({
+            ...calculated,
+            complete:
+                calculated.complete &&
+                !calculated.issues.length &&
+                !planIssues.length &&
+                !catalog.error &&
+                !catalog.pending,
+        }),
+        [calculated, planIssues, catalog.error, catalog.pending]
     );
-    const costs = calculateCraftingCosts({ ...plan, prices }, result);
+    const prices = useMemo(
+        () =>
+            Object.fromEntries(
+                reference.items.map(item => [
+                    item.id,
+                    materialPrice(item, plan.prices, plan.quotes),
+                ])
+            ),
+        [reference.items, plan.prices, plan.quotes]
+    );
+    const costs = useMemo(
+        () => calculateCraftingCosts({ ...plan, prices }, resultForCosts),
+        [plan, prices, resultForCosts]
+    );
     const [query, setQuery] = useState("");
     const [limit, setLimit] = useState(20);
     const names = result.nodes
