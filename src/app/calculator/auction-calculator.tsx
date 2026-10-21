@@ -37,6 +37,8 @@ import {
 } from "@/lib/auction-calculator-url";
 import { getItemImageUrl } from "@/lib/utils";
 
+import { consumeOwnWriteEcho, type QuerySyncState } from "./query-sync";
+
 type CouponSource =
     | "loading"
     | "market"
@@ -533,16 +535,22 @@ function useRestoreCalculatorQuery(
     options: SnapshotUrlOptions,
     representedQuery: string,
     skipWriteRef: { current: boolean },
-    restoredQueryRef: { current: string }
+    syncRef: { current: QuerySyncState }
 ) {
     const { searchParamsKey, onRestore, onReset } = options;
     useEffect(() => {
-        if (searchParamsKey === restoredQueryRef.current) return;
+        const sync = syncRef.current;
+        // Re-runs caused only by a changed represented query must not
+        // re-process a key that was already handled.
+        if (searchParamsKey === sync.lastSeenKey) return;
+        sync.lastSeenKey = searchParamsKey;
+        if (consumeOwnWriteEcho(sync, searchParamsKey)) return;
         if (searchParamsKey === representedQuery) {
-            restoredQueryRef.current = searchParamsKey;
+            sync.restoredQuery = searchParamsKey;
             return;
         }
-        restoredQueryRef.current = searchParamsKey;
+        sync.restoredQuery = searchParamsKey;
+        sync.pendingWrites = [];
         skipWriteRef.current = true;
         const parsed = parseAuctionCalculatorParams(
             new URLSearchParams(searchParamsKey)
@@ -560,9 +568,9 @@ function useRestoreCalculatorQuery(
         onReset,
         onRestore,
         representedQuery,
-        restoredQueryRef,
         searchParamsKey,
         skipWriteRef,
+        syncRef,
     ]);
 }
 
@@ -570,7 +578,7 @@ function useWriteCalculatorQuery(
     options: SnapshotUrlOptions,
     representedQuery: string,
     skipWriteRef: { current: boolean },
-    restoredQueryRef: { current: string }
+    syncRef: { current: QuerySyncState }
 ) {
     const { snapshot, refreshing, searchParamsKey, historyModeRef } = options;
     const lastWrittenQueryRef = useRef<string | null>(null);
@@ -587,7 +595,8 @@ function useWriteCalculatorQuery(
             return;
         }
         lastWrittenQueryRef.current = representedQuery;
-        restoredQueryRef.current = representedQuery;
+        syncRef.current.restoredQuery = representedQuery;
+        syncRef.current.pendingWrites.push(representedQuery);
         const url = `${AUCTION_CALCULATOR_PATH}?${representedQuery}`;
         window.history[`${historyModeRef.current}State`](null, "", url);
         historyModeRef.current = "replace";
@@ -595,10 +604,10 @@ function useWriteCalculatorQuery(
         historyModeRef,
         refreshing,
         representedQuery,
-        restoredQueryRef,
         searchParamsKey,
         skipWriteRef,
         snapshot,
+        syncRef,
     ]);
 }
 
@@ -613,19 +622,13 @@ function useCalculatorSnapshotUrl(options: SnapshotUrlOptions) {
         [options.snapshot]
     );
     const skipWriteRef = useRef(false);
-    const restoredQueryRef = useRef(options.initialQuery);
-    useRestoreCalculatorQuery(
-        options,
-        representedQuery,
-        skipWriteRef,
-        restoredQueryRef
-    );
-    useWriteCalculatorQuery(
-        options,
-        representedQuery,
-        skipWriteRef,
-        restoredQueryRef
-    );
+    const syncRef = useRef<QuerySyncState>({
+        restoredQuery: options.initialQuery,
+        lastSeenKey: null,
+        pendingWrites: [],
+    });
+    useRestoreCalculatorQuery(options, representedQuery, skipWriteRef, syncRef);
+    useWriteCalculatorQuery(options, representedQuery, skipWriteRef, syncRef);
 }
 
 interface ComparisonCardsProps {
