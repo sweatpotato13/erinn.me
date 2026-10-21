@@ -153,16 +153,17 @@ function useHornMessages(
     resetBaseline: () => void
 ) {
     const fetcher = useHornFetcher(selectedServer, processMessages);
+    const { fetchMessages, request } = fetcher;
     useEffect(() => {
         if (!ready) return;
-        void fetcher.fetchMessages();
-        const interval = setInterval(() => void fetcher.fetchMessages(), 60000);
+        void fetchMessages();
+        const interval = setInterval(() => void fetchMessages(), 60000);
         return () => {
             clearInterval(interval);
-            fetcher.request.sequence += 1;
-            fetcher.request.controller?.abort();
+            request.sequence += 1;
+            request.controller?.abort();
         };
-    }, [fetcher.fetchMessages, ready, selectedServer]);
+    }, [fetchMessages, ready, request, selectedServer]);
 
     function selectServer(server: HornServer) {
         fetcher.request.sequence += 1;
