@@ -1,5 +1,4 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import dynamic from "next/dynamic";
 import Image from "next/image";
 import { type RefObject, useRef, useState } from "react";
 
@@ -21,15 +20,13 @@ import {
 } from "@/app/auction/use-auction-search";
 import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
+import OptionRenderer from "@/components/option-renderer/lazy";
 import {
     type AuctionOptionFilters,
     hasAuctionOptionFilters,
 } from "@/lib/auction-options";
 import { getItemImageUrl } from "@/lib/utils";
 
-const OptionRenderer = dynamic(() => import("@/components/option-renderer"), {
-    ssr: false,
-});
 const ITEMS_PER_PAGE = 10;
 const RECENT_SALES_LIMIT = 10;
 const numberFormatter = new Intl.NumberFormat("ko-KR", {
