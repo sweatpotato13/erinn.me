@@ -23,11 +23,14 @@ import c from "./crafting-tool.module.css";
 import { Quantity, RecipeEditor, ShoppingRow } from "./crafting-ui";
 
 export default function CraftingTool({
-    data: catalog,
+    data: referenceData,
 }: {
     data: CraftingReferenceData;
 }) {
-    const data = useMemo(() => prepareCraftingReference(catalog), [catalog]);
+    const data = useMemo(
+        () => prepareCraftingReference(referenceData),
+        [referenceData]
+    );
     const state = useCraftingPlan(data);
     const { plan, update, ready } = state;
     const catalog = useCraftingItems(data, plan, state.epoch);
