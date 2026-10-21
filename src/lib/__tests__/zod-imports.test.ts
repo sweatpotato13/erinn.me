@@ -3,7 +3,8 @@ import { join, relative } from "node:path";
 
 const SRC_ROOT = join(__dirname, "..", "..");
 const ALLOWED = new Set([join("lib", "zod.ts")]);
-const DIRECT_ZOD_IMPORT = /^import\s+(?!type\b)[^;]*\sfrom\s+["']zod["']/m;
+const DIRECT_ZOD_IMPORT =
+    /^import\s+(?!type\b)[^;]*\sfrom\s+["']zod(?:\/[^"']*)?["']/m;
 
 function collectSourceFiles(directory: string): string[] {
     return readdirSync(directory).flatMap(name => {
@@ -38,5 +39,11 @@ describe("zod entry point", () => {
         expect(DIRECT_ZOD_IMPORT.test('import { z } from "@/lib/zod";')).toBe(
             false
         );
+        expect(DIRECT_ZOD_IMPORT.test('import { z } from "zod/v4";')).toBe(
+            true
+        );
+        expect(
+            DIRECT_ZOD_IMPORT.test('import type { ZodType } from "zod/v4";')
+        ).toBe(false);
     });
 });
