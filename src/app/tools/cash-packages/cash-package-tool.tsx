@@ -68,6 +68,7 @@ const loadingQuote: Quote = {
     availableQuantity: 0,
     cause: null,
 };
+export const NO_QUOTES = Object.freeze({}) as QuoteBook;
 
 function key(productId: string, itemId: string) {
     return `${productId}:${itemId}`;
@@ -521,7 +522,7 @@ export default function CashPackageTool({
         queryFn: ({ signal }) => fetchQuotes(itemIds, signal),
         placeholderData: previous => previous,
     });
-    const quotes = quotesQuery.data ?? {};
+    const quotes = quotesQuery.data ?? NO_QUOTES;
     const initialLoading = quotesQuery.isPending;
     const [selectedId, setSelectedId] = useState(catalog.products[0].id);
     const [rate, setRate] = useState("");

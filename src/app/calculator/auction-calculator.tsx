@@ -1191,19 +1191,20 @@ function useCalculatorFormUrl(
     prices: CouponPriceController,
     setForm: Dispatch<React.SetStateAction<FormState>>
 ): SetField {
+    const { restorePrices, resetPrices } = prices;
     const restoreUrl = useCallback(
         (value: AuctionCalculatorSnapshot) => {
             setForm(restoreSnapshot(value).form);
-            prices.restorePrices(value);
+            restorePrices(value);
         },
-        [prices.restorePrices, setForm]
+        [restorePrices, setForm]
     );
     const resetUrl = useCallback(
         (feedback: string) => {
             setForm(emptyForm());
-            prices.resetPrices(feedback);
+            resetPrices(feedback);
         },
-        [prices.resetPrices, setForm]
+        [resetPrices, setForm]
     );
     useCalculatorSnapshotUrl({
         initialQuery,
