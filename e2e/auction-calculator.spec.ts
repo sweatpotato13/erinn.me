@@ -101,6 +101,25 @@ test("calculates, freezes, restores, and refreshes a shared result", async ({
     expect(requestCount).toBe(2);
 });
 
+test("restores the earlier snapshot on Back while writes are still queued", async ({
+    page,
+}) => {
+    await fillCalculation(page);
+    await expect
+        .poll(() => new URL(page.url()).searchParams.get("c10"))
+        .toBe("240000");
+    const firstSnapshotUrl = page.url();
+
+    // Queue a pushed refresh write and an edit write without awaiting the URL.
+    await page.getByRole("button", { name: "현재 시세로 다시 계산" }).click();
+    await expect.poll(() => requestCount).toBe(2);
+    await page.getByLabel("10% 할인 쿠폰 (Gold)").fill("123456");
+
+    await page.goBack();
+    await expect(page).toHaveURL(firstSnapshotUrl);
+    await expect(page.getByLabel("10% 할인 쿠폰 (Gold)")).toHaveValue("240000");
+});
+
 test("restores owned coupons and keeps the comparison prominent", async ({
     page,
 }) => {

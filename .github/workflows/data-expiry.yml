@@ -1,0 +1,33 @@
+name: Data expiry guard
+
+on:
+  schedule:
+    # Thursday 09:00 Asia/Seoul (00:00 UTC)
+    - cron: "0 0 * * 4"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  expiry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check committed dataset expiry windows
+        run: pnpm data:expiry

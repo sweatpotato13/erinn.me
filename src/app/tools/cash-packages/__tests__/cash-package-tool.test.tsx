@@ -1,8 +1,20 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor, within } from "@testing-library/react";
+import {
+    QueryClient,
+    QueryClientProvider,
+    useQuery,
+} from "@tanstack/react-query";
+import {
+    render,
+    renderHook,
+    screen,
+    waitFor,
+    within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
-import CashPackageTool from "@/app/tools/cash-packages/cash-package-tool";
+import CashPackageTool, {
+    NO_QUOTES,
+} from "@/app/tools/cash-packages/cash-package-tool";
 import catalogData from "@/data/cash-packages.json";
 import {
     type CashPackageCatalog,
@@ -40,6 +52,32 @@ function renderTool() {
         </QueryClientProvider>
     );
 }
+
+test("keeps the pending quotes fallback referentially stable across renders", () => {
+    const queryClient = new QueryClient({
+        defaultOptions: { queries: { retry: false } },
+    });
+    const wrapper = ({ children }: { children: React.ReactNode }) => (
+        <QueryClientProvider client={queryClient}>
+            {children}
+        </QueryClientProvider>
+    );
+    function usePendingQuotes() {
+        const quotesQuery = useQuery({
+            queryKey: ["cash-package-quotes-stable-test"],
+            queryFn: () => new Promise<never>(() => {}),
+        });
+        return quotesQuery.data ?? NO_QUOTES;
+    }
+
+    const { result, rerender } = renderHook(() => usePendingQuotes(), {
+        wrapper,
+    });
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+    expect(result.current).toBe(NO_QUOTES);
+});
 
 beforeEach(() => {
     fetchMock.mockReset().mockImplementation((url: string) => {

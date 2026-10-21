@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import {
     calculateCraftingCosts,
     type CraftingInput,
@@ -9,6 +7,7 @@ import {
     resolveCraftingChoice,
 } from "@/lib/crafting";
 import { MaterialQuoteSchema } from "@/lib/material-cost";
+import { z } from "@/lib/zod";
 
 export const CRAFTING_PATH = "/tools/crafting";
 export const CRAFTING_STORAGE_KEY = "erinn-crafting-v1";

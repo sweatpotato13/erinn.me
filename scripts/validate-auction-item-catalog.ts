@@ -2,7 +2,6 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { validateAuctionItemCatalog } from "../src/lib/auction-item-catalog-validator";
-
 import { readItemReference } from "./item-reference";
 
 const readJson = (path: string) =>

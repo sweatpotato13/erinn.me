@@ -243,6 +243,7 @@ function useMessageProcessor(
         browserNotificationsEnabledRef,
         playRef,
     } = useAlertRefs(options);
+    const { setBrowserNotificationsEnabled } = options;
 
     const resetBaseline = useCallback(() => {
         historyRef.current = createAlertHistory();
@@ -266,14 +267,18 @@ function useMessageProcessor(
             if (displayNotifications(server, matches, navigate)) return;
 
             browserNotificationsEnabledRef.current = false;
-            options.setBrowserNotificationsEnabled(false);
+            setBrowserNotificationsEnabled(false);
             setNotificationError(DISPLAY_NOTIFICATION_ERROR);
         },
         [
-            options.setBrowserNotificationsEnabled,
+            browserNotificationsEnabledRef,
+            keywordsRef,
             navigate,
             permissionRef,
+            playRef,
+            setBrowserNotificationsEnabled,
             setNotificationError,
+            soundEnabledRef,
         ]
     );
     return { processMessages, resetBaseline };

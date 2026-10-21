@@ -33,7 +33,7 @@ were fetched successfully (identical bytes).
 The 2026-09-11 refresh to Prilus version `1789022199` (2026-09-10 15:36:39
 Asia/Seoul) contains 128 raw barter rows, including legacy definitions and
 rotating candidates. Matched names, weekly limits and ingredient names/counts
-against the live Labanyu season 16/version 2 response: current fixed IDs are
+against the live Labanyu season 16/version 2 response at that time: fixed IDs are
 901–908 and 21001–21005/22001–22005/23001–23005/24001–24005. The builder
 selects these 28 rows and retains the previous `fixed:post:id` plan keys for the
 renumbered Iria goods; raw source IDs remain untouched in the snapshot.

@@ -23,26 +23,28 @@ export function useTotemMarket(target?: Totem) {
     const [result, setResult] = useState<TotemMarketResult | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
-    const active = useRef<AbortController | null>(null);
-    const sequence = useRef(0);
-    const pending = useRef(false);
+    const request = useRef({
+        sequence: 0,
+        controller: null as AbortController | null,
+        pending: false,
+    }).current;
     useEffect(() => {
         setResult(null);
         setError("");
         setLoading(false);
-        pending.current = false;
+        request.pending = false;
         return () => {
-            sequence.current++;
-            active.current?.abort();
-            pending.current = false;
+            request.sequence += 1;
+            request.controller?.abort();
+            request.pending = false;
         };
-    }, [target?.id]);
+    }, [request, target?.id]);
     async function load() {
-        if (!target?.searchable || pending.current) return;
-        pending.current = true;
-        const request = ++sequence.current;
+        if (!target?.searchable || request.pending) return;
+        request.pending = true;
+        const sequence = ++request.sequence;
         const controller = new AbortController();
-        active.current = controller;
+        request.controller = controller;
         setLoading(true);
         setError("");
         try {
@@ -51,18 +53,18 @@ export function useTotemMarket(target?: Totem) {
                 controller.signal,
                 crypto.randomUUID()
             );
-            if (request === sequence.current && !controller.signal.aborted)
+            if (sequence === request.sequence && !controller.signal.aborted)
                 setResult(next);
         } catch (cause) {
-            if (request === sequence.current && !controller.signal.aborted)
+            if (sequence === request.sequence && !controller.signal.aborted)
                 setError(
                     cause instanceof Error
                         ? cause.message
                         : "매물을 불러오지 못했습니다."
                 );
         } finally {
-            if (request === sequence.current) {
-                pending.current = false;
+            if (sequence === request.sequence) {
+                request.pending = false;
                 setLoading(false);
             }
         }

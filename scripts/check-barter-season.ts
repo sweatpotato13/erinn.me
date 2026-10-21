@@ -5,7 +5,6 @@ import { join } from "node:path";
 import { mock } from "node:test";
 
 import postNameMap from "../src/data/reference/snapshots/CommercePostNameMap.json";
-
 import {
     collectBarterSeason,
     publishBarterSeason,
@@ -14,6 +13,8 @@ import {
 
 async function main() {
     const reference = seasonReference();
+    // Kept unbound on purpose: the mock below calls it with the receiver Map.
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     const originalGet = Map.prototype.get;
     const missingPostName = mock.method(
         Map.prototype,
@@ -109,6 +110,11 @@ async function main() {
             },
         ],
     });
+    function requestUrl(input: RequestInfo | URL): string {
+        if (typeof input === "string") return input;
+        if (input instanceof URL) return input.href;
+        return input.url;
+    }
     function requestFor(
         pageValue: unknown = page,
         value: unknown = response,
@@ -116,24 +122,27 @@ async function main() {
         pageStatus = 200,
         responseStatus = 200
     ): typeof fetch {
-        return async (input, init) => {
+        return (input, init) => {
             assert(init?.signal);
             assert.equal(init.redirect, "error");
-            if (String(input).endsWith("/trade"))
-                return new Response(
-                    `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify(pageValue)}</script>`,
-                    {
-                        status: pageStatus,
-                        headers: cookie
-                            ? {
-                                  "set-cookie":
-                                      "laba_mabi_key=fixture-cookie; Path=/",
-                              }
-                            : {},
-                    }
+            if (requestUrl(input).endsWith("/trade"))
+                return Promise.resolve(
+                    new Response(
+                        `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify(pageValue)}</script>`,
+                        {
+                            status: pageStatus,
+                            headers: cookie
+                                ? {
+                                      "set-cookie":
+                                          "laba_mabi_key=fixture-cookie; Path=/",
+                                  }
+                                : {},
+                        }
+                    )
                 );
             assert.equal(init?.method, "POST");
-            assert.deepEqual(JSON.parse(String(init.body)), {
+            assert(typeof init.body === "string");
+            assert.deepEqual(JSON.parse(init.body), {
                 csrf: "fixture-token",
                 seasonId: 16,
             });
@@ -145,9 +154,11 @@ async function main() {
                 new Headers(init.headers).get("Content-Type"),
                 "text/plain;charset=UTF-8"
             );
-            return new Response(JSON.stringify(value), {
-                status: responseStatus,
-            });
+            return Promise.resolve(
+                new Response(JSON.stringify(value), {
+                    status: responseStatus,
+                })
+            );
         };
     }
     const collected = await collectBarterSeason(
@@ -191,12 +202,14 @@ async function main() {
         await reject(requestFor(page, response, true, 200, 502));
         await reject(requestFor(page, { code: 500, result: {} }));
         await reject(requestFor(page, {}));
-        await reject(async () => {
-            throw new DOMException("Timed out", "TimeoutError");
-        });
-        await reject(async () => new Response("invalid html"));
-        await reject(
-            async () => new Response('<script id="__NEXT_DATA__">{</script>')
+        await reject(() =>
+            Promise.reject(new DOMException("Timed out", "TimeoutError"))
+        );
+        await reject(() => Promise.resolve(new Response("invalid html")));
+        await reject(() =>
+            Promise.resolve(
+                new Response('<script id="__NEXT_DATA__">{</script>')
+            )
         );
         for (const edit of [
             (p: typeof page) => {

@@ -1,4 +1,4 @@
-import * as z from "zod";
+import * as z from "@/lib/zod";
 
 const isoUtc = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{3})?Z$/;
 const trimmedText = z

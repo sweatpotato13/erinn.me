@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import * as z from "zod";
 
 import { parseQuery } from "@/lib/api/request";
 import {
@@ -16,6 +15,7 @@ import {
     serverNameSchema,
 } from "@/lib/schemas/nexon";
 import { checkOrigin } from "@/lib/utils/check-origin";
+import * as z from "@/lib/zod";
 
 const { NXOPEN_API_URL, NXOPEN_API_KEY } = process.env;
 const querySchema = z.object({

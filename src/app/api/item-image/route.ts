@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import * as z from "zod";
 
 import itemIdMap from "@/data/item-id-map.json";
 import { parseQuery } from "@/lib/api/request";
@@ -11,6 +10,7 @@ import {
     UpstreamFailure,
 } from "@/lib/api/upstream";
 import { checkOrigin } from "@/lib/utils/check-origin";
+import * as z from "@/lib/zod";
 
 const idMap: Record<string, string> = itemIdMap;
 const querySchema = z

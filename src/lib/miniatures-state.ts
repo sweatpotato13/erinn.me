@@ -1,6 +1,5 @@
-import { z } from "zod";
-
 import type { MiniatureReference } from "@/lib/miniatures";
+import { z } from "@/lib/zod";
 
 export const MINIATURE_PATH = "/tools/miniatures";
 export const MINIATURE_STORAGE_KEY = "erinn-miniatures-v1";

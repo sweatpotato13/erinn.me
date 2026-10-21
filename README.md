@@ -69,6 +69,19 @@ To get a local copy up and running follow these simple example steps.
     pnpm start
     ```
 
+### End-to-end tests
+
+Playwright starts `pnpm dev` on port 3000 before running specs. By default it
+does **not** reuse an existing server, so another app on 3000 will not be tested
+by mistake. If you already run this project on 3000, opt in with:
+
+```sh
+PW_REUSE_SERVER=1 pnpm exec playwright test
+```
+
+Install browsers once with `pnpm exec playwright install chromium` (or
+`--with-deps` in CI).
+
 ### Reference data
 
 Maintainers can run `pnpm data:collect` to refresh the committed Korean game
@@ -114,6 +127,17 @@ are preserved. If collection stops with a stale `.collect-lock`, inspect its
 `previous-snapshots` backup and restore files matching the active manifest before
 removing the lock; do not delete a backup merely because its process has exited.
 
+### Content Security Policy (report-only)
+
+The site sends a `Content-Security-Policy-Report-Only` header on every route.
+The policy is **not enforcing yet**; browsers log violations but do not block
+resources. Violation reports are posted to `/api/csp-report` and summarized in
+server logs as compact `csp_violation` JSON lines (directive, blocked URL,
+document, source, line — no client IPs or cookies).
+
+After enough production traffic is reviewed, the same directive set can move to
+an enforcing `Content-Security-Policy` header in a follow-up change.
+
 ### Rate-limit deployment
 
 The API proxy trusts only Vercel's `x-vercel-forwarded-for` header for client
@@ -121,15 +145,40 @@ identity and ignores `x-forwarded-for`. Any reverse proxy placed in front of
 Vercel must strip client-supplied `x-vercel-forwarded-for` values before
 forwarding requests.
 
-Configure a single programmatic rate-limit rule in the Vercel Firewall dashboard:
+Configure a single Vercel Firewall rule with condition `@vercel/firewall`:
 
-| ID | Path | Limit | Window |
-| --- | --- | ---: | ---: |
-| `erinn-api` | `/api/*` | 120 | 60 seconds |
+| Setting | Value |
+| --- | --- |
+| Rate Limit ID | `erinn-api` |
+| Window | Fixed, 60 seconds |
+| Limit | 120 requests |
+| Key | API controlled (proxy passes `rateLimitKey` from `x-vercel-forwarded-for`) |
+| Action | 429 Too Many Requests |
 
-The rule uses `@vercel/firewall` with the ID `erinn-api`. If the rule is
-missing or the WAF check fails, requests pass through (fail-open). Local
-development and Vercel Preview deployments bypass WAF checks entirely.
+`src/proxy.ts` calls `checkRateLimit("erinn-api", …)` with a 1500 ms timeout.
+When the WAF check errors, times out, or the rule is missing:
+
+- **Fail closed** (HTTP 503, `Retry-After: 60`): `POST /api/contact` and
+  `POST /api/murias-relics` (mail and cache-bust routes).
+- **Fail open** (request continues): all other rate-limited routes (`/api/*`
+  except the two POST routes above, and `/calculator/preview`).
+
+Each unavailable check emits one structured log line:
+`{"event":"rate_limit_unavailable","reason":"not-found"|"blocked"|"timeout"|"error","method","path","failClosed"}`.
+Normal 429 responses are not logged.
+
+Verify production after deploy:
+
+```sh
+curl -sI "https://erinn.me/api/suggest?q=test" | grep -i x-ratelimit-limit
+```
+
+The response must include `x-ratelimit-limit: 120`. If the header is missing,
+the firewall rule is absent or not matching; look for `"reason":"not-found"` in
+deployment logs.
+
+Local development and Vercel Preview deployments bypass WAF checks entirely
+unless preview rate limiting is enabled (below).
 
 To verify the Production WAF path before merging to `main`:
 

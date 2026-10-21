@@ -4,8 +4,6 @@ import {
 } from "@/lib/material-cost";
 export { MaterialQuoteSchema as BarterQuoteSchema } from "@/lib/material-cost";
 
-import { z } from "zod";
-
 import {
     type BarterGood,
     BarterGoodSchema,
@@ -20,6 +18,7 @@ import {
     parseBarterInteger,
     rowIssue,
 } from "@/lib/barter";
+import { z } from "@/lib/zod";
 
 export const BARTER_PATH = "/tools/barter";
 export const BARTER_STORAGE_KEY = "erinn-barter-v1";

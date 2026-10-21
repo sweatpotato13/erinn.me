@@ -287,6 +287,29 @@ describe("HornPage", () => {
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     });
 
+    it("polls every 60 seconds without restarting the interval on unrelated re-renders", async () => {
+        jest.useFakeTimers();
+        const user = userEvent.setup({
+            advanceTimers: jest.advanceTimersByTimeAsync,
+        });
+        global.fetch = jest.fn().mockResolvedValue(hornResponse([]));
+        render(<HornPage />);
+        await waitFor(() => expect(fetch).toHaveBeenCalledTimes(1));
+
+        await user.type(screen.getByPlaceholderText("닉네임"), "a");
+        expect(fetch).toHaveBeenCalledTimes(1);
+
+        await act(async () => {
+            await jest.advanceTimersByTimeAsync(60_000);
+        });
+        expect(fetch).toHaveBeenCalledTimes(2);
+
+        await act(async () => {
+            await jest.advanceTimersByTimeAsync(60_000);
+        });
+        expect(fetch).toHaveBeenCalledTimes(3);
+    });
+
     it("ignores stale responses after an immediate server refresh", async () => {
         const user = userEvent.setup();
         const oldRequest = deferred<Response>();

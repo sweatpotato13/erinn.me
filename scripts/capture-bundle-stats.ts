@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
-import { dirname, resolve } from "node:path";
 import { mkdirSync } from "node:fs";
+import { dirname, resolve } from "node:path";
 
 type RouteStat = {
     route: string;

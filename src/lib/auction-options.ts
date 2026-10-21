@@ -1,5 +1,4 @@
-import * as z from "zod";
-
+import * as z from "@/lib/zod";
 import type { ItemOption } from "@/types/item-option";
 
 import {
