@@ -45,6 +45,24 @@ describe("csp-report route", () => {
         });
     });
 
+    it("returns 400 when reading the request body fails", async () => {
+        const body = new ReadableStream<Uint8Array>({
+            pull(controller) {
+                controller.error(new Error("connection reset"));
+            },
+        });
+        const request = new Request("http://localhost:3000/api/csp-report", {
+            method: "POST",
+            headers: { "Content-Type": "application/csp-report" },
+            body,
+            duplex: "half",
+        } as RequestInit);
+
+        const response = await POST(request);
+
+        expect(response.status).toBe(400);
+    });
+
     it("accepts Reporting API array shape", async () => {
         const warn = jest
             .spyOn(console, "warn")
