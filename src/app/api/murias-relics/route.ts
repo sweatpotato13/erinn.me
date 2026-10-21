@@ -1,10 +1,10 @@
 import { revalidateTag } from "next/cache";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import { getRelicSnapshot, MURIAS_CACHE_TAG } from "@/lib/api/murias-relics";
 import { parseQuery } from "@/lib/api/request";
 import { checkOrigin } from "@/lib/utils/check-origin";
+import { z } from "@/lib/zod";
 
 export const maxDuration = 60;
 

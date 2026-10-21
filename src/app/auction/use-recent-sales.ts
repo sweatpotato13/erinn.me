@@ -1,10 +1,10 @@
 import type { Dispatch, SetStateAction } from "react";
 import { useEffect, useRef, useState } from "react";
-import * as z from "zod";
 
 import type { RecentSalesModel, RecentSalesState } from "@/app/auction/types";
 import { prepareRecentSales } from "@/lib/auction-market";
 import { AuctionHistoryResponseSchema } from "@/lib/schemas/nexon";
+import * as z from "@/lib/zod";
 
 const REQUEST_ERROR = "최근 완료 거래를 불러오는 중 오류가 발생했습니다.";
 const EXACT_ITEM_NAME_NOTICE =

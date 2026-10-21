@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import { type FormEvent, useEffect, useRef, useState } from "react";
-import * as z from "zod";
 
 import { getAuctionSearchPath } from "@/lib/auction-url";
 import {
@@ -14,6 +13,7 @@ import {
     NpcShopResponseSchema,
     serverNameSchema,
 } from "@/lib/schemas/nexon";
+import * as z from "@/lib/zod";
 
 const NPC_SHOP_PREFERENCES_KEY = "npcShopPreferences";
 const LOOKUP_ERROR = "데이터를 가져오는 데 실패했습니다.";

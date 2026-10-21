@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import {
     createEchoPool,
     ECHO_CAP,
@@ -7,6 +5,7 @@ import {
     echoStateError,
 } from "@/lib/echostone";
 import { parseGold } from "@/lib/reforge";
+import { z } from "@/lib/zod";
 
 export const ECHOSTONE_PATH = "/simulators/echostone";
 const gold = z

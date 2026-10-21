@@ -1,6 +1,5 @@
-import { z } from "zod";
-
 import { AuctionListResponseSchema } from "@/lib/schemas/nexon";
+import { z } from "@/lib/zod";
 
 // The auction/list cursor contract specifies 500 rows per page; /api/auction reads at most five.
 // https://openapi.nexon.com/static/api/mabinogi/36_ko_script20250410023004.yaml

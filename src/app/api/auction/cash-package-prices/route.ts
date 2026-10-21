@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import {
     getCachedCashPackageMarket,
@@ -8,6 +7,7 @@ import {
 import { parseQuery } from "@/lib/api/request";
 import { upstreamErrorResponse } from "@/lib/api/upstream";
 import { checkOrigin } from "@/lib/utils/check-origin";
+import { z } from "@/lib/zod";
 
 const querySchema = z
     .object({

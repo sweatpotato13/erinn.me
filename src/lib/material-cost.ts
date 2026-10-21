@@ -23,7 +23,7 @@ export function allocateMaterialStock(
         missing: Math.max(0, required - owned),
     };
 }
-import { z } from "zod";
+import { z } from "@/lib/zod";
 
 export const MaterialQuoteSchema = z
     .object({

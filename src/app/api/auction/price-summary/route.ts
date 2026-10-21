@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import * as z from "zod";
 
 import { fetchCurrentItemMarket } from "@/lib/api/auction-market";
 import { parseQuery } from "@/lib/api/request";
 import { upstreamErrorResponse } from "@/lib/api/upstream";
 import { checkOrigin } from "@/lib/utils/check-origin";
+import * as z from "@/lib/zod";
 
 const querySchema = z.object({ item_name: z.string().trim().min(1).max(100) });
 

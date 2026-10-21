@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { z } from "zod";
 
 import index from "@/data/barter-material-index.json";
 import { parseQuery } from "@/lib/api/request";
+import { z } from "@/lib/zod";
 
 const schema = z.union([
     z.object({ q: z.string().trim().min(2).max(100) }).strict(),

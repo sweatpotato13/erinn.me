@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { z } from "zod";
 
 import { useMaterialMarket } from "@/hooks/use-material-market";
 import {
@@ -21,6 +20,7 @@ import {
     parseBarterStorage,
     serializeBarterStorage,
 } from "@/lib/barter-state";
+import { z } from "@/lib/zod";
 
 export function useBarterPlan(data: BarterReference) {
     const [plan, setPlan] = useState(() =>

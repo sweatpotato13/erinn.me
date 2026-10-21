@@ -127,6 +127,17 @@ are preserved. If collection stops with a stale `.collect-lock`, inspect its
 `previous-snapshots` backup and restore files matching the active manifest before
 removing the lock; do not delete a backup merely because its process has exited.
 
+### Content Security Policy (report-only)
+
+The site sends a `Content-Security-Policy-Report-Only` header on every route.
+The policy is **not enforcing yet**; browsers log violations but do not block
+resources. Violation reports are posted to `/api/csp-report` and summarized in
+server logs as compact `csp_violation` JSON lines (directive, blocked URL,
+document, source, line — no client IPs or cookies).
+
+After enough production traffic is reviewed, the same directive set can move to
+an enforcing `Content-Security-Policy` header in a follow-up change.
+
 ### Rate-limit deployment
 
 The API proxy trusts only Vercel's `x-vercel-forwarded-for` header for client
