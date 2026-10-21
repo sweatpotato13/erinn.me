@@ -176,10 +176,9 @@ const payload = {
     collectedAt: manifest.collectedAt,
     items,
     recipes,
-    byOutput,
 };
 const version = `${payload.sourceVersion}:${sha256(
-    stableJson({ ...payload, rules })
+    stableJson({ ...payload, byOutput, rules })
 )}`;
 const output = JSON.stringify({ version, ...payload }) + "\n";
 const path = resolve(root, "crafting-reference.json");

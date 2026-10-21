@@ -11,7 +11,8 @@ import {
     calculateCrafting,
     calculateCraftingCosts,
     type CraftingCost,
-    type CraftingReference,
+    type CraftingReferenceData,
+    prepareCraftingReference,
     resolveCraftingChoice,
 } from "@/lib/crafting";
 import { craftingPlanIssues } from "@/lib/crafting-state";
@@ -21,7 +22,12 @@ import { useCraftingItems, useCraftingPlan } from "./crafting-hooks";
 import c from "./crafting-tool.module.css";
 import { Quantity, RecipeEditor, ShoppingRow } from "./crafting-ui";
 
-export default function CraftingTool({ data }: { data: CraftingReference }) {
+export default function CraftingTool({
+    data: catalog,
+}: {
+    data: CraftingReferenceData;
+}) {
+    const data = useMemo(() => prepareCraftingReference(catalog), [catalog]);
     const state = useCraftingPlan(data);
     const { plan, update, ready } = state;
     const catalog = useCraftingItems(data, plan, state.epoch);

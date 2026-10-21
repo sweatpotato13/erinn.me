@@ -2,8 +2,11 @@ import { act, render, renderHook, screen } from "@testing-library/react";
 
 import { useCraftingPlan } from "@/app/tools/crafting/crafting-hooks";
 import { PriceEditor, Quantity } from "@/app/tools/crafting/crafting-ui";
-import type { CraftingReference } from "@/lib/crafting";
-import { calculateCrafting } from "@/lib/crafting";
+import {
+    calculateCrafting,
+    type CraftingReferenceData,
+    prepareCraftingReference,
+} from "@/lib/crafting";
 import {
     buildCraftingHandoff,
     buildCraftingShare,
@@ -12,15 +15,14 @@ import {
     serializeCraftingStorage,
 } from "@/lib/crafting-state";
 
-const data: CraftingReference = {
+const data = prepareCraftingReference({
     version: "test",
     sourceVersion: 1,
     ruleVersion: "test",
     collectedAt: "2026-09-10T00:00:00Z",
     items: [{ id: 1, name: "재료", searchable: true, ambiguous: false }],
     recipes: [],
-    byOutput: {},
-};
+} satisfies CraftingReferenceData);
 beforeEach(() => {
     localStorage.clear();
     window.history.replaceState(null, "", "/tools/crafting");
