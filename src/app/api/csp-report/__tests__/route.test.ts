@@ -114,6 +114,21 @@ describe("csp-report route", () => {
         ).toBe(400);
     });
 
+    it("returns 400 when the request stream fails mid-read", async () => {
+        const body = new ReadableStream<Uint8Array>({
+            pull(controller) {
+                controller.error(new Error("aborted"));
+            },
+        });
+        const request = new Request("http://localhost:3000/api/csp-report", {
+            method: "POST",
+            headers: { "Content-Type": "application/csp-report" },
+            body,
+            duplex: "half",
+        } as RequestInit);
+        expect((await POST(request)).status).toBe(400);
+    });
+
     it("returns 405 for GET", () => {
         expect(GET().status).toBe(405);
     });

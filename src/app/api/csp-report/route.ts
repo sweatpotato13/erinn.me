@@ -110,7 +110,12 @@ export async function POST(request: Request) {
         return new NextResponse(null, { status: 400 });
     }
 
-    const body = await readLimitedBody(request);
+    let body: Uint8Array | null;
+    try {
+        body = await readLimitedBody(request);
+    } catch {
+        return new NextResponse(null, { status: 400 });
+    }
     if (body === null) {
         return new NextResponse(null, { status: 413 });
     }
