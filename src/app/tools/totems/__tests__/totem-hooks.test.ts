@@ -62,7 +62,10 @@ test("ignores a late market response after the target changes", async () => {
                     items: [
                         {
                             item_name: painting.name,
+                            item_display_name: painting.name,
+                            item_count: 1,
                             auction_price_per_unit: 9_999_999,
+                            date_auction_expire: "2099-01-01T00:00:00Z",
                         },
                     ],
                     hasMore: false,
