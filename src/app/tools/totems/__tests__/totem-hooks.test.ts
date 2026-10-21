@@ -3,6 +3,8 @@ import { act, renderHook } from "@testing-library/react";
 import { useTotemMarket } from "@/app/tools/totems/totem-hooks";
 import reference from "@/data/totem-reference.json";
 
+import listingFixtures from "../../../../lib/__tests__/fixtures/totem-listings.json";
+
 const painting = reference.totems.find(t => t.id === 5160004)!;
 const handkerchief = reference.totems.find(t => t.id === 52289)!;
 
@@ -61,7 +63,11 @@ test("ignores a late market response after the target changes", async () => {
                 Promise.resolve({
                     items: [
                         {
+                            ...listingFixtures[0],
                             item_name: painting.name,
+                            item_display_name: painting.name,
+                            item_count: 1,
+                            date_auction_expire: "2099-01-01T00:00:00Z",
                             auction_price_per_unit: 9_999_999,
                         },
                     ],
