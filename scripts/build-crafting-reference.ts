@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import rules from "../src/data/crafting-rules.json";
 import {
+    buildByOutput,
     CraftingGroupSchema,
     type CraftingItem,
     type CraftingRecipe,
@@ -122,15 +123,7 @@ function derive(input: unknown[], hash = sha256) {
                 ? { unresolved: `아이템 이름 미확인 #${id}` }
                 : {}),
         }));
-    const byOutput = Object.fromEntries(
-        [...new Set(sorted.map(r => r.itemId))]
-            .sort((a, b) => a - b)
-            .map(id => [
-                id,
-                sorted.filter(r => r.itemId === id).map(r => r.fingerprint),
-            ])
-    );
-    return { items, recipes: sorted, byOutput };
+    return { items, recipes: sorted, byOutput: buildByOutput(sorted) };
 }
 
 const catalog = derive(data.ProductionList);
@@ -176,17 +169,19 @@ assert(
         .issues.length
 );
 
+const { byOutput, items, recipes } = catalog;
 const payload = {
     sourceVersion: manifest.sourceVersion.CreatedAt,
     ruleVersion: rules.version,
     collectedAt: manifest.collectedAt,
-    ...catalog,
+    items,
+    recipes,
+    byOutput,
 };
-const output =
-    JSON.stringify({
-        version: `${payload.sourceVersion}:${sha256(stableJson({ ...payload, rules }))}`,
-        ...payload,
-    }) + "\n";
+const version = `${payload.sourceVersion}:${sha256(
+    stableJson({ ...payload, rules })
+)}`;
+const output = JSON.stringify({ version, ...payload }) + "\n";
 const path = resolve(root, "crafting-reference.json");
 if (process.argv.includes("--check"))
     assert.equal(readFileSync(path, "utf8"), output, "Run pnpm crafting:build");
