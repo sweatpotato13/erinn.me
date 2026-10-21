@@ -1,9 +1,8 @@
-import { z } from "zod";
-
 import {
     allocateMaterialStock,
     parseMaterialInteger,
 } from "@/lib/material-cost";
+import { z } from "@/lib/zod";
 
 const integer = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 const positive = integer.positive();

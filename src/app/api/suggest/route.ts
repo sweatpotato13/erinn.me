@@ -1,9 +1,9 @@
 import { readFileSync } from "fs";
 import { NextRequest, NextResponse } from "next/server";
 import { resolve } from "path";
-import * as z from "zod";
 
 import { parseQuery } from "@/lib/api/request";
+import * as z from "@/lib/zod";
 
 const indexPath = resolve(process.cwd(), "src/data/suggest-index.json");
 let suggestIndex: Record<string, string[]> = {};

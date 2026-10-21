@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import * as z from "zod";
+
+import * as z from "@/lib/zod";
 
 type ParsedQuery<T> =
     { success: true; data: T } | { success: false; response: NextResponse };

@@ -1,10 +1,9 @@
-import { z } from "zod";
-
 import {
     type MaterialQuote,
     parseMaterialInteger,
     safeMaterialInteger,
 } from "@/lib/material-cost";
+import { z } from "@/lib/zod";
 
 const integer = z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER);
 export const CraftingGroupSchema = z.object({

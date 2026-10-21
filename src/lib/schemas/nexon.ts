@@ -1,4 +1,4 @@
-import * as z from "zod";
+import * as z from "@/lib/zod";
 
 export const serverNameSchema = z.enum(["류트", "울프", "하프", "만돌린"]);
 

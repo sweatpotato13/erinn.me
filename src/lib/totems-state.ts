@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 import {
     knownTotemStat,
     listingTotemRoll,
@@ -11,6 +9,7 @@ import {
     type TotemRoll,
 } from "@/lib/totems";
 import type { TotemListing } from "@/lib/totems-market";
+import { z } from "@/lib/zod";
 
 export const TOTEM_PATH = "/tools/totems";
 export const TOTEM_STORAGE_KEY = "erinn-totems-v1";

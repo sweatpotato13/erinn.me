@@ -1,4 +1,4 @@
-import * as z from "zod";
+import * as z from "@/lib/zod";
 
 const legacyReportBody = z
     .object({

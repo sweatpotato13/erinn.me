@@ -1,9 +1,8 @@
-import { z } from "zod";
-
 import {
     AUCTION_COUPONS,
     type AuctionCouponDiscount,
 } from "@/lib/auction-calculator";
+import { z } from "@/lib/zod";
 
 export interface ItemPriceResponse {
     unitPrice: number;
