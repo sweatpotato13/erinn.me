@@ -8,8 +8,9 @@ fetches data. The raw ProductionList remains unchanged, including duplicate rows
 Recipe identity is SHA-256 of the entire stable serialized original record.
 Object keys are sorted; ingredient and finishing arrays retain their order.
 Different originals with the same digest fail generation. Exact duplicates share
-one consumer choice with an occurrence count. Output IDs index all choices.
-Derived items and fingerprints are sorted independently of source row order.
+one consumer choice with an occurrence count. Output IDs index all choices via
+`buildByOutput(recipes)` at runtime; the committed JSON stores only `items` and
+`recipes`. Derived items and fingerprints are sorted independently of source row order.
 Source, reference and rule versions accompany saved plans; stale choices must be
 reviewed instead of being silently replaced.
 

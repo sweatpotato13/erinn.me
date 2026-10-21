@@ -10,7 +10,7 @@ import {
     updateBarterRow,
 } from "../src/lib/barter-state";
 import {
-    type CraftingReference,
+    prepareCraftingReference,
     selectCraftingRecipe,
 } from "../src/lib/crafting";
 import {
@@ -274,7 +274,7 @@ test("released navigation, server context, base canonical and Korean preview", a
 test("shared intermediate settings, keyboard controls and narrow themed layouts", async ({
     page,
 }, testInfo) => {
-    const data = reference as CraftingReference;
+    const data = prepareCraftingReference(reference);
     const plan = emptyCraftingPlan(data);
     plan.targets = [
         { itemId: 45037, count: "1" },
@@ -435,7 +435,7 @@ test("only tailoring and blacksmithing ask for passes; multiple recipes still ne
 test("a non-auction duplicate does not hide thick thread lookup or its price", async ({
     page,
 }) => {
-    const data = reference as CraftingReference;
+    const data = prepareCraftingReference(reference);
     const recipe = data.recipes.find(recipe => recipe.itemId === 81116)!;
     const plan = emptyCraftingPlan(data);
     plan.targets = [{ itemId: recipe.itemId, count: "1" }];

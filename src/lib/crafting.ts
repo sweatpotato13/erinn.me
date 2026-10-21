@@ -36,14 +36,52 @@ export interface CraftingRecipe {
     occurrences: number;
     issues: string[];
 }
-export interface CraftingReference {
+/** Committed catalog JSON; recipe output index is derived at runtime. */
+export interface CraftingReferenceData {
     version: string;
     sourceVersion: number;
     ruleVersion: string;
     collectedAt: string;
     items: CraftingItem[];
     recipes: CraftingRecipe[];
+}
+
+export interface CraftingReference extends CraftingReferenceData {
     byOutput: Record<string, string[]>;
+}
+
+/** Matches `scripts/build-crafting-reference.ts`; recipes must be fingerprint-sorted. */
+export function buildByOutput(
+    recipes: CraftingRecipe[]
+): Record<string, string[]> {
+    return Object.fromEntries(
+        [...new Set(recipes.map(recipe => recipe.itemId))]
+            .sort((a, b) => a - b)
+            .map(itemId => [
+                itemId,
+                recipes
+                    .filter(recipe => recipe.itemId === itemId)
+                    .map(recipe => recipe.fingerprint),
+            ])
+    );
+}
+
+const craftingIndexCache = new WeakMap<
+    CraftingReferenceData,
+    CraftingReference
+>();
+
+export function prepareCraftingReference(
+    data: CraftingReferenceData
+): CraftingReference {
+    const cached = craftingIndexCache.get(data);
+    if (cached) return cached;
+    const reference: CraftingReference = {
+        ...data,
+        byOutput: buildByOutput(data.recipes),
+    };
+    craftingIndexCache.set(data, reference);
+    return reference;
 }
 
 export const CRAFTING_LIMITS = {

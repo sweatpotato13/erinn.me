@@ -1,8 +1,9 @@
 import {
     calculateCrafting,
     calculateCraftingCosts,
-    type CraftingReference,
+    type CraftingReferenceData,
     emptyCraftingChoice,
+    prepareCraftingReference,
     selectCraftingRecipe,
 } from "@/lib/crafting";
 import {
@@ -20,7 +21,7 @@ import {
     serializeCraftingStorage,
 } from "@/lib/crafting-state";
 
-const data: CraftingReference = {
+const data = prepareCraftingReference({
     sourceVersion: 1,
     version: "reference-1",
     ruleVersion: "rule-1",
@@ -48,8 +49,7 @@ const data: CraftingReference = {
             issues: [],
         },
     ],
-    byOutput: { 1: ["recipe-1"] },
-};
+} satisfies CraftingReferenceData);
 function example() {
     const plan = emptyCraftingPlan(data);
     plan.targets = [{ itemId: 1, count: "2" }];

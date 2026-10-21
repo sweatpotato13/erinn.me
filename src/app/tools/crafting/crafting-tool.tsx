@@ -11,7 +11,8 @@ import {
     calculateCrafting,
     calculateCraftingCosts,
     type CraftingCost,
-    type CraftingReference,
+    type CraftingReferenceData,
+    prepareCraftingReference,
     resolveCraftingChoice,
 } from "@/lib/crafting";
 import { craftingPlanIssues } from "@/lib/crafting-state";
@@ -21,7 +22,15 @@ import { useCraftingItems, useCraftingPlan } from "./crafting-hooks";
 import c from "./crafting-tool.module.css";
 import { Quantity, RecipeEditor, ShoppingRow } from "./crafting-ui";
 
-export default function CraftingTool({ data }: { data: CraftingReference }) {
+export default function CraftingTool({
+    data: referenceData,
+}: {
+    data: CraftingReferenceData;
+}) {
+    const data = useMemo(
+        () => prepareCraftingReference(referenceData),
+        [referenceData]
+    );
     const state = useCraftingPlan(data);
     const { plan, update, ready } = state;
     const catalog = useCraftingItems(data, plan, state.epoch);
@@ -55,13 +64,32 @@ export default function CraftingTool({ data }: { data: CraftingReference }) {
         issues: [...new Set(issues)],
         complete: calculated.complete && !issues.length,
     };
-    const prices = Object.fromEntries(
-        reference.items.map(item => [
-            item.id,
-            materialPrice(item, plan.prices, plan.quotes),
-        ])
+    const resultForCosts = useMemo(
+        () => ({
+            ...calculated,
+            complete:
+                calculated.complete &&
+                !calculated.issues.length &&
+                !planIssues.length &&
+                !catalog.error &&
+                !catalog.pending,
+        }),
+        [calculated, planIssues, catalog.error, catalog.pending]
     );
-    const costs = calculateCraftingCosts({ ...plan, prices }, result);
+    const prices = useMemo(
+        () =>
+            Object.fromEntries(
+                reference.items.map(item => [
+                    item.id,
+                    materialPrice(item, plan.prices, plan.quotes),
+                ])
+            ),
+        [reference.items, plan.prices, plan.quotes]
+    );
+    const costs = useMemo(
+        () => calculateCraftingCosts({ ...plan, prices }, resultForCosts),
+        [plan, prices, resultForCosts]
+    );
     const [query, setQuery] = useState("");
     const [limit, setLimit] = useState(20);
     const names = result.nodes

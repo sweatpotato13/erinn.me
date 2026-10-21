@@ -1,4 +1,6 @@
+import catalog from "@/data/crafting-reference.json";
 import {
+    buildByOutput,
     calculateCrafting,
     calculateCraftingCosts,
     type CraftingInput,
@@ -7,6 +9,9 @@ import {
     emptyCraftingChoice,
     selectCraftingRecipe,
 } from "@/lib/crafting";
+
+import { sha256, stableJson } from "../../../scripts/reference-data";
+import pin from "./fixtures/crafting-by-output-pin.json";
 
 function recipe(
     itemId: number,
@@ -50,11 +55,42 @@ function reference(recipes: CraftingRecipe[]): CraftingReference {
             searchable: true,
             ambiguous: false,
         })),
-        byOutput: Object.fromEntries(
-            recipes.map(r => [r.itemId, [r.fingerprint]])
-        ),
+        byOutput: buildByOutput(recipes),
     };
 }
+
+test("buildByOutput matches the committed catalog index pin", () => {
+    expect(catalog.version).toBe(pin.catalogVersion);
+    const derived = buildByOutput(catalog.recipes);
+    expect(sha256(stableJson(derived))).toBe(pin.byOutputDigest);
+    expect(Object.keys(derived)).toHaveLength(pin.outputCount);
+    for (const [itemId, fingerprints] of Object.entries(pin.orderedSamples)) {
+        expect(derived[itemId]).toEqual(fingerprints);
+    }
+});
+
+test("buildByOutput returns an empty index for no recipes", () => {
+    expect(buildByOutput([])).toEqual({});
+});
+
+test("buildByOutput preserves fingerprint order for multiple recipes", () => {
+    const recipes = [
+        recipe(5, [{ itemIds: [1], count: 1 }], { fingerprint: "b-recipe" }),
+        recipe(5, [{ itemIds: [2], count: 1 }], { fingerprint: "a-recipe" }),
+        recipe(9, [{ itemIds: [3], count: 1 }], { fingerprint: "solo" }),
+    ];
+    expect(buildByOutput(recipes)).toEqual({
+        5: ["b-recipe", "a-recipe"],
+        9: ["solo"],
+    });
+});
+
+test("buildByOutput indexes outputs missing from the item list", () => {
+    const recipes = [
+        recipe(99, [{ itemIds: [1], count: 1 }], { fingerprint: "orphan-out" }),
+    ];
+    expect(buildByOutput(recipes)).toEqual({ 99: ["orphan-out"] });
+});
 function input(
     recipes: CraftingRecipe[],
     targets = [{ itemId: 1, count: "1" }]
