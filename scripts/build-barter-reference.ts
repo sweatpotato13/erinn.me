@@ -31,7 +31,7 @@ const materials: BarterMaterial[] = resolved.map(item =>
 );
 const byId = new Map(materials.map(item => [item.id, item]));
 
-// Current fixed goods, matched against Labanyu season 16 on 2026-09-11.
+// Current fixed goods, last matched against Labanyu season 17 on 2026-10-15.
 // Other Prilus rows include legacy goods and rotating tier-six candidates.
 const fixedIds = new Map(
     [
