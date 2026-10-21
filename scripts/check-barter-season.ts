@@ -13,13 +13,16 @@ import {
 
 async function main() {
     const reference = seasonReference();
+    // Kept unbound on purpose: the mock below calls it with the receiver Map.
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const originalGet = Map.prototype.get;
     const missingPostName = mock.method(
         Map.prototype,
         "get",
         function (this: Map<unknown, unknown>, key: unknown) {
             return key === postNameMap["201"]
                 ? undefined
-                : Map.prototype.get.call(this, key);
+                : originalGet.call(this, key);
         }
     );
     try {
@@ -125,16 +128,16 @@ async function main() {
             if (requestUrl(input).endsWith("/trade"))
                 return Promise.resolve(
                     new Response(
-                    `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify(pageValue)}</script>`,
-                    {
-                        status: pageStatus,
-                        headers: cookie
-                            ? {
-                                  "set-cookie":
-                                      "laba_mabi_key=fixture-cookie; Path=/",
-                              }
-                            : {},
-                    }
+                        `<script id="__NEXT_DATA__" type="application/json">${JSON.stringify(pageValue)}</script>`,
+                        {
+                            status: pageStatus,
+                            headers: cookie
+                                ? {
+                                      "set-cookie":
+                                          "laba_mabi_key=fixture-cookie; Path=/",
+                                  }
+                                : {},
+                        }
                     )
                 );
             assert.equal(init?.method, "POST");
