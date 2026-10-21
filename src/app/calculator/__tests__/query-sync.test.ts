@@ -5,6 +5,7 @@ function createState(overrides: Partial<QuerySyncState> = {}): QuerySyncState {
         restoredQuery: "",
         lastSeenKey: null,
         pendingWrites: [],
+        historyNavigation: false,
         ...overrides,
     };
 }
@@ -60,5 +61,18 @@ describe("consumeOwnWriteEcho", () => {
         const state = createState({ restoredQuery: "" });
 
         expect(consumeOwnWriteEcho(state, "")).toBe(true);
+    });
+
+    it("treats Back/Forward as navigation even when the query is still pending", () => {
+        const state = createState({
+            restoredQuery: "q3",
+            pendingWrites: ["q2", "q3"],
+            historyNavigation: true,
+        });
+
+        expect(consumeOwnWriteEcho(state, "q2")).toBe(false);
+        expect(state.pendingWrites).toEqual([]);
+        expect(state.historyNavigation).toBe(false);
+        expect(consumeOwnWriteEcho(state, "q2")).toBe(false);
     });
 });

@@ -539,6 +539,17 @@ function useRestoreCalculatorQuery(
 ) {
     const { searchParamsKey, onRestore, onReset } = options;
     useEffect(() => {
+        // Our own writes use pushState/replaceState, which never fire popstate,
+        // so this event identifies Back/Forward even if the query matches a
+        // write whose echo is still pending.
+        const markHistoryNavigation = () => {
+            syncRef.current.historyNavigation = true;
+        };
+        window.addEventListener("popstate", markHistoryNavigation);
+        return () =>
+            window.removeEventListener("popstate", markHistoryNavigation);
+    }, [syncRef]);
+    useEffect(() => {
         const sync = syncRef.current;
         // Re-runs caused only by a changed represented query must not
         // re-process a key that was already handled.
@@ -597,6 +608,7 @@ function useWriteCalculatorQuery(
         lastWrittenQueryRef.current = representedQuery;
         syncRef.current.restoredQuery = representedQuery;
         syncRef.current.pendingWrites.push(representedQuery);
+        syncRef.current.historyNavigation = false;
         const url = `${AUCTION_CALCULATOR_PATH}?${representedQuery}`;
         window.history[`${historyModeRef.current}State`](null, "", url);
         historyModeRef.current = "replace";
@@ -626,6 +638,7 @@ function useCalculatorSnapshotUrl(options: SnapshotUrlOptions) {
         restoredQuery: options.initialQuery,
         lastSeenKey: null,
         pendingWrites: [],
+        historyNavigation: false,
     });
     useRestoreCalculatorQuery(options, representedQuery, skipWriteRef, syncRef);
     useWriteCalculatorQuery(options, representedQuery, skipWriteRef, syncRef);
