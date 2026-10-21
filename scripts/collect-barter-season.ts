@@ -10,7 +10,7 @@ import {
     BarterSeasonSchema,
     IRIA_POSTS,
 } from "../src/lib/barter";
-import { resolveItems, type ReferenceItem } from "./item-reference";
+import { type ReferenceItem,resolveItems } from "./item-reference";
 import { readSnapshot, sha256, stableJson } from "./reference-data";
 
 const SOURCE = "https://labanyu.com/trade";

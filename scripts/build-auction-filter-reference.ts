@@ -27,9 +27,11 @@ for (const fixed of evidence.fixedAwakenings) {
     const table = data.RandomTableList.find(row => row.Id === fixed.color);
     const rows = table?.Elements.filter(row => row.Name === fixed.name);
     assert.equal(rows?.length, 1, `Missing fixed awakening ${fixed.name}`);
-    assert.equal(rows![0].MWAbilityId, fixed.abilityId);
-    assert.equal(rows![0].Min, fixed.level);
-    assert.equal(rows![0].Max, fixed.level);
+    const row = rows?.[0];
+    assert.ok(row);
+    assert.equal(row.MWAbilityId, fixed.abilityId);
+    assert.equal(row.Min, fixed.level);
+    assert.equal(row.Max, fixed.level);
 }
 for (const observed of evidence.observedAwakenings) {
     assert(echoes.colors.some(color => color.id === observed.color));
