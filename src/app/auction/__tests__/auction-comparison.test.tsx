@@ -207,7 +207,7 @@ describe("AuctionComparison", () => {
         const optionDisclosure = screen.getByText("첫 매물 옵션 보기");
         await user.click(optionDisclosure);
         expect(optionDisclosure.closest("details")).toHaveAttribute("open");
-        expect(screen.getByText("밸런스 5")).toBeInTheDocument();
+        expect(await screen.findByText("밸런스 5")).toBeInTheDocument();
         await user.click(trigger);
         const dialog = screen.getByRole("dialog", { name: "장비 매물 비교" });
         const attackRow = within(dialog).getByRole("row", { name: /공격/ });
@@ -224,6 +224,45 @@ describe("AuctionComparison", () => {
         await user.keyboard("{Escape}");
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
         expect(trigger).toHaveFocus();
+    });
+
+    it("lazy-loads enchant option details in the selection panel and keeps comparison rows", async () => {
+        const user = userEvent.setup();
+        const enchantItem = item(
+            "인챈 매물",
+            [
+                option("인챈트", "여명", {
+                    option_sub_type: "접두",
+                    option_desc: "최대 대미지 10 증가, 수리비 5% 증가",
+                }),
+                option("인챈트 종류", "여명", { option_sub_type: "접두" }),
+            ],
+            150,
+            1
+        );
+        render(
+            <AuctionComparison
+                items={[enchantItem, second]}
+                notice={null}
+                onRemove={jest.fn()}
+                onClear={jest.fn()}
+            />
+        );
+
+        await user.click(screen.getByText("인챈 매물 옵션 보기"));
+        await screen.findByText("인챈트 (접두) : 여명");
+        expect(
+            screen.getAllByText("한손무기에 인챈트 가능").length
+        ).toBeGreaterThan(0);
+        expect(screen.getByText(/최대 대미지 10 증가/)).toBeInTheDocument();
+
+        await user.click(
+            screen.getByRole("button", { name: "선택한 매물 비교" })
+        );
+        const dialog = screen.getByRole("dialog", { name: "장비 매물 비교" });
+        expect(
+            within(dialog).getByRole("row", { name: /접두 · 최대 대미지 증가/ })
+        ).toBeInTheDocument();
     });
 
     it("keeps the dialog closed after selection drops below two", async () => {

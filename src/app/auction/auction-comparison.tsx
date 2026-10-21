@@ -3,7 +3,7 @@ import { type RefObject, useEffect, useRef, useState } from "react";
 import type { AuctionItem, ItemOption } from "@/app/auction/types";
 import { MAX_COMPARISON_ITEMS } from "@/app/auction/use-comparison-selection";
 import { useDialogFocus } from "@/app/auction/use-dialog-focus";
-import OptionRenderer from "@/components/option-renderer";
+import OptionRenderer from "@/components/option-renderer/lazy";
 import {
     normalizeOptionText as normalize,
     parseReforgeOptionValue,

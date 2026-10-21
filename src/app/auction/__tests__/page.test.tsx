@@ -2332,7 +2332,19 @@ function OptionsDialogHarness() {
             </button>
             {open && (
                 <ItemOptionsDialog
-                    options={[]}
+                    options={[
+                        {
+                            option_type: "인챈트",
+                            option_sub_type: "접두",
+                            option_value: "여명",
+                            option_desc: "최대 대미지 10 증가, 수리비 5% 증가",
+                        },
+                        {
+                            option_type: "인챈트 종류",
+                            option_sub_type: "접두",
+                            option_value: "여명",
+                        },
+                    ]}
                     onClose={() => setOpen(false)}
                 />
             )}
@@ -2365,9 +2377,14 @@ describe("auction dialogs", () => {
         render(<OptionsDialogHarness />);
         const trigger = screen.getByRole("button", { name: "옵션 열기" });
         await user.click(trigger);
+        const dialog = await screen.findByRole("dialog", {
+            name: "아이템 옵션",
+        });
+        expect(dialog).toHaveAttribute("aria-modal", "true");
+        await within(dialog).findByText("인챈트 (접두) : 여명");
         expect(
-            screen.getByRole("dialog", { name: "아이템 옵션" })
-        ).toHaveAttribute("aria-modal", "true");
+            within(dialog).getAllByText("한손무기에 인챈트 가능").length
+        ).toBeGreaterThan(0);
         expect(screen.getByRole("button", { name: "닫기" })).toHaveFocus();
         await user.keyboard("{Escape}");
         expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
