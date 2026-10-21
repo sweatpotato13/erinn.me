@@ -69,6 +69,19 @@ To get a local copy up and running follow these simple example steps.
     pnpm start
     ```
 
+### End-to-end tests
+
+Playwright starts `pnpm dev` on port 3000 before running specs. By default it
+does **not** reuse an existing server, so another app on 3000 will not be tested
+by mistake. If you already run this project on 3000, opt in with:
+
+```sh
+PW_REUSE_SERVER=1 pnpm exec playwright test
+```
+
+Install browsers once with `pnpm exec playwright install chromium` (or
+`--with-deps` in CI).
+
 ### Reference data
 
 Maintainers can run `pnpm data:collect` to refresh the committed Korean game

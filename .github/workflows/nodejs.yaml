@@ -21,6 +21,25 @@ jobs:
         node-version: [22.x, 24.x, 26.x]
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Detect reference collector changes
+        id: collector
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+        run: |
+          set -euo pipefail
+          if [ -z "${BASE_SHA}" ] || [ "${BASE_SHA}" = "0000000000000000000000000000000000000000" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git diff --name-only "${BASE_SHA}" HEAD | grep -Eq \
+            '^scripts/(reference-data|collect-|check-reference-collector\.ts)'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Install pnpm
         uses: pnpm/action-setup@v6
@@ -36,6 +55,14 @@ jobs:
 
       - name: Lint
         run: pnpm lint
+
+      - name: Install Playwright Chromium
+        if: steps.collector.outputs.changed == 'true'
+        run: pnpm exec playwright install chromium
+
+      - name: Check reference collector
+        if: steps.collector.outputs.changed == 'true'
+        run: pnpm exec tsx scripts/check-reference-collector.ts
 
       - name: Generate Next.js types
         run: pnpm exec next typegen

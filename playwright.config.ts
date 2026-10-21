@@ -37,6 +37,7 @@ export default defineConfig({
       NXOPEN_API_KEY: '',
     },
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    // Opt in locally when you already run `pnpm dev` on port 3000 (see README).
+    reuseExistingServer: process.env.PW_REUSE_SERVER === '1',
   },
 });
