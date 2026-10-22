@@ -9,13 +9,13 @@
         "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-indexeddb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-UNq48uQI.js"
+            "https://prilus.gitlab.io/assets/index-JCdQ9Iqb.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1792036284
+        "CreatedAt": 1792637528
     },
-    "collectedAt": "2026-10-15T04:48:10.065Z",
+    "collectedAt": "2026-10-22T03:58:30.344Z",
     "tables": {
         "OghamWordList": {
             "count": 26,
@@ -33,14 +33,14 @@
             "sha256": "17c42c6e0be08c39ec20af9d5c002bc9aad5f85316b64526cc4592d925f217c5"
         },
         "ItemList": {
-            "count": 43535,
-            "bytes": 23578058,
-            "sha256": "393c0f6f9a0dc838155d00ec8ef116e70f8196c51054c68b039075928eab11fe"
+            "count": 43582,
+            "bytes": 23610335,
+            "sha256": "a3276e1d4dc579126d0df71b1665a58ba08d9975703196c933df1fd4ec8f3880"
         },
         "ItemCategoryList": {
             "count": 8238,
-            "bytes": 3370268,
-            "sha256": "6161043eb6b3eb8b315b9b68313848150be87c2a5751c192a13c7af80ae2fab3"
+            "bytes": 3369279,
+            "sha256": "a5190956e4a78dc9104775d5fc48cffa46bdbf80694f5375a52c5d3b56f8a090"
         },
         "ItemCategoryGroups": {
             "count": 22,
@@ -49,18 +49,18 @@
         },
         "OptionSetList": {
             "count": 1770,
-            "bytes": 1901089,
-            "sha256": "0934c11eee5f24fe84640353a91adc35ccc807e8c360c08860f0a21e072d041a"
+            "bytes": 1931341,
+            "sha256": "e6ae7d9864f2d83fe989c0b13dcc8f7ce7f2c6b2f28ffb24b05678138acf65f0"
         },
         "StringTable": {
-            "count": 186308,
-            "bytes": 22828155,
-            "sha256": "17501ad65308b874ee45f10083f2120c8735735b311c3be0ac43edf77d8b5875"
+            "count": 187275,
+            "bytes": 22922877,
+            "sha256": "5375184464ae270037479d39ad0b815a7d78ca834de01cfe39925d73ce2e4088"
         },
         "ItemExtendMetalWareList": {
-            "count": 11579,
-            "bytes": 867906,
-            "sha256": "7431de92e39efed7771a2a30efe943c6bce92e02a23d4ac553eacb5eab103d90"
+            "count": 11607,
+            "bytes": 870061,
+            "sha256": "7bd7ef573894c1f7291192869706fe3e4fc74429aaf61c449f229811e9f29fa5"
         },
         "MetalWareAbilityList": {
             "count": 528,
@@ -108,9 +108,9 @@
             "sha256": "1f44c1e49d90ace5744cf5edb58714596451f883247069448d1415e46a72b3de"
         },
         "ItemExtendUpgradeList": {
-            "count": 5306,
-            "bytes": 643944,
-            "sha256": "8e83235c6e4160ddf208e50ff31d2027c0fba9ae1577f0e99adf128f37765cb8"
+            "count": 5318,
+            "bytes": 645288,
+            "sha256": "7bcc3415a1bfe6aa3441e90f53a5c9180a670c38fc32f45248eb97c9539372d9"
         },
         "ItemUpgradeList": {
             "count": 3242,
@@ -165,7 +165,7 @@
             ]
         },
         "ItemList.Desc: placeholder": {
-            "count": 1401,
+            "count": 1403,
             "examples": [
                 "<nil>"
             ]
