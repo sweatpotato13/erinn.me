@@ -1,3 +1,4 @@
+engineStrict: true
 allowBuilds:
   '@parcel/watcher': false
   esbuild: true
