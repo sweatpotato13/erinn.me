@@ -37,18 +37,18 @@
 <!-- GETTING STARTED -->
 ## Getting Started
 
-This is an example of how you may give instructions on setting up your project locally.
-To get a local copy up and running follow these simple example steps.
-
 ### Installation
 
 1. Clone the repo
    ```sh
    git clone https://github.com/sweatpotato13/erinn.me.git
+   cd erinn.me
    ```
 
-2. Install dependencies
+2. Select the Node.js version in `.nvmrc` and install dependencies
    ```sh
+   nvm install
+   nvm use
    pnpm install
    ```
 
@@ -68,6 +68,24 @@ To get a local copy up and running follow these simple example steps.
     pnpm build
     pnpm start
     ```
+
+### Node.js version policy
+
+`.nvmrc` pins local development, Playwright CI and the data expiry workflow to
+Node.js 26.12.1. Node CI checks the latest release in each supported major,
+with minimum versions 22.23.4, 24.22.1 and 26.12.1 from the
+[October 2026 security releases](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
+`package.json` declares these ranges and `engineStrict` in `pnpm-workspace.yaml`
+rejects unsupported Node.js versions during installation. Update the minimums,
+CI matrix and `.nvmrc` when adopting a new security release.
+
+[Vercel selects Node.js through project settings or `package.json` engines](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions),
+not `.nvmrc`. As checked on 2026-10-24, Vercel supports Node.js 22.x and 24.x.
+The engine range selects its highest supported matching major, currently 24.x.
+Vercel controls minor and patch updates, so `.nvmrc` cannot force a deployment
+to 26.12.1 or pin a Vercel patch version. Check `node -v` in deployment build
+logs for the build version and `process.version` in function logs for the
+runtime version before claiming the deployed app is patched.
 
 ### End-to-end tests
 

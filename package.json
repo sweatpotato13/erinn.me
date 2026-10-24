@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "packageManager": "pnpm@11.25.0",
+  "engines": {
+    "node": "^22.23.4 || ^24.22.1 || ^26.12.1"
+  },
   "scripts": {
     "data:collect": "pnpm exec tsx scripts/collect-reference-data.ts",
     "data:check": "pnpm exec tsx scripts/check-reference-data.ts && pnpm exec tsx scripts/check-item-reference.ts && pnpm exec tsx scripts/check-enchant-reference.ts && pnpm exec tsx scripts/build-reforge-reference.ts --check && pnpm exec tsx scripts/build-echostone-reference.ts --check && pnpm exec tsx scripts/build-miniature-reference.ts --check && pnpm exec tsx scripts/build-totem-reference.ts --check && pnpm exec tsx scripts/check-barter-season.ts && pnpm catalog:validate && pnpm exec tsx scripts/build-barter-reference.ts --check && pnpm exec tsx scripts/build-crafting-reference.ts --check && pnpm exec tsx scripts/build-murias-reference.ts --check && pnpm exec tsx scripts/build-auction-filter-reference.ts --check && pnpm exec tsx scripts/build-ogham-reference.ts --check",
