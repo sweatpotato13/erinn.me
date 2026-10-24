@@ -71,7 +71,7 @@
 
 ### Node.js version policy
 
-`.nvmrc` pins local development, Playwright CI and the data expiry workflow to
+`.nvmrc` pins local development and the data expiry workflow to
 Node.js 26.12.1. Node CI checks the latest release in each supported major,
 with minimum versions 22.23.4, 24.22.1 and 26.12.1 from the
 [October 2026 security releases](https://nodejs.org/en/blog/vulnerability/october-2026-security-releases).
@@ -89,6 +89,8 @@ runtime version before claiming the deployed app is patched.
 
 ### End-to-end tests
 
+Run E2E tests locally with `pnpm test:e2e`. They do not run in GitHub Actions.
+
 Playwright starts `pnpm dev` on port 3000 before running specs. By default it
 does **not** reuse an existing server, so another app on 3000 will not be tested
 by mistake. If you already run this project on 3000, opt in with:
@@ -97,8 +99,7 @@ by mistake. If you already run this project on 3000, opt in with:
 PW_REUSE_SERVER=1 pnpm exec playwright test
 ```
 
-Install browsers once with `pnpm exec playwright install chromium` (or
-`--with-deps` in CI).
+Install browsers once with `pnpm exec playwright install chromium`.
 
 ### Reference data
 
