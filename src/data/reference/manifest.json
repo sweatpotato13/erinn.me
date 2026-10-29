@@ -5,17 +5,17 @@
         "site": "https://prilus.gitlab.io/",
         "region": "kr",
         "language": "kr",
-        "resourceUrl": "https://mabires2.pril.cc/resourcedata/kr/kr_resourcedata.bin.br",
-        "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
-        "decoder": "upstream-playwright-indexeddb",
+        "resourceUrl": "https://mabires5.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst",
+        "versionUrl": "https://mabires5.pril.cc/resourceversion/kr/kr_resourceversion.json",
+        "decoder": "upstream-playwright-mabidb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-JCdQ9Iqb.js"
+            "https://prilus.gitlab.io/assets/index-CNtTXuxT.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1792637528
+        "CreatedAt": 1793241448
     },
-    "collectedAt": "2026-10-22T03:58:30.344Z",
+    "collectedAt": "2026-10-29T03:18:42.670Z",
     "tables": {
         "OghamWordList": {
             "count": 26,
@@ -53,9 +53,9 @@
             "sha256": "e6ae7d9864f2d83fe989c0b13dcc8f7ce7f2c6b2f28ffb24b05678138acf65f0"
         },
         "StringTable": {
-            "count": 187275,
-            "bytes": 22922877,
-            "sha256": "5375184464ae270037479d39ad0b815a7d78ca834de01cfe39925d73ce2e4088"
+            "count": 187458,
+            "bytes": 22940271,
+            "sha256": "9cddb04eb01a6039a147f24db2d209ae4ce7610ad03573bc87cf39083b83ad6a"
         },
         "ItemExtendMetalWareList": {
             "count": 11607,
