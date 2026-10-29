@@ -9,13 +9,54 @@ import { collectReference } from "./collect-reference-data";
 import { publishSnapshot, readSnapshot } from "./reference-data";
 
 type Failure = "download" | "decoder";
+type Scenario = Failure | "success";
 
-function mockPages(context: BrowserContext, failure: Failure) {
+const root = resolve("src/data/reference");
+const resourceUrl =
+    "https://mabires.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst";
+
+// A Prilus-shaped page: a chunk that throws when imported, then a store module
+// exporting a MabiDB-like computed ref over the committed snapshot.
+const successModules: Record<string, string> = {
+    "/assets/index.js": `await fetch("/assets/broken.js");
+await import("/assets/store.js");
+await fetch("${resourceUrl}");`,
+    "/assets/broken.js": `throw new Error("not the store module");`,
+    "/assets/store.js": `const tables = await (await fetch("/snapshot.json")).json();
+for (const row of tables.ItemCategoryList) row.TagMask = new Uint8Array(row.TagMask);
+export const db = { value: {
+    cache: new Map(),
+    startFull: async () => {},
+    getData: (name, region) => (region === "kr" ? tables[name] : undefined),
+} };`,
+};
+
+function mockPages(context: BrowserContext, scenario: Scenario) {
     const newPage = context.newPage.bind(context);
     mock.method(context, "newPage", async () => {
         const page = await newPage();
         // Return only after interception is ready, before the collector can navigate.
         await page.route("**/*", route => {
+            if (scenario === "success") {
+                const { pathname } = new URL(route.request().url());
+                if (route.request().isNavigationRequest())
+                    return route.fulfill({
+                        contentType: "text/html",
+                        body: `<script type="module" src="/assets/index.js"></script>`,
+                    });
+                if (pathname in successModules)
+                    return route.fulfill({
+                        contentType: "text/javascript",
+                        body: successModules[pathname],
+                    });
+                if (pathname === "/snapshot.json")
+                    return route.fulfill({
+                        contentType: "application/json",
+                        body: JSON.stringify(readSnapshot(root).data),
+                    });
+                return route.fulfill({ body: "zstd bytes" });
+            }
+            const failure = scenario;
             if (route.request().isNavigationRequest()) {
                 return route.fulfill({
                     contentType: "text/html",
@@ -31,7 +72,7 @@ function mockPages(context: BrowserContext, failure: Failure) {
     });
 }
 
-function mockBrowser(failure: Failure, onClose: () => void) {
+function mockBrowser(scenario: Scenario, onClose: () => void) {
     const launch = chromium.launch.bind(chromium);
     return mock.method(
         chromium,
@@ -49,7 +90,18 @@ function mockBrowser(failure: Failure, onClose: () => void) {
                 "newContext",
                 async (contextOptions: Parameters<typeof newContext>[0]) => {
                     const context = await newContext(contextOptions);
-                    mockPages(context, failure);
+                    mockPages(context, scenario);
+                    if (scenario === "success")
+                        mock.method(context.request, "get", () =>
+                            Promise.resolve({
+                                ok: () => true,
+                                status: () => 200,
+                                json: () =>
+                                    Promise.resolve(
+                                        readSnapshot(root).data.Version
+                                    ),
+                            })
+                        );
                     return context;
                 }
             );
@@ -59,7 +111,6 @@ function mockBrowser(failure: Failure, onClose: () => void) {
 }
 
 async function checkFailure(failure: Failure) {
-    const root = resolve("src/data/reference");
     const before = readFileSync(resolve(root, "manifest.json"), "utf8");
     let closed = false;
     const stub = mockBrowser(failure, () => {
@@ -84,12 +135,37 @@ async function checkFailure(failure: Failure) {
     }
 }
 
+async function checkSuccess() {
+    let closed = false;
+    const stub = mockBrowser("success", () => {
+        closed = true;
+    });
+    try {
+        const { data, source } = await collectReference();
+        assert.deepEqual(data, readSnapshot(root).data);
+        assert.deepEqual(source, {
+            site: "https://prilus.gitlab.io/",
+            region: "kr",
+            language: "kr",
+            resourceUrl,
+            versionUrl:
+                "https://mabires.pril.cc/resourceversion/kr/kr_resourceversion.json",
+            decoder: "upstream-playwright-mabidb",
+            assets: ["https://prilus.gitlab.io/assets/index.js"],
+        });
+        assert.ok(closed, "collector closes Chromium on success");
+    } finally {
+        stub.mock.restore();
+    }
+}
+
 // Optional Chromium check: synthetic responses, with outbound requests blocked.
 async function main() {
     for (const failure of ["download", "decoder"] as const)
         await checkFailure(failure);
+    await checkSuccess();
     console.log(
-        "Prilus browser checks passed: download/decoder failures preserve the snapshot and close Chromium with outbound requests blocked."
+        "Prilus browser checks passed: download/decoder failures preserve the snapshot, a MabiDB page past a failing chunk yields the committed snapshot, and Chromium closes with outbound requests blocked."
     );
 }
 

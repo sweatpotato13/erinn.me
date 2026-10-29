@@ -93,9 +93,13 @@ export async function collectReference() {
                         !/^\/assets\/[^/]+\.js$/.test(url.pathname)
                     )
                         continue;
-                    const exports: Record<string, unknown> = await import(
-                        url.href
-                    );
+                    let exports: Record<string, unknown>;
+                    try {
+                        exports = await import(url.href);
+                    } catch {
+                        // A preloaded chunk may fail when evaluated out of order; keep scanning.
+                        continue;
+                    }
                     for (const value of Object.values(exports)) {
                         // The instance is exported inside a Vue computed ref.
                         const candidate = ((value as { value?: unknown } | null)
