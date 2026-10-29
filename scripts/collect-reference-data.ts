@@ -12,7 +12,7 @@ import {
 } from "./reference-data";
 
 const site = "https://prilus.gitlab.io/";
-const resourcePath = "/resourcedata/kr/kr_resourcedata.bin.br";
+const resourcePath = "/resourcedata/kr/kr_resourcedata.bin.zst";
 
 export async function collectReference() {
     const browser = await chromium.launch({ headless: true, timeout: 30_000 });
@@ -29,8 +29,10 @@ export async function collectReference() {
         await context.addInitScript(() => {
             localStorage.setItem("region", "kr");
             localStorage.setItem("lang", "kr");
+            // Prilus's own CDN fallback flag: load its modules from the allowed site origin.
+            localStorage.setItem("assetSelfUntil", String(Date.now() + 864e5));
         });
-        // The app handles mirror discovery and its own Brotli/protobuf decoder.
+        // The app handles mirror discovery and its own zstd/protobuf decoder.
         // Avoid fetching unrelated dynamic prices, analytics or visual resources.
         await context.route("**/*", route => {
             const url = new URL(route.request().url());
@@ -53,18 +55,11 @@ export async function collectReference() {
         const downloaded = page.waitForResponse(
             response => new URL(response.url()).pathname === resourcePath
         );
-        const ready = Promise.race([
-            page.waitForEvent("console", message =>
-                /^MabiDB\.update: updated \d+ kr$/.test(message.text())
-            ),
-            page.waitForEvent("pageerror").then(error => {
-                throw new Error(
-                    `Upstream decoder/page failed: ${error.message}`
-                );
-            }),
-        ]);
-        // Navigation can fail before we await ready; avoid an unhandled rejection on close.
-        void ready.catch(() => {});
+        const failed = page.waitForEvent("pageerror").then(error => {
+            throw new Error(`Upstream decoder/page failed: ${error.message}`);
+        });
+        // Navigation can fail before we await these; avoid an unhandled rejection on close.
+        void failed.catch(() => {});
         void downloaded.catch(() => {});
         await page.goto(site, { waitUntil: "domcontentloaded" });
         const response = await downloaded;
@@ -74,8 +69,58 @@ export async function collectReference() {
             );
         const downloadError = await response.finished();
         if (downloadError) throw downloadError;
-        await ready;
         const resourceUrl = response.url();
+        // Prilus keeps only compressed bytes in IndexedDB and decodes tables into its
+        // MabiDB cache, exported from an already loaded module under a minified name.
+        // Serialize in the browser to avoid Playwright expanding hundreds of thousands of objects.
+        // No named functions inside: tsx would inject a __name helper the page lacks.
+        const exported = page.evaluate(async names => {
+            type MabiDB = {
+                cache: unknown;
+                startFull(background: boolean): Promise<void>;
+                getData(name: string, region: string): unknown;
+            };
+            let db: MabiDB | undefined;
+            for (
+                const until = Date.now() + 10_000;
+                !db && Date.now() < until;
+                await new Promise(wait => setTimeout(wait, 250))
+            )
+                for (const entry of performance.getEntriesByType("resource")) {
+                    const url = new URL(entry.name);
+                    if (
+                        url.origin !== location.origin ||
+                        !/^\/assets\/[^/]+\.js$/.test(url.pathname)
+                    )
+                        continue;
+                    const exports: Record<string, unknown> = await import(
+                        url.href
+                    );
+                    for (const value of Object.values(exports)) {
+                        // The instance is exported inside a Vue computed ref.
+                        const candidate = ((value as { value?: unknown } | null)
+                            ?.value ?? value) as Partial<MabiDB> | null;
+                        if (
+                            candidate?.cache instanceof Map &&
+                            typeof candidate.startFull === "function"
+                        )
+                            db = candidate as MabiDB;
+                    }
+                }
+            if (!db) throw new Error("Prilus MabiDB instance not found");
+            // Rejects with the decoder error; whenFull() only logs it and never settles.
+            await db.startFull(true);
+            const data: Record<string, unknown> = {};
+            for (const name of ["Version", ...names])
+                data[name] = db.getData(name, "kr");
+            return JSON.stringify(data, (_key, value) =>
+                value instanceof Uint8Array ? Array.from(value) : value
+            );
+        }, tableNames);
+        void exported.catch(() => {});
+        const { data } = validateData(
+            JSON.parse(await Promise.race([exported, failed]))
+        );
         const versionUrl = new URL(
             "/resourceversion/kr/kr_resourceversion.json",
             resourceUrl
@@ -88,72 +133,9 @@ export async function collectReference() {
                 `Version check HTTP ${versionResponse.status()}: ${versionUrl}`
             );
         const sourceVersion = versionSchema.parse(await versionResponse.json());
-        // One readonly transaction reads both stores after the upstream completion marker.
-        // Serialize in the browser to avoid Playwright expanding hundreds of thousands of objects.
-        const exported = await page.evaluate(
-            names =>
-                new Promise<string>((resolveData, reject) => {
-                    const request = indexedDB.open("prilus_mabi_db");
-                    request.onerror = () =>
-                        reject(
-                            request.error ?? new Error("IndexedDB open failed")
-                        );
-                    request.onupgradeneeded = () => {
-                        request.transaction?.abort();
-                        reject(new Error("Expected populated Prilus database"));
-                    };
-                    request.onsuccess = () => {
-                        const db = request.result;
-                        const transaction = db.transaction(
-                            ["data", "version"],
-                            "readonly"
-                        );
-                        const data: Record<string, unknown> = {};
-                        for (const name of ["Version", ...names]) {
-                            const read = transaction
-                                .objectStore("data")
-                                .get(`${name}_kr`);
-                            read.onsuccess = () => {
-                                data[name] = read.result;
-                            };
-                        }
-                        const version = transaction
-                            .objectStore("version")
-                            .get("CreatedAt_kr");
-                        transaction.oncomplete = () => {
-                            db.close();
-                            resolveData(
-                                JSON.stringify(
-                                    {
-                                        data,
-                                        committedVersion: version.result,
-                                    },
-                                    (_key, value) =>
-                                        value instanceof Uint8Array
-                                            ? Array.from(value)
-                                            : value
-                                )
-                            );
-                        };
-                        transaction.onabort = transaction.onerror = () => {
-                            db.close();
-                            reject(
-                                transaction.error ??
-                                    new Error("IndexedDB export aborted")
-                            );
-                        };
-                    };
-                }),
-            tableNames
-        );
-        const { data: input, committedVersion } = JSON.parse(exported);
-        const { data } = validateData(input);
-        if (
-            data.Version.CreatedAt !== sourceVersion.CreatedAt ||
-            committedVersion !== sourceVersion.CreatedAt
-        )
+        if (data.Version.CreatedAt !== sourceVersion.CreatedAt)
             throw new Error(
-                "Source version changed during collection or IndexedDB is incomplete; retry collection"
+                "Source version changed during collection; retry collection"
             );
         const assets = await page.evaluate(() =>
             Array.from(
@@ -169,7 +151,7 @@ export async function collectReference() {
             language: "kr",
             resourceUrl,
             versionUrl,
-            decoder: "upstream-playwright-indexeddb",
+            decoder: "upstream-playwright-mabidb",
             assets,
         };
         return { data, source };

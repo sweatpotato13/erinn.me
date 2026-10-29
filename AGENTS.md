@@ -23,7 +23,7 @@ After a Thursday patch, check actual upstream versions and content. Sources can 
 
 ### Complete source snapshot
 
-`pnpm data:collect` collects the Korean snapshot from https://prilus.gitlab.io/ using its current decoder and IndexedDB. `scripts/reference-data.ts` defines the required tables, validates references, and publishes matching tables and `src/data/reference/manifest.json` atomically. The manifest records the source version, collection time, counts, checksums, and warnings.
+`pnpm data:collect` collects the Korean snapshot from https://prilus.gitlab.io/ by running the site's own decoder in Chromium and reading its in-memory MabiDB cache. `scripts/reference-data.ts` defines the required tables, validates references, and publishes matching tables and `src/data/reference/manifest.json` atomically. The manifest records the source version, collection time, counts, checksums, and warnings.
 
 The current snapshot contains these 25 tables under `src/data/reference/snapshots/`:
 
@@ -134,6 +134,7 @@ If collection code changed, also run `pnpm exec tsx scripts/check-reference-coll
 
 - Builders use `readSnapshot`. Do not import the Node-only loader or entire raw tables into browser code or runtime APIs; consume the generated subsets.
 - Since the 2026-10-15 source, item `IsDyeAble` and totem `Flags` have been replaced by category-based metadata. Totem classification follows `ItemList.CategoryId` into `ItemCategoryList.TagMask` and `ItemCategoryGroups`. `ExtraTotem`, `PetTotem`, and `SecondaryTotem` require all group bits to be present. Collect both tables in the same snapshot; serialize `Uint8Array` masks as numeric arrays.
+- Since the 2026-10-29 source, Prilus serves its bundle from a CDN (the collector sets the site's `assetSelfUntil` fallback flag), downloads `kr_resourcedata.bin.zst`, and keeps only compressed bytes in IndexedDB. The collector finds the exported MabiDB instance among loaded `/assets/*.js` modules, awaits `startFull`, and reads `getData(name, "kr")`; manifests record decoder `upstream-playwright-mabidb`. Earlier manifests keep `upstream-playwright-indexeddb`.
 - Roll back schema support with its corresponding data when restoring older formats. Do not fabricate newly required tables for an old snapshot.
 - Preserve upstream placeholders such as `not found key` and `<nil>` in raw data; retain existing exclusion/unavailable behavior in derived data.
 - If `.collect-lock` remains, inspect running collectors and its `previous-snapshots` backup. Restore files matching the active manifest before removing the backup or lock. Never run concurrent collectors.

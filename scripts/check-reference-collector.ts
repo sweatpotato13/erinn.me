@@ -19,7 +19,7 @@ function mockPages(context: BrowserContext, failure: Failure) {
             if (route.request().isNavigationRequest()) {
                 return route.fulfill({
                     contentType: "text/html",
-                    body: `<script>fetch('https://mabires.pril.cc/resourcedata/kr/kr_resourcedata.bin.br').then(() => { ${failure === "decoder" ? "throw new Error('simulated decoder failure')" : ""} });</script>`,
+                    body: `<script>fetch('https://mabires.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst').then(() => { ${failure === "decoder" ? "throw new Error('simulated decoder failure')" : ""} });</script>`,
                 });
             }
             return route.fulfill({
