@@ -658,7 +658,11 @@ const sourceSchema = z.object({
     language: z.literal("kr"),
     resourceUrl: z.url(),
     versionUrl: z.url(),
-    decoder: z.literal("upstream-playwright-indexeddb"),
+    // Snapshots before the 2026-10-29 source were exported from upstream IndexedDB tables.
+    decoder: z.enum([
+        "upstream-playwright-mabidb",
+        "upstream-playwright-indexeddb",
+    ]),
     assets: z.array(z.url()).min(1),
 });
 export type Source = z.infer<typeof sourceSchema>;
