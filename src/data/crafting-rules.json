@@ -1,10 +1,10 @@
 {
     "version": "crafting-rules-1",
     "sources": [
-        "https://prilus.gitlab.io/assets/consts-DUtChVyk.js",
-        "https://prilus.gitlab.io/assets/productionInfo-CDP87h7e.js"
+        "https://prilus.gitlab.io/assets/consts-B6zvUUeD.js",
+        "https://prilus.gitlab.io/assets/productionInfo-DBSTHzep.js"
     ],
-    "verifiedAt": "2026-09-10",
+    "verifiedAt": "2026-11-05",
     "skills": {
         "1": 10011,
         "2": 10011,

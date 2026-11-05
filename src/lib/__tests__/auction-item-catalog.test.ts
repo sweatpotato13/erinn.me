@@ -41,13 +41,13 @@ describe("auction item catalog", () => {
         expect(validated.items).toHaveLength(500);
         expect(validated.selection.method).toBe("trading-demand");
         const rankedItems = validated.items.filter(item => item.sourceRank);
-        expect(rankedItems).toHaveLength(2);
+        expect(rankedItems).toHaveLength(1);
         expect(rankedItems.every(item => item.sourceRank! <= 300)).toBe(true);
         expect(
             validated.items.filter(item =>
                 ["current-listing", "recent-sale"].includes(item.evidence)
             )
-        ).toHaveLength(498);
+        ).toHaveLength(499);
         const item = getAuctionCatalogItems()[0];
         expect(getAuctionCatalogItemById(item.id)).toEqual(item);
         expect(getAuctionCatalogItemByExactName(item.name)).toEqual(item);

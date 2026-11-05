@@ -24,6 +24,8 @@ const recipeSchema = z.looseObject({
     ItemId: integer.positive(),
     FormId: integer,
     Level: integer,
+    LifeEffectId: integer,
+    UnlockCondition: z.enum(["", "Master", "LifeSpeciality"]),
     NeedPropName: z.string(),
     Essentials: z.array(group),
     CompleteEssentials: z.array(
@@ -50,6 +52,7 @@ function derive(input: unknown[], hash = sha256) {
     const recipes = new Map<string, CraftingRecipe>();
     for (const record of input) {
         const row = recipeSchema.parse(record);
+        assert.equal(row.UnlockCondition === "", row.LifeEffectId === 0);
         const original = stableJson(record);
         const fingerprint = hash(original);
         const existing = recipes.get(fingerprint);
@@ -85,7 +88,11 @@ function derive(input: unknown[], hash = sha256) {
             skill: skill
                 ? `${skill}${suffixes[row.Type] ? ` · ${suffixes[row.Type]}` : ""}`
                 : `스킬 설명 미확인 (${row.Type})`,
-            rank: rules.ranks[row.Level] ?? `랭크 설명 미확인 (${row.Level})`,
+            rank:
+                row.UnlockCondition === "LifeSpeciality"
+                    ? "특화"
+                    : (rules.ranks[row.Level] ??
+                      `랭크 설명 미확인 (${row.Level})`),
             process: row.Essentials.map(convert),
             finishes: row.CompleteEssentials.map(f => ({
                 groups: f.Essentials.map(convert),
@@ -93,6 +100,11 @@ function derive(input: unknown[], hash = sha256) {
             })),
             occurrences: 1,
             issues: [
+                ...(row.UnlockCondition
+                    ? [
+                          `${row.UnlockCondition === "Master" ? "명장" : "특화"} 해금 조건 확인 필요 (효과 #${row.LifeEffectId})`,
+                      ]
+                    : []),
                 ...[...new Set(ids)]
                     .filter(id => !names.has(id))
                     .map(id => `아이템 이름 미확인 #${id}`),
@@ -164,6 +176,35 @@ assert.deepEqual(sillien.process, [{ itemIds: [67200, 67244], count: 5 }]);
 assert.equal(sillien.finishes.length, 0);
 assert(catalog.recipes.some(r => r.finishes.length === 4));
 assert.throws(() => derive([{ ...data.ProductionList[0], Level: -1 }]));
+for (const [condition, label] of [
+    ["Master", "명장"],
+    ["LifeSpeciality", "특화"],
+]) {
+    const source = data.ProductionList.find(
+        r => r.UnlockCondition === condition
+    );
+    assert(source, `Missing ${condition} recipe fixture`);
+    const row = recipeSchema.parse(source);
+    assert(
+        derive([source]).recipes[0].issues.includes(
+            `${label} 해금 조건 확인 필요 (효과 #${row.LifeEffectId})`
+        )
+    );
+    if (condition === "LifeSpeciality")
+        assert.equal(derive([source]).recipes[0].rank, "특화");
+}
+assert.throws(() =>
+    derive([{ ...data.ProductionList[0], UnlockCondition: "Unknown" }])
+);
+assert.throws(() =>
+    derive([
+        {
+            ...data.ProductionList[0],
+            UnlockCondition: "Master",
+            LifeEffectId: 0,
+        },
+    ])
+);
 assert(
     derive([{ ...data.ProductionList[0], NeedPropName: "missing" }]).recipes[0]
         .issues.length
