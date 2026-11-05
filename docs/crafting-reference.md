@@ -46,6 +46,25 @@ mixed allocation is enabled only by an independently verified rule.
 
 ## Maintainer update and rollback
 
+The 2026-11-05 source adds `UnlockCondition` and `LifeEffectId` to all 1,612
+production records. Existing fields and ingredient quantities are unchanged.
+Forty-five recipes require a `Master` or `LifeSpeciality` unlock. The current
+[production display](https://prilus.gitlab.io/assets/productionInfo-DBSTHzep.js)
+resolves their names through `LifeSpeciality.LifeEffects`, which is outside the
+collected snapshot. The builder shows a 명장 or 특화 requirement with its original
+effect ID instead of guessing a name. These are character prerequisites, like
+rank and facility requirements, and do not change the material estimate.
+The 27 speciality recipes show 특화 instead of treating their source Level 0
+as the ordinary 연습 skill rank, following the upstream display distinction.
+Character eligibility and exact unlock names are not verified by this tool.
+
+All 19 skill mappings and rank semantics were checked against the current
+[constants module](https://prilus.gitlab.io/assets/consts-B6zvUUeD.js).
+The existing 방직기 label is retained for Type 1, which upstream labels 물레.
+The mechanics supplement remains empty. Hashing the complete original record
+changes every recipe fingerprint, so existing saved recipe selections require
+review and reselection through the existing source-change handling.
+
 For an intentional common source refresh, run `pnpm data:collect` using the existing
 collector prerequisites. Review and commit its raw tables/manifest with every
 affected derived consumer. Ordinary builds, page requests and CI never run it.

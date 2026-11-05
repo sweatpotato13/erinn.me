@@ -5,17 +5,17 @@
         "site": "https://prilus.gitlab.io/",
         "region": "kr",
         "language": "kr",
-        "resourceUrl": "https://mabires5.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst",
-        "versionUrl": "https://mabires5.pril.cc/resourceversion/kr/kr_resourceversion.json",
+        "resourceUrl": "https://mabires2.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst",
+        "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-mabidb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-CNtTXuxT.js"
+            "https://prilus.gitlab.io/assets/index-BuWZo5lO.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1793241448
+        "CreatedAt": 1793843770
     },
-    "collectedAt": "2026-10-29T03:18:42.670Z",
+    "collectedAt": "2026-11-05T04:19:54.579Z",
     "tables": {
         "OghamWordList": {
             "count": 26,
@@ -33,14 +33,14 @@
             "sha256": "17c42c6e0be08c39ec20af9d5c002bc9aad5f85316b64526cc4592d925f217c5"
         },
         "ItemList": {
-            "count": 43582,
-            "bytes": 23610335,
-            "sha256": "a3276e1d4dc579126d0df71b1665a58ba08d9975703196c933df1fd4ec8f3880"
+            "count": 43586,
+            "bytes": 23611291,
+            "sha256": "352e0cdba49c572d3c85b28aeeb30646b2940dfb0267614c81aeba2a12737701"
         },
         "ItemCategoryList": {
             "count": 8238,
-            "bytes": 3369279,
-            "sha256": "a5190956e4a78dc9104775d5fc48cffa46bdbf80694f5375a52c5d3b56f8a090"
+            "bytes": 3369318,
+            "sha256": "585bdf4e17af4671911ed185c86d8bf048869895ce775a422344123bc29f9659"
         },
         "ItemCategoryGroups": {
             "count": 22,
@@ -53,9 +53,9 @@
             "sha256": "e6ae7d9864f2d83fe989c0b13dcc8f7ce7f2c6b2f28ffb24b05678138acf65f0"
         },
         "StringTable": {
-            "count": 187458,
-            "bytes": 22940271,
-            "sha256": "9cddb04eb01a6039a147f24db2d209ae4ce7610ad03573bc87cf39083b83ad6a"
+            "count": 187563,
+            "bytes": 22951934,
+            "sha256": "653b994e4a921728b95c006a72f1c621bdfecaa054951065df7b8e53d1d15ec1"
         },
         "ItemExtendMetalWareList": {
             "count": 11607,
@@ -104,8 +104,8 @@
         },
         "ProductionList": {
             "count": 1612,
-            "bytes": 772523,
-            "sha256": "1f44c1e49d90ace5744cf5edb58714596451f883247069448d1415e46a72b3de"
+            "bytes": 834310,
+            "sha256": "ea4b4ce007cf154a1ced5737998469825ff225aa6032fc49e423e06643afc1e3"
         },
         "ItemExtendUpgradeList": {
             "count": 5318,

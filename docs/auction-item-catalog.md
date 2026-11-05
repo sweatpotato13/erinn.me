@@ -44,6 +44,18 @@ has 500 active entries (498 API observations and two ranking observations) and
 
 ## Updating
 
+On 2026-11-05, the existing collector checked all 500 active names and IDs.
+It observed 496 current listings and two recent sales. A fresh read of Labanyu's
+published total-value ranking verified 실습용 마력탄 at rank 240. That ranking
+still describes the seven days from 2025-12-14 04:00 KST, so its historical
+observation period remains unchanged.
+
+더스크바운드 이지스 가드(여성용) had no current listing, recent sale or published
+ranking membership. Its valid October 12 evidence and original check timestamp
+remain unchanged. Empty responses do not establish retirement. All 500 active
+and 104 archived identities are preserved. This one retained observation expires
+on 2026-11-11 at 14:40:24.899 Asia/Seoul and needs another evidence review then.
+
 1. Prepare an ordered JSON array of exact names or `{ "name", "canonicalId" }` objects.
 2. Run `pnpm catalog:collect --input <file>`. The maintainer-only command requires `NXOPEN_API_URL` and `NXOPEN_API_KEY`, checks current listings then recent sales, and writes an ignored report to `artifacts/auction-catalog-candidates.json`.
 3. Review evidence and explicitly select a canonical ID for duplicate names. Never change an existing canonical ID merely because live data is temporarily empty.
