@@ -216,5 +216,6 @@
 {"BonusStatMap":{"UseItemMeta":1},"Description":"privatefarm.6046","Id":1462,"IsAuctionSearchable":true,"IsExtraMiniature":false,"ItemId":5030762,"Name":"privatefarm.6037"},
 {"BonusStatMap":{"UseItemMeta":1},"Description":"privatefarm.6047","Id":1463,"IsAuctionSearchable":true,"IsExtraMiniature":false,"ItemId":5030763,"Name":"privatefarm.6038"},
 {"BonusStatMap":{"UseItemMeta":1},"Description":"privatefarm.6048","Id":1464,"IsAuctionSearchable":true,"IsExtraMiniature":false,"ItemId":5030764,"Name":"privatefarm.6039"},
-{"BonusStatMap":{"UseItemMeta":1},"Description":"privatefarm.6049","Id":1465,"IsAuctionSearchable":true,"IsExtraMiniature":false,"ItemId":5030765,"Name":"privatefarm.6040"}
+{"BonusStatMap":{"UseItemMeta":1},"Description":"privatefarm.6049","Id":1465,"IsAuctionSearchable":true,"IsExtraMiniature":false,"ItemId":5030765,"Name":"privatefarm.6040"},
+{"BonusStatMap":{"BonusDamage":3},"Description":"privatefarm.6051","Id":1466,"IsAuctionSearchable":true,"IsExtraMiniature":false,"ItemId":5030766,"Name":"privatefarm.6050"}
 ]

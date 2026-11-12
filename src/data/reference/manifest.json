@@ -9,13 +9,13 @@
         "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-mabidb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-BuWZo5lO.js"
+            "https://prilus.gitlab.io/assets/index-mNOQxErW.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1793843770
+        "CreatedAt": 1794457727
     },
-    "collectedAt": "2026-11-05T04:19:54.579Z",
+    "collectedAt": "2026-11-12T06:00:12.682Z",
     "tables": {
         "OghamWordList": {
             "count": 26,
@@ -33,34 +33,34 @@
             "sha256": "17c42c6e0be08c39ec20af9d5c002bc9aad5f85316b64526cc4592d925f217c5"
         },
         "ItemList": {
-            "count": 43586,
-            "bytes": 23611291,
-            "sha256": "352e0cdba49c572d3c85b28aeeb30646b2940dfb0267614c81aeba2a12737701"
+            "count": 43706,
+            "bytes": 23682045,
+            "sha256": "c508f3c3aae36c4845cb871c397929c0345d1f9563c76ed59d458045ff0cf350"
         },
         "ItemCategoryList": {
-            "count": 8238,
-            "bytes": 3369318,
-            "sha256": "585bdf4e17af4671911ed185c86d8bf048869895ce775a422344123bc29f9659"
+            "count": 8261,
+            "bytes": 3378676,
+            "sha256": "a6563bb7d828187c4e813a158562770eda051b83573552d85a6c08242416a6c9"
         },
         "ItemCategoryGroups": {
-            "count": 22,
-            "bytes": 436,
-            "sha256": "95921144b7200174693e742c9d18febafd2246326c2ccbcfe42e15d6355fa91b"
+            "count": 23,
+            "bytes": 458,
+            "sha256": "a8886a12a029343496a8c7aa9496cd7cf57ba8ff1011aba47014e782e85a0594"
         },
         "OptionSetList": {
             "count": 1770,
             "bytes": 1931341,
-            "sha256": "e6ae7d9864f2d83fe989c0b13dcc8f7ce7f2c6b2f28ffb24b05678138acf65f0"
+            "sha256": "3e36dbb81a7dcf68628deb574f14f86cd7bfbbd5cef1d285d410e99416247374"
         },
         "StringTable": {
-            "count": 187563,
-            "bytes": 22951934,
-            "sha256": "653b994e4a921728b95c006a72f1c621bdfecaa054951065df7b8e53d1d15ec1"
+            "count": 188076,
+            "bytes": 23019876,
+            "sha256": "b408956a3ed9955633bc8cf4eb61b701522550a2e10f8a8b66517207cc000cf7"
         },
         "ItemExtendMetalWareList": {
-            "count": 11607,
-            "bytes": 870061,
-            "sha256": "7bd7ef573894c1f7291192869706fe3e4fc74429aaf61c449f229811e9f29fa5"
+            "count": 11641,
+            "bytes": 872622,
+            "sha256": "e80d18406156fd471df01c0e8140578d668413420b84ce295ee11aa19ecaed3f"
         },
         "MetalWareAbilityList": {
             "count": 528,
@@ -103,34 +103,34 @@
             "sha256": "ce018ad063b44732d9d9d4b3fcbdbb77716be9300880523146a0c87b1462aece"
         },
         "ProductionList": {
-            "count": 1612,
-            "bytes": 834310,
-            "sha256": "ea4b4ce007cf154a1ced5737998469825ff225aa6032fc49e423e06643afc1e3"
+            "count": 1630,
+            "bytes": 842275,
+            "sha256": "0babdb383e0d175c9a12cb0c8b092242238d2842eec9f51d4bfbb79d03918d3f"
         },
         "ItemExtendUpgradeList": {
-            "count": 5318,
-            "bytes": 645288,
-            "sha256": "7bcc3415a1bfe6aa3441e90f53a5c9180a670c38fc32f45248eb97c9539372d9"
+            "count": 5343,
+            "bytes": 648520,
+            "sha256": "fca8e57f5516565278bd1084a99305290651b6d38e2e0742e1ddc46593169aa4"
         },
         "ItemUpgradeList": {
             "count": 3242,
-            "bytes": 2169993,
-            "sha256": "1ba10922f7b1fc83ded3ad981a1fc850642b09b20f582b77102380b42177dd3d"
+            "bytes": 2170020,
+            "sha256": "908a37c45a9358cffb095475680ddb42020913469948c021af5031d3719c21ad"
         },
         "MiniatureList": {
-            "count": 218,
-            "bytes": 38867,
-            "sha256": "ecd33a0090f5339fd59c4cd52cc1cf6fe2cec7e767f2570e21895d2bca444439"
+            "count": 219,
+            "bytes": 39041,
+            "sha256": "fc46c4cfb2a63365b70f00f7e1e3dbc6cf323c323499488432e817073158b201"
         },
         "ItemExtendTotemList": {
-            "count": 276,
-            "bytes": 30878,
-            "sha256": "d9c063704885819c327936d266d84cd9adab7e208cca68dd7376edff21956533"
+            "count": 278,
+            "bytes": 31038,
+            "sha256": "6f1ed3b3309cf28ebebc140dc0a0814b4b88569cee0f496fe1ab81323e2dacaf"
         },
         "BarterList": {
             "count": 48,
             "bytes": 8850,
-            "sha256": "5ca476065625b53703c81dece33d518f500ea284885edda779d666b5983226bb"
+            "sha256": "6799e0429ba0e781c54467ec01391eb907385800542d82d1d921599a91d3cf84"
         },
         "CommercePostNameMap": {
             "count": 17,
@@ -138,9 +138,9 @@
             "sha256": "5c4e4c3dbf7b7b0ba8c8035d4db22fda9e644768499e9e28c55e64f982d5f971"
         },
         "SkillList": {
-            "count": 1193,
-            "bytes": 3711528,
-            "sha256": "626779962f70c86b05de72fb2eeb1949beb63d773a69300ce25cb8704bc61a24"
+            "count": 1196,
+            "bytes": 3728454,
+            "sha256": "7f5c81dd786798556645c2708b41a6e68da182c9271cfc117b99c7623f500843"
         }
     },
     "warnings": {
@@ -165,7 +165,7 @@
             ]
         },
         "ItemList.Desc: placeholder": {
-            "count": 1403,
+            "count": 1405,
             "examples": [
                 "<nil>"
             ]
@@ -177,7 +177,7 @@
             ]
         },
         "SkillList.Desc: placeholder": {
-            "count": 406,
+            "count": 408,
             "examples": [
                 ""
             ]
@@ -199,13 +199,13 @@
             ]
         },
         "SkillList.HumanLevels.EffectDesc: placeholder": {
-            "count": 980,
+            "count": 981,
             "examples": [
                 ""
             ]
         },
         "SkillList.HumanLevels.LevelDesc: placeholder": {
-            "count": 2318,
+            "count": 2332,
             "examples": [
                 ""
             ]

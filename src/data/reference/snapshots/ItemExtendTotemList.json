@@ -274,5 +274,7 @@
 {"Bonuses":[{"Max":10,"Min":10,"StatName":"bonusdamage"}],"DamageSkinId":0,"Id":5160490,"TotemType":"/totem_bonusdamage/"},
 {"Bonuses":[{"Max":35,"Min":35,"StatName":"allalchemydamage"}],"DamageSkinId":0,"Id":5160491,"TotemType":"/totem_allalchemydamage/"},
 {"Bonuses":[{"Max":10,"Min":10,"StatName":"healingeffect"}],"DamageSkinId":0,"Id":5160492,"TotemType":"/totem_healingeffect/"},
-{"Bonuses":[],"DamageSkinId":35,"Id":5160508,"TotemType":"/totem_damageskin/"}
+{"Bonuses":[],"DamageSkinId":35,"Id":5160508,"TotemType":"/totem_damageskin/"},
+{"Bonuses":[],"DamageSkinId":37,"Id":5160517,"TotemType":"/totem_damageskin/"},
+{"Bonuses":[],"DamageSkinId":38,"Id":5160518,"TotemType":"/totem_damageskin/"}
 ]
