@@ -85,8 +85,23 @@ export async function collectReference() {
                 const until = Date.now() + 10_000;
                 !db && Date.now() < until;
                 await new Promise(wait => setTimeout(wait, 250))
-            )
+            ) {
+                const modulePreloads = new Set(
+                    Array.from(
+                        document.querySelectorAll<HTMLLinkElement>(
+                            'link[rel~="modulepreload"][href]'
+                        ),
+                        link => link.href
+                    )
+                );
                 for (const entry of performance.getEntriesByType("resource")) {
+                    // Workers use a different global scope and must not be evaluated in the page.
+                    if (
+                        !(entry instanceof PerformanceResourceTiming) ||
+                        (!["script", "link"].includes(entry.initiatorType) &&
+                            !modulePreloads.has(entry.name))
+                    )
+                        continue;
                     const url = new URL(entry.name);
                     if (
                         url.origin !== location.origin ||
@@ -111,6 +126,7 @@ export async function collectReference() {
                             db = candidate as MabiDB;
                     }
                 }
+            }
             if (!db) throw new Error("Prilus MabiDB instance not found");
             // Rejects with the decoder error; whenFull() only logs it and never settles.
             await db.startFull(true);

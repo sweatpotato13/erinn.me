@@ -15,12 +15,15 @@ const root = resolve("src/data/reference");
 const resourceUrl =
     "https://mabires.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst";
 
-// A Prilus-shaped page: a chunk that throws when imported, then a store module
-// exporting a MabiDB-like computed ref over the committed snapshot.
 const successModules: Record<string, string> = {
-    "/assets/index.js": `await fetch("/assets/broken.js");
-await import("/assets/store.js");
+    "/assets/index.js": `await import("/assets/broken.js").catch(() => {});
+await new Promise(resolve => {
+    const worker = new Worker("/assets/worker.js", { type: "module" });
+    worker.onmessage = () => { worker.terminate(); resolve(); };
+});
 await fetch("${resourceUrl}");`,
+    "/assets/worker.js": `if (typeof document === "undefined") self.postMessage("ready");
+else Promise.resolve().then(() => { throw new Error("worker evaluated in window"); });`,
     "/assets/broken.js": `throw new Error("not the store module");`,
     "/assets/store.js": `const tables = await (await fetch("/snapshot.json")).json();
 for (const row of tables.ItemCategoryList) row.TagMask = new Uint8Array(row.TagMask);
@@ -42,7 +45,7 @@ function mockPages(context: BrowserContext, scenario: Scenario) {
                 if (route.request().isNavigationRequest())
                     return route.fulfill({
                         contentType: "text/html",
-                        body: `<script type="module" src="/assets/index.js"></script>`,
+                        body: `<link rel="modulepreload" href="/assets/store.js"><script type="module" src="/assets/index.js"></script>`,
                     });
                 if (pathname in successModules)
                     return route.fulfill({
@@ -165,7 +168,7 @@ async function main() {
         await checkFailure(failure);
     await checkSuccess();
     console.log(
-        "Prilus browser checks passed: download/decoder failures preserve the snapshot, a MabiDB page past a failing chunk yields the committed snapshot, and Chromium closes with outbound requests blocked."
+        "Prilus browser checks passed: download/decoder failures preserve the snapshot, a modulepreloaded MabiDB page past a failing chunk and worker yields the committed snapshot, and Chromium closes with outbound requests blocked."
     );
 }
 

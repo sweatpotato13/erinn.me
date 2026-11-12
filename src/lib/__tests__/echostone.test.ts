@@ -103,6 +103,18 @@ test("all supported color/grade/agent combinations normalize without dropping ro
     ).toThrow("자료");
 });
 
+test("Hydra uses the official maximum of ten levels", () => {
+    const black = createEchoPool(reference, 5, 30, 53940);
+    const name = "하이드라 연성 마법 보호 감소 수치";
+    const hydra = black.options.find(o => o.name === name)!;
+    expect(hydra.max).toBe(10);
+    expect(hydra.effect).toBeNull();
+    expect(
+        echoProbability(black, { name, level: 10 }).combined
+    ).toBeGreaterThan(0);
+    expect(echoProbability(black, { name, level: 11 }).combined).toBe(0);
+});
+
 const synthetic: EchoPool = {
     color: 1,
     grade: 30,

@@ -93,6 +93,15 @@ const colors = data.EchoStoneList.map(color => {
                 })
                 .parse(raw);
             assert.equal(r.Min, 1, "Review new option minimum rule");
+            let maximum = r.Max;
+            if (
+                color.Id === 5 &&
+                r.Name === "하이드라 연성 마법 보호 감소 수치"
+            ) {
+                // Official cap correction predates the source update: https://mabinogi.nexon.com/m/news/notice_view.asp?id=4893919
+                assert([10, 20].includes(r.Max), "Review Hydra maximum");
+                maximum = 10;
+            }
             const ability = abilities.get(r.MWAbilityId);
             assert(
                 ability || r.MWAbilityId === 0,
@@ -104,7 +113,7 @@ const colors = data.EchoStoneList.map(color => {
                 id: index + 1,
                 name: r.Name,
                 abilityId: r.MWAbilityId,
-                max: r.Max,
+                max: maximum,
                 weight: r.Prob,
                 effect: e
                     ? {
@@ -119,6 +128,14 @@ const colors = data.EchoStoneList.map(color => {
     };
 });
 assert.equal(unique(colors, r => r.id, "color").length, 5);
+assert.equal(
+    colors
+        .find(c => c.id === 5)
+        ?.options.find(o => o.name === "하이드라 연성 마법 보호 감소 수치")
+        ?.max,
+    10,
+    "Hydra must use the official maximum"
+);
 const maxima = [
     ...new Set(colors.flatMap(c => c.options.map(o => o.max))),
 ].sort((a, b) => a - b);

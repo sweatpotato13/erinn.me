@@ -1,1627 +1,1627 @@
 {
     "version": 1,
-    "updatedAt": "2026-11-05",
+    "updatedAt": "2026-11-12",
     "selection": {
         "method": "trading-demand",
         "source": "Labanyu 경매장 아이템 거래 TOP 300: seven-day trading-volume and total-traded-value rankings; Nexon Open API current listings and recent sales",
         "observedFrom": "2025-12-13T19:00:00Z",
         "observedTo": "2025-12-20T19:00:00Z",
-        "limitations": "Rechecked on 2026-11-05: 498 active identities have fresh current-listing or recent-sale evidence from Nexon Open API; one has freshly checked published-ranking evidence. 더스크바운드 이지스 가드(여성용) had neither current API activity nor ranking membership and retains its valid 2026-10-12 evidence without a new freshness claim. No active or archived identities changed. The ranking still labels its data period as the seven days from 2025-12-14 04:00 KST; observedFrom/To describe that historical ranking, not current API activity. Labanyu samples the one-hour Nexon API by exact item name and excludes some item types. Empty observations do not establish retirement."
+        "limitations": "Rechecked on 2026-11-12: 498 active identities have fresh Nexon Open API evidence and one has freshly checked published-ranking evidence. 더스크바운드 이지스 그리브 retains valid November 5 evidence because fresh API and ranking observations were empty. Expired-evidence 더스크바운드 이지스 가드(여성용) moves to the archive with its original identity; fresh current-listing evidence returns 소울 리버레이트 해머 to discovery. Empty observations do not establish retirement. observedFrom/To retain the original ranking observation interval; current API observations use each item's verifiedAt. Labanyu samples the one-hour Nexon API by exact item name and excludes some item types."
     },
     "items": [
         {
             "id": "5050020",
             "name": "찬란한 세공 도구",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:15.027Z"
+            "verifiedAt": "2026-11-12T05:56:07.669Z"
         },
         {
             "id": "5100071",
             "name": "불타래",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:15.571Z"
+            "verifiedAt": "2026-11-12T05:56:08.202Z"
         },
         {
             "id": "95285",
             "name": "향기로운 꿀 우유",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:16.115Z"
+            "verifiedAt": "2026-11-12T05:56:08.729Z"
         },
         {
             "id": "3600006",
             "name": "무리아스의 유물(이데아)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:16.662Z"
+            "verifiedAt": "2026-11-12T05:56:09.254Z"
         },
         {
             "id": "63002",
             "name": "나무장작",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:17.213Z"
+            "verifiedAt": "2026-11-12T05:56:09.778Z"
         },
         {
             "id": "5170454",
             "name": "브리 레흐의 잔흔석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:17.750Z"
+            "verifiedAt": "2026-11-12T05:56:10.314Z"
         },
         {
             "id": "3600007",
             "name": "무리아스의 유물",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:18.412Z"
+            "verifiedAt": "2026-11-12T05:56:10.866Z"
         },
         {
             "id": "65003",
             "name": "물의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:18.954Z"
+            "verifiedAt": "2026-11-12T05:56:11.390Z"
         },
         {
             "id": "65002",
             "name": "불의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:19.525Z"
+            "verifiedAt": "2026-11-12T05:56:11.922Z"
         },
         {
             "id": "5100284",
             "name": "순도 높은 힘의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:20.063Z"
+            "verifiedAt": "2026-11-12T05:56:12.456Z"
         },
         {
             "id": "5160409",
             "name": "브리 레흐의 주화(물리 토템)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:20.625Z"
+            "verifiedAt": "2026-11-12T05:56:12.986Z"
         },
         {
             "id": "65005",
             "name": "흙의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:21.168Z"
+            "verifiedAt": "2026-11-12T05:56:13.514Z"
         },
         {
             "id": "52004",
             "name": "작은 녹색구슬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:21.698Z"
+            "verifiedAt": "2026-11-12T05:56:14.043Z"
         },
         {
             "id": "64635",
             "name": "붕괴된 마력의 정수",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:22.251Z"
+            "verifiedAt": "2026-11-12T05:56:14.580Z"
         },
         {
             "id": "85261",
             "name": "경계흔",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:22.848Z"
+            "verifiedAt": "2026-11-12T05:56:15.111Z"
         },
         {
             "id": "19407",
             "name": "파멸의 로브(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:23.385Z"
+            "verifiedAt": "2026-11-12T05:56:15.641Z"
         },
         {
             "id": "50486",
             "name": "낙지",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:23.926Z"
+            "verifiedAt": "2026-11-12T05:56:16.185Z"
         },
         {
             "id": "5100304",
             "name": "브리 레흐의 정수",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:24.462Z"
+            "verifiedAt": "2026-11-12T05:56:16.807Z"
         },
         {
             "id": "5040566",
             "name": "무리아스의 성수",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:25.010Z"
+            "verifiedAt": "2026-11-12T05:56:17.354Z"
         },
         {
             "id": "52001",
             "name": "나뭇가지",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:25.547Z"
+            "verifiedAt": "2026-11-12T05:56:17.881Z"
         },
         {
             "id": "5040788",
             "name": "8단계 붉은 개조석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:26.082Z"
+            "verifiedAt": "2026-11-12T05:56:18.410Z"
         },
         {
             "id": "63020",
             "name": "빈 병",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:26.622Z"
+            "verifiedAt": "2026-11-12T05:56:18.940Z"
         },
         {
             "id": "45037",
             "name": "마력탄",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:27.157Z"
+            "verifiedAt": "2026-11-12T05:56:19.466Z"
         },
         {
             "id": "5100057",
             "name": "심술 난 고양이의 구슬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:27.712Z"
+            "verifiedAt": "2026-11-12T05:56:19.995Z"
         },
         {
             "id": "5100091",
             "name": "얼어붙은 불타래",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:28.354Z"
+            "verifiedAt": "2026-11-12T05:56:20.550Z"
         },
         {
             "id": "5100466",
             "name": "희미하게 빛나는 명주실",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:28.900Z"
+            "verifiedAt": "2026-11-12T05:56:21.075Z"
         },
         {
             "id": "65004",
             "name": "바람의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:29.438Z"
+            "verifiedAt": "2026-11-12T05:56:21.600Z"
         },
         {
             "id": "3100003",
             "name": "이루샤 드롭 벨",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:30.004Z"
+            "verifiedAt": "2026-11-12T05:56:22.134Z"
         },
         {
             "id": "45038",
             "name": "고밀도 마력탄",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:30.547Z"
+            "verifiedAt": "2026-11-12T05:56:22.663Z"
         },
         {
             "id": "4400726",
             "name": "탈라 가흐 인챈트 선택 스크롤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:31.089Z"
+            "verifiedAt": "2026-11-12T05:56:23.193Z"
         },
         {
             "id": "5120209",
             "name": "균열의 편린",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:31.649Z"
+            "verifiedAt": "2026-11-12T05:56:23.732Z"
         },
         {
             "id": "51102",
             "name": "마나 허브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:32.188Z"
+            "verifiedAt": "2026-11-12T05:56:24.261Z"
         },
         {
             "id": "1080048",
             "name": "소울 리버레이트 리라",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:32.770Z"
+            "verifiedAt": "2026-11-12T05:56:24.789Z"
         },
         {
             "id": "63016",
             "name": "축복의 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:33.307Z"
+            "verifiedAt": "2026-11-12T05:56:25.316Z"
         },
         {
             "id": "5100467",
             "name": "끈적이게 엉긴 식물 덩어리",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:33.862Z"
+            "verifiedAt": "2026-11-12T05:56:25.848Z"
         },
         {
             "id": "51110",
             "name": "만드레이크",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:34.405Z"
+            "verifiedAt": "2026-11-12T05:56:26.382Z"
         },
         {
             "id": "65029",
             "name": "아라트의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:34.967Z"
+            "verifiedAt": "2026-11-12T05:56:26.916Z"
         },
         {
             "id": "1040054",
             "name": "소울 리버레이트 보우",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:35.520Z"
+            "verifiedAt": "2026-11-12T05:56:27.445Z"
         },
         {
             "id": "50468",
             "name": "문어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:36.069Z"
+            "verifiedAt": "2026-11-12T05:56:27.972Z"
         },
         {
             "id": "5040787",
             "name": "8단계 푸른 개조석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:36.601Z"
+            "verifiedAt": "2026-11-12T05:56:28.497Z"
         },
         {
             "id": "53940",
             "name": "에코스톤 각성제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:37.149Z"
+            "verifiedAt": "2026-11-12T05:56:29.023Z"
         },
         {
             "id": "1230039",
             "name": "소울 리버레이트 스태프",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:37.705Z"
+            "verifiedAt": "2026-11-12T05:56:29.552Z"
         },
         {
             "id": "85262",
             "name": "경계석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:38.356Z"
+            "verifiedAt": "2026-11-12T05:56:30.081Z"
         },
         {
             "id": "1650001",
             "name": "소울 리버레이트 힐링 원드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:38.895Z"
+            "verifiedAt": "2026-11-12T05:56:30.608Z"
         },
         {
             "id": "5100273",
             "name": "젬스톤 파우더",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:39.476Z"
+            "verifiedAt": "2026-11-12T05:56:31.132Z"
         },
         {
             "id": "5100303",
             "name": "브리 레흐의 코어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:40.028Z"
+            "verifiedAt": "2026-11-12T05:56:31.660Z"
         },
         {
             "id": "51101",
             "name": "블러디 허브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:40.581Z"
+            "verifiedAt": "2026-11-12T05:56:32.193Z"
         },
         {
             "id": "5100462",
             "name": "빛바랜 에너지 회로",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:41.135Z"
+            "verifiedAt": "2026-11-12T05:56:32.719Z"
         },
         {
             "id": "51031",
             "name": "완전 회복의 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:41.710Z"
+            "verifiedAt": "2026-11-12T05:56:33.250Z"
         },
         {
             "id": "86306",
             "name": "경매장 수수료 100% 할인 쿠폰",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:42.254Z"
+            "verifiedAt": "2026-11-12T05:56:33.777Z"
         },
         {
             "id": "63219",
             "name": "중급 나무장작",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:42.804Z"
+            "verifiedAt": "2026-11-12T05:56:34.307Z"
         },
         {
             "id": "52458",
             "name": "동물 캐릭터 분양 메달",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:43.564Z"
+            "verifiedAt": "2026-11-12T05:56:34.868Z"
         },
         {
             "id": "60063",
             "name": "별미 미끼통",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:44.127Z"
+            "verifiedAt": "2026-11-12T05:56:35.395Z"
         },
         {
             "id": "4200068",
             "name": "에린의 정기",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:44.707Z"
+            "verifiedAt": "2026-11-12T05:56:35.932Z"
         },
         {
             "id": "67200",
             "name": "실리엔 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:45.268Z"
+            "verifiedAt": "2026-11-12T05:56:36.462Z"
         },
         {
             "id": "64114",
             "name": "티어드롭 젬스톤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:45.865Z"
+            "verifiedAt": "2026-11-12T05:56:36.989Z"
         },
         {
             "id": "53935",
             "name": "블루 에코스톤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:46.498Z"
+            "verifiedAt": "2026-11-12T05:56:37.541Z"
         },
         {
             "id": "3100020",
             "name": "삼색 보석 반지",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:47.109Z"
+            "verifiedAt": "2026-11-12T05:56:38.112Z"
         },
         {
             "id": "60058",
             "name": "라바 고치",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:47.646Z"
+            "verifiedAt": "2026-11-12T05:56:38.639Z"
         },
         {
             "id": "5100461",
             "name": "고리아스 동력원",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:48.186Z"
+            "verifiedAt": "2026-11-12T05:56:39.163Z"
         },
         {
             "id": "64009",
             "name": "미스릴괴",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:48.831Z"
+            "verifiedAt": "2026-11-12T05:56:39.692Z"
         },
         {
             "id": "2310007",
             "name": "블리안 엔더스 인텐스 글러브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:50.153Z"
+            "verifiedAt": "2026-11-12T05:56:40.251Z"
         },
         {
             "id": "5100469",
             "name": "희미한 에너지 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:50.718Z"
+            "verifiedAt": "2026-11-12T05:56:40.788Z"
         },
         {
             "id": "5100265",
             "name": "폴룩스",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:51.251Z"
+            "verifiedAt": "2026-11-12T05:56:41.318Z"
         },
         {
             "id": "60029",
             "name": "고급 가죽끈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:51.828Z"
+            "verifiedAt": "2026-11-12T05:56:41.846Z"
         },
         {
             "id": "64674",
             "name": "깨어난 힘의 정수",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:52.376Z"
+            "verifiedAt": "2026-11-12T05:56:42.378Z"
         },
         {
             "id": "50118",
             "name": "물이 든 병",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:52.920Z"
+            "verifiedAt": "2026-11-12T05:56:42.901Z"
         },
         {
             "id": "5100306",
             "name": "초록빛 기억의 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:53.563Z"
+            "verifiedAt": "2026-11-12T05:56:43.427Z"
         },
         {
             "id": "67257",
             "name": "고대의 뿔 반지",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:54.229Z"
+            "verifiedAt": "2026-11-12T05:56:44.082Z"
         },
         {
             "id": "52003",
             "name": "대못",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:54.776Z"
+            "verifiedAt": "2026-11-12T05:56:44.614Z"
         },
         {
             "id": "1400011",
             "name": "소울 리버레이트 실드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:55.321Z"
+            "verifiedAt": "2026-11-12T05:56:45.143Z"
         },
         {
             "id": "67201",
             "name": "실리엔",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:55.866Z"
+            "verifiedAt": "2026-11-12T05:56:45.673Z"
         },
         {
             "id": "63051",
             "name": "거대한 외침의 뿔피리",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:56.431Z"
+            "verifiedAt": "2026-11-12T05:56:46.202Z"
         },
         {
             "id": "85552",
             "name": "전용 해제 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:56.975Z"
+            "verifiedAt": "2026-11-12T05:56:46.732Z"
         },
         {
             "id": "5100468",
             "name": "달아오른 광두정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:57.753Z"
+            "verifiedAt": "2026-11-12T05:56:47.264Z"
         },
         {
             "id": "51104",
             "name": "베이스 허브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:58.287Z"
+            "verifiedAt": "2026-11-12T05:56:47.800Z"
         },
         {
             "id": "63220",
             "name": "고급 나무장작",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:58.843Z"
+            "verifiedAt": "2026-11-12T05:56:48.330Z"
         },
         {
             "id": "64656",
             "name": "정화된 백색 가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:59.372Z"
+            "verifiedAt": "2026-11-12T05:56:48.866Z"
         },
         {
             "id": "1270029",
             "name": "소울 리버레이트 듀얼건",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:27:59.919Z"
+            "verifiedAt": "2026-11-12T05:56:49.397Z"
         },
         {
             "id": "5100330",
             "name": "마력석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:00.473Z"
+            "verifiedAt": "2026-11-12T05:56:49.935Z"
         },
         {
             "id": "53938",
             "name": "블랙 에코스톤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:01.073Z"
+            "verifiedAt": "2026-11-12T05:56:50.476Z"
         },
         {
             "id": "5000342",
             "name": "간편한 망각의 비약",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:01.673Z"
+            "verifiedAt": "2026-11-12T05:56:51.012Z"
         },
         {
             "id": "4200038",
             "name": "마기그래프 회복 주문서(10)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:02.251Z"
+            "verifiedAt": "2026-11-12T05:56:51.558Z"
         },
         {
             "id": "5050005",
             "name": "정교한 세공 도구",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:02.802Z"
+            "verifiedAt": "2026-11-12T05:56:52.090Z"
         },
         {
             "id": "67100",
             "name": "힐웬 광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:03.371Z"
+            "verifiedAt": "2026-11-12T05:56:52.618Z"
         },
         {
             "id": "53942",
             "name": "최고급 에코스톤 각성제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:04.029Z"
+            "verifiedAt": "2026-11-12T05:56:53.158Z"
         },
         {
             "id": "53564",
             "name": "고대 마력탄",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:04.560Z"
+            "verifiedAt": "2026-11-12T05:56:53.691Z"
         },
         {
             "id": "64302",
             "name": "고급 양털",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:05.099Z"
+            "verifiedAt": "2026-11-12T05:56:54.225Z"
         },
         {
             "id": "1420006",
             "name": "소울 리버레이트 이터널 애로우",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:05.624Z"
+            "verifiedAt": "2026-11-12T05:56:54.755Z"
         },
         {
             "id": "5160412",
             "name": "브리 레흐의 주화(지원 토템)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:06.169Z"
+            "verifiedAt": "2026-11-12T05:56:55.283Z"
         },
         {
             "id": "67209",
             "name": "온전한 실리엔",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:06.707Z"
+            "verifiedAt": "2026-11-12T05:56:55.814Z"
         },
         {
             "id": "51028",
             "name": "생명력과 스태미나 50 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:07.239Z"
+            "verifiedAt": "2026-11-12T05:56:56.346Z"
         },
         {
             "id": "1020004",
             "name": "소울 리버레이트 액스",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:07.785Z"
+            "verifiedAt": "2026-11-12T05:56:56.883Z"
         },
         {
             "id": "64644",
             "name": "각성된 힘의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:08.336Z"
+            "verifiedAt": "2026-11-12T05:56:57.419Z"
         },
         {
             "id": "64001",
             "name": "철괴",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:08.870Z"
+            "verifiedAt": "2026-11-12T05:56:57.951Z"
         },
         {
             "id": "64105",
             "name": "단단하게 결정화된 광물 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:09.413Z"
+            "verifiedAt": "2026-11-12T05:56:58.489Z"
         },
         {
             "id": "51179",
             "name": "온전한 회복의 2000 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:09.968Z"
+            "verifiedAt": "2026-11-12T05:56:59.018Z"
         },
         {
             "id": "5041002",
             "name": "탈틴 농장 일반 석영",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:10.512Z"
+            "verifiedAt": "2026-11-12T05:56:59.556Z"
         },
         {
             "id": "50007",
             "name": "나무열매",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:11.047Z"
+            "verifiedAt": "2026-11-12T05:57:00.086Z"
         },
         {
             "id": "1650002",
             "name": "나이트브링어 세이비어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:11.623Z"
+            "verifiedAt": "2026-11-12T05:57:00.624Z"
         },
         {
             "id": "1060011",
             "name": "소울 리버레이트 실린더",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:12.172Z"
+            "verifiedAt": "2026-11-12T05:57:01.155Z"
         },
         {
             "id": "60022",
             "name": "최고급 옷감",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:12.719Z"
+            "verifiedAt": "2026-11-12T05:57:01.692Z"
         },
         {
             "id": "1230010",
             "name": "나이트브링어 인퀴지터",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:13.278Z"
+            "verifiedAt": "2026-11-12T05:57:02.254Z"
         },
         {
             "id": "50664",
             "name": "새우 조련 미끼",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:13.852Z"
+            "verifiedAt": "2026-11-12T05:57:02.793Z"
         },
         {
             "id": "5041001",
             "name": "탈틴 농장 일반 마법 거미줄",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:14.412Z"
+            "verifiedAt": "2026-11-12T05:57:03.336Z"
         },
         {
             "id": "1000059",
             "name": "소울 리버레이트 소드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:15.080Z"
+            "verifiedAt": "2026-11-12T05:57:03.878Z"
         },
         {
             "id": "85841",
             "name": "환생의 비약",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:15.627Z"
+            "verifiedAt": "2026-11-12T05:57:04.411Z"
         },
         {
             "id": "51105",
             "name": "골드 허브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:16.157Z"
+            "verifiedAt": "2026-11-12T05:57:04.943Z"
         },
         {
             "id": "4300990",
             "name": "기억의 보석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:16.708Z"
+            "verifiedAt": "2026-11-12T05:57:05.563Z"
         },
         {
             "id": "19406",
             "name": "파멸의 로브(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:17.249Z"
+            "verifiedAt": "2026-11-12T05:57:06.108Z"
         },
         {
             "id": "5550001",
             "name": "세트 효과 최대 대미지 증가 +1 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:17.784Z"
+            "verifiedAt": "2026-11-12T05:57:06.641Z"
         },
         {
             "id": "51178",
             "name": "온전한 회복의 1500 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:18.317Z"
+            "verifiedAt": "2026-11-12T05:57:07.177Z"
         },
         {
             "id": "64029",
             "name": "미스릴판",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:18.851Z"
+            "verifiedAt": "2026-11-12T05:57:07.705Z"
         },
         {
             "id": "63384",
             "name": "조화의 나무판",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:19.387Z"
+            "verifiedAt": "2026-11-12T05:57:08.248Z"
         },
         {
             "id": "2400245",
             "name": "블리안 엔더스 인텐스 부츠",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:20.452Z"
+            "verifiedAt": "2026-11-12T05:57:08.807Z"
         },
         {
             "id": "60050",
             "name": "질긴 실",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:20.987Z"
+            "verifiedAt": "2026-11-12T05:57:09.344Z"
         },
         {
             "id": "53937",
             "name": "실버 에코스톤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:21.540Z"
+            "verifiedAt": "2026-11-12T05:57:09.891Z"
         },
         {
             "id": "60030",
             "name": "최고급 가죽끈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:22.077Z"
+            "verifiedAt": "2026-11-12T05:57:10.426Z"
         },
         {
             "id": "60054",
             "name": "나무판",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:22.634Z"
+            "verifiedAt": "2026-11-12T05:57:10.960Z"
         },
         {
             "id": "4300451",
             "name": "화목을 기원하는 신비한 영약",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:23.167Z"
+            "verifiedAt": "2026-11-12T05:57:11.498Z"
         },
         {
             "id": "64003",
             "name": "동괴",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:23.700Z"
+            "verifiedAt": "2026-11-12T05:57:12.029Z"
         },
         {
             "id": "4130017",
             "name": "반딧불이의 기억 2차 타이틀 획득 쿠폰",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:24.243Z"
+            "verifiedAt": "2026-11-12T05:57:12.564Z"
         },
         {
             "id": "5100056",
             "name": "응축된 힘의 조각 : 석궁",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:24.781Z"
+            "verifiedAt": "2026-11-12T05:57:13.095Z"
         },
         {
             "id": "5040996",
             "name": "탈틴 농장 일반 블랙베리",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:25.340Z"
+            "verifiedAt": "2026-11-12T05:57:13.632Z"
         },
         {
             "id": "1040010",
             "name": "나이트브링어 프레데터",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:26.091Z"
+            "verifiedAt": "2026-11-12T05:57:14.175Z"
         },
         {
             "id": "51109",
             "name": "포이즌 허브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:26.645Z"
+            "verifiedAt": "2026-11-12T05:57:14.702Z"
         },
         {
             "id": "64641",
             "name": "정제된 촉매제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:27.191Z"
+            "verifiedAt": "2026-11-12T05:57:15.236Z"
         },
         {
             "id": "63709",
             "name": "인챈트 보호 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:27.725Z"
+            "verifiedAt": "2026-11-12T05:57:15.766Z"
         },
         {
             "id": "62004",
             "name": "마법가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:28.280Z"
+            "verifiedAt": "2026-11-12T05:57:16.296Z"
         },
         {
             "id": "5100289",
             "name": "퓨어 젬스톤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:28.819Z"
+            "verifiedAt": "2026-11-12T05:57:16.824Z"
         },
         {
             "id": "5040997",
             "name": "탈틴 농장 일반 오크라",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:29.357Z"
+            "verifiedAt": "2026-11-12T05:57:17.361Z"
         },
         {
             "id": "5030526",
             "name": "낭만 농장 칼리아흐의 결계 미니어처",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:29.893Z"
+            "verifiedAt": "2026-11-12T05:57:17.892Z"
         },
         {
             "id": "5040998",
             "name": "탈틴 농장 일반 재스민",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:30.427Z"
+            "verifiedAt": "2026-11-12T05:57:18.426Z"
         },
         {
             "id": "5100463",
             "name": "순도 높은 실리엔 섬유 다발",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:31.003Z"
+            "verifiedAt": "2026-11-12T05:57:18.955Z"
         },
         {
             "id": "67101",
             "name": "힐웬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:31.535Z"
+            "verifiedAt": "2026-11-12T05:57:19.489Z"
         },
         {
             "id": "50022",
             "name": "밀가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:32.084Z"
+            "verifiedAt": "2026-11-12T05:57:20.024Z"
         },
         {
             "id": "5100305",
             "name": "주황빛 기억의 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:32.621Z"
+            "verifiedAt": "2026-11-12T05:57:20.558Z"
         },
         {
             "id": "40779",
             "name": "데모닉 글루미 선데이",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:33.215Z"
+            "verifiedAt": "2026-11-12T05:57:21.121Z"
         },
         {
             "id": "5040994",
             "name": "탈틴 농장 거미 영양제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:33.760Z"
+            "verifiedAt": "2026-11-12T05:57:21.653Z"
         },
         {
             "id": "64639",
             "name": "순도 높은 강화제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:34.313Z"
+            "verifiedAt": "2026-11-12T05:57:22.191Z"
         },
         {
             "id": "153022",
             "name": "데모닉 글루미 선데이 R",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:35.017Z"
+            "verifiedAt": "2026-11-12T05:57:22.735Z"
         },
         {
             "id": "5100282",
             "name": "순도 높은 융합의 실리엔",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:35.550Z"
+            "verifiedAt": "2026-11-12T05:57:23.264Z"
         },
         {
             "id": "5040993",
             "name": "탈틴 농장 고무나무 영양제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:36.084Z"
+            "verifiedAt": "2026-11-12T05:57:23.796Z"
         },
         {
             "id": "64301",
             "name": "미스릴 대못",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:36.632Z"
+            "verifiedAt": "2026-11-12T05:57:24.336Z"
         },
         {
             "id": "1260020",
             "name": "소울 리버레이트 너클",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:37.181Z"
+            "verifiedAt": "2026-11-12T05:57:24.867Z"
         },
         {
             "id": "5100274",
             "name": "마력이 깃든 융합제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:37.708Z"
+            "verifiedAt": "2026-11-12T05:57:25.487Z"
         },
         {
             "id": "63221",
             "name": "최고급 나무장작",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:38.261Z"
+            "verifiedAt": "2026-11-12T05:57:26.038Z"
         },
         {
             "id": "143022",
             "name": "데모닉 글루미 선데이 S",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:38.829Z"
+            "verifiedAt": "2026-11-12T05:57:26.585Z"
         },
         {
             "id": "5040991",
             "name": "탈틴 농장 재스민 씨앗",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:39.365Z"
+            "verifiedAt": "2026-11-12T05:57:27.112Z"
         },
         {
             "id": "64007",
             "name": "금괴",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:39.901Z"
+            "verifiedAt": "2026-11-12T05:57:27.640Z"
         },
         {
             "id": "2210006",
             "name": "블리안 엔더스 인텐스 써클릿(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:40.477Z"
+            "verifiedAt": "2026-11-12T05:57:28.196Z"
         },
         {
             "id": "1020011",
             "name": "나이트브링어 바이킹",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:41.018Z"
+            "verifiedAt": "2026-11-12T05:57:28.731Z"
         },
         {
             "id": "64680",
             "name": "신성한 광물 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:41.555Z"
+            "verifiedAt": "2026-11-12T05:57:29.262Z"
         },
         {
             "id": "64046",
             "name": "가넷",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:42.090Z"
+            "verifiedAt": "2026-11-12T05:57:29.795Z"
         },
         {
             "id": "29004",
             "name": "빛나는 클로버 모자",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:42.627Z"
+            "verifiedAt": "2026-11-12T05:57:30.326Z"
         },
         {
             "id": "67207",
             "name": "신비한 허브 가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:43.186Z"
+            "verifiedAt": "2026-11-12T05:57:30.863Z"
         },
         {
             "id": "63286",
             "name": "악마의 광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:43.734Z"
+            "verifiedAt": "2026-11-12T05:57:31.394Z"
         },
         {
             "id": "40090",
             "name": "힐링 원드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:44.297Z"
+            "verifiedAt": "2026-11-12T05:57:31.927Z"
         },
         {
             "id": "85250",
             "name": "전이의 카탈리스트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:44.960Z"
+            "verifiedAt": "2026-11-12T05:57:32.453Z"
         },
         {
             "id": "64036",
             "name": "철광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:45.498Z"
+            "verifiedAt": "2026-11-12T05:57:32.978Z"
         },
         {
             "id": "64002",
             "name": "철광석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:46.042Z"
+            "verifiedAt": "2026-11-12T05:57:33.509Z"
         },
         {
             "id": "4300073",
             "name": "프리미엄 콤비네이션 멤버십(30일)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:46.582Z"
+            "verifiedAt": "2026-11-12T05:57:34.039Z"
         },
         {
             "id": "5100075",
             "name": "공상을 담은 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:47.121Z"
+            "verifiedAt": "2026-11-12T05:57:34.566Z"
         },
         {
             "id": "5030255",
             "name": "사이브 엑스트라 미니어처",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:47.662Z"
+            "verifiedAt": "2026-11-12T05:57:35.095Z"
         },
         {
             "id": "5160460",
             "name": "두근두근 삼색 냥토템(마법 공격력 토템)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:48.195Z"
+            "verifiedAt": "2026-11-12T05:57:35.621Z"
         },
         {
             "id": "5040999",
             "name": "탈틴 농장 일반 붉은 배",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:48.764Z"
+            "verifiedAt": "2026-11-12T05:57:36.150Z"
         },
         {
             "id": "51172",
             "name": "스태미나 500 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:49.319Z"
+            "verifiedAt": "2026-11-12T05:57:36.676Z"
         },
         {
             "id": "17501",
             "name": "실러릿 슈즈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:49.951Z"
+            "verifiedAt": "2026-11-12T05:57:37.207Z"
         },
         {
             "id": "2210005",
             "name": "블리안 엔더스 인텐스 써클릿(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:50.510Z"
+            "verifiedAt": "2026-11-12T05:57:37.756Z"
         },
         {
             "id": "64005",
             "name": "은괴",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:51.060Z"
+            "verifiedAt": "2026-11-12T05:57:38.296Z"
         },
         {
             "id": "5120168",
             "name": "빛나는 구슬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:51.602Z"
+            "verifiedAt": "2026-11-12T05:57:38.842Z"
         },
         {
             "id": "60028",
             "name": "일반 가죽끈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:52.130Z"
+            "verifiedAt": "2026-11-12T05:57:39.374Z"
         },
         {
             "id": "1200007",
             "name": "나이트브링어 워로드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:52.671Z"
+            "verifiedAt": "2026-11-12T05:57:39.906Z"
         },
         {
             "id": "64048",
             "name": "루비",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:53.337Z"
+            "verifiedAt": "2026-11-12T05:57:40.434Z"
         },
         {
             "id": "5550004",
             "name": "세트 효과 매그넘 샷 강화 +1 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:53.867Z"
+            "verifiedAt": "2026-11-12T05:57:40.960Z"
         },
         {
             "id": "5041000",
             "name": "탈틴 농장 일반 고무",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:54.406Z"
+            "verifiedAt": "2026-11-12T05:57:41.486Z"
         },
         {
             "id": "64028",
             "name": "금판",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:54.939Z"
+            "verifiedAt": "2026-11-12T05:57:42.012Z"
         },
         {
             "id": "2300624",
             "name": "더스크바운드 에테리얼 글러브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:55.495Z"
+            "verifiedAt": "2026-11-12T05:57:42.536Z"
         },
         {
             "id": "51103",
             "name": "선라이트 허브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:56.041Z"
+            "verifiedAt": "2026-11-12T05:57:43.057Z"
         },
         {
             "id": "5550003",
             "name": "세트 효과 크리티컬 대미지 증가 +1 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:56.596Z"
+            "verifiedAt": "2026-11-12T05:57:43.587Z"
         },
         {
             "id": "76253",
             "name": "승단 배지",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:57.149Z"
+            "verifiedAt": "2026-11-12T05:57:44.114Z"
         },
         {
             "id": "53936",
             "name": "옐로 에코스톤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:57.702Z"
+            "verifiedAt": "2026-11-12T05:57:44.652Z"
         },
         {
             "id": "2201707",
             "name": "스페셜 아리아 실프 웨어(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:58.265Z"
+            "verifiedAt": "2026-11-12T05:57:45.195Z"
         },
         {
             "id": "86074",
             "name": "작은 하마 조각상(거래 가능)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:58.836Z"
+            "verifiedAt": "2026-11-12T05:57:45.725Z"
         },
         {
             "id": "53934",
             "name": "레드 에코스톤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:59.377Z"
+            "verifiedAt": "2026-11-12T05:57:46.259Z"
         },
         {
             "id": "60049",
             "name": "최고급 수제 붕대",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:28:59.910Z"
+            "verifiedAt": "2026-11-12T05:57:46.788Z"
         },
         {
             "id": "64051",
             "name": "빤짝이 종이",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:00.499Z"
+            "verifiedAt": "2026-11-12T05:57:47.315Z"
         },
         {
             "id": "5550019",
             "name": "세트 효과 힐링 강화 +1 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:01.039Z"
+            "verifiedAt": "2026-11-12T05:57:47.848Z"
         },
         {
             "id": "2200614",
             "name": "블리안 엔더스 클래시 수트(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:01.595Z"
+            "verifiedAt": "2026-11-12T05:57:48.377Z"
         },
         {
             "id": "64044",
             "name": "에메랄드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:02.131Z"
+            "verifiedAt": "2026-11-12T05:57:48.912Z"
         },
         {
             "id": "5100040",
             "name": "손상된 글라스 기브넨의 깃털",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:02.751Z"
+            "verifiedAt": "2026-11-12T05:57:49.435Z"
         },
         {
             "id": "67110",
             "name": "힐웬 합금",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:03.287Z"
+            "verifiedAt": "2026-11-12T05:57:49.959Z"
         },
         {
             "id": "60013",
             "name": "고급 실크",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:03.818Z"
+            "verifiedAt": "2026-11-12T05:57:50.487Z"
         },
         {
             "id": "12002",
             "name": "켈트 십자가",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:04.374Z"
+            "verifiedAt": "2026-11-12T05:57:51.045Z"
         },
         {
             "id": "5100039",
             "name": "글라스 기브넨의 심장",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:04.905Z"
+            "verifiedAt": "2026-11-12T05:57:51.584Z"
         },
         {
             "id": "60014",
             "name": "최고급 실크",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:05.449Z"
+            "verifiedAt": "2026-11-12T05:57:52.111Z"
         },
         {
             "id": "51010",
             "name": "마나 300 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:06.007Z"
+            "verifiedAt": "2026-11-12T05:57:52.643Z"
         },
         {
             "id": "5100038",
             "name": "아다만티움",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:06.547Z"
+            "verifiedAt": "2026-11-12T05:57:53.172Z"
         },
         {
             "id": "60004",
             "name": "매듭끈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:07.086Z"
+            "verifiedAt": "2026-11-12T05:57:53.732Z"
         },
         {
             "id": "5040665",
             "name": "안락의 파편 스타더스트의 형상",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:07.639Z"
+            "verifiedAt": "2026-11-12T05:57:54.339Z"
         },
         {
             "id": "5100074",
             "name": "결정화된 겨울의 잔해",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:08.180Z"
+            "verifiedAt": "2026-11-12T05:57:54.869Z"
         },
         {
             "id": "5100005",
             "name": "부드러운 양피지",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:08.765Z"
+            "verifiedAt": "2026-11-12T05:57:55.394Z"
         },
         {
             "id": "5040986",
             "name": "무리아스의 성수 효과 기억의 스크롤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:09.322Z"
+            "verifiedAt": "2026-11-12T05:57:55.919Z"
         },
         {
             "id": "64043",
             "name": "스타 사파이어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:09.873Z"
+            "verifiedAt": "2026-11-12T05:57:56.446Z"
         },
         {
             "id": "5040386",
             "name": "중형 미끼통",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:10.406Z"
+            "verifiedAt": "2026-11-12T05:57:56.969Z"
         },
         {
             "id": "5120207",
             "name": "글렌 베르나 추가 입장권",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:10.982Z"
+            "verifiedAt": "2026-11-12T05:57:57.495Z"
         },
         {
             "id": "85254",
             "name": "도전의 브리 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:11.529Z"
+            "verifiedAt": "2026-11-12T05:57:58.020Z"
         },
         {
             "id": "5100328",
             "name": "녹음이 깃든 마법사의 보석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:12.080Z"
+            "verifiedAt": "2026-11-12T05:57:58.551Z"
         },
         {
             "id": "60025",
             "name": "고급 가죽",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:12.718Z"
+            "verifiedAt": "2026-11-12T05:57:59.077Z"
         },
         {
             "id": "5100381",
             "name": "빛나는 양털",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:13.280Z"
+            "verifiedAt": "2026-11-12T05:57:59.604Z"
         },
         {
             "id": "5120166",
             "name": "브리 레흐 던전 통행증",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:13.820Z"
+            "verifiedAt": "2026-11-12T05:58:00.128Z"
         },
         {
             "id": "67202",
             "name": "돌연변이 토끼의 발",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:14.350Z"
+            "verifiedAt": "2026-11-12T05:58:00.654Z"
         },
         {
             "id": "5100275",
             "name": "찬란한 기억의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:14.885Z"
+            "verifiedAt": "2026-11-12T05:58:01.182Z"
         },
         {
             "id": "60021",
             "name": "고급 옷감",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:15.421Z"
+            "verifiedAt": "2026-11-12T05:58:01.719Z"
         },
         {
             "id": "2220004",
             "name": "블리안 엔더스 듀러블 가드(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:15.969Z"
+            "verifiedAt": "2026-11-12T05:58:02.259Z"
         },
         {
             "id": "50474",
             "name": "닭고기",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:16.516Z"
+            "verifiedAt": "2026-11-12T05:58:02.786Z"
         },
         {
             "id": "5100464",
             "name": "순도 높은 힐웬 강판 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:17.048Z"
+            "verifiedAt": "2026-11-12T05:58:03.314Z"
         },
         {
             "id": "85257",
             "name": "숭고한 도전의 브리 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:17.592Z"
+            "verifiedAt": "2026-11-12T05:58:03.841Z"
         },
         {
             "id": "50023",
             "name": "보릿가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:18.150Z"
+            "verifiedAt": "2026-11-12T05:58:04.368Z"
         },
         {
             "id": "5100083",
             "name": "잘려 나간 겨울의 꿈 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:18.677Z"
+            "verifiedAt": "2026-11-12T05:58:04.896Z"
         },
         {
             "id": "5041104",
             "name": "명장의 연마재",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:19.210Z"
+            "verifiedAt": "2026-11-12T05:58:05.424Z"
         },
         {
             "id": "52039",
             "name": "종이학",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:19.744Z"
+            "verifiedAt": "2026-11-12T05:58:05.952Z"
         },
         {
             "id": "5160410",
             "name": "브리 레흐의 주화(마법 토템)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:20.268Z"
+            "verifiedAt": "2026-11-12T05:58:06.481Z"
         },
         {
             "id": "86075",
             "name": "눈이 새겨진 석판(거래 가능)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:20.797Z"
+            "verifiedAt": "2026-11-12T05:58:07.005Z"
         },
         {
             "id": "12524",
             "name": "보호의 7단계 붉은 개조석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:21.326Z"
+            "verifiedAt": "2026-11-12T05:58:07.528Z"
         },
         {
             "id": "76853",
             "name": "스페셜 백색의 힐러 2차 타이틀 획득 쿠폰",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:21.855Z"
+            "verifiedAt": "2026-11-12T05:58:08.079Z"
         },
         {
             "id": "5170414",
             "name": "에르그 경험치 조각(5000)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:22.385Z"
+            "verifiedAt": "2026-11-12T05:58:08.614Z"
         },
         {
             "id": "1200043",
             "name": "소울 리버레이트 블레이드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:22.915Z"
+            "verifiedAt": "2026-11-12T05:58:09.141Z"
         },
         {
             "id": "60051",
             "name": "질긴 끈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:23.443Z"
+            "verifiedAt": "2026-11-12T05:58:09.672Z"
         },
         {
             "id": "5100276",
             "name": "강렬한 기억의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:23.969Z"
+            "verifiedAt": "2026-11-12T05:58:10.199Z"
         },
         {
             "id": "64306",
             "name": "포근한 털가죽",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:24.495Z"
+            "verifiedAt": "2026-11-12T05:58:10.730Z"
         },
         {
             "id": "50473",
             "name": "칠면조 고기",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:25.023Z"
+            "verifiedAt": "2026-11-12T05:58:11.262Z"
         },
         {
             "id": "5050025",
             "name": "트렌드 아틀리에 옷감",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:25.550Z"
+            "verifiedAt": "2026-11-12T05:58:11.788Z"
         },
         {
             "id": "85256",
             "name": "고결한 수행의 브리 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:26.092Z"
+            "verifiedAt": "2026-11-12T05:58:12.311Z"
         },
         {
             "id": "3501200",
             "name": "찬란한 비단 운문 도포",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:26.646Z"
+            "verifiedAt": "2026-11-12T05:58:12.838Z"
         },
         {
             "id": "5600081",
             "name": "별을 낚는 미끼통",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:27.179Z"
+            "verifiedAt": "2026-11-12T05:58:13.362Z"
         },
         {
             "id": "16985",
             "name": "얼티밋 기아스 데버스테이션 글러브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:27.729Z"
+            "verifiedAt": "2026-11-12T05:58:13.895Z"
         },
         {
             "id": "1440006",
             "name": "소울 리버레이트 가드실린더",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:28.260Z"
+            "verifiedAt": "2026-11-12T05:58:14.421Z"
         },
         {
             "id": "51107",
             "name": "화이트 허브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:28.785Z"
+            "verifiedAt": "2026-11-12T05:58:14.946Z"
         },
         {
             "id": "51205",
             "name": "마리오네트 500 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:29.312Z"
+            "verifiedAt": "2026-11-12T05:58:15.472Z"
         },
         {
             "id": "64642",
             "name": "각성된 힘의 가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:29.844Z"
+            "verifiedAt": "2026-11-12T05:58:16.009Z"
         },
         {
             "id": "2220003",
             "name": "블리안 엔더스 듀러블 가드(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:30.379Z"
+            "verifiedAt": "2026-11-12T05:58:16.545Z"
         },
         {
             "id": "4200041",
             "name": "마기그래프 회복 주문서(100)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:30.906Z"
+            "verifiedAt": "2026-11-12T05:58:17.072Z"
         },
         {
             "id": "18705",
             "name": "얼티밋 기아스 데버스테이션 써클릿",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:31.449Z"
+            "verifiedAt": "2026-11-12T05:58:17.625Z"
         },
         {
             "id": "5100298",
             "name": "마력이 깃든 마법사의 보석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:31.976Z"
+            "verifiedAt": "2026-11-12T05:58:18.149Z"
         },
         {
             "id": "85253",
             "name": "수행의 브리 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:32.502Z"
+            "verifiedAt": "2026-11-12T05:58:18.675Z"
         },
         {
             "id": "1270006",
             "name": "나이트브링어 뱅퀴셔",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:33.039Z"
+            "verifiedAt": "2026-11-12T05:58:19.223Z"
         },
         {
             "id": "64041",
             "name": "알 수 없는 광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:33.564Z"
+            "verifiedAt": "2026-11-12T05:58:19.747Z"
         },
         {
             "id": "1260003",
             "name": "나이트브링어 베가본드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:34.101Z"
+            "verifiedAt": "2026-11-12T05:58:20.279Z"
         },
         {
             "id": "64308",
             "name": "못쓰게 된 밀 이파리",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:34.726Z"
+            "verifiedAt": "2026-11-12T05:58:20.804Z"
         },
         {
             "id": "51005",
             "name": "생명력 300 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:35.271Z"
+            "verifiedAt": "2026-11-12T05:58:21.330Z"
         },
         {
             "id": "5100002",
             "name": "마법의 깃털펜",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:35.803Z"
+            "verifiedAt": "2026-11-12T05:58:21.856Z"
         },
         {
             "id": "5040929",
             "name": "파에아의 재봉 키트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:36.327Z"
+            "verifiedAt": "2026-11-12T05:58:22.389Z"
         },
         {
             "id": "60064",
             "name": "대어 낚시용 미끼통",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:36.860Z"
+            "verifiedAt": "2026-11-12T05:58:22.922Z"
         },
         {
             "id": "2201679",
             "name": "스페셜 화사한 비단 운문 생활 한복(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:37.394Z"
+            "verifiedAt": "2026-11-12T05:58:23.450Z"
         },
         {
             "id": "2300229",
             "name": "블리안 엔더스 클래시 글러브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:37.933Z"
+            "verifiedAt": "2026-11-12T05:58:23.990Z"
         },
         {
             "id": "64304",
             "name": "싱싱한 풀",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:38.459Z"
+            "verifiedAt": "2026-11-12T05:58:24.518Z"
         },
         {
             "id": "86073",
             "name": "손잡이가 달린 그릇(거래 가능)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:38.983Z"
+            "verifiedAt": "2026-11-12T05:58:25.042Z"
         },
         {
             "id": "5100312",
             "name": "텅 빈 마력석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:39.509Z"
+            "verifiedAt": "2026-11-12T05:58:25.568Z"
         },
         {
             "id": "50276",
             "name": "개암버섯",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:40.037Z"
+            "verifiedAt": "2026-11-12T05:58:26.096Z"
         },
         {
             "id": "1400003",
             "name": "나이트브링어 뱅가드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:40.573Z"
+            "verifiedAt": "2026-11-12T05:58:26.644Z"
         },
         {
             "id": "5100288",
             "name": "마력이 담긴 마력석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:41.116Z"
+            "verifiedAt": "2026-11-12T05:58:27.172Z"
         },
         {
             "id": "5040990",
             "name": "탈틴 농장 오크라 씨앗",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:41.646Z"
+            "verifiedAt": "2026-11-12T05:58:27.738Z"
         },
         {
             "id": "64026",
             "name": "동판",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:42.177Z"
+            "verifiedAt": "2026-11-12T05:58:28.265Z"
         },
         {
             "id": "5100377",
             "name": "명장의 정수",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:42.708Z"
+            "verifiedAt": "2026-11-12T05:58:28.790Z"
         },
         {
             "id": "4300916",
             "name": "간편한 특별 개조 복구의 정수",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:43.235Z"
+            "verifiedAt": "2026-11-12T05:58:29.321Z"
         },
         {
             "id": "64113",
             "name": "기아스 코어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:43.763Z"
+            "verifiedAt": "2026-11-12T05:58:29.847Z"
         },
         {
             "id": "64056",
             "name": "니켈광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:44.291Z"
+            "verifiedAt": "2026-11-12T05:58:30.373Z"
         },
         {
             "id": "2201683",
             "name": "스페셜 고운 비단 운문 생활 한복(여성용)",
-            "evidence": "recent-sale",
-            "verifiedAt": "2026-11-05T04:29:44.850Z"
+            "evidence": "current-listing",
+            "verifiedAt": "2026-11-12T05:58:30.900Z"
         },
         {
             "id": "2410039",
@@ -1633,1389 +1633,1385 @@
             "id": "60026",
             "name": "최고급 가죽",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:45.905Z"
+            "verifiedAt": "2026-11-12T05:58:31.985Z"
         },
         {
             "id": "28971",
             "name": "쥬얼러 라운드 머리띠",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:46.436Z"
+            "verifiedAt": "2026-11-12T05:58:32.597Z"
         },
         {
             "id": "51034",
             "name": "해독 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:46.976Z"
+            "verifiedAt": "2026-11-12T05:58:33.141Z"
         },
         {
             "id": "5041264",
             "name": "묵연의 비단 운문 장구 원드 외형 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:47.500Z"
+            "verifiedAt": "2026-11-12T05:58:33.669Z"
         },
         {
             "id": "51108",
             "name": "해독초",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:48.027Z"
+            "verifiedAt": "2026-11-12T05:58:34.197Z"
         },
         {
-            "id": "2220020",
-            "name": "더스크바운드 이지스 가드(여성용)",
+            "id": "1010070",
+            "name": "소울 리버레이트 해머",
             "evidence": "current-listing",
-            "verifiedAt": "2026-10-12T05:40:24.899Z"
+            "verifiedAt": "2026-11-12T06:03:38.082Z"
         },
         {
             "id": "64053",
             "name": "유황",
-            "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:49.180Z"
+            "evidence": "recent-sale",
+            "verifiedAt": "2026-11-12T05:58:35.292Z"
         },
         {
             "id": "90600",
             "name": "밀랍",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:49.705Z"
+            "verifiedAt": "2026-11-12T05:58:35.819Z"
         },
         {
             "id": "5550009",
             "name": "세트 효과 스매시 강화 +1 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:50.244Z"
+            "verifiedAt": "2026-11-12T05:58:36.347Z"
         },
         {
             "id": "5100283",
             "name": "순도 높은 융합의 나무판",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:50.770Z"
+            "verifiedAt": "2026-11-12T05:58:36.875Z"
         },
         {
             "id": "5100250",
             "name": "알타이르 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:51.300Z"
+            "verifiedAt": "2026-11-12T05:58:37.405Z"
         },
         {
             "id": "67206",
             "name": "끈끈이 풀",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:51.831Z"
+            "verifiedAt": "2026-11-12T05:58:37.930Z"
         },
         {
             "id": "18317",
             "name": "헤보나 서클릿",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:52.372Z"
+            "verifiedAt": "2026-11-12T05:58:38.474Z"
         },
         {
             "id": "1430005",
             "name": "소울 리버레이트 마도서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:52.910Z"
+            "verifiedAt": "2026-11-12T05:58:39.009Z"
         },
         {
             "id": "5100244",
             "name": "프로키온 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:53.440Z"
+            "verifiedAt": "2026-11-12T05:58:39.530Z"
         },
         {
             "id": "12523",
             "name": "보호의 7단계 푸른 개조석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:53.974Z"
+            "verifiedAt": "2026-11-12T05:58:40.055Z"
         },
         {
             "id": "64054",
             "name": "주석광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:54.500Z"
+            "verifiedAt": "2026-11-12T05:58:40.580Z"
         },
         {
             "id": "67203",
             "name": "돌연변이 식물의 점액질",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:55.029Z"
+            "verifiedAt": "2026-11-12T05:58:41.105Z"
         },
         {
             "id": "12011",
             "name": "리본",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:55.576Z"
+            "verifiedAt": "2026-11-12T05:58:41.657Z"
         },
         {
             "id": "85258",
             "name": "찬란한 교감의 브리 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:56.100Z"
+            "verifiedAt": "2026-11-12T05:58:42.187Z"
         },
         {
             "id": "18327",
             "name": "트리니티 서클릿",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:56.627Z"
+            "verifiedAt": "2026-11-12T05:58:42.712Z"
         },
         {
             "id": "64025",
             "name": "철판",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:57.155Z"
+            "verifiedAt": "2026-11-12T05:58:43.239Z"
         },
         {
             "id": "64045",
             "name": "아쿠아마린",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:57.682Z"
+            "verifiedAt": "2026-11-12T05:58:43.770Z"
         },
         {
             "id": "64049",
             "name": "스피넬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:58.223Z"
+            "verifiedAt": "2026-11-12T05:58:44.298Z"
         },
         {
             "id": "41233",
             "name": "태양과 달의 검",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:58.847Z"
+            "verifiedAt": "2026-11-12T05:58:44.826Z"
         },
         {
             "id": "5100281",
             "name": "순도 높은 융합의 힐웬 합금",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:59.389Z"
+            "verifiedAt": "2026-11-12T05:58:45.356Z"
         },
         {
             "id": "77420",
             "name": "펫 놀이세트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:29:59.915Z"
+            "verifiedAt": "2026-11-12T05:58:45.885Z"
         },
         {
             "id": "51015",
             "name": "스태미나 300 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:00.445Z"
+            "verifiedAt": "2026-11-12T05:58:46.415Z"
         },
         {
             "id": "5100443",
             "name": "빛바랜 영광의 파편",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:00.973Z"
+            "verifiedAt": "2026-11-12T05:58:46.947Z"
         },
         {
             "id": "67211",
             "name": "드로세라",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:01.506Z"
+            "verifiedAt": "2026-11-12T05:58:47.478Z"
         },
         {
             "id": "51171",
             "name": "마나 500 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:02.033Z"
+            "verifiedAt": "2026-11-12T05:58:48.007Z"
         },
         {
             "id": "2201511",
             "name": "스페셜 파이널 다크로드 웨어(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:02.570Z"
+            "verifiedAt": "2026-11-12T05:58:48.535Z"
         },
         {
             "id": "67115",
             "name": "에메랄드 코어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:03.101Z"
+            "verifiedAt": "2026-11-12T05:58:49.065Z"
         },
         {
             "id": "50158",
             "name": "은붕어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:03.633Z"
+            "verifiedAt": "2026-11-12T05:58:49.588Z"
         },
         {
             "id": "5100378",
             "name": "마력 심재핵",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:04.162Z"
+            "verifiedAt": "2026-11-12T05:58:50.120Z"
         },
         {
             "id": "14159",
             "name": "얼티밋 기아스 데버스테이션 아머(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:04.696Z"
+            "verifiedAt": "2026-11-12T05:58:50.651Z"
         },
         {
             "id": "51170",
             "name": "생명력 500 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:05.222Z"
+            "verifiedAt": "2026-11-12T05:58:51.176Z"
         },
         {
             "id": "85255",
             "name": "교감의 브리 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:05.752Z"
+            "verifiedAt": "2026-11-12T05:58:51.721Z"
         },
         {
             "id": "12001",
             "name": "반지",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:06.295Z"
+            "verifiedAt": "2026-11-12T05:58:52.285Z"
         },
         {
             "id": "4300201",
             "name": "증폭된 스킬 수련 인장(50)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:06.824Z"
+            "verifiedAt": "2026-11-12T05:58:52.817Z"
         },
         {
             "id": "5100249",
             "name": "카노푸스 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:07.351Z"
+            "verifiedAt": "2026-11-12T05:58:53.347Z"
         },
         {
             "id": "12000",
             "name": "링 토크",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:07.891Z"
+            "verifiedAt": "2026-11-12T05:58:53.885Z"
         },
         {
             "id": "5170177",
             "name": "에르그 경험치 조각(15000)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:08.418Z"
+            "verifiedAt": "2026-11-12T05:58:54.413Z"
         },
         {
             "id": "5160411",
             "name": "브리 레흐의 주화(연금 토템)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:08.945Z"
+            "verifiedAt": "2026-11-12T05:58:54.945Z"
         },
         {
             "id": "1050002",
             "name": "나이트브링어 엘리멘토",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:09.479Z"
+            "verifiedAt": "2026-11-12T05:58:55.476Z"
         },
         {
             "id": "5100003",
             "name": "마법의 양피지",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:10.013Z"
+            "verifiedAt": "2026-11-12T05:58:56.001Z"
         },
         {
             "id": "67208",
             "name": "마력이 깃든 나무장작",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:10.547Z"
+            "verifiedAt": "2026-11-12T05:58:56.524Z"
         },
         {
             "id": "4200238",
             "name": "빛나는 기묘한 실타래",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:11.076Z"
+            "verifiedAt": "2026-11-12T05:58:57.049Z"
         },
         {
             "id": "2230003",
             "name": "스페셜 포레스트 레인저 머플러 웨어(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:11.616Z"
+            "verifiedAt": "2026-11-12T05:58:57.583Z"
         },
         {
             "id": "63348",
             "name": "특급 나무장작",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:12.146Z"
+            "verifiedAt": "2026-11-12T05:58:58.107Z"
         },
         {
             "id": "5100307",
             "name": "금빛 기억의 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:12.677Z"
+            "verifiedAt": "2026-11-12T05:58:58.631Z"
         },
         {
             "id": "40832",
             "name": "세피로트의 화살",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:13.203Z"
+            "verifiedAt": "2026-11-12T05:58:59.157Z"
         },
         {
             "id": "64027",
             "name": "은판",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:13.732Z"
+            "verifiedAt": "2026-11-12T05:58:59.690Z"
         },
         {
             "id": "5041263",
             "name": "청연의 비단 운문 장구 원드 외형 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:14.259Z"
+            "verifiedAt": "2026-11-12T05:59:00.215Z"
         },
         {
             "id": "5040302",
             "name": "칠미호 스타더스트의 형상",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:14.788Z"
+            "verifiedAt": "2026-11-12T05:59:00.741Z"
         },
         {
             "id": "5040989",
             "name": "탈틴 농장 블랙베리 씨앗",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:15.316Z"
+            "verifiedAt": "2026-11-12T05:59:01.272Z"
         },
         {
             "id": "64004",
             "name": "동광석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:15.849Z"
+            "verifiedAt": "2026-11-12T05:59:01.811Z"
         },
         {
             "id": "2400246",
             "name": "블리안 엔더스 클래시 슈즈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:16.388Z"
+            "verifiedAt": "2026-11-12T05:59:02.347Z"
         },
         {
             "id": "85082",
             "name": "임프의 고급 보증서(거래 가능)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:16.913Z"
+            "verifiedAt": "2026-11-12T05:59:02.874Z"
         },
         {
             "id": "16152",
             "name": "보헤미안 플라워 밴드(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:17.455Z"
+            "verifiedAt": "2026-11-12T05:59:03.404Z"
         },
         {
             "id": "64155",
             "name": "조화의 코스모스 퍼퓸",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:18.004Z"
+            "verifiedAt": "2026-11-12T05:59:03.924Z"
         },
         {
             "id": "64055",
             "name": "아연광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:18.529Z"
+            "verifiedAt": "2026-11-12T05:59:04.448Z"
         },
         {
             "id": "5040536",
             "name": "운명의 지팡이 카드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:19.057Z"
+            "verifiedAt": "2026-11-12T05:59:04.971Z"
         },
         {
             "id": "16149",
             "name": "보헤미안 밴드(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:19.588Z"
+            "verifiedAt": "2026-11-12T05:59:05.500Z"
         },
         {
             "id": "50475",
             "name": "송로버섯",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:20.119Z"
+            "verifiedAt": "2026-11-12T05:59:06.025Z"
         },
         {
             "id": "50248",
             "name": "조개",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:20.647Z"
+            "verifiedAt": "2026-11-12T05:59:06.551Z"
         },
         {
             "id": "4400219",
             "name": "AP 포션 상자",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:21.176Z"
+            "verifiedAt": "2026-11-12T05:59:07.077Z"
         },
         {
             "id": "5041106",
             "name": "명장의 감응 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:21.704Z"
+            "verifiedAt": "2026-11-12T05:59:07.607Z"
         },
         {
             "id": "5100247",
             "name": "하다르 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:22.247Z"
+            "verifiedAt": "2026-11-12T05:59:08.133Z"
         },
         {
             "id": "1000014",
             "name": "나이트브링어 어설트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:22.781Z"
+            "verifiedAt": "2026-11-12T05:59:08.663Z"
         },
         {
             "id": "95309",
             "name": "얼룩진 실리엔 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:23.311Z"
+            "verifiedAt": "2026-11-12T05:59:09.197Z"
         },
         {
             "id": "64052",
             "name": "발화석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:23.845Z"
+            "verifiedAt": "2026-11-12T05:59:09.722Z"
         },
         {
             "id": "5000297",
             "name": "인챈트 대성공의 스크롤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:24.370Z"
+            "verifiedAt": "2026-11-12T05:59:10.247Z"
         },
         {
             "id": "16015",
             "name": "브레이슬렛",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:24.900Z"
+            "verifiedAt": "2026-11-12T05:59:10.780Z"
         },
         {
             "id": "64640",
             "name": "재생의 가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:25.423Z"
+            "verifiedAt": "2026-11-12T05:59:11.398Z"
         },
         {
             "id": "4400423",
             "name": "메인스트림 스킵권 선택 상자",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:25.951Z"
+            "verifiedAt": "2026-11-12T05:59:11.942Z"
         },
         {
             "id": "64657",
             "name": "왜곡의 가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:26.479Z"
+            "verifiedAt": "2026-11-12T05:59:12.472Z"
         },
         {
             "id": "60043",
             "name": "물안개 비단",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:27.007Z"
+            "verifiedAt": "2026-11-12T05:59:13.002Z"
         },
         {
             "id": "64037",
             "name": "동광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:27.535Z"
+            "verifiedAt": "2026-11-12T05:59:13.530Z"
         },
         {
             "id": "2300573",
             "name": "파이널 데스티니 글러브(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:28.063Z"
+            "verifiedAt": "2026-11-12T05:59:14.056Z"
         },
         {
             "id": "95310",
             "name": "무른 힐웬 광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:28.591Z"
+            "verifiedAt": "2026-11-12T05:59:14.587Z"
         },
         {
             "id": "64309",
             "name": "건초 더미",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:29.119Z"
+            "verifiedAt": "2026-11-12T05:59:15.112Z"
         },
         {
             "id": "18513",
             "name": "스파이크 캡",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:29.652Z"
+            "verifiedAt": "2026-11-12T05:59:15.642Z"
         },
         {
             "id": "50009",
             "name": "달걀",
-            "evidence": "recent-sale",
-            "verifiedAt": "2026-11-05T04:30:30.217Z"
+            "evidence": "current-listing",
+            "verifiedAt": "2026-11-12T05:59:16.171Z"
         },
         {
             "id": "62000",
             "name": "고대의 마법가루",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:30.827Z"
+            "verifiedAt": "2026-11-12T05:59:16.696Z"
         },
         {
             "id": "64159",
             "name": "유대의 바이올렛 퍼퓸",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:31.374Z"
+            "verifiedAt": "2026-11-12T05:59:17.224Z"
         },
         {
             "id": "5100081",
             "name": "깨진 묵빛 금속 파편",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:31.912Z"
+            "verifiedAt": "2026-11-12T05:59:17.751Z"
         },
         {
             "id": "5100383",
             "name": "월광 당근",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:32.442Z"
+            "verifiedAt": "2026-11-12T05:59:18.278Z"
         },
         {
             "id": "64307",
             "name": "포근한 털가죽 원단",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:33.001Z"
+            "verifiedAt": "2026-11-12T05:59:18.808Z"
         },
         {
             "id": "62012",
             "name": "엘레멘탈 리무버",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:33.530Z"
+            "verifiedAt": "2026-11-12T05:59:19.339Z"
         },
         {
             "id": "64643",
             "name": "각성된 힘의 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:34.060Z"
+            "verifiedAt": "2026-11-12T05:59:19.871Z"
         },
         {
             "id": "5100126",
             "name": "크롬 바스 추가 입장권",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:34.586Z"
+            "verifiedAt": "2026-11-12T05:59:20.396Z"
         },
         {
             "id": "2201260",
             "name": "스페셜 낙화의 검객 의상(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:35.120Z"
+            "verifiedAt": "2026-11-12T05:59:20.923Z"
         },
         {
             "id": "90603",
             "name": "최고급 바닐라 향초",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:35.658Z"
+            "verifiedAt": "2026-11-12T05:59:21.452Z"
         },
         {
             "id": "64305",
             "name": "인조 잔디",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:36.200Z"
+            "verifiedAt": "2026-11-12T05:59:21.981Z"
         },
         {
             "id": "12544",
             "name": "아이스 해츨링 플라잉 퍼핏",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:36.732Z"
+            "verifiedAt": "2026-11-12T05:59:22.505Z"
         },
         {
             "id": "64303",
             "name": "쿠션용 솜",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:37.262Z"
+            "verifiedAt": "2026-11-12T05:59:23.028Z"
         },
         {
             "id": "52048",
             "name": "네잎 클로버",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:37.803Z"
+            "verifiedAt": "2026-11-12T05:59:23.553Z"
         },
         {
             "id": "5100386",
             "name": "실리엔 응축핵",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:38.331Z"
+            "verifiedAt": "2026-11-12T05:59:24.077Z"
         },
         {
             "id": "5100248",
             "name": "리겔 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:38.858Z"
+            "verifiedAt": "2026-11-12T05:59:24.603Z"
         },
         {
             "id": "74857",
             "name": "가벼운 물리 공격력 증가 포션(2시간)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:39.385Z"
+            "verifiedAt": "2026-11-12T05:59:25.132Z"
         },
         {
             "id": "51033",
             "name": "정령의 리큐르",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:39.911Z"
+            "verifiedAt": "2026-11-12T05:59:25.666Z"
         },
         {
             "id": "67108",
             "name": "에너지 컨버터",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:40.453Z"
+            "verifiedAt": "2026-11-12T05:59:26.196Z"
         },
         {
             "id": "40007",
             "name": "한손도끼",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:41.015Z"
+            "verifiedAt": "2026-11-12T05:59:26.736Z"
         },
         {
             "id": "5010044",
             "name": "로나의 특제 도시락",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:41.576Z"
+            "verifiedAt": "2026-11-12T05:59:27.329Z"
         },
         {
             "id": "5100379",
             "name": "신비한 깃털",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:42.114Z"
+            "verifiedAt": "2026-11-12T05:59:27.859Z"
         },
         {
             "id": "17385",
             "name": "날개 신발(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:42.655Z"
+            "verifiedAt": "2026-11-12T05:59:28.405Z"
         },
         {
             "id": "67111",
             "name": "스핀 기어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:43.203Z"
+            "verifiedAt": "2026-11-12T05:59:28.934Z"
         },
         {
             "id": "63287",
             "name": "악마의 괴",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:43.730Z"
+            "verifiedAt": "2026-11-12T05:59:29.467Z"
         },
         {
             "id": "1070014",
             "name": "소울 리버레이트 핸들",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:44.274Z"
+            "verifiedAt": "2026-11-12T05:59:30.003Z"
         },
         {
             "id": "60052",
             "name": "아이템 일루전 T46",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:44.800Z"
+            "verifiedAt": "2026-11-12T05:59:30.540Z"
         },
         {
             "id": "3500894",
             "name": "찬란한 이시리얼 실크 윙",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:45.355Z"
+            "verifiedAt": "2026-11-12T05:59:31.072Z"
         },
         {
             "id": "63577",
             "name": "드래곤의 비늘 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:45.886Z"
+            "verifiedAt": "2026-11-12T05:59:31.608Z"
         },
         {
             "id": "5100035",
             "name": "환상의 괴",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:46.415Z"
+            "verifiedAt": "2026-11-12T05:59:32.152Z"
         },
         {
             "id": "5040534",
             "name": "허름한 지팡이 카드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:46.945Z"
+            "verifiedAt": "2026-11-12T05:59:32.686Z"
         },
         {
             "id": "61500",
             "name": "종이",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:47.486Z"
+            "verifiedAt": "2026-11-12T05:59:33.218Z"
         },
         {
             "id": "40379",
             "name": "트리니티 스태프",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:48.025Z"
+            "verifiedAt": "2026-11-12T05:59:33.760Z"
         },
         {
             "id": "1050017",
             "name": "소울 리버레이트 원드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:48.670Z"
+            "verifiedAt": "2026-11-12T05:59:34.291Z"
         },
         {
             "id": "52007",
             "name": "작은 은색구슬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:49.201Z"
+            "verifiedAt": "2026-11-12T05:59:34.822Z"
         },
         {
             "id": "64109",
             "name": "날카롭게 결정화된 광물 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:49.757Z"
+            "verifiedAt": "2026-11-12T05:59:35.352Z"
         },
         {
             "id": "5100384",
             "name": "산딸기",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:50.302Z"
+            "verifiedAt": "2026-11-12T05:59:35.891Z"
         },
         {
             "id": "67205",
             "name": "정화된 토끼의 발",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:50.840Z"
+            "verifiedAt": "2026-11-12T05:59:36.424Z"
         },
         {
             "id": "5100393",
             "name": "악마의 손가락",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:51.366Z"
+            "verifiedAt": "2026-11-12T05:59:36.958Z"
         },
         {
             "id": "63492",
             "name": "하드모드 알비 상급 마족 통행증",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:51.896Z"
+            "verifiedAt": "2026-11-12T05:59:37.488Z"
         },
         {
             "id": "5100286",
             "name": "단단한 금속",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:52.431Z"
+            "verifiedAt": "2026-11-12T05:59:38.023Z"
         },
         {
             "id": "52005",
             "name": "작은 파란구슬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:52.984Z"
+            "verifiedAt": "2026-11-12T05:59:38.551Z"
         },
         {
             "id": "5100082",
             "name": "얼음과 융화된 금속 파편",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:53.548Z"
+            "verifiedAt": "2026-11-12T05:59:39.087Z"
         },
         {
             "id": "5100277",
             "name": "견고한 기억의 결정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:54.093Z"
+            "verifiedAt": "2026-11-12T05:59:39.718Z"
         },
         {
             "id": "5100394",
             "name": "노랑망태버섯",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:54.629Z"
+            "verifiedAt": "2026-11-12T05:59:40.252Z"
         },
         {
             "id": "50010",
             "name": "감자",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:55.169Z"
+            "verifiedAt": "2026-11-12T05:59:40.796Z"
         },
         {
             "id": "2201678",
             "name": "스페셜 단정한 비단 운문 생활 한복(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:55.703Z"
+            "verifiedAt": "2026-11-12T05:59:41.329Z"
         },
         {
             "id": "17769",
             "name": "슈팅 스타 롤러 스케이트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:56.240Z"
+            "verifiedAt": "2026-11-12T05:59:41.860Z"
         },
         {
             "id": "63288",
             "name": "악마의 나무 장작",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:56.772Z"
+            "verifiedAt": "2026-11-12T05:59:42.393Z"
         },
         {
             "id": "60006",
             "name": "굵은 실뭉치",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:57.337Z"
+            "verifiedAt": "2026-11-12T05:59:42.929Z"
         },
         {
             "id": "12597",
             "name": "파도의 진정(특급)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:57.866Z"
+            "verifiedAt": "2026-11-12T05:59:43.455Z"
         },
         {
             "id": "5041133",
             "name": "명장의 추진기",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:58.396Z"
+            "verifiedAt": "2026-11-12T05:59:43.994Z"
         },
         {
             "id": "5100380",
             "name": "브리움 우유",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:58.926Z"
+            "verifiedAt": "2026-11-12T05:59:44.527Z"
         },
         {
             "id": "2200613",
             "name": "블리안 엔더스 클래시 수트(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:30:59.479Z"
+            "verifiedAt": "2026-11-12T05:59:45.070Z"
         },
         {
             "id": "5100245",
             "name": "폴라리스 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:00.015Z"
+            "verifiedAt": "2026-11-12T05:59:45.602Z"
         },
         {
             "id": "1070002",
             "name": "나이트브링어 트릭스터",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:00.553Z"
+            "verifiedAt": "2026-11-12T05:59:46.138Z"
         },
         {
             "id": "51004",
             "name": "생명력 100 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:01.091Z"
+            "verifiedAt": "2026-11-12T05:59:46.664Z"
         },
         {
             "id": "60027",
             "name": "저가형 가죽끈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:01.623Z"
+            "verifiedAt": "2026-11-12T05:59:47.200Z"
         },
         {
             "id": "86033",
             "name": "착한 세공 도구 PLUS",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:02.156Z"
+            "verifiedAt": "2026-11-12T05:59:47.733Z"
         },
         {
             "id": "1040013",
             "name": "나이트브링어 로그",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:02.682Z"
+            "verifiedAt": "2026-11-12T05:59:48.266Z"
         },
         {
             "id": "5100077",
             "name": "얼어붙은 백철 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:03.213Z"
+            "verifiedAt": "2026-11-12T05:59:48.795Z"
         },
         {
             "id": "5041259",
             "name": "매화의 비단 운문 곰방대 양손 검 외형 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:03.747Z"
+            "verifiedAt": "2026-11-12T05:59:49.357Z"
         },
         {
             "id": "5040995",
             "name": "탈틴 농장 석영 영양제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:04.275Z"
+            "verifiedAt": "2026-11-12T05:59:49.886Z"
         },
         {
             "id": "1090000",
             "name": "디스포지터 사이드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:04.813Z"
+            "verifiedAt": "2026-11-12T05:59:50.421Z"
         },
         {
             "id": "1460003",
             "name": "소울 리버레이트 오브",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:05.432Z"
+            "verifiedAt": "2026-11-12T05:59:50.956Z"
         },
         {
             "id": "5040992",
             "name": "탈틴 농장 붉은 배나무 영양제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:05.969Z"
+            "verifiedAt": "2026-11-12T05:59:51.492Z"
         },
         {
             "id": "2400668",
             "name": "파이널 다크로드 힐(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:06.495Z"
+            "verifiedAt": "2026-11-12T05:59:52.022Z"
         },
         {
             "id": "5040528",
             "name": "허름한 동전 카드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:07.028Z"
+            "verifiedAt": "2026-11-12T05:59:52.554Z"
         },
         {
             "id": "5041260",
             "name": "설화의 비단 운문 곰방대 양손 검 외형 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:07.556Z"
+            "verifiedAt": "2026-11-12T05:59:53.084Z"
         },
         {
             "id": "52029",
             "name": "옥수수",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:08.079Z"
+            "verifiedAt": "2026-11-12T05:59:53.610Z"
         },
         {
             "id": "5100079",
             "name": "얇은 금속선의 파편",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:08.605Z"
+            "verifiedAt": "2026-11-12T05:59:54.137Z"
         },
         {
             "id": "5000335",
             "name": "융합된 축복의 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:09.131Z"
+            "verifiedAt": "2026-11-12T05:59:54.667Z"
         },
         {
             "id": "63290",
             "name": "로드 미션 통행증",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:09.659Z"
+            "verifiedAt": "2026-11-12T05:59:55.197Z"
         },
         {
             "id": "54456",
             "name": "베인 미니어처",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:10.185Z"
+            "verifiedAt": "2026-11-12T05:59:55.723Z"
         },
         {
             "id": "52031",
             "name": "꽃뭉치",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:10.711Z"
+            "verifiedAt": "2026-11-12T05:59:56.261Z"
         },
         {
             "id": "2110303",
             "name": "파이널 다크로드 머리 장식(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:11.234Z"
+            "verifiedAt": "2026-11-12T05:59:56.785Z"
         },
         {
             "id": "15699",
             "name": "아라드 마법사 코스튬 의상",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:11.755Z"
+            "verifiedAt": "2026-11-12T05:59:57.311Z"
         },
         {
             "id": "5100058",
             "name": "튼튼한 고리",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:12.278Z"
+            "verifiedAt": "2026-11-12T05:59:57.837Z"
         },
         {
             "id": "4300662",
             "name": "은행 한도 확장권(5억)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:12.809Z"
+            "verifiedAt": "2026-11-12T05:59:58.361Z"
         },
         {
             "id": "45021",
             "name": "발리스타용 독 묻은 와이번 볼트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:13.339Z"
+            "verifiedAt": "2026-11-12T05:59:58.892Z"
         },
         {
             "id": "63354",
             "name": "불완전한 알비 던전 통행증",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:13.863Z"
+            "verifiedAt": "2026-11-12T05:59:59.423Z"
         },
         {
             "id": "4200624",
             "name": "샛바람 용병단 프리미엄 세트 인형 가방 상자",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:14.389Z"
+            "verifiedAt": "2026-11-12T05:59:59.948Z"
         },
         {
             "id": "64688",
             "name": "부패한 사도의 가죽",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:14.914Z"
+            "verifiedAt": "2026-11-12T06:00:00.479Z"
         },
         {
             "id": "45036",
             "name": "실습용 마력탄",
             "evidence": "traded-value-rank",
-            "verifiedAt": "2026-11-05T04:32:38.970Z",
-            "sourceRank": 240
+            "verifiedAt": "2026-11-12T06:03:35.068Z",
+            "sourceRank": 285
         },
         {
             "id": "2230046",
             "name": "더스크바운드 비고러스 아머(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:15.995Z"
+            "verifiedAt": "2026-11-12T06:00:01.566Z"
         },
         {
             "id": "52006",
             "name": "작은 빨간구슬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:16.538Z"
+            "verifiedAt": "2026-11-12T06:00:02.092Z"
         },
         {
             "id": "64050",
             "name": "다이아몬드",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:17.075Z"
+            "verifiedAt": "2026-11-12T06:00:02.621Z"
         },
         {
             "id": "2110275",
             "name": "파이널 데스티니 머리 장식(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:17.621Z"
+            "verifiedAt": "2026-11-12T06:00:03.153Z"
         },
         {
             "id": "12649",
             "name": "천년 묵은 인우스 서포트 퍼핏",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:18.147Z"
+            "verifiedAt": "2026-11-12T06:00:03.678Z"
         },
         {
             "id": "5100080",
             "name": "해묵은 베일의 올",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:18.681Z"
+            "verifiedAt": "2026-11-12T06:00:04.205Z"
         },
         {
             "id": "60009",
             "name": "양털",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:19.214Z"
+            "verifiedAt": "2026-11-12T06:00:04.732Z"
         },
         {
             "id": "60007",
             "name": "가는 실뭉치",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:19.743Z"
+            "verifiedAt": "2026-11-12T06:00:05.262Z"
         },
         {
             "id": "12004",
             "name": "어뮬렛",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:20.281Z"
+            "verifiedAt": "2026-11-12T06:00:05.789Z"
         },
         {
             "id": "64039",
             "name": "금광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:20.810Z"
+            "verifiedAt": "2026-11-12T06:00:06.449Z"
         },
         {
             "id": "40013",
             "name": "롱 보우",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:21.346Z"
+            "verifiedAt": "2026-11-12T06:00:06.996Z"
         },
         {
             "id": "5100317",
             "name": "오묘한 마력석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:21.872Z"
+            "verifiedAt": "2026-11-12T06:00:07.524Z"
         },
         {
             "id": "5100385",
             "name": "힐웬 광정",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:22.405Z"
+            "verifiedAt": "2026-11-12T06:00:08.053Z"
         },
         {
             "id": "51009",
             "name": "마나 100 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:22.935Z"
+            "verifiedAt": "2026-11-12T06:00:08.579Z"
         },
         {
             "id": "94145",
             "name": "추가 장비 슬롯 확장권",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:23.461Z"
+            "verifiedAt": "2026-11-12T06:00:09.104Z"
         },
         {
             "id": "95224",
             "name": "야자나무 겉껍질",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:23.987Z"
+            "verifiedAt": "2026-11-12T06:00:09.637Z"
         },
         {
             "id": "40346",
             "name": "하이랜더 클레이모어",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:24.514Z"
+            "verifiedAt": "2026-11-12T06:00:10.164Z"
         },
         {
             "id": "67107",
             "name": "에메랄드 퓨즈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:25.042Z"
+            "verifiedAt": "2026-11-12T06:00:10.687Z"
         },
         {
             "id": "12020",
             "name": "페트록 펜던트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:25.571Z"
+            "verifiedAt": "2026-11-12T06:00:11.222Z"
         },
         {
             "id": "2201433",
             "name": "스페셜 크림슨 녹턴 드레스(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:26.095Z"
+            "verifiedAt": "2026-11-12T06:00:11.746Z"
         },
         {
             "id": "60024",
             "name": "일반 가죽",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:26.622Z"
+            "verifiedAt": "2026-11-12T06:00:12.285Z"
         },
         {
             "id": "51035",
             "name": "포이즌 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:27.159Z"
+            "verifiedAt": "2026-11-12T06:00:12.810Z"
         },
         {
             "id": "64006",
             "name": "은광석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:27.687Z"
+            "verifiedAt": "2026-11-12T06:00:13.355Z"
         },
         {
             "id": "53941",
             "name": "고급 에코스톤 각성제",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:28.221Z"
+            "verifiedAt": "2026-11-12T06:00:13.885Z"
         },
         {
             "id": "40003",
             "name": "숏 보우",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:28.756Z"
+            "verifiedAt": "2026-11-12T06:00:14.417Z"
         },
         {
             "id": "5030565",
             "name": "스페셜 위벨 미니어처",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:29.292Z"
+            "verifiedAt": "2026-11-12T06:00:14.948Z"
         },
         {
             "id": "64038",
             "name": "은광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:29.829Z"
+            "verifiedAt": "2026-11-12T06:00:15.486Z"
         },
         {
             "id": "5600149",
             "name": "반짝이 이름/채팅 지정 색상 변경 포션(30일)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:30.373Z"
+            "verifiedAt": "2026-11-12T06:00:16.023Z"
         },
         {
             "id": "63284",
             "name": "악마의 비늘 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:30.900Z"
+            "verifiedAt": "2026-11-12T06:00:16.549Z"
         },
         {
             "id": "5100465",
             "name": "순도 높은 힐웬 주괴 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:31.428Z"
+            "verifiedAt": "2026-11-12T06:00:17.073Z"
         },
         {
             "id": "5250195",
             "name": "스피릿 젬(1500)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:31.958Z"
+            "verifiedAt": "2026-11-12T06:00:17.602Z"
         },
         {
             "id": "5100314",
             "name": "바리사이트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:32.491Z"
+            "verifiedAt": "2026-11-12T06:00:18.131Z"
         },
         {
             "id": "4300450",
             "name": "행복을 기원하는 신비한 영약",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:33.020Z"
+            "verifiedAt": "2026-11-12T06:00:18.659Z"
         },
         {
             "id": "64047",
             "name": "재스퍼",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:33.546Z"
+            "verifiedAt": "2026-11-12T06:00:19.185Z"
         },
         {
             "id": "64634",
             "name": "마력의 정수",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:34.074Z"
+            "verifiedAt": "2026-11-12T06:00:19.712Z"
         },
         {
             "id": "52027",
             "name": "밀",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:34.598Z"
+            "verifiedAt": "2026-11-12T06:00:20.246Z"
         },
         {
             "id": "5100084",
             "name": "서늘한 매듭끈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:35.134Z"
+            "verifiedAt": "2026-11-12T06:00:20.778Z"
         },
         {
             "id": "2201628",
             "name": "스페셜 로맨틱 아티스트 웨어(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:35.671Z"
+            "verifiedAt": "2026-11-12T06:00:21.307Z"
         },
         {
             "id": "5041005",
             "name": "탈틴 농장 붉은 배 잼",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:36.199Z"
+            "verifiedAt": "2026-11-12T06:00:21.832Z"
         },
         {
             "id": "2201682",
             "name": "스페셜 유려한 비단 운문 생활 한복(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:36.727Z"
+            "verifiedAt": "2026-11-12T06:00:22.363Z"
         },
         {
             "id": "5041003",
             "name": "탈틴 농장 블랙베리 주스",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:37.274Z"
+            "verifiedAt": "2026-11-12T06:00:22.889Z"
         },
         {
             "id": "64040",
             "name": "미스릴광석 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:37.823Z"
+            "verifiedAt": "2026-11-12T06:00:23.419Z"
         },
         {
             "id": "5010033",
             "name": "판나코타",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:38.377Z"
+            "verifiedAt": "2026-11-12T06:00:23.946Z"
         },
         {
             "id": "15497",
             "name": "보헤미안 웨어(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:38.988Z"
+            "verifiedAt": "2026-11-12T06:00:24.476Z"
         },
         {
             "id": "67114",
             "name": "에너지 증폭 장치",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:39.525Z"
+            "verifiedAt": "2026-11-12T06:00:25.004Z"
         },
         {
             "id": "2201259",
             "name": "스페셜 낙화의 검객 의상(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:40.059Z"
+            "verifiedAt": "2026-11-12T06:00:25.532Z"
         },
         {
             "id": "64042",
             "name": "토파즈",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:40.588Z"
+            "verifiedAt": "2026-11-12T06:00:26.057Z"
         },
         {
             "id": "5100387",
             "name": "남동석",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:41.126Z"
+            "verifiedAt": "2026-11-12T06:00:26.587Z"
         },
         {
             "id": "5100447",
             "name": "단련된 쇠사슬",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:41.655Z"
+            "verifiedAt": "2026-11-12T06:00:27.111Z"
         },
         {
             "id": "51037",
             "name": "베이스 포션",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:42.179Z"
+            "verifiedAt": "2026-11-12T06:00:27.636Z"
         },
         {
             "id": "41164",
             "name": "튼튼한 낫",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:42.710Z"
+            "verifiedAt": "2026-11-12T06:00:28.169Z"
         },
         {
             "id": "63322",
             "name": "멀린 지정 염색 앰플 세트",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:43.235Z"
+            "verifiedAt": "2026-11-12T06:00:28.694Z"
         },
         {
             "id": "5041258",
             "name": "리비전 노바 오션 브리즈 플라워 원드 외형 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:43.762Z"
+            "verifiedAt": "2026-11-12T06:00:29.221Z"
         },
         {
             "id": "77421",
             "name": "펫이 좋아하는 잡동사니",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:44.296Z"
+            "verifiedAt": "2026-11-12T06:00:29.752Z"
         },
         {
             "id": "2210004",
             "name": "블리안 엔더스 듀러블 써클릿(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:44.820Z"
+            "verifiedAt": "2026-11-12T06:00:30.275Z"
         },
         {
             "id": "5041249",
             "name": "리비전 이시리얼 엔젤 롱 보우 외형 주문서",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:45.349Z"
+            "verifiedAt": "2026-11-12T06:00:30.804Z"
         },
         {
             "id": "5100392",
             "name": "카넬리안",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:45.883Z"
+            "verifiedAt": "2026-11-12T06:00:31.335Z"
         },
         {
             "id": "2201510",
             "name": "스페셜 파이널 다크로드 웨어(남성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:46.418Z"
+            "verifiedAt": "2026-11-12T06:00:31.862Z"
         },
         {
             "id": "80316",
             "name": "스페셜 체인 슬래셔 에아렌 의상(여성용)",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:46.953Z"
+            "verifiedAt": "2026-11-12T06:00:32.389Z"
         },
         {
             "id": "5100078",
             "name": "얼어붙은 직물 조각",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:47.479Z"
+            "verifiedAt": "2026-11-12T06:00:32.929Z"
         },
         {
             "id": "3160099",
             "name": "불완전한 공상의 왕관 헤일로",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:48.018Z"
+            "verifiedAt": "2026-11-12T06:00:33.457Z"
         },
         {
             "id": "5030192",
             "name": "낭만 농장 에아렌이 그려진 이젤",
             "evidence": "current-listing",
-            "verifiedAt": "2026-11-05T04:31:48.545Z"
+            "verifiedAt": "2026-11-12T06:00:33.987Z"
         }
     ],
     "archivedItems": [
-        {
-            "id": "1010070",
-            "name": "소울 리버레이트 해머"
-        },
         {
             "id": "50889",
             "name": "학교 양동이"
@@ -3427,6 +3423,10 @@
         {
             "id": "40081",
             "name": "레더 롱 보우"
+        },
+        {
+            "id": "2220020",
+            "name": "더스크바운드 이지스 가드(여성용)"
         }
     ]
 }
