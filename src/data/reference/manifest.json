@@ -9,13 +9,13 @@
         "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-mabidb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-mNOQxErW.js"
+            "https://prilus.gitlab.io/assets/index-Bd-xLAli.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1794457727
+        "CreatedAt": 1794561420
     },
-    "collectedAt": "2026-11-12T06:00:12.682Z",
+    "collectedAt": "2026-11-13T23:51:44.271Z",
     "tables": {
         "OghamWordList": {
             "count": 26,
@@ -34,28 +34,28 @@
         },
         "ItemList": {
             "count": 43706,
-            "bytes": 23682045,
-            "sha256": "c508f3c3aae36c4845cb871c397929c0345d1f9563c76ed59d458045ff0cf350"
+            "bytes": 23998890,
+            "sha256": "8382e0b2090b7f2250acf3b6c3f3c9c7723e35de4664a1b83ffecd5da98e49ce"
         },
         "ItemCategoryList": {
-            "count": 8261,
-            "bytes": 3378676,
-            "sha256": "a6563bb7d828187c4e813a158562770eda051b83573552d85a6c08242416a6c9"
+            "count": 8262,
+            "bytes": 3379065,
+            "sha256": "381cddc2efd3b1fdc988243c55333b0ae3513ffcd0cb3fd75f6b00a25573c45b"
         },
         "ItemCategoryGroups": {
-            "count": 23,
-            "bytes": 458,
-            "sha256": "a8886a12a029343496a8c7aa9496cd7cf57ba8ff1011aba47014e782e85a0594"
+            "count": 24,
+            "bytes": 479,
+            "sha256": "c4752cb7c55a1a2083e16a9b40c36011643ce9e4a4e8df31dafb5f92f5ce4fc4"
         },
         "OptionSetList": {
             "count": 1770,
             "bytes": 1931341,
-            "sha256": "3e36dbb81a7dcf68628deb574f14f86cd7bfbbd5cef1d285d410e99416247374"
+            "sha256": "ed96c51f274465878d11a2eeb11d9efdd7014b2afe047ff0cd8d9054d4b17c2f"
         },
         "StringTable": {
-            "count": 188076,
-            "bytes": 23019876,
-            "sha256": "b408956a3ed9955633bc8cf4eb61b701522550a2e10f8a8b66517207cc000cf7"
+            "count": 188079,
+            "bytes": 23020116,
+            "sha256": "dd474ac5fdd1ead54b82fcd6845c7b6081ad33a795fbc96cae5f4752d1816650"
         },
         "ItemExtendMetalWareList": {
             "count": 11641,
@@ -114,8 +114,8 @@
         },
         "ItemUpgradeList": {
             "count": 3242,
-            "bytes": 2170020,
-            "sha256": "908a37c45a9358cffb095475680ddb42020913469948c021af5031d3719c21ad"
+            "bytes": 2221973,
+            "sha256": "6a392f90ca48f4d1173a88e4bf3ca57f6ef7f9b629b21247f73fcdee0ddef6d0"
         },
         "MiniatureList": {
             "count": 219,
@@ -123,9 +123,9 @@
             "sha256": "fc46c4cfb2a63365b70f00f7e1e3dbc6cf323c323499488432e817073158b201"
         },
         "ItemExtendTotemList": {
-            "count": 278,
-            "bytes": 31038,
-            "sha256": "6f1ed3b3309cf28ebebc140dc0a0814b4b88569cee0f496fe1ab81323e2dacaf"
+            "count": 282,
+            "bytes": 31848,
+            "sha256": "89aab46e2e978275f3f8677db0d811a71aaefe05ce70bf77cfe88f3f761c01ef"
         },
         "BarterList": {
             "count": 48,

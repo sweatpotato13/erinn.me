@@ -66,6 +66,39 @@ async function observe(page: Page) {
     return { requests, errors };
 }
 
+test("tertiary coins have a distinct filter and preserve unreviewed effect text", async ({
+    page,
+}) => {
+    const { requests, errors } = await observe(page);
+    await page.goto(path);
+    await page
+        .getByRole("combobox", { name: "종류", exact: true })
+        .selectOption("tertiary");
+    const coins = page
+        .locator("button[aria-pressed]")
+        .filter({ hasText: "탈라 가흐의 주화" });
+    await expect(coins).toHaveCount(4);
+    await expect(coins.first().getByText("3차", { exact: true })).toBeVisible();
+    await pick(page, "탈라 가흐의 주화(물리 토템)");
+    const selected = page.getByRole("region", { name: "선택한 토템" });
+    await expect(selected).toContainText("크리티컬 대미지(1~10%)");
+    await selected
+        .getByRole("button", { name: "범위 비교에 추가", exact: true })
+        .click();
+    await comparison(page)
+        .getByText("원본 옵션·설명", { exact: true })
+        .filter({ visible: true })
+        .click();
+    await expect(
+        comparison(page)
+            .getByText(/criticaldamage 1~10/)
+            .filter({ visible: true })
+    ).toBeVisible();
+    await expect(comparison(page)).toContainText("arcanaskilldamage 1~20");
+    expect(requests).toEqual([]);
+    expect(errors).toEqual([]);
+});
+
 test("inputs wait for hydration before accepting edits", async ({ page }) => {
     await observe(page);
     let release!: () => void;

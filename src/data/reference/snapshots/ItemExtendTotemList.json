@@ -276,5 +276,9 @@
 {"Bonuses":[{"Max":10,"Min":10,"StatName":"healingeffect"}],"DamageSkinId":0,"Id":5160492,"TotemType":"/totem_healingeffect/"},
 {"Bonuses":[],"DamageSkinId":35,"Id":5160508,"TotemType":"/totem_damageskin/"},
 {"Bonuses":[],"DamageSkinId":37,"Id":5160517,"TotemType":"/totem_damageskin/"},
-{"Bonuses":[],"DamageSkinId":38,"Id":5160518,"TotemType":"/totem_damageskin/"}
+{"Bonuses":[],"DamageSkinId":38,"Id":5160518,"TotemType":"/totem_damageskin/"},
+{"Bonuses":[{"Max":20,"Min":1,"StatName":"arcanaskilldamage"},{"Max":10,"Min":1,"StatName":"criticaldamage"},{"Max":20,"Min":1,"StatName":"maxdamage"}],"DamageSkinId":0,"Id":5160519,"TotemType":""},
+{"Bonuses":[{"Max":20,"Min":1,"StatName":"arcanaskilldamage"},{"Max":10,"Min":1,"StatName":"criticaldamage"},{"Max":20,"Min":1,"StatName":"magicattack"}],"DamageSkinId":0,"Id":5160520,"TotemType":""},
+{"Bonuses":[{"Max":20,"Min":1,"StatName":"allalchemydamage"},{"Max":20,"Min":1,"StatName":"arcanaskilldamage"},{"Max":10,"Min":1,"StatName":"criticaldamage"}],"DamageSkinId":0,"Id":5160521,"TotemType":""},
+{"Bonuses":[{"Max":20,"Min":1,"StatName":"healingeffect"},{"Max":10,"Min":1,"StatName":"musicbuffdamage"},{"Max":20,"Min":1,"StatName":"musicbuffduration"}],"DamageSkinId":0,"Id":5160522,"TotemType":""}
 ]

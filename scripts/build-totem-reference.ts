@@ -68,8 +68,12 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
                     : (hasCategory(item, "ExtraTotem") ? 1 : 0) |
                       (hasCategory(item, "PetTotem") ? 2 : 0) |
                       (hasCategory(item, "SecondaryTotem") ? 4 : 0));
+            const tertiary =
+                data.ItemCategoryGroups.TertiaryTotem !== undefined &&
+                hasCategory(item, "TertiaryTotem");
+            assert(!(tertiary && flags & 4), "Conflicting totem categories");
             assert(
-                flags & 4
+                flags & 4 || tertiary
                     ? r.TotemType === ""
                     : /^\/totem_[a-z_]+\/$/.test(r.TotemType),
                 `Review totem type: ${r.TotemType}`
@@ -78,7 +82,11 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
                 id: r.Id,
                 name,
                 description: text(item.Desc),
-                type: flags & 4 ? "secondarytotem" : r.TotemType.slice(7, -1),
+                type: tertiary
+                    ? "tertiarytotem"
+                    : flags & 4
+                      ? "secondarytotem"
+                      : r.TotemType.slice(7, -1),
                 isExtra: (flags & 1) !== 0,
                 isPet: (flags & 2) !== 0,
                 searchable: item.IsAuctionSearchable,
@@ -89,7 +97,24 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
 }
 
 const totems = derive(data.ItemExtendTotemList);
-for (const group of ["ExtraTotem", "PetTotem", "SecondaryTotem"]) {
+for (const row of data.ItemExtendTotemList.filter(
+    row => totems.find(item => item.id === row.Id)?.type === "tertiarytotem"
+)) {
+    assert.throws(
+        () => derive([{ ...row, Flags: 4, DamageSkinId: 0 }]),
+        /Conflicting totem categories/
+    );
+    assert.throws(
+        () => derive([{ ...row, TotemType: "/totem_maxdamage/" }]),
+        /Review totem type/
+    );
+}
+for (const group of [
+    "ExtraTotem",
+    "PetTotem",
+    "SecondaryTotem",
+    "TertiaryTotem",
+].filter(group => data.ItemCategoryGroups[group] !== undefined)) {
     assert(
         hasCategory(
             { ...data.ItemList[0], CategoryId: data.ItemCategoryGroups[group] },
