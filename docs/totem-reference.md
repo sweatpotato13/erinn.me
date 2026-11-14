@@ -45,6 +45,29 @@ rules. Existing reviewed maximum-damage and magic-attack ranges still resolve.
 
 ## Evidence and units
 
+### 2026-11-14 recheck
+
+Prilus version `1794561420` adds four exported 탈라 가흐의 주화 variants
+(`5160519` through `5160522`) and the `TertiaryTotem` category group.
+The current [totem module](https://prilus.gitlab.io/assets/totemList-CHUw2tAs.js)
+uses the [shared classification function](https://prilus.gitlab.io/assets/index-Bd-xLAli.js)
+to distinguish `tertiarytotem` from `secondarytotem`. The
+[row loader](https://prilus.gitlab.io/assets/totemRows-DuqLbkw-.js) requests
+the same-version tertiary category masks. The builder applies the existing
+all-bits category check, preserves empty source types, and derives the new
+`tertiarytotem` type. The catalog exposes a separate **3차** filter and badge.
+All 278 previously derived records remain identical by ID.
+
+The [official November patch](https://mabinogi.nexon.com/m/news/notice_view.asp?id=4893919)
+states that these coins coexist with other totems and exclude one another.
+Their source descriptions also state this rule. Numerical replacement comparisons
+remain unverified because the complete effect set and units are not mapped.
+Raw `arcanaskilldamage`, `criticaldamage`, `musicbuffdamage`, and other unreviewed
+effects remain visible with their original bounds and descriptions. The source's
+integer bounds are not presented as converted percentages or new API observations.
+Existing recognized maximum-damage and magic-attack ranges remain available.
+Historical listing fixtures and unit mappings are unchanged.
+
 Reviewed 2026-09-09 against:
 
 - [Official OX book rewards](https://m.mabinogi.nexon.com/m/news/notice_view.asp?id=4889852): ranges for eight ordinary effects and the bonus-damage book (2022-05-12).

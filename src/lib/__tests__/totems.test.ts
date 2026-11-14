@@ -425,25 +425,33 @@ test("catalog filters preserve empty ranges and apply Korean text/type/target in
     expect(totemEffectKeys(item(52518))).toEqual(["def", "magic_defense"]);
 });
 
-test("secondary totems retain raw effects without ordinary classification or inferred replacement", () => {
-    const options = {
-        search: "",
-        type: "secondary",
-        target: "all",
-        stat: "all",
-        auctionOnly: false,
-    };
-    const secondary = filterTotems(items, options);
-    expect(secondary.map(r => r.id)).toEqual([
-        5160409, 5160410, 5160411, 5160412,
-    ]);
-    for (const row of secondary) {
-        expect(row.type).toBe("secondarytotem");
-        expect(row.bonuses).toHaveLength(3);
-        expect(totemRelation(row, row)).toBe("unverified");
-        for (const type of ["normal", "extra"])
-            expect(filterTotems([row], { ...options, type })).toEqual([]);
+test.each([
+    ["secondary", [5160409, 5160410, 5160411, 5160412]],
+    ["tertiary", [5160519, 5160520, 5160521, 5160522]],
+] as const)(
+    "%s totems retain raw effects without ordinary classification or inferred replacement",
+    (category, ids) => {
+        const options = {
+            search: "",
+            type: category,
+            target: "all",
+            stat: "all",
+            auctionOnly: false,
+        };
+        const filtered = filterTotems(items, options);
+        expect(filtered.map(r => r.id)).toEqual(ids);
+        for (const row of filtered) {
+            expect(row.type).toBe(`${category}totem`);
+            expect(row.bonuses).toHaveLength(3);
+            expect(totemRelation(row, row)).toBe("unverified");
+            for (const type of [
+                "normal",
+                "extra",
+                category === "secondary" ? "tertiary" : "secondary",
+            ])
+                expect(filterTotems([row], { ...options, type })).toEqual([]);
+        }
+        expect(item(ids[0]).ranges).toEqual({ maxdamage: { min: 1, max: 20 } });
+        expect(item(ids[3]).ranges).toEqual({});
     }
-    expect(item(5160409).ranges).toEqual({ maxdamage: { min: 1, max: 20 } });
-    expect(item(5160412).ranges).toEqual({});
-});
+);

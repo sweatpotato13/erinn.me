@@ -583,9 +583,11 @@ export function filterTotems(
         const type =
             item.type === "secondarytotem"
                 ? "secondary"
-                : item.isExtra
-                  ? "extra"
-                  : "normal";
+                : item.type === "tertiarytotem"
+                  ? "tertiary"
+                  : item.isExtra
+                    ? "extra"
+                    : "normal";
         if (options.type !== "all" && type !== options.type) return false;
         if (
             options.target !== "all" &&

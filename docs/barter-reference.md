@@ -41,6 +41,18 @@ Do not publish every raw row as a fixed good. Review this selection when the
 upstream catalog changes. The four active tier-six goods below are unchanged;
 they also match Prilus IDs 21008/22007/23007/24008 and remain season-bound.
 
+On 2026-11-14, a fresh collection at Prilus version `1794561420` returns
+byte-identical `BarterList` and `CommercePostNameMap` tables compared with
+the November 12 snapshot. Labanyu still publishes season 17/version 2 as its
+latest season, ending November 5 at 07:00 Asia/Seoul. A second page request
+with cache bypass also contains no currently effective season. The collector
+rejects publication with `Expected one active season`, preserving the expired
+supplement and its October 29 collection timestamp. The 28 selected fixed goods,
+material identities, and saved-plan keys remain unchanged. All 65 referenced
+material icons were fetched again with identical bytes. The
+[November 14 recheck report](data-refresh-2026-11-14.md) records the remaining
+source limitations.
+
 `scripts/build-barter-reference.ts` uses `readSnapshot` and `resolveItems` to
 generate `src/data/barter-reference.json`. The page receives only selected
 material metadata. The full, minimal ID/name/searchability index is imported
