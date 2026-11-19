@@ -8,6 +8,7 @@ export const NEXT_DEFAULT_HTML_LIMITED_BOTS =
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    experimental: { agentUpgrade: "security" },
     htmlLimitedBots: new RegExp(
         `${NEXT_DEFAULT_HTML_LIMITED_BOTS}|kakaotalk-scrap`,
         "i"
