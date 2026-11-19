@@ -59,8 +59,13 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
         .sort((a, b) => a.Id - b.Id)
         .map(r => {
             const item = items.get(r.Id);
+            assert(item, `Unresolved totem item: ${r.Id}`);
             const name = names.get(r.Id);
-            assert(item && name, `Unresolved totem item: ${r.Id}`);
+            assert(
+                name ||
+                    strings.get(item.Name) === `not found key, ${item.Name}`,
+                `Unresolved totem name: ${r.Id}`
+            );
             const flags =
                 r.Flags ??
                 (r.isExtra !== undefined
@@ -78,10 +83,14 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
                     : /^\/totem_[a-z_]+\/$/.test(r.TotemType),
                 `Review totem type: ${r.TotemType}`
             );
+            const description = text(item.Desc);
             return {
                 id: r.Id,
-                name,
-                description: text(item.Desc),
+                name: name ?? `이름 미지원 #${r.Id}`,
+                description:
+                    description === `not found key, ${item.Desc}`
+                        ? "한국어 설명 미제공"
+                        : description,
                 type: tertiary
                     ? "tertiarytotem"
                     : flags & 4
@@ -89,7 +98,7 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
                       : r.TotemType.slice(7, -1),
                 isExtra: (flags & 1) !== 0,
                 isPet: (flags & 2) !== 0,
-                searchable: item.IsAuctionSearchable,
+                searchable: Boolean(name) && item.IsAuctionSearchable,
                 bonuses: r.Bonuses,
                 ranges: totemRanges(r.Bonuses),
             };
@@ -97,6 +106,10 @@ function derive(rows: typeof data.ItemExtendTotemList): Totem[] {
 }
 
 const totems = derive(data.ItemExtendTotemList);
+for (const row of totems.filter(row => !names.has(row.id))) {
+    assert.equal(row.name, `이름 미지원 #${row.id}`);
+    assert.equal(row.searchable, false);
+}
 for (const row of data.ItemExtendTotemList.filter(
     row => totems.find(item => item.id === row.Id)?.type === "tertiarytotem"
 )) {
