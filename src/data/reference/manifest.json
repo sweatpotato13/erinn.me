@@ -5,17 +5,17 @@
         "site": "https://prilus.gitlab.io/",
         "region": "kr",
         "language": "kr",
-        "resourceUrl": "https://mabires2.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst",
-        "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
+        "resourceUrl": "https://mabires3.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst",
+        "versionUrl": "https://mabires3.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-mabidb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-Bd-xLAli.js"
+            "https://prilus.gitlab.io/assets/index-B8ZtQ4i7.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1794561420
+        "CreatedAt": 1795057019
     },
-    "collectedAt": "2026-11-13T23:51:44.271Z",
+    "collectedAt": "2026-11-19T03:45:04.702Z",
     "tables": {
         "OghamWordList": {
             "count": 26,
@@ -33,34 +33,34 @@
             "sha256": "17c42c6e0be08c39ec20af9d5c002bc9aad5f85316b64526cc4592d925f217c5"
         },
         "ItemList": {
-            "count": 43706,
-            "bytes": 23998890,
-            "sha256": "8382e0b2090b7f2250acf3b6c3f3c9c7723e35de4664a1b83ffecd5da98e49ce"
+            "count": 43723,
+            "bytes": 24004730,
+            "sha256": "82e9a9c6d8f3230bba2c9ad71ca50159dab4ffd69e663363cbb84e80e46083af"
         },
         "ItemCategoryList": {
-            "count": 8262,
-            "bytes": 3379065,
-            "sha256": "381cddc2efd3b1fdc988243c55333b0ae3513ffcd0cb3fd75f6b00a25573c45b"
+            "count": 8263,
+            "bytes": 3379046,
+            "sha256": "02349da4d7bc2013dd418430641d30aaf1b6e52e892e621ece11eb54f186d63e"
         },
         "ItemCategoryGroups": {
             "count": 24,
             "bytes": 479,
-            "sha256": "c4752cb7c55a1a2083e16a9b40c36011643ce9e4a4e8df31dafb5f92f5ce4fc4"
+            "sha256": "f07d0fc3948012215c9d5b3871b900871d049ac14a2e88ca40cd00753db23829"
         },
         "OptionSetList": {
             "count": 1770,
             "bytes": 1931341,
-            "sha256": "ed96c51f274465878d11a2eeb11d9efdd7014b2afe047ff0cd8d9054d4b17c2f"
+            "sha256": "37378b87973ab24f1fd8e16f48feb668c70d78619d8769415ae0f4930978a4c9"
         },
         "StringTable": {
-            "count": 188079,
-            "bytes": 23020116,
-            "sha256": "dd474ac5fdd1ead54b82fcd6845c7b6081ad33a795fbc96cae5f4752d1816650"
+            "count": 188115,
+            "bytes": 23022920,
+            "sha256": "79942fdb96df80ac22b039b343bce7d1e03a9da77064adfa7185c6047d34eec7"
         },
         "ItemExtendMetalWareList": {
-            "count": 11641,
-            "bytes": 872622,
-            "sha256": "e80d18406156fd471df01c0e8140578d668413420b84ce295ee11aa19ecaed3f"
+            "count": 11642,
+            "bytes": 872697,
+            "sha256": "d55577538ab8b28e33143b38f0a4b37cd104994b9936f40a78822bfca2eedd6e"
         },
         "MetalWareAbilityList": {
             "count": 528,
@@ -108,9 +108,9 @@
             "sha256": "0babdb383e0d175c9a12cb0c8b092242238d2842eec9f51d4bfbb79d03918d3f"
         },
         "ItemExtendUpgradeList": {
-            "count": 5343,
-            "bytes": 648520,
-            "sha256": "fca8e57f5516565278bd1084a99305290651b6d38e2e0742e1ddc46593169aa4"
+            "count": 5344,
+            "bytes": 648590,
+            "sha256": "e3a585f99c08849dbf9b8aef8b2c701c7639134130e81feab441e18d4fc44860"
         },
         "ItemUpgradeList": {
             "count": 3242,
@@ -123,9 +123,9 @@
             "sha256": "fc46c4cfb2a63365b70f00f7e1e3dbc6cf323c323499488432e817073158b201"
         },
         "ItemExtendTotemList": {
-            "count": 282,
-            "bytes": 31848,
-            "sha256": "89aab46e2e978275f3f8677db0d811a71aaefe05ce70bf77cfe88f3f761c01ef"
+            "count": 288,
+            "bytes": 32590,
+            "sha256": "54293cc6977051fa97e67fe55f856a6b69dfa49cc780cb075e3cc9de2bbbb839"
         },
         "BarterList": {
             "count": 48,
