@@ -1,0 +1,9 @@
+ts	phase	decision	why	evidence	result
+2026-11-26	collect	Collected all 25 tables at 1795660092	Use actual upstream snapshot	src/data/reference/manifest.json	VERIFIED
+2026-11-26	season	Retained expired season	Upstream has zero active seasons; never invent rotation	artifacts/refresh-2026-11-26/expiry.log	NOT VERIFIED current season
+2026-11-26	build	Regenerated 13 outputs after comparing polishing inputs	Prove It Works requires numerical fixture checks	artifacts/refresh-2026-11-26/prebuild.log	VERIFIED
+2026-11-26	review	Corrected season evidence pointer after independent review	Expiry log only proves local expiry, not collection failure	artifacts/refresh-2026-11-26/season.log	VERIFIED zero active upstream seasons; supersedes prior evidence pointer
+2026-11-26	curated	Updated crafting source URL and evidence date	Independent live comparison verified all 19 mappings and display rules	artifacts/refresh-2026-11-26/independent-audit.md	VERIFIED
+2026-11-26	verify	Ran all source tests and 11 Chromium suites	Verify generated consumers on real application	artifacts/refresh-2026-11-26/unit-final.log; artifacts/refresh-2026-11-26/e2e.log	869 unit tests and 70 browser tests passed
+2026-11-26	correction	Regenerated crafting after evidence metadata update	Final check detected source metadata hash mismatch	artifacts/refresh-2026-11-26/crafting-final.log	Rebuilt; final verification in progress
+2026-11-26	final	Verified final crafting metadata and build	Close the final generated-data change	artifacts/refresh-2026-11-26/build-final.exit	VERIFIED exit 0; current seasonal data remains unavailable

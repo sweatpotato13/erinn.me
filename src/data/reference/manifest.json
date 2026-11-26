@@ -5,17 +5,17 @@
         "site": "https://prilus.gitlab.io/",
         "region": "kr",
         "language": "kr",
-        "resourceUrl": "https://mabires3.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst",
-        "versionUrl": "https://mabires3.pril.cc/resourceversion/kr/kr_resourceversion.json",
+        "resourceUrl": "https://mabires2.pril.cc/resourcedata/kr/kr_resourcedata.bin.zst",
+        "versionUrl": "https://mabires2.pril.cc/resourceversion/kr/kr_resourceversion.json",
         "decoder": "upstream-playwright-mabidb",
         "assets": [
-            "https://prilus.gitlab.io/assets/index-B8ZtQ4i7.js"
+            "https://prilus.gitlab.io/assets/index-8fH3lBRu.js"
         ]
     },
     "sourceVersion": {
-        "CreatedAt": 1795057019
+        "CreatedAt": 1795660092
     },
-    "collectedAt": "2026-11-19T03:45:04.702Z",
+    "collectedAt": "2026-11-26T05:11:56.286Z",
     "tables": {
         "OghamWordList": {
             "count": 26,
@@ -33,34 +33,34 @@
             "sha256": "17c42c6e0be08c39ec20af9d5c002bc9aad5f85316b64526cc4592d925f217c5"
         },
         "ItemList": {
-            "count": 43723,
-            "bytes": 24004730,
-            "sha256": "82e9a9c6d8f3230bba2c9ad71ca50159dab4ffd69e663363cbb84e80e46083af"
+            "count": 43765,
+            "bytes": 24044404,
+            "sha256": "bc4df7c5f7478006a9220aa638bb1ad2342dcbd30f57a4f44df91b2b5cdf1e6b"
         },
         "ItemCategoryList": {
-            "count": 8263,
-            "bytes": 3379046,
-            "sha256": "02349da4d7bc2013dd418430641d30aaf1b6e52e892e621ece11eb54f186d63e"
+            "count": 8262,
+            "bytes": 3379008,
+            "sha256": "861d9baa8580e6cc5f00ea19fb6706c74241120a9e88e590f063562ce4a3a15c"
         },
         "ItemCategoryGroups": {
             "count": 24,
             "bytes": 479,
-            "sha256": "f07d0fc3948012215c9d5b3871b900871d049ac14a2e88ca40cd00753db23829"
+            "sha256": "c4752cb7c55a1a2083e16a9b40c36011643ce9e4a4e8df31dafb5f92f5ce4fc4"
         },
         "OptionSetList": {
             "count": 1770,
             "bytes": 1931341,
-            "sha256": "37378b87973ab24f1fd8e16f48feb668c70d78619d8769415ae0f4930978a4c9"
+            "sha256": "ed96c51f274465878d11a2eeb11d9efdd7014b2afe047ff0cd8d9054d4b17c2f"
         },
         "StringTable": {
-            "count": 188115,
-            "bytes": 23022920,
-            "sha256": "79942fdb96df80ac22b039b343bce7d1e03a9da77064adfa7185c6047d34eec7"
+            "count": 215075,
+            "bytes": 26730426,
+            "sha256": "2f4c6cc8530c8cfdd81ddc8297123e521bb6744c458c735a16fca3778df092d0"
         },
         "ItemExtendMetalWareList": {
-            "count": 11642,
-            "bytes": 872697,
-            "sha256": "d55577538ab8b28e33143b38f0a4b37cd104994b9936f40a78822bfca2eedd6e"
+            "count": 11668,
+            "bytes": 874681,
+            "sha256": "092696d22872a6e5194b8f32729d96fbbd4b8beaf56863a70d5d46d910644c34"
         },
         "MetalWareAbilityList": {
             "count": 528,
@@ -108,9 +108,9 @@
             "sha256": "0babdb383e0d175c9a12cb0c8b092242238d2842eec9f51d4bfbb79d03918d3f"
         },
         "ItemExtendUpgradeList": {
-            "count": 5344,
-            "bytes": 648590,
-            "sha256": "e3a585f99c08849dbf9b8aef8b2c701c7639134130e81feab441e18d4fc44860"
+            "count": 5359,
+            "bytes": 650312,
+            "sha256": "c2ca8a9e6fb05faa20e2e1a33be7dae2ab19c3fb5a14378a80ad4fa1088c6e43"
         },
         "ItemUpgradeList": {
             "count": 3242,
